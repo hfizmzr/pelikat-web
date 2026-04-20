@@ -1,18 +1,27 @@
-import { ReactNode } from "react";
-import { TopNavBar } from "@/components/layout/TopNavBar";
+'use client'
 
-export default function OrganizerLayout({ children }: { children: ReactNode }) {
-    const links = [
-        { label: "Dashboard", href: "/organizer", isActive: true },
-        { label: "Events", href: "/organizer/events" },
-        { label: "Analytics", href: "/organizer/analytics" },
-    ];
-    return (
-        <div className="flex min-h-screen w-full flex-col bg-background">
-            <TopNavBar links={links} userRole="organizer" title="Pelikat Organizer" />
-            <main className="flex-1 pt-16">
-                {children}
-            </main>
-        </div>
-    );
+import { OrganizerSidebar, OrganizerMobileNav } from '@/components/layout/organizer-sidebar'
+import { UserMenu } from '@/components/auth/user-menu'
+
+export default function OrganizerLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex min-h-screen bg-background">
+      <div className="hidden lg:block">
+        <OrganizerSidebar />
+      </div>
+      <div className="flex flex-1 flex-col">
+        <header className="flex h-16 items-center justify-between border-b bg-card px-6">
+          <OrganizerMobileNav />
+          <div className="flex items-center gap-4 ml-auto">
+            <UserMenu />
+          </div>
+        </header>
+        <main className="flex-1 p-6">{children}</main>
+      </div>
+    </div>
+  )
 }

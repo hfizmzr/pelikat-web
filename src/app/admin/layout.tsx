@@ -1,18 +1,27 @@
-import { ReactNode } from "react";
-import { TopNavBar } from "@/components/layout/TopNavBar";
+'use client'
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
-    const links = [
-        { label: "Platform Metrics", href: "/admin", isActive: true },
-        { label: "Tenants", href: "/admin/organizers" },
-        { label: "Audit Logs", href: "/admin/logs" },
-    ];
-    return (
-        <div className="flex min-h-screen w-full flex-col bg-background">
-            <TopNavBar links={links} userRole="admin" title="Pelikat SuperAdmin" />
-            <main className="flex-1 pt-16">
-                {children}
-            </main>
-        </div>
-    );
+import { AdminSidebar, AdminMobileNav } from '@/components/layout/admin-sidebar'
+import { UserMenu } from '@/components/auth/user-menu'
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex min-h-screen bg-background">
+      <div className="hidden lg:block">
+        <AdminSidebar />
+      </div>
+      <div className="flex flex-1 flex-col">
+        <header className="flex h-16 items-center justify-between border-b bg-card px-6">
+          <AdminMobileNav />
+          <div className="flex items-center gap-4 ml-auto">
+            <UserMenu />
+          </div>
+        </header>
+        <main className="flex-1 p-6">{children}</main>
+      </div>
+    </div>
+  )
 }
