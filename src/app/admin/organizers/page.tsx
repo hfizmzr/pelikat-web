@@ -2,29 +2,30 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Plus, MoreHorizontal, Loader2 } from 'lucide-react'
+import { Loader2, Plus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { OrganizerCard } from '@/components/admin/organizer-card'
+import { OrganizerFormDialog } from '@/components/admin/organizer-form'
+import type { Organizer } from '@/components/admin/types'
+
+const supabase = createClient()
 
 export default function AdminOrganizersPage() {
-  const supabase = createClient()
-  const [organizers, setOrganizers] = useState<{ id: string; name: string; slug: string; is_active: boolean; created_at: string; sub_expires_at: string | null }[]>([])
+  const [organizers, setOrganizers] = useState<Organizer[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [name, setName] = useState('')
-  const [slug, setSlug] = useState('')
+  const [editOpen, setEditOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [selectedOrganizer, setSelectedOrganizer] = useState<Organizer | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     async function fetchOrganizers() {
@@ -38,48 +39,52 @@ export default function AdminOrganizersPage() {
     fetchOrganizers()
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
-
-    const { data: existing } = await supabase
-      .from('organizers')
-      .select('id')
-      .eq('slug', slug)
-      .single()
-
-    if (existing) {
-      alert('An organizer with this slug already exists')
-      setSubmitting(false)
-      return
-    }
-
-    const { data, error } = await supabase
-      .from('organizers')
-      .insert({
-        name,
-        slug,
-        is_active: true,
-      })
-      .select()
-      .single()
-
-    if (error) {
-      alert(error.message)
-    } else if (data) {
-      setOrganizers([data, ...organizers])
-      setOpen(false)
-      setName('')
-      setSlug('')
-    }
-    setSubmitting(false)
+  const handleCreate = (organizer: Organizer) => {
+    setOrganizers([organizer, ...organizers])
   }
 
-  const generateSlug = (value: string) => {
-    return value
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
+  const handleUpdate = (organizer: Organizer) => {
+    setOrganizers(organizers.map(o => (o.id === organizer.id ? organizer : o)))
+  }
+
+  const handleEdit = (organizer: Organizer) => {
+    setSelectedOrganizer(organizer)
+    setEditOpen(true)
+  }
+
+  const handleDelete = (organizer: Organizer) => {
+    setSelectedOrganizer(organizer)
+    setDeleteOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!selectedOrganizer) return
+    setDeleting(true)
+
+    const { error } = await supabase
+      .from('organizers')
+      .delete()
+      .eq('id', selectedOrganizer.id)
+
+    if (!error) {
+      setOrganizers(organizers.filter(o => o.id !== selectedOrganizer.id))
+    }
+    setDeleting(false)
+    setDeleteOpen(false)
+    setSelectedOrganizer(null)
+  }
+
+  const handleToggleActive = async (organizer: Organizer) => {
+    const { error } = await supabase
+      .from('organizers')
+      .update({ is_active: !organizer.is_active })
+      .eq('id', organizer.id)
+
+    if (!error) {
+      setOrganizers(organizers.map(o =>
+        o.id === organizer.id ? { ...o, is_active: !o.is_active } : o
+      ))
+    }
   }
 
   return (
@@ -89,62 +94,50 @@ export default function AdminOrganizersPage() {
           <h1 className="text-3xl font-bold tracking-tight">Organizers</h1>
           <p className="text-muted-foreground">Manage event organizers on the platform</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
+        <OrganizerFormDialog
+          open={open}
+          onOpenChange={setOpen}
+          onSuccess={handleCreate}
+          trigger={
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               Add Organizer
             </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Organizer</DialogTitle>
-              <DialogDescription>
-                Create a new organizer account. They can then sign in to manage their events.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Organizer Name</Label>
-                <Input
-                  id="name"
-                  placeholder="e.g., Jakarta Marathon"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onBlur={(e) => setSlug(generateSlug(e.target.value))}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="slug">URL Slug</Label>
-                <Input
-                  id="slug"
-                  placeholder="jakarta-marathon"
-                  value={slug}
-                  onChange={(e) => setSlug(generateSlug(e.target.value))}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  This will be used as: pelikat.com/o/{slug}
-                </p>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={submitting}>
-                  {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create Organizer
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+          }
+        />
       </div>
+
+      <OrganizerFormDialog
+        organizer={selectedOrganizer}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onSuccess={handleUpdate}
+      />
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Organizer</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete <strong>{selectedOrganizer?.name}</strong>? This will
+              also delete all their events, registrations, and data. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" disabled={deleting} onClick={handleConfirmDelete}>
+              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete Organizer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {loading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3].map(i => (
             <Card key={i} className="border-border">
               <CardHeader>
                 <div className="h-6 w-24 animate-pulse rounded bg-muted" />
@@ -157,42 +150,14 @@ export default function AdminOrganizersPage() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {organizers.map((organizer) => (
-            <Card key={organizer.id} className="border-border">
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{organizer.name}</CardTitle>
-                    <CardDescription className="mt-1">@{organizer.slug}</CardDescription>
-                  </div>
-                  <Badge variant={organizer.is_active ? 'default' : 'secondary'}>
-                    {organizer.is_active ? 'Active' : 'Inactive'}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Created</span>
-                    <span>{new Date(organizer.created_at).toLocaleDateString()}</span>
-                  </div>
-                  {organizer.sub_expires_at && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Expires</span>
-                      <span>{new Date(organizer.sub_expires_at).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    View Details
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          {organizers.map(organizer => (
+            <OrganizerCard
+              key={organizer.id}
+              organizer={organizer}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onToggleActive={handleToggleActive}
+            />
           ))}
         </div>
       )}

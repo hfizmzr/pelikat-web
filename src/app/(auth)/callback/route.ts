@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     user.user_metadata?.role ||
     'runner'
 
-  // ✅ Direct redirect based on role
+  // Direct redirect based on role
   if (role === 'admin') {
     return NextResponse.redirect(`${origin}/admin`)
   }

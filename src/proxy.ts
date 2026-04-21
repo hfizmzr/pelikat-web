@@ -40,19 +40,19 @@ export async function proxy(request: NextRequest) {
     path.startsWith('/organizer') ||
     path.startsWith('/runner')
 
-  // 🚫 Not logged in → block protected routes
+  // Not logged in → block protected routes
   if (!user && !session && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // ✅ Logged in → determine role
+  // Logged in → determine role
   if (user) {
     const role =
       user.app_metadata?.role ||
       user.user_metadata?.role ||
       'runner'
 
-    // 🏠 Root redirect
+    // Root redirect
     if (path === '/') {
       if (role === 'admin') {
         return NextResponse.redirect(new URL('/admin', request.url))
@@ -76,7 +76,7 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/runner', request.url))
     }
 
-    // 🔁 Prevent logged-in users from visiting login
+    // Prevent logged-in users from visiting login
     if (isAuthRoute) {
       if (role === 'admin') {
         return NextResponse.redirect(new URL('/admin', request.url))
