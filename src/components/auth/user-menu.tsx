@@ -76,7 +76,7 @@ export function UserMenu() {
           <User className="mr-2 h-4 w-4" />
           <span>Dashboard</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push(`/${role}/profile`)}>
+        <DropdownMenuItem onClick={() => router.push(`/${role}/settings`)}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>

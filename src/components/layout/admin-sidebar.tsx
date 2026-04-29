@@ -58,13 +58,13 @@ export function AdminSidebar() {
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-card">
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center border-b px-6 shrink-0">
         <Flag className="mr-2 h-6 w-6 text-primary" />
         <span className="text-lg font-bold">Pelikat Admin</span>
       </div>
 
-      <nav className="flex-1 space-y-1 p-4">
-        {adminNavItems.map((item) => {
+      <nav className="flex-1 overflow-y-auto p-4">
+        <div className="space-y-1">{adminNavItems.map((item) => {
           const isActive = pathname === item.href
           return (
             <Link
@@ -81,10 +81,10 @@ export function AdminSidebar() {
               {item.title}
             </Link>
           )
-        })}
+        })}</div>
       </nav>
 
-      <div className="border-t p-4">
+      <div className="border-t p-4 shrink-0">
         <Button
           variant="ghost"
           className="w-full justify-start text-destructive hover:text-destructive"
@@ -117,13 +117,13 @@ export function AdminMobileNav() {
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0">
         <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center border-b px-6">
+          <div className="flex h-16 items-center border-b px-6 shrink-0">
             <Flag className="mr-2 h-6 w-6 text-primary" />
             <span className="text-lg font-bold">Pelikat Admin</span>
           </div>
 
-          <nav className="flex-1 space-y-1 p-4">
-            {adminNavItems.map((item) => {
+          <nav className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-1">{adminNavItems.map((item) => {
               const isActive = pathname === item.href
               return (
                 <Link
@@ -140,10 +140,10 @@ export function AdminMobileNav() {
                   {item.title}
                 </Link>
               )
-            })}
+            })}</div>
           </nav>
 
-          <div className="border-t p-4">
+          <div className="border-t p-4 shrink-0">
             <Button
               variant="ghost"
               className="w-full justify-start text-destructive hover:text-destructive"

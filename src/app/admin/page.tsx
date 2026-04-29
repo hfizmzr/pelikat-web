@@ -5,35 +5,39 @@ import { Users, Flag, Calendar, Activity } from 'lucide-react'
 export default async function AdminDashboard() {
   const supabase = await createClient()
 
-  const [{ data: organizers }, { data: events }, { data: registrations }, { data: recentAuditLogs }] = await Promise.all([
+  const [{ data: organizers, count: organizersCount }, { data: events, count: eventsCount }, { data: registrations, count: registrationsCount }, { data: recentAuditLogs }] = await Promise.all([
     supabase.from('organizers').select('id', { count: 'exact', head: true }),
     supabase.from('events').select('id', { count: 'exact', head: true }),
     supabase.from('registrations').select('id', { count: 'exact', head: true }),
     supabase.from('audit_log').select('*').order('created_at', { ascending: false }).limit(10)
   ])
 
+  const [{ data: activeEvents, count: activeEventsCount }] = await Promise.all([
+    supabase.from('events').select('id', { count: 'exact', head: true }).gte('end_date', new Date().toISOString())
+  ])
+
   const stats = [
     {
       title: 'Total Organizers',
-      value: organizers?.length || 0,
+      value: organizersCount || 0,
       description: 'Active event organizers',
       icon: Users,
     },
     {
       title: 'Total Events',
-      value: events?.length || 0,
+      value: eventsCount || 0,
       description: 'All created events',
       icon: Flag,
     },
     {
       title: 'Total Registrations',
-      value: registrations?.length || 0,
+      value: registrationsCount || 0,
       description: 'Runner registrations',
       icon: Calendar,
     },
     {
       title: 'Active Events',
-      value: events?.length || 0,
+      value: activeEventsCount || 0,
       description: 'Currently active events',
       icon: Activity,
     },
