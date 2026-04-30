@@ -3,9 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Settings } from 'lucide-react'
+import { Calendar, MapPin, Users, Clock, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { EventSettingsPanel } from '@/components/events/event-settings-panel'
 
 export default async function OrganizerEventDetailPage({
   params,
@@ -35,6 +36,12 @@ export default async function OrganizerEventDetailPage({
     categories: event.race_categories?.length || 0,
   }
 
+  const statusVariant: Record<string, 'default' | 'secondary' | 'outline'> = {
+    published: 'default',
+    draft: 'secondary',
+    closed: 'outline',
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -46,7 +53,7 @@ export default async function OrganizerEventDetailPage({
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold tracking-tight">{event.name}</h1>
-            <Badge variant={event.status === 'published' ? 'default' : 'secondary'}>
+            <Badge variant={statusVariant[event.status] ?? 'secondary'}>
               {event.status}
             </Badge>
           </div>
@@ -61,10 +68,13 @@ export default async function OrganizerEventDetailPage({
             )}
           </p>
         </div>
-        <Button variant="outline">
-          <Settings className="mr-2 h-4 w-4" />
-          Settings
-        </Button>
+
+        {/* Settings panel — client component with delete + status update */}
+        <EventSettingsPanel
+          eventId={event.id}
+          currentStatus={event.status}
+          eventName={event.name}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -158,12 +168,17 @@ export default async function OrganizerEventDetailPage({
                     {event.race_categories.map((cat: any) => (
                       <div key={cat.id} className="flex items-center justify-between">
                         <span className="text-sm">{cat.name}</span>
-                        <Badge variant="outline">{cat.gender}</Badge>
+                        <Badge variant="outline">{cat.gender || "O"}</Badge>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No categories</p>
+                  <div className="text-center py-4">
+                    <p className="text-sm text-muted-foreground mb-3">No categories yet</p>
+                    <Link href={`/organizer/events/${event.id}/categories`}>
+                      <Button size="sm" variant="outline">Manage Categories</Button>
+                    </Link>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -207,9 +222,14 @@ export default async function OrganizerEventDetailPage({
 
         <TabsContent value="categories" className="space-y-4">
           <Card className="border-border">
-            <CardHeader>
-              <CardTitle>Race Categories</CardTitle>
-              <CardDescription>Manage race categories for this event</CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between">
+              <div>
+                <CardTitle>Race Categories</CardTitle>
+                <CardDescription>Manage race categories for this event</CardDescription>
+              </div>
+              <Link href={`/organizer/events/${event.id}/categories`}>
+                <Button size="sm" variant="outline">Manage All</Button>
+              </Link>
             </CardHeader>
             <CardContent>
               {event.race_categories && event.race_categories.length > 0 ? (

@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Image, Upload, CheckCircle, Clock, AlertCircle } from 'lucide-react'
+import { ImageIcon, CheckCircle, Clock, AlertCircle, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { notFound } from 'next/navigation'
+import { PhotoUploader } from '@/components/events/photo-uploader'
+import Image from 'next/image'
 
 export default async function OrganizerEventPhotosPage({
   params,
@@ -16,7 +18,7 @@ export default async function OrganizerEventPhotosPage({
 
   const { data: event } = await supabase
     .from('events')
-    .select('id, name')
+    .select('id, name, organizer_id')
     .eq('id', id)
     .single()
 
@@ -33,18 +35,39 @@ export default async function OrganizerEventPhotosPage({
 
   const stats = {
     total: photos?.length || 0,
-    auto: photos?.filter(p => p.status === 'auto').length || 0,
-    review: photos?.filter(p => p.status === 'review').length || 0,
-    confirmed: photos?.filter(p => p.status === 'confirmed').length || 0,
+    auto: photos?.filter((p) => p.status === 'auto').length || 0,
+    review: photos?.filter((p) => p.status === 'review').length || 0,
+    confirmed: photos?.filter((p) => p.status === 'confirmed').length || 0,
   }
+
+  // Generate signed URLs for photos that have a storage path
+  const photosWithUrls = await Promise.all(
+    (photos ?? []).map(async (photo) => {
+      if (!photo.storage_path) return { ...photo, url: null }
+      const { data } = await supabase.storage
+        .from('race-photos')
+        .createSignedUrl(photo.storage_path, 3600) // 1h expiry
+      return { ...photo, url: data?.signedUrl ?? null }
+    })
+  )
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Photo Management</h1>
-        <p className="text-muted-foreground">Manage AI-processed photos for {event.name}</p>
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Link href={`/organizer/events/${id}`}>
+          <Button variant="ghost" size="icon">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold tracking-tight">Photo Management</h1>
+          <p className="text-muted-foreground">AI-powered photo tagging for {event.name}</p>
+        </div>
+        <Badge variant="outline" className="hidden sm:flex">AI Processing Enabled</Badge>
       </div>
 
+      {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="border-border">
           <CardHeader className="pb-2">
@@ -52,7 +75,7 @@ export default async function OrganizerEventPhotosPage({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold flex items-center gap-2">
-              <Image className="h-5 w-5" />
+              <ImageIcon className="h-5 w-5 text-muted-foreground" />
               {stats.total}
             </div>
           </CardContent>
@@ -92,52 +115,68 @@ export default async function OrganizerEventPhotosPage({
         </Card>
       </div>
 
+      {/* Upload Section — client component */}
       <Card className="border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Upload Photos</CardTitle>
-              <CardDescription>Upload race photos for AI processing</CardDescription>
+              <CardDescription>
+                Upload race photos. The AI pipeline will detect BIB numbers and tag runners automatically.
+              </CardDescription>
             </div>
-            <Badge variant="outline">AI Processing Enabled</Badge>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-            <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground mb-2">
-              Drag and drop photos here, or click to browse
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Supports JPG, PNG up to 10MB each
-            </p>
-          </div>
+          <PhotoUploader eventId={event.id} organizerId={event.organizer_id} />
         </CardContent>
       </Card>
 
+      {/* Gallery */}
       <Card className="border-border">
         <CardHeader>
           <CardTitle>Photo Gallery</CardTitle>
           <CardDescription>AI-tagged photos from this event</CardDescription>
         </CardHeader>
         <CardContent>
-          {photos && photos.length > 0 ? (
+          {photosWithUrls.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {photos.map((photo) => (
-                <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden bg-secondary">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Image className="h-8 w-8 text-muted-foreground" />
-                  </div>
+              {photosWithUrls.map((photo) => (
+                <div
+                  key={photo.id}
+                  className="relative aspect-square rounded-lg overflow-hidden bg-secondary"
+                >
+                  {photo.url ? (
+                    <Image
+                      src={photo.url}
+                      alt={`BIB ${photo.bib_number ?? 'unknown'}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 50vw, 16vw"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
                   <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                    <p className="text-white text-xs font-medium">BIB: {photo.bib_number || 'N/A'}</p>
+                    <p className="text-white text-xs font-medium">
+                      BIB: {photo.bib_number || 'N/A'}
+                    </p>
                     <Badge
-                      variant={photo.status === 'confirmed' ? 'default' : photo.status === 'review' ? 'secondary' : 'outline'}
+                      variant={
+                        photo.status === 'confirmed'
+                          ? 'default'
+                          : photo.status === 'review'
+                          ? 'secondary'
+                          : 'outline'
+                      }
                       className="text-xs mt-1"
                     >
                       {photo.status}
                     </Badge>
                   </div>
-                  {photo.confidence && (
+                  {photo.confidence != null && (
                     <div className="absolute top-2 right-2">
                       <Badge variant="outline" className="bg-background/80 text-xs">
                         {(photo.confidence * 100).toFixed(0)}%
@@ -149,8 +188,11 @@ export default async function OrganizerEventPhotosPage({
             </div>
           ) : (
             <div className="text-center py-12">
-              <Image className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">No photos uploaded yet</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Use the uploader above to add race photos.
+              </p>
             </div>
           )}
         </CardContent>
