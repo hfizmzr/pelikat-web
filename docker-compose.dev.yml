@@ -6,8 +6,10 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - .:/app
-      - /app/node_modules
+      - .:/app                  # mount source for hot reload
+      - /app/node_modules       # keep container's node_modules, not host's
+    env_file:
+      - .env                    # load all env vars from .env
     environment:
       - NODE_ENV=development
-    command: npm run dev
+    command: pnpm run dev

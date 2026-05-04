@@ -1,15 +1,19 @@
 FROM node:20-alpine
 
-WORKDIR /app
+# libc6-compat needed by some native node addons on Alpine
+RUN apk add --no-cache libc6-compat
 
-# Enable pnpm via corepack (recommended for Node 20)
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
+WORKDIR /app
+
+# ── Install deps first (cached unless lock file changes) ──────────
 COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
-RUN pnpm install
-
-COPY . .
+# ── Source files are mounted via volume — no COPY needed in dev ───
+# docker-compose.dev.yml mounts .:/app and keeps /app/node_modules
+# from this image layer, so the install above is what matters.
 
 EXPOSE 3000
 
