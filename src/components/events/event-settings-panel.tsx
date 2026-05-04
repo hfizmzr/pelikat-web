@@ -81,7 +81,7 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName }: EventS
         </Button>
       </SheetTrigger>
 
-      <SheetContent className="w-[400px] sm:w-[480px]">
+      <SheetContent className="w-[400px] sm:w-[480px] p-6">
         <SheetHeader>
           <SheetTitle>Event Settings</SheetTitle>
           <SheetDescription>

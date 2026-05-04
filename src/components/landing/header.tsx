@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/theme-toggle"
 import {
   Sheet,
   SheetContent,
@@ -47,6 +48,7 @@ export function Header() {
 
         {/* Desktop CTA */}
         <div className="hidden items-center gap-4 md:flex">
+          <ThemeToggle />
           <Link
             href="#login"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -70,7 +72,10 @@ export function Header() {
           </SheetTrigger>
           <SheetContent side="right" className="w-[280px] bg-background">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-            <nav className="flex flex-col gap-4 pt-8" aria-label="Mobile navigation">
+            <div className="flex items-center gap-4 pt-8">
+              <ThemeToggle />
+            </div>
+            <nav className="flex flex-col gap-4 pt-4" aria-label="Mobile navigation">
               {navLinks.map((link) => (
                 <Link
                   key={link.label}

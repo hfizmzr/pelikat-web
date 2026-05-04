@@ -168,7 +168,7 @@ export default async function OrganizerEventDetailPage({
                     {event.race_categories.map((cat: any) => (
                       <div key={cat.id} className="flex items-center justify-between">
                         <span className="text-sm">{cat.name}</span>
-                        <Badge variant="outline">{cat.gender || "O"}</Badge>
+                        <Badge variant="outline">{cat.gender || "Open"}</Badge>
                       </div>
                     ))}
                   </div>
@@ -239,7 +239,7 @@ export default async function OrganizerEventDetailPage({
                       <div>
                         <p className="font-medium">{cat.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {cat.gender} | Ages {cat.min_age}-{cat.max_age}
+                          {cat.gender ?? 'Open'} | Ages {cat.min_age}-{cat.max_age}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">

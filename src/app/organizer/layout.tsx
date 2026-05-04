@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
 import { OrganizerSidebar, OrganizerMobileNav } from '@/components/layout/organizer-sidebar'
 import { UserMenu } from '@/components/auth/user-menu'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Toaster } from '@/components/ui/sonner'
 
 export default function OrganizerLayout({
@@ -37,6 +38,7 @@ export default function OrganizerLayout({
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-6">
           <OrganizerMobileNav />
           <div className="flex items-center gap-4 ml-auto">
+            <ThemeToggle />
             <UserMenu />
           </div>
         </header>

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
 import { AdminSidebar, AdminMobileNav } from '@/components/layout/admin-sidebar'
 import { UserMenu } from '@/components/auth/user-menu'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function AdminLayout({
   children,
@@ -36,6 +37,7 @@ export default function AdminLayout({
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-6">
           <AdminMobileNav />
           <div className="flex items-center gap-4 ml-auto">
+            <ThemeToggle />
             <UserMenu />
           </div>
         </header>
