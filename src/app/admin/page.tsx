@@ -1,27 +1,66 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, Flag, Calendar, Activity } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Users, Flag, Calendar, Activity, AlertTriangle } from 'lucide-react'
+import { StorageUsage } from '@/components/admin/storage-usage'
+import { HealthMonitor } from '@/components/admin/health-monitor'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
 
-  const [{ data: organizers, count: organizersCount }, { data: events, count: eventsCount }, { data: registrations, count: registrationsCount }, { data: recentAuditLogs }] = await Promise.all([
+  const now = new Date()
+  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+  const [
+    { count: organizersCount },
+    { count: activeOrganizersCount },
+    { count: eventsCount },
+    { count: registrationsCount },
+    { count: expiringSoonCount },
+    { data: recentAuditLogs },
+    { data: expiringOrganizers },
+  ] = await Promise.all([
     supabase.from('organizers').select('id', { count: 'exact', head: true }),
+    supabase
+      .from('organizers')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true),
     supabase.from('events').select('id', { count: 'exact', head: true }),
     supabase.from('registrations').select('id', { count: 'exact', head: true }),
-    supabase.from('audit_log').select('*').order('created_at', { ascending: false }).limit(10)
-  ])
-
-  const [{ data: activeEvents, count: activeEventsCount }] = await Promise.all([
-    supabase.from('events').select('id', { count: 'exact', head: true }).gte('end_date', new Date().toISOString())
+    supabase
+      .from('organizers')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true)
+      .not('sub_expires_at', 'is', null)
+      .lte('sub_expires_at', sevenDaysFromNow.toISOString())
+      .gt('sub_expires_at', now.toISOString()),
+    supabase
+      .from('audit_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(10),
+    supabase
+      .from('organizers')
+      .select('name, slug, sub_expires_at')
+      .eq('is_active', true)
+      .not('sub_expires_at', 'is', null)
+      .lte('sub_expires_at', sevenDaysFromNow.toISOString())
+      .gt('sub_expires_at', now.toISOString())
+      .limit(5),
   ])
 
   const stats = [
     {
       title: 'Total Organizers',
       value: organizersCount || 0,
-      description: 'Active event organizers',
+      description: 'All event organizers',
       icon: Users,
+    },
+    {
+      title: 'Active Tenants',
+      value: activeOrganizersCount || 0,
+      description: 'Currently active organizers',
+      icon: Activity,
     },
     {
       title: 'Total Events',
@@ -34,12 +73,6 @@ export default async function AdminDashboard() {
       value: registrationsCount || 0,
       description: 'Runner registrations',
       icon: Calendar,
-    },
-    {
-      title: 'Active Events',
-      value: activeEventsCount || 0,
-      description: 'Currently active events',
-      icon: Activity,
     },
   ]
 
@@ -63,6 +96,43 @@ export default async function AdminDashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {(expiringSoonCount || 0) > 0 && (
+        <Card className="border-amber-200 dark:border-amber-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-5 w-5" />
+              Subscriptions Expiring Soon
+            </CardTitle>
+            <CardDescription>
+              {expiringSoonCount} organizer(s) with subscriptions expiring within 7 days
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {expiringOrganizers?.map((org) => (
+                <div
+                  key={org.slug}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
+                  <div>
+                    <p className="font-medium">{org.name}</p>
+                    <p className="text-sm text-muted-foreground">@{org.slug}</p>
+                  </div>
+                  <Badge variant="secondary">
+                    Expires {new Date(org.sub_expires_at).toLocaleDateString()}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <StorageUsage />
+        <HealthMonitor />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

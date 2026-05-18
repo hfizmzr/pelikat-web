@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Loader2, Plus } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -34,14 +34,19 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
 
   const isEdit = !!organizer
 
+  const resetForm = () => {
+    setName(organizer?.name || '')
+    setSlug(organizer?.slug || '')
+    setContactEmail(organizer?.contact_email || '')
+    setSubExpiresAt(organizer?.sub_expires_at ? organizer.sub_expires_at.split('T')[0] : '')
+  }
+
+   
   useEffect(() => {
     if (open) {
-      setName(organizer?.name || '')
-      setSlug(organizer?.slug || '')
-      setContactEmail(organizer?.contact_email || '')
-      setSubExpiresAt(organizer?.sub_expires_at ? organizer.sub_expires_at.split('T')[0] : '')
+      resetForm()
     }
-  }, [open, organizer])
+  }, [open])
 
   const generateSlug = (value: string) => {
     return value

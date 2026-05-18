@@ -1,13 +1,10 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Pencil, Trash2 } from 'lucide-react'
 import type { Organizer } from './types'
-
-const supabase = createClient()
 
 interface OrganizerCardProps {
   organizer: Organizer

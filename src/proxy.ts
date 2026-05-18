@@ -1,8 +1,9 @@
+import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next()
+  const response = NextResponse.next()
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,9 +14,12 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value)
+          })
+          cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options)
-          )
+          })
         },
       },
     }
@@ -25,66 +29,45 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  const pathname = request.nextUrl.pathname
 
-  const path = request.nextUrl.pathname
+  if (pathname.startsWith('/organizer/')) {
+    if (!user) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
 
-  const isAuthRoute =
-    path.startsWith('/login') ||
-    path.startsWith('/callback')
-
-  const isProtectedRoute =
-    path.startsWith('/admin') ||
-    path.startsWith('/organizer') ||
-    path.startsWith('/runner')
-
-  // Not logged in → block protected routes
-  if (!user && !session && isProtectedRoute) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  // Logged in → determine role
-  if (user) {
     const role =
-      user.app_metadata?.role ||
-      user.user_metadata?.role ||
-      'runner'
+      user?.app_metadata?.role || user?.user_metadata?.role || 'runner'
 
-    // Root redirect
-    if (path === '/') {
-      if (role === 'admin') {
-        return NextResponse.redirect(new URL('/admin', request.url))
-      }
-      if (role === 'organizer') {
-        return NextResponse.redirect(new URL('/organizer', request.url))
-      }
-      return NextResponse.redirect(new URL('/runner', request.url))
+    if (role !== 'organizer' && role !== 'admin') {
+      return new NextResponse('Forbidden', { status: 403 })
     }
 
-    // 🔒 Role protection
-    if (path.startsWith('/admin') && role !== 'admin') {
-      return NextResponse.redirect(new URL('/runner', request.url))
-    }
+    const { data: organizer } = await supabase
+      .from('organizers')
+      .select('is_active, sub_expires_at')
+      .eq('user_id', user.id)
+      .single()
 
-    if (
-      path.startsWith('/organizer') &&
-      role !== 'organizer' &&
-      role !== 'admin'
-    ) {
-      return NextResponse.redirect(new URL('/runner', request.url))
-    }
+    if (organizer) {
+      if (!organizer.is_active) {
+        return new NextResponse(
+          'Your organizer account has been deactivated. Please contact support.',
+          { status: 403 }
+        )
+      }
 
-    // Prevent logged-in users from visiting login
-    if (isAuthRoute) {
-      if (role === 'admin') {
-        return NextResponse.redirect(new URL('/admin', request.url))
+      if (
+        organizer.sub_expires_at &&
+        new Date(organizer.sub_expires_at) <= new Date()
+      ) {
+        return new NextResponse(
+          'Your subscription has expired. Please renew to continue.',
+          { status: 403 }
+        )
       }
-      if (role === 'organizer') {
-        return NextResponse.redirect(new URL('/organizer', request.url))
-      }
-      return NextResponse.redirect(new URL('/runner', request.url))
     }
   }
 
@@ -92,7 +75,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/organizer/:path*'],
 }
