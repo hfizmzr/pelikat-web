@@ -1,4 +1,4 @@
-type Role = 'admin' | 'organizer' | 'runner'
+type Role = 'admin' | 'organizer' | 'runner' | 'expired'
 
 export function getUserRole(user: any): Role {
   return (

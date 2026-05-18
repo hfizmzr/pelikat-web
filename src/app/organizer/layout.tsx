@@ -22,6 +22,11 @@ export default function OrganizerLayout({
       const { data: { user } } = await supabase.auth.getUser()
       const role = getUserRole(user)
       
+      if (role === 'expired') {
+        router.push('/organizer/subscription-expired')
+        return
+      }
+      
       if (role !== 'organizer') {
         router.push('/')
       }

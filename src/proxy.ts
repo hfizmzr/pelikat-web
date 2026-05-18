@@ -31,6 +31,7 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
+  // Protect organizer routes
   if (pathname.startsWith('/organizer/')) {
     if (!user) {
       const loginUrl = new URL('/login', request.url)
@@ -38,36 +39,36 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
 
-    const role =
-      user?.app_metadata?.role || user?.user_metadata?.role || 'runner'
-
-    if (role !== 'organizer' && role !== 'admin') {
-      return new NextResponse('Forbidden', { status: 403 })
-    }
-
-    const { data: organizer } = await supabase
+    // SOURCE OF TRUTH: DATABASE (NOT JWT)
+    const { data: organizer, error } = await supabase
       .from('organizers')
       .select('is_active, sub_expires_at')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
-    if (organizer) {
-      if (!organizer.is_active) {
-        return new NextResponse(
-          'Your organizer account has been deactivated. Please contact support.',
-          { status: 403 }
-        )
-      }
+    if (error || !organizer) {
+      return new NextResponse('Forbidden: Organizer not found', {
+        status: 403,
+      })
+    }
 
-      if (
-        organizer.sub_expires_at &&
-        new Date(organizer.sub_expires_at) <= new Date()
-      ) {
-        return new NextResponse(
-          'Your subscription has expired. Please renew to continue.',
-          { status: 403 }
-        )
-      }
+    // Block inactive organizer
+    if (!organizer.is_active) {
+      return new NextResponse(
+        'Your organizer account has been deactivated. Please contact support.',
+        { status: 403 }
+      )
+    }
+
+    // Block expired subscription
+    if (
+      organizer.sub_expires_at &&
+      new Date(organizer.sub_expires_at) <= new Date()
+    ) {
+      return new NextResponse(
+        'Your subscription has expired. Please renew to continue.',
+        { status: 403 }
+      )
     }
   }
 

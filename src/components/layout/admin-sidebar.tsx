@@ -18,7 +18,7 @@ import {
   LogOut,
   Flag,
   Building2,
-  CreditCard,
+  // CreditCard,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { createClient } from '@/lib/supabase/client'
@@ -35,11 +35,11 @@ const adminNavItems = [
     href: '/admin/organizers',
     icon: Building2,
   },
-  {
-    title: 'Subscriptions',
-    href: '/admin/organizers?filter=expiring',
-    icon: CreditCard,
-  },
+  // {
+  //   title: 'Subscriptions',
+  //   href: '/admin/organizers?filter=expiring',
+  //   icon: CreditCard,
+  // },
   {
     title: 'Audit Logs',
     href: '/admin/audit-logs',
