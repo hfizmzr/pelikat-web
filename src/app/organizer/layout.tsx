@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
 import { OrganizerSidebar, OrganizerMobileNav } from '@/components/layout/organizer-sidebar'
@@ -15,7 +15,14 @@ export default function OrganizerLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const supabase = createClient()
+
+  const showSidebar = !pathname.startsWith('/organizer/subscription-expired')
+
+  if (pathname.startsWith('/organizer/apply')) {
+    return <>{children}</>
+  }
 
   useEffect(() => {
     async function checkRole() {
@@ -23,7 +30,9 @@ export default function OrganizerLayout({
       const role = getUserRole(user)
       
       if (role === 'expired') {
-        router.push('/organizer/subscription-expired')
+        if (!pathname.startsWith('/organizer/subscription-expired')) {
+          router.push('/organizer/subscription-expired')
+        }
         return
       }
       
@@ -32,21 +41,25 @@ export default function OrganizerLayout({
       }
     }
     checkRole()
-  }, [router, supabase])
+  }, [router, supabase, pathname])
 
   return (
     <div className="flex min-h-screen bg-background">
-      <div className="hidden lg:sticky lg:top-0 lg:h-screen lg:flex lg:flex-col">
-        <OrganizerSidebar />
-      </div>
+      {showSidebar && (
+        <div className="hidden lg:sticky lg:top-0 lg:h-screen lg:flex lg:flex-col">
+          <OrganizerSidebar />
+        </div>
+      )}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-6">
-          <OrganizerMobileNav />
-          <div className="flex items-center gap-4 ml-auto">
-            <ThemeToggle />
-            <UserMenu />
-          </div>
-        </header>
+        {showSidebar && (
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-6">
+            <OrganizerMobileNav />
+            <div className="flex items-center gap-4 ml-auto">
+              <ThemeToggle />
+              <UserMenu />
+            </div>
+          </header>
+        )}
         <main className="flex-1 p-6 overflow-y-auto">{children}</main>
       </div>
       <Toaster richColors position="bottom-right" />

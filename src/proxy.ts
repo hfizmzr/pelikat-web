@@ -33,6 +33,11 @@ export async function proxy(request: NextRequest) {
 
   // Protect organizer routes
   if (pathname.startsWith('/organizer/')) {
+    // Allow unauthenticated access to the public apply pages
+    if (pathname.startsWith('/organizer/apply')) {
+      return response
+    }
+
     if (!user) {
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)

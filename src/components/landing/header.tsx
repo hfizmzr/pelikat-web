@@ -15,7 +15,6 @@ const navLinks = [
   { label: "Features", href: "#features", active: true },
   { label: "Runners", href: "#runners" },
   { label: "Organizers", href: "#organizers" },
-  { label: "Pricing", href: "#pricing" },
 ]
 
 export function Header() {
@@ -25,7 +24,7 @@ export function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <span className="text-lg font-semibold text-foreground">
-            Obsidian Events
+            Pelikat Batik
           </span>
         </Link>
 
@@ -50,16 +49,16 @@ export function Header() {
         <div className="hidden items-center gap-4 md:flex">
           <ThemeToggle />
           <Link
-            href="#login"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Log In
-          </Link>
-          <Button
-            asChild
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            <Link href="#get-started">Get Started</Link>
+              href="/login"
+                className="text-base font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Log In
+              </Link>
+              <Button
+                asChild
+                className="mt-2 bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <Link href="/organizer/apply">Get Started</Link>
           </Button>
         </div>
 
@@ -89,7 +88,7 @@ export function Header() {
               ))}
               <hr className="my-2 border-border" />
               <Link
-                href="#login"
+            href="/login"
                 className="text-base font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 Log In
@@ -98,7 +97,7 @@ export function Header() {
                 asChild
                 className="mt-2 bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                <Link href="#get-started">Get Started</Link>
+                <Link href="/organizer/apply">Get Started</Link>
               </Button>
             </nav>
           </SheetContent>
