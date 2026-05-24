@@ -39,11 +39,18 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
 
+    const subscriptionExpiredPath = '/organizer/subscription-expired'
+
+    // Always allow access to the subscription-expired page
+    if (pathname.startsWith(subscriptionExpiredPath)) {
+      return response
+    }
+
     // SOURCE OF TRUTH: DATABASE (NOT JWT)
     const { data: organizer, error } = await supabase
       .from('organizers')
       .select('is_active, sub_expires_at')
-      .eq('user_id', user.id)
+      .eq('contact_email', user.email)
       .maybeSingle()
 
     if (error || !organizer) {
@@ -52,23 +59,15 @@ export async function proxy(request: NextRequest) {
       })
     }
 
-    // Block inactive organizer
     if (!organizer.is_active) {
-      return new NextResponse(
-        'Your organizer account has been deactivated. Please contact support.',
-        { status: 403 }
-      )
+      return NextResponse.redirect(new URL(subscriptionExpiredPath, request.url))
     }
 
-    // Block expired subscription
     if (
       organizer.sub_expires_at &&
       new Date(organizer.sub_expires_at) <= new Date()
     ) {
-      return new NextResponse(
-        'Your subscription has expired. Please renew to continue.',
-        { status: 403 }
-      )
+      return NextResponse.redirect(new URL(subscriptionExpiredPath, request.url))
     }
   }
 

@@ -3,42 +3,71 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 serve(async (req) => {
   try {
-    const { event, user, claims } = await req.json();
+    const body = await req.json();
+
+    const claims = body.claims;
+    const userId = body.user_id;
+
+    if (!claims || !userId) {
+      return new Response(
+        JSON.stringify({ claims: claims || {} }),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const email = claims.email;
+
+    if (!email) {
+      return new Response(
+        JSON.stringify({ claims }),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     const adminClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { data: organizer } = await adminClient
+    const { data: organizer, error } = await adminClient
       .from("organizers")
       .select("id, is_active")
-      .eq("contact_email", user.email)
+      .eq("contact_email", email)
       .maybeSingle();
 
+    let role = "user";
+    let organizerId = null;
+
     if (organizer) {
-      if (organizer.is_active) {
-        claims.app_metadata = {
-          ...claims.app_metadata,
-          organizer_id: organizer.id,
-          role: "organizer",
-        };
-      } else {
-        claims.app_metadata = {
-          ...claims.app_metadata,
-          organizer_id: organizer.id,
-          role: "expired",
-        };
+      organizerId = organizer.id;
+      role = organizer.is_active ? "organizer" : "expired";
+
+      const currentRole = claims.app_metadata?.role;
+      if (currentRole !== role) {
+        await adminClient.auth.admin.updateUserById(userId, {
+          app_metadata: { organizer_id: organizerId, role },
+        });
       }
     }
+
+    claims.app_metadata = {
+      ...(claims.app_metadata || {}),
+      role,
+      organizer_id: organizerId,
+    };
 
     return new Response(JSON.stringify({ claims }), {
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
-    console.error("custom-access-token-hook error:", error);
-    return new Response(JSON.stringify({ claims: {} }), {
-      headers: { "Content-Type": "application/json" },
-    });
+  } catch (err) {
+    console.error("custom-access-token-hook error:", err);
+
+    return new Response(
+      JSON.stringify({ claims: {} }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 });

@@ -33,5 +33,9 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/organizer`)
   }
 
+  if (role === 'expired') {
+    return NextResponse.redirect(`${origin}/organizer/subscription-expired`)
+  }
+
   return NextResponse.redirect(`${origin}/runner`)
 }

@@ -10,18 +10,7 @@ export default async function OrganizerEventsPage() {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Primary: get organizer_id from app_metadata (set by admin)
-  // Fallback: query organizers table by user_id
   let organizerId = user?.app_metadata?.organizer_id as string | undefined
-
-  if (!organizerId && user) {
-    const { data: organizer } = await supabase
-      .from('organizers')
-      .select('id')
-      .eq('user_id', user.id)
-      .single()
-    organizerId = organizer?.id
-  }
 
   if (!organizerId) {
     return (
