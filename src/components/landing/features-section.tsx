@@ -58,7 +58,7 @@ export function FeaturesSection() {
             className="md:col-span-1"
           >
             <Link
-              href="#"
+              href="/organizer/apply"
               className="mt-4 inline-flex items-center text-sm font-medium text-primary hover:underline"
             >
               Encrypted Authentication

@@ -1,0 +1,16 @@
+-- ── ENABLE ROW LEVEL SECURITY ─────────────────────────────────
+alter table organizers          enable row level security;
+alter table events              enable row level security;
+alter table race_categories     enable row level security;
+alter table runner_profiles     enable row level security;
+alter table registrations       enable row level security;
+alter table repc_consent_codes  enable row level security;
+alter table repc_collections    enable row level security;
+alter table photo_tags          enable row level security;
+alter table run_logs            enable row level security;
+alter table runner_badges       enable row level security;
+alter table merch_products      enable row level security;
+alter table merch_variants      enable row level security;
+alter table merch_orders        enable row level security;
+alter table merch_order_items   enable row level security;
+alter table audit_log           enable row level security;

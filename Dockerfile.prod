@@ -1,19 +1,41 @@
+############################################################
+# Stage 1 — base: Alpine + pnpm
+############################################################
 FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
+############################################################
+# Stage 2 — deps: install production + dev dependencies
+############################################################
 FROM base AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
 
+COPY package.json pnpm-lock.yaml ./
+# --frozen-lockfile ensures the exact versions from the lock file
+RUN pnpm install --frozen-lockfile
+
+############################################################
+# Stage 3 — builder: compile Next.js
+############################################################
 FROM base AS builder
 WORKDIR /app
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build
+ENV NODE_ENV=production
 
-FROM base AS runner
+RUN pnpm run build
+
+############################################################
+# Stage 4 — runner: minimal production image (~200-400 MB)
+#   Relies on `output: "standalone"` in next.config.ts
+############################################################
+FROM node:20-alpine AS runner
+RUN apk add --no-cache libc6-compat
+
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -21,15 +43,18 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser  --system --uid 1001 nextjs
 
+# Only copy what Next.js standalone needs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static   ./.next/static
 
 USER nextjs
 
 EXPOSE 3000
 
+# standalone output ships its own node server — no node_modules needed
 CMD ["node", "server.js"]

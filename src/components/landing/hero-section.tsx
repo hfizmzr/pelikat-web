@@ -41,7 +41,7 @@ export function HeroSection() {
 
         {/* Subheadline */}
         <p className="mt-6 max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg md:text-xl">
-          From Pelikat Batik Run to global marathons, Obsidian provides the
+          From Pelikat Batik Run to global marathons, Pelikat Batik provides the
           infrastructure to automate logistics, photos, and runner engagement.
         </p>
 
@@ -52,18 +52,10 @@ export function HeroSection() {
             size="lg"
             className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            <Link href="#get-started" className="inline-flex items-center gap-2">
+            <Link href="/organizer/apply" className="inline-flex items-center gap-2">
               Modernize Your Race
               <ArrowRight className="size-4" />
             </Link>
-          </Button>
-          <Button
-            asChild
-            variant="ghost"
-            size="lg"
-            className="text-foreground hover:bg-foreground/10"
-          >
-            <Link href="#demo">View Demo</Link>
           </Button>
         </div>
       </div>

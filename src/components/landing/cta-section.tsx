@@ -10,7 +10,7 @@ export function CTASection() {
             <span className="text-balance">Ready to Elevate Your Next Event?</span>
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-base text-white/80 sm:text-lg">
-            Join hundreds of organizers using Obsidian to deliver flawless race
+            Join hundreds of organizers using Pelikat Batik to deliver flawless race
             experiences. Scale your operations without increasing complexity.
           </p>
 
@@ -19,17 +19,9 @@ export function CTASection() {
             <Button
               asChild
               size="lg"
-              variant="outline"
-              className="border-white/30 bg-white text-primary hover:bg-white/90 hover:text-primary"
-            >
-              <Link href="#demo">Book a Private Demo</Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
               className="bg-background text-foreground hover:bg-background/90"
             >
-              <Link href="#get-started">Get Started Free</Link>
+              <Link href="/organizer/apply">Get Started Free</Link>
             </Button>
           </div>
         </div>

@@ -1,34 +1,136 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { createClient } from '@/lib/supabase/server'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import QrCode from 'react-qr-code'
+import { ArrowLeft, Download, Share2 } from 'lucide-react'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
 
-export default async function BibPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  
+export default async function RunnerBibPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const { data: profile } = await supabase
+    .from('runner_profiles')
+    .select('id, full_name')
+    .eq('user_id', user?.id)
+    .single()
+
+  const { data: registration } = await supabase
+    .from('registrations')
+    .select('*, events(*), race_categories(*)')
+    .eq('event_id', id)
+    .eq('runner_id', profile?.id)
+    .single()
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('name, event_date, location')
+    .eq('id', id)
+    .single()
+
+  if (!registration || !event) {
+    notFound()
+  }
+
+  const qrPayload = JSON.stringify({
+    runner_id: profile?.id,
+    event_id: id,
+    bib_number: registration.bib_number,
+    timestamp: new Date().toISOString(),
+  })
+
   return (
-    <div className="pt-8 pb-24 md:pb-8 px-4 max-w-md mx-auto space-y-6 flex flex-col items-center">
-      <div className="w-full">
-         <Link href="/runner" className="text-sm font-semibold text-primary hover:underline flex items-center gap-1">
-             <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-         </Link>
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Link href={`/runner/events/${id}`}>
+          <Button variant="ghost" size="icon">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Your Digital BIB</h1>
+          <p className="text-muted-foreground">{event.name}</p>
+        </div>
       </div>
 
-      <div className="bg-primary text-primary-foreground p-8 rounded-t-3xl w-full text-center">
-         <h1 className="text-5xl font-black italic tracking-tighter drop-shadow-md">BIB #4829</h1>
-         <p className="text-sm uppercase font-bold tracking-widest mt-2 opacity-80">10KM Open Category</p>
-         <p className="text-xs opacity-60 mt-1">Event: {id}</p>
-      </div>
-      
-      <div className="bg-card border border-border mt-0 p-8 rounded-b-3xl w-full shadow-xl flex flex-col items-center">
-         <div className="w-64 h-64 bg-white p-4 rounded-xl flex items-center justify-center mx-auto border-4 border-muted">
-            <div className="text-center text-muted-foreground text-xs p-10 border-2 border-dashed border-gray-300 w-full h-full flex flex-col items-center justify-center">
-                <span>DUMMY QR SPACE</span>
-                <span className="mt-2 text-[10px]">Use react-qr-code here</span>
+      <div className="flex justify-center">
+        <Card className="border-border w-full max-w-md">
+          <CardHeader className="text-center">
+            <Badge variant="outline" className="w-fit mx-auto mb-2">
+              BIB NUMBER
+            </Badge>
+            <CardTitle className="text-6xl font-bold tracking-wider">
+              {registration.bib_number}
+            </CardTitle>
+            <CardDescription>{profile?.full_name}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center space-y-6">
+            <div className="bg-white p-4 rounded-lg">
+              <QrCode
+                value={qrPayload}
+                size={200}
+                style={{ height: 'auto', maxWidth: '100%', width: '200px' }}
+              />
             </div>
-         </div>
-         <p className="text-center mt-6 text-sm text-muted-foreground">
-             Present this QR code at the REPC counter to collect your physical race pack.
-         </p>
+
+            <div className="w-full space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Event</span>
+                <span className="font-medium">{event.name}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Date</span>
+                <span className="font-medium">
+                  {new Date(event.event_date).toLocaleDateString()}
+                </span>
+              </div>
+              {event.location && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Location</span>
+                  <span className="font-medium">{event.location}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Category</span>
+                <span className="font-medium">
+                  {registration.race_categories?.name}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-2 w-full">
+              <Button variant="outline" className="flex-1">
+                <Download className="mr-2 h-4 w-4" />
+                Save
+              </Button>
+              <Button variant="outline" className="flex-1">
+                <Share2 className="mr-2 h-4 w-4" />
+                Share
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      <Card className="border-border">
+        <CardHeader>
+          <CardTitle>Instructions</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <p>1. Show this QR code at the check-in point on race day.</p>
+          <p>2. The race official will scan your code to verify your registration.</p>
+          <p>3. Make sure your phone screen is bright enough for scanning.</p>
+          <p>4. Take a screenshot as a backup in case of poor network connectivity.</p>
+        </CardContent>
+      </Card>
     </div>
-  );
+  )
 }

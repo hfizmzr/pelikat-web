@@ -4,21 +4,38 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  
-  if (code) {
-    const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
-    if (!error) {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const role = user.user_metadata?.role || 'runner'
-        return NextResponse.redirect(`${origin}/${role}`)
-      }
-      return NextResponse.redirect(`${origin}/`)
-    }
+
+  if (!code) {
+    return NextResponse.redirect(`${origin}/login?error=no-code`)
   }
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/login?error=auth-callback-failed`)
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+  if (error || !data?.user) {
+    return NextResponse.redirect(`${origin}/login?error=auth-failed`)
+  }
+
+  const user = data.user
+
+  const role =
+    user.app_metadata?.role ||
+    user.user_metadata?.role ||
+    'runner'
+
+  // Direct redirect based on role
+  if (role === 'admin') {
+    return NextResponse.redirect(`${origin}/admin`)
+  }
+
+  if (role === 'organizer') {
+    return NextResponse.redirect(`${origin}/organizer`)
+  }
+
+  if (role === 'expired') {
+    return NextResponse.redirect(`${origin}/organizer/subscription-expired`)
+  }
+
+  return NextResponse.redirect(`${origin}/runner`)
 }

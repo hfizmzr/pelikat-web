@@ -1,10 +1,45 @@
-Dockerfile
-.dockerignore
-node_modules
-npm-debug.log
-README.md
+# ── Build artifacts ────────────────────────────────────────────────
 .next
+out
+dist
+
+# ── Dependencies ───────────────────────────────────────────────────
+node_modules
+.pnpm-store
+
+# ── Git / IDE ──────────────────────────────────────────────────────
 .git
+.gitignore
+.gitattributes
 .vscode
+.idea
+
+# ── Docker ────────────────────────────────────────────────────────
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# ── Environment ───────────────────────────────────────────────────
 .env.local
 .env.*.local
+
+# ── Logs ──────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# ── OS ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Docs / CI ────────────────────────────────────────────────────
+README.md
+docs/
+.github/
+*.md
+
+# ── PWA generated files (re-built at runtime) ────────────────────
+public/sw.js
+public/workbox-*.js
+public/worker-*.js

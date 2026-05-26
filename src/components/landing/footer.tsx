@@ -1,11 +1,7 @@
 import Link from "next/link"
 
 const footerLinks = [
-  { label: "Privacy Policy", href: "#privacy" },
-  { label: "Terms of Service", href: "#terms" },
-  { label: "Contact Support", href: "#support" },
-  { label: "Twitter", href: "#twitter" },
-  { label: "LinkedIn", href: "#linkedin" },
+  { label: "Contact Support", href: "mailto:admin@pelikat.com" },
 ]
 
 export function Footer() {
@@ -16,7 +12,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <span className="text-sm font-semibold text-foreground">
-              Obsidian Event Management
+              Pelikat Batik
             </span>
           </div>
 
@@ -40,7 +36,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="mt-8 border-t border-border pt-6 text-center">
           <p className="text-sm text-muted-foreground">
-            &copy; 2024 Obsidian Event Management. Precision in Darkness.
+            &copy; 2024 Pelikat Batik. Precision in Darkness.
           </p>
         </div>
       </div>

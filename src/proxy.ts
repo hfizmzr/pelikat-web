@@ -1,12 +1,10 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import type { NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  const response = NextResponse.next()
 
-  // createServerClient for middleware
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -16,13 +14,12 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value)
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
+          })
         },
       },
     }
@@ -32,47 +29,56 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const path = request.nextUrl.pathname
+  const pathname = request.nextUrl.pathname
 
-  // Redirect authenticated users away from login page
-  if (user && path === '/login') {
-    const role = user.user_metadata?.role || 'runner'
-    return NextResponse.redirect(new URL(`/${role}`, request.url))
+  // Protect organizer routes
+  if (pathname.startsWith('/organizer/')) {
+    // Allow unauthenticated access to the public apply pages
+    if (pathname.startsWith('/organizer/apply')) {
+      return response
+    }
+
+    if (!user) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    const subscriptionExpiredPath = '/organizer/subscription-expired'
+
+    // Always allow access to the subscription-expired page
+    if (pathname.startsWith(subscriptionExpiredPath)) {
+      return response
+    }
+
+    // SOURCE OF TRUTH: DATABASE (NOT JWT)
+    const { data: organizer, error } = await supabase
+      .from('organizers')
+      .select('is_active, sub_expires_at')
+      .eq('contact_email', user.email)
+      .maybeSingle()
+
+    if (error || !organizer) {
+      return new NextResponse('Forbidden: Organizer not found', {
+        status: 403,
+      })
+    }
+
+    if (!organizer.is_active) {
+      return NextResponse.redirect(new URL(subscriptionExpiredPath, request.url))
+    }
+
+    if (
+      organizer.sub_expires_at &&
+      new Date(organizer.sub_expires_at) <= new Date()
+    ) {
+      return NextResponse.redirect(new URL(subscriptionExpiredPath, request.url))
+    }
   }
 
-  // Protect all routes except public ones
-  const isPublicRoute = path === '/login' || path === '/callback' || path === '/' || path.startsWith('/api/') || path.startsWith('/_next') || path.startsWith('/public')
-  
-  if (!user && !isPublicRoute) {
-    // return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  if (user) {
-    const role = user.user_metadata?.role || 'runner'
-    
-    if (path.startsWith('/admin') && role !== 'admin') {
-      // return NextResponse.redirect(new URL(`/${role}`, request.url))
-    }
-    if (path.startsWith('/organizer') && role !== 'organizer' && role !== 'admin') {
-      // return NextResponse.redirect(new URL(`/${role}`, request.url))
-    }
-    if (path.startsWith('/runner') && role !== 'runner' && role !== 'admin' && role !== 'organizer') {
-      // return NextResponse.redirect(new URL(`/${role}`, request.url))
-    }
-  }
-
-  return supabaseResponse
+  return response
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/organizer/:path*'],
 }

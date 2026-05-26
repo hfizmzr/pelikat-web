@@ -66,12 +66,12 @@ docker compose -f docker-compose.prod.yml down
 - Use production mode only for deployment/testing release builds
 - Any dependency changes require rebuilding the Docker image
 
-# ❓ Do I need to run npm install?
+# ❓ Do I need to run pnpm install?
 No.
 When using Docker:
-- npm install is handled automatically inside the container
-- npm run dev is handled by the development container
-- npm run build is handled during the production build process
+- pnpm install is handled automatically inside the container
+- pnpm run dev is handled by the development container
+- pnpm run build is handled during the production build process
 
 👉 You do not need to install Node.js locally.
 

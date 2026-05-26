@@ -1,16 +1,15 @@
 import type { NextConfig } from "next";
-import withPWAInit from "next-pwa";
-
-const withPWA = withPWAInit({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
-  register: true,
-  skipWaiting: true,
-});
+// @ts-expect-error - next-pwa does not have type definitions
+import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
   output: "standalone",
   turbopack: {},
 };
 
-export default withPWA(nextConfig);
+export default withPWA({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  skipWaiting: true,
+})(nextConfig);
