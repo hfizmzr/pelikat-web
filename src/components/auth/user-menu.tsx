@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Settings } from 'lucide-react'
+import { LogOut, Repeat2, User, Settings } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export function UserMenu() {
@@ -23,6 +23,11 @@ export function UserMenu() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/login')
+  }
+
+  const handleSwitchAccount = async () => {
+    await supabase.auth.signOut()
+    router.push('/login?switchAccount=1')
   }
 
   const getInitials = (name: string | null | undefined) => {
@@ -81,6 +86,10 @@ export function UserMenu() {
           <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleSwitchAccount}>
+          <Repeat2 className="mr-2 h-4 w-4" />
+          <span>Switch account</span>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>

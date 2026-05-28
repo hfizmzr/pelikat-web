@@ -1,13 +1,50 @@
 'use client'
 
-import { useEffect, useState, useRef, use } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useCallback, useEffect, useState, useRef, use } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 import { QrCode, Search, CheckCircle, XCircle } from 'lucide-react'
+import { checkInRegistrationByBib } from '@/components/events/actions'
+import type { RepcCheckInResult } from '@/lib/repc'
+
+type ScanResult = {
+  success: boolean
+  message: string
+  alreadyCheckedIn?: boolean
+  runner?: {
+    name: string
+    bib: string
+    shirtSize?: string | null
+    remainingQty?: number | null
+  }
+}
+
+type RecentCheckIn = {
+  name: string
+  bib: string
+  shirtSize?: string | null
+  time: Date
+  alreadyCheckedIn?: boolean
+}
+
+function resultFromRpc(result: RepcCheckInResult): ScanResult {
+  return {
+    success: result.success,
+    message: result.message,
+    alreadyCheckedIn: result.alreadyCheckedIn,
+    runner: result.bibNumber
+      ? {
+          name: result.runnerName || 'Unknown',
+          bib: result.bibNumber,
+          shirtSize: result.shirtSize,
+          remainingQty: result.remainingQty,
+        }
+      : undefined,
+  }
+}
 
 export default function OrganizerCheckinPage({
   params,
@@ -18,14 +55,75 @@ export default function OrganizerCheckinPage({
   
   const [scanning, setScanning] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [scanResult, setScanResult] = useState<{
-    success: boolean
-    message: string
-    runner?: { name: string; bib: string }
-  } | null>(null)
-  const [recentCheckins, setRecentCheckins] = useState<{ name: string; bib: string; time: Date }[]>([])
+  const [checkingIn, setCheckingIn] = useState(false)
+  const [scanResult, setScanResult] = useState<ScanResult | null>(null)
+  const [recentCheckins, setRecentCheckins] = useState<RecentCheckIn[]>([])
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
-  const supabase = createClient()
+  const scanBusyRef = useRef(false)
+
+  const handleScan = useCallback(async (qrPayload: string) => {
+    if (scanBusyRef.current) return
+
+    scanBusyRef.current = true
+    setCheckingIn(true)
+    setScanResult(null)
+
+    try {
+      const response = await fetch('/api/repc/check-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ qr_payload: qrPayload, event_id: eventId }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        const result: ScanResult = {
+          success: true,
+          message: data.message || 'Check-in successful!',
+          alreadyCheckedIn: data.already_checked_in,
+          runner: data.runner
+            ? {
+                name: data.runner.name || 'Unknown',
+                bib: data.runner.bib || '',
+                shirtSize: data.runner.shirt_size ?? null,
+                remainingQty: data.runner.remaining_qty ?? null,
+              }
+            : undefined,
+        }
+
+        setScanResult(result)
+
+        if (result.runner) {
+          setRecentCheckins((prev) => [
+            {
+              name: result.runner?.name || 'Unknown',
+              bib: result.runner?.bib || '',
+              shirtSize: result.runner?.shirtSize,
+              time: new Date(),
+              alreadyCheckedIn: result.alreadyCheckedIn,
+            },
+            ...prev.slice(0, 4),
+          ])
+        }
+      } else {
+        setScanResult({
+          success: false,
+          message: data.message || 'Invalid QR code',
+        })
+      }
+    } catch {
+      setScanResult({
+        success: false,
+        message: 'Error verifying QR code',
+      })
+    } finally {
+      setCheckingIn(false)
+      window.setTimeout(() => {
+        scanBusyRef.current = false
+      }, 1200)
+    }
+  }, [eventId])
 
   useEffect(() => {
     if (scanning && !scannerRef.current) {
@@ -51,93 +149,34 @@ export default function OrganizerCheckinPage({
         scannerRef.current = null
       }
     }
-  }, [scanning])
-
-  const handleScan = async (qrPayload: string) => {
-    setScanResult(null)
-
-    try {
-      const response = await fetch('/api/qr/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ qr_payload: qrPayload, event_id: eventId }),
-      })
-
-      const data = await response.json()
-
-      if (data.valid) {
-        await supabase
-          .from('registrations')
-          .update({ checked_in: true, checked_in_at: new Date().toISOString() })
-          .eq('id', data.registration_id)
-
-        setScanResult({
-          success: true,
-          message: 'Check-in successful!',
-          runner: data.runner,
-        })
-
-        setRecentCheckins((prev) => [
-          { name: data.runner.name, bib: data.runner.bib, time: new Date() },
-          ...prev.slice(0, 4),
-        ])
-      } else {
-        setScanResult({
-          success: false,
-          message: data.message || 'Invalid QR code',
-        })
-      }
-    } catch (error) {
-      setScanResult({
-        success: false,
-        message: 'Error verifying QR code',
-      })
-    }
-  }
+  }, [handleScan, scanning])
 
   const handleManualSearch = async () => {
     if (!searchQuery) return
 
-    const { data: registration } = await supabase
-      .from('registrations')
-      .select('id, bib_number, checked_in, runner_profiles(full_name)')
-      .eq('event_id', eventId)
-      .eq('bib_number', searchQuery)
-      .single()
+    setCheckingIn(true)
+    setScanResult(null)
 
-    if (registration) {
-      const runnerProfiles = registration.runner_profiles as { full_name?: string } | null | undefined
-      const runnerName = Array.isArray(runnerProfiles) 
-        ? runnerProfiles[0]?.full_name 
-        : runnerProfiles?.full_name
+    try {
+      const result = resultFromRpc(await checkInRegistrationByBib(eventId, searchQuery))
+      setScanResult(result)
 
-      await supabase
-        .from('registrations')
-        .update({ checked_in: true, checked_in_at: new Date().toISOString() })
-        .eq('id', registration.id)
-
-      setScanResult({
-        success: true,
-        message: 'Check-in successful!',
-        runner: {
-          name: runnerName || 'Unknown',
-          bib: registration.bib_number,
-        },
-      })
-
-      setRecentCheckins((prev) => [
-        {
-          name: runnerName || 'Unknown',
-          bib: registration.bib_number,
-          time: new Date(),
-        },
-        ...prev.slice(0, 4),
-      ])
-    } else {
-      setScanResult({
-        success: false,
-        message: 'Registration not found',
-      })
+      if (result.success && result.runner) {
+        setRecentCheckins((prev) => [
+          {
+            name: result.runner?.name || 'Unknown',
+            bib: result.runner?.bib || '',
+            shirtSize: result.runner?.shirtSize,
+            time: new Date(),
+            alreadyCheckedIn: result.alreadyCheckedIn,
+          },
+          ...prev.slice(0, 4),
+        ])
+      }
+    } catch {
+      setScanResult({ success: false, message: 'Could not check in this runner' })
+    } finally {
+      setCheckingIn(false)
     }
   }
 
@@ -162,9 +201,14 @@ export default function OrganizerCheckinPage({
               onClick={() => setScanning(!scanning)}
               className="w-full"
               variant={scanning ? 'destructive' : 'default'}
+              disabled={checkingIn}
             >
               {scanning ? 'Stop Scanning' : 'Start Scanning'}
             </Button>
+
+            {checkingIn && (
+              <p className="text-sm text-muted-foreground">Checking registration and shirt stock...</p>
+            )}
 
             {scanning && <div id="qr-reader" className="w-full" />}
 
@@ -184,9 +228,19 @@ export default function OrganizerCheckinPage({
                 <div>
                   <p className="font-medium">{scanResult.message}</p>
                   {scanResult.runner && (
-                    <p className="text-sm">
-                      {scanResult.runner.name} - BIB #{scanResult.runner.bib}
-                    </p>
+                    <div className="text-sm">
+                      <p>
+                        {scanResult.runner.name} - BIB #{scanResult.runner.bib}
+                      </p>
+                      {scanResult.runner.shirtSize && (
+                        <p>
+                          Shirt {scanResult.runner.shirtSize}
+                          {typeof scanResult.runner.remainingQty === 'number'
+                            ? `, ${scanResult.runner.remainingQty} remaining`
+                            : ''}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -229,10 +283,15 @@ export default function OrganizerCheckinPage({
                   >
                     <div>
                       <p className="font-medium">{checkin.name}</p>
-                      <p className="text-sm text-muted-foreground">BIB #{checkin.bib}</p>
+                      <p className="text-sm text-muted-foreground">
+                        BIB #{checkin.bib}
+                        {checkin.shirtSize ? ` | Shirt ${checkin.shirtSize}` : ''}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <Badge variant="default">Checked In</Badge>
+                      <Badge variant={checkin.alreadyCheckedIn ? 'secondary' : 'default'}>
+                        {checkin.alreadyCheckedIn ? 'Already In' : 'Checked In'}
+                      </Badge>
                       <p className="text-xs text-muted-foreground mt-1">
                         {checkin.time.toLocaleTimeString()}
                       </p>

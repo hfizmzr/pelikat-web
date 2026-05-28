@@ -43,3 +43,8 @@ next-env.d.ts
 .opencode
 everything-claude-code/
 .pnpm-store
+
+# Codex local MCP configs/secrets
+.codex/config.toml
+.codex/*.local.toml
+.codex/.credentials.json
