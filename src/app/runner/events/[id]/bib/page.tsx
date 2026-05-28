@@ -6,6 +6,7 @@ import QrCode from 'react-qr-code'
 import { ArrowLeft, Download, Share2 } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { fetchDjangoApi } from '@/lib/django'
 
 export default async function RunnerBibPage({
   params,
@@ -40,12 +41,24 @@ export default async function RunnerBibPage({
     notFound()
   }
 
-  const qrPayload = JSON.stringify({
-    runner_id: profile?.id,
-    event_id: id,
-    bib_number: registration.bib_number,
-    timestamp: new Date().toISOString(),
-  })
+  let qrPayload: string | null = null
+  let qrError: string | null = null
+
+  try {
+    const response = await fetchDjangoApi('/ai/qr/sign', {
+      method: 'POST',
+      body: JSON.stringify({
+        runner_id: profile?.id,
+        event_id: id,
+        bib_number: registration.bib_number,
+      }),
+    })
+
+    qrPayload = typeof response.qr_payload === 'string' ? response.qr_payload : null
+    if (!qrPayload) qrError = 'Secure QR code could not be generated.'
+  } catch {
+    qrError = 'Secure QR service is unavailable. Please refresh after the API is running.'
+  }
 
   return (
     <div className="space-y-6">
@@ -73,13 +86,19 @@ export default async function RunnerBibPage({
             <CardDescription>{profile?.full_name}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-6">
-            <div className="bg-white p-4 rounded-lg">
-              <QrCode
-                value={qrPayload}
-                size={200}
-                style={{ height: 'auto', maxWidth: '100%', width: '200px' }}
-              />
-            </div>
+            {qrPayload ? (
+              <div className="bg-white p-4 rounded-lg">
+                <QrCode
+                  value={qrPayload}
+                  size={200}
+                  style={{ height: 'auto', maxWidth: '100%', width: '200px' }}
+                />
+              </div>
+            ) : (
+              <div className="flex min-h-[232px] w-[232px] items-center justify-center rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+                {qrError}
+              </div>
+            )}
 
             <div className="w-full space-y-2">
               <div className="flex justify-between text-sm">

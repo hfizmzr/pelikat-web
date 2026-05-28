@@ -47,7 +47,7 @@ export default function SubscriptionExpiredPage() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/login?switchAccount=1')
   }
 
   const expiryDate = organizer?.sub_expires_at

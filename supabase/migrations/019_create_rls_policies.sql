@@ -42,8 +42,22 @@ create policy "runner inserts own profile" on runner_profiles
 create policy "runner reads own registrations" on registrations
   for select using (runner_id = my_runner_id());
 
-create policy "runner inserts own registration" on registrations
-  for insert with check (runner_id = my_runner_id());
+create policy "runner creates own registrations" on registrations
+  for insert to authenticated with check (
+    runner_id = my_runner_id()
+    and exists (
+      select 1
+      from events e
+      where e.id = registrations.event_id
+        and e.status = 'published'
+    )
+    and exists (
+      select 1
+      from race_categories c
+      where c.id = registrations.category_id
+        and c.event_id = registrations.event_id
+    )
+  );
 
 create policy "organizer reads event registrations" on registrations
   for select using (
@@ -81,6 +95,19 @@ create policy "runner sees own photos" on photo_tags
 
 create policy "organizer sees own event photos" on photo_tags
   for select using (
+    event_id in (select id from events where organizer_id = get_my_organizer_id())
+  );
+
+create policy "organizer updates own event photos" on photo_tags
+  for update using (
+    event_id in (select id from events where organizer_id = get_my_organizer_id())
+  )
+  with check (
+    event_id in (select id from events where organizer_id = get_my_organizer_id())
+  );
+
+create policy "organizer inserts own event photos" on photo_tags
+  for insert with check (
     event_id in (select id from events where organizer_id = get_my_organizer_id())
   );
 

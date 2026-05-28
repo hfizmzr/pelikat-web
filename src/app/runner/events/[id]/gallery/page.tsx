@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Image, Download, Share2 } from 'lucide-react'
+import { Image as ImageIcon } from 'lucide-react'
 import { notFound } from 'next/navigation'
+import Image from 'next/image'
+import { RunnerPhotoActions } from '@/components/events/runner-photo-actions'
 
 export default async function RunnerGalleryPage({
   params,
@@ -45,9 +47,26 @@ export default async function RunnerGalleryPage({
     .from('photo_tags')
     .select('*')
     .eq('event_id', id)
-    .eq('bib_number', registration.bib_number)
-    .eq('status', 'confirmed')
+    .eq('runner_id', profile?.id)
+    .in('status', ['auto', 'confirmed'])
     .order('created_at', { ascending: false })
+
+  const photosWithUrls = await Promise.all(
+    (photos ?? []).map(async (photo) => {
+      if (!photo.storage_path) return { ...photo, url: null }
+
+      const { data, error } = await supabase.storage
+        .from('race-photos')
+        .createSignedUrl(photo.storage_path, 3600)
+
+      return {
+        ...photo,
+        fileName: photo.storage_path.split('/').pop() ?? 'Race photo',
+        url: data?.signedUrl ?? null,
+        urlError: error?.message ?? null,
+      }
+    })
+  )
 
   return (
     <div className="space-y-6">
@@ -56,39 +75,54 @@ export default async function RunnerGalleryPage({
         <p className="text-muted-foreground">Photos from {event.name}</p>
       </div>
 
-      {photos && photos.length > 0 ? (
+      {photosWithUrls.length > 0 ? (
         <>
           <div className="flex items-center justify-between">
-            <p className="text-muted-foreground">{photos.length} photos found</p>
+            <p className="text-muted-foreground">
+              {photosWithUrls.length} photos found
+            </p>
             <div className="flex gap-2">
               <Badge variant="outline">BIB: {registration.bib_number}</Badge>
             </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {photos.map((photo) => (
+            {photosWithUrls.map((photo) => (
               <Card key={photo.id} className="border-border overflow-hidden">
                 <div className="aspect-square relative bg-secondary">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Image className="h-12 w-12 text-muted-foreground" />
+                  {photo.url ? (
+                    <Image
+                      src={photo.url}
+                      alt={`Race photo for BIB ${photo.bib_number ?? registration.bib_number}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="absolute right-2 top-2 z-10">
+                    <RunnerPhotoActions imageUrl={photo.url} fileName={photo.fileName} />
                   </div>
                   {photo.confidence && (
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute left-2 top-2">
                       <Badge variant="secondary" className="bg-background/80">
                         {(photo.confidence * 100).toFixed(0)}%
                       </Badge>
                     </div>
                   )}
+                  {!photo.url && photo.urlError && (
+                    <div className="absolute bottom-2 left-2 right-2 rounded-md bg-background/90 p-2 text-xs text-destructive">
+                      {photo.urlError}
+                    </div>
+                  )}
                 </div>
-                <CardContent className="p-2">
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" className="flex-1">
-                      <Download className="h-3 w-3" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="flex-1">
-                      <Share2 className="h-3 w-3" />
-                    </Button>
-                  </div>
+                <CardContent className="p-3">
+                  <p className="truncate text-xs text-muted-foreground" title={photo.storage_path}>
+                    {photo.fileName}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -97,7 +131,7 @@ export default async function RunnerGalleryPage({
       ) : (
         <Card className="border-border">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Image className="h-12 w-12 text-muted-foreground mb-4" />
+            <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground mb-2">No photos yet</p>
             <p className="text-sm text-muted-foreground">
               Photos will appear here after the event photo processing is complete
@@ -106,16 +140,5 @@ export default async function RunnerGalleryPage({
         </Card>
       )}
     </div>
-  )
-}
-
-function Button({ children, variant, size, className, onClick }: any) {
-  return (
-    <button
-      className={`${variant === 'ghost' ? 'hover:bg-secondary' : variant === 'outline' ? 'border border-input bg-background hover:bg-secondary' : 'bg-primary text-primary-foreground hover:bg-primary/90'} ${size === 'sm' ? 'h-8 px-3 text-xs' : 'h-10 px-4 py-2'} rounded-md inline-flex items-center justify-center gap-2 ${className || ''}`}
-      onClick={onClick}
-    >
-      {children}
-    </button>
   )
 }

@@ -14,6 +14,11 @@ $$;
 
 -- Get the runner_profile id for the currently logged-in user
 create or replace function my_runner_id()
-returns uuid language sql stable as $$
-  select id from runner_profiles where user_id = auth.uid()
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select id from public.runner_profiles where user_id = auth.uid() limit 1
 $$;

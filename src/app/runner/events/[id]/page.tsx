@@ -2,9 +2,20 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, Users, QrCode, Image, ArrowLeft } from 'lucide-react'
+import { Calendar, MapPin, QrCode, Image as ImageIcon, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { RunnerRegistrationActions } from '@/components/events/runner-registration-actions'
+
+interface RaceCategory {
+  id: string
+  name: string
+  gender: string | null
+  min_age: number | null
+  max_age: number | null
+  price: number | null
+  max_slots: number | null
+}
 
 export default async function RunnerEventDetailPage({
   params,
@@ -40,6 +51,7 @@ export default async function RunnerEventDetailPage({
     .single()
 
   const isRegistered = !!registration
+  const raceCategories = (event.race_categories ?? []) as RaceCategory[]
 
   return (
     <div className="space-y-6">
@@ -88,9 +100,9 @@ export default async function RunnerEventDetailPage({
               <CardDescription>Available categories for this event</CardDescription>
             </CardHeader>
             <CardContent>
-              {event.race_categories && event.race_categories.length > 0 ? (
+              {raceCategories.length > 0 ? (
                 <div className="space-y-4">
-                  {event.race_categories.map((cat: any) => (
+                  {raceCategories.map((cat) => (
                     <div key={cat.id} className="flex items-center justify-between border-b pb-4 last:border-0">
                       <div>
                         <p className="font-medium">{cat.name}</p>
@@ -150,17 +162,18 @@ export default async function RunnerEventDetailPage({
                     </Link>
                     <Link href={`/runner/events/${event.id}/gallery`} className="block">
                       <Button variant="outline" className="w-full">
-                        <Image className="mr-2 h-4 w-4" />
+                        <ImageIcon className="mr-2 h-4 w-4" />
                         My Photos
                       </Button>
                     </Link>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">You haven&apos;t registered for this event yet.</p>
-                  <Button className="w-full">Register Now</Button>
-                </div>
+                <RunnerRegistrationActions
+                  eventId={event.id}
+                  categories={raceCategories}
+                  hasRunnerProfile={!!profile}
+                />
               )}
             </CardContent>
           </Card>
