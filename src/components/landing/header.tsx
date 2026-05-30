@@ -65,9 +65,12 @@ export function Header() {
         {/* Mobile Menu */}
         <Sheet>
           <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon" aria-label="Open menu">
+            <button
+              className="inline-flex h-11 w-11 touch-manipulation items-center justify-center rounded-md hover:bg-accent"
+              aria-label="Open menu"
+            >
               <Menu className="size-5" />
-            </Button>
+            </button>
           </SheetTrigger>
           <SheetContent side="right" className="w-[280px] bg-background">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>

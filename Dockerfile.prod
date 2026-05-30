@@ -49,8 +49,8 @@ RUN addgroup --system --gid 1001 nodejs && \
 
 # Only copy what Next.js standalone needs
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static   ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next-build-test/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next-build-test/static   ./.next/static
 
 USER nextjs
 

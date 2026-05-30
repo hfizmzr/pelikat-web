@@ -4,8 +4,8 @@
   "description": "Multi-tenant event management and e-bib checkin platform.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#111111",
+  "theme_color": "#7c3aed",
   "icons": [
     {
       "src": "/icons/icon-192.png",

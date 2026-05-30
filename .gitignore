@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-build-test/
 /out/
 
 # production
@@ -39,6 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# serwist
+public/sw.js
+public/swe-worker*
 
 .opencode
 everything-claude-code/

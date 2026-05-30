@@ -97,14 +97,16 @@ export function OrganizerTable({
       } else if (statusFilter === 'inactive') {
         matchesStatus = !org.is_active
       } else if (statusFilter === 'expiring') {
-        matchesStatus =
+        matchesStatus = !!(
           org.is_active &&
           org.sub_expires_at &&
           new Date(org.sub_expires_at) <= sevenDaysFromNow &&
           new Date(org.sub_expires_at) > now
+        )
       } else if (statusFilter === 'expired') {
-        matchesStatus =
+        matchesStatus = !!(
           org.is_active && org.sub_expires_at && new Date(org.sub_expires_at) <= now
+        )
       }
 
       return matchesSearch && matchesStatus

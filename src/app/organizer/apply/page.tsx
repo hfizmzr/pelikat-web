@@ -40,7 +40,7 @@ export default function OrganizerApplyPage() {
               </CardHeader>
               <CardContent className="text-center space-y-6">
                 <div>
-                  <span className="text-5xl font-bold text-foreground">RM 999</span>
+                  <span className="text-5xl font-bold text-foreground">RM 99</span>
                   <span className="text-muted-foreground">/year</span>
                 </div>
                 <ul className="space-y-3 text-left">
