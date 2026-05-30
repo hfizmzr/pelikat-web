@@ -9,7 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Shirt } from 'lucide-react'
+
+const SHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
+
+type ShirtSize = (typeof SHIRT_SIZES)[number]
 
 interface FormData {
   name: string
@@ -24,12 +28,33 @@ interface FormErrors {
   event_date?: string
 }
 
+function createEmptyInventory(): Record<ShirtSize, string> {
+  return {
+    XS: '0',
+    S: '0',
+    M: '0',
+    L: '0',
+    XL: '0',
+    XXL: '0',
+  }
+}
+
+function parseInventoryQuantity(value: string) {
+  const parsed = Number.parseInt(value, 10)
+  if (!Number.isFinite(parsed) || parsed < 0) return 0
+
+  return parsed
+}
+
 export default function NewEventPage() {
   const router = useRouter()
   const supabase = createClient()
   
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
+  const [shirtInventory, setShirtInventory] = useState<Record<ShirtSize, string>>(
+    createEmptyInventory
+  )
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
@@ -75,18 +100,36 @@ export default function NewEventPage() {
         return
       }
 
-      const { error } = await supabase.from('events').insert({
+      const { data: event, error } = await supabase
+        .from('events')
+        .insert({
         organizer_id: organizerId,
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         event_date: formData.event_date,
         location: formData.location.trim() || null,
         status: formData.status
-      })
+        })
+        .select('id')
+        .single()
 
       if (error) throw error
 
-      router.push('/organizer/events')
+      const inventoryRows = SHIRT_SIZES.map((size) => ({
+        event_id: event.id,
+        organizer_id: organizerId,
+        size,
+        initial_qty: parseInventoryQuantity(shirtInventory[size]),
+        claimed_qty: 0,
+      }))
+
+      const { error: inventoryError } = await supabase
+        .from('event_shirt_inventory')
+        .upsert(inventoryRows, { onConflict: 'event_id,size' })
+
+      if (inventoryError) throw inventoryError
+
+      router.push(`/organizer/events/${event.id}/repc`)
     } catch (error) {
       console.error('Error creating event:', error)
     } finally {
@@ -173,6 +216,36 @@ export default function NewEventPage() {
                   <SelectItem value="closed">Closed</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-4 rounded-lg border p-4">
+              <div className="flex items-center gap-2">
+                <Shirt className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <h2 className="text-sm font-medium">REPC Shirt Inventory</h2>
+                  <p className="text-sm text-muted-foreground">Initial race kit stock by size</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                {SHIRT_SIZES.map((size) => (
+                  <div key={size} className="space-y-2">
+                    <Label htmlFor={`shirt-${size}`}>{size}</Label>
+                    <Input
+                      id={`shirt-${size}`}
+                      type="number"
+                      min={0}
+                      value={shirtInventory[size]}
+                      onChange={(event) =>
+                        setShirtInventory((current) => ({
+                          ...current,
+                          [size]: event.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="flex justify-end gap-4">

@@ -13,13 +13,10 @@ import {
   LayoutDashboard,
   Calendar,
   User,
-  QrCode,
-  Image,
   Trophy,
   Shirt,
   MapPin,
   Award,
-  Settings,
   Menu,
   LogOut,
   Flag,
@@ -72,7 +69,7 @@ export function RunnerSidebar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/login?switchAccount=1')
   }
 
   return (
@@ -124,7 +121,7 @@ export function RunnerMobileNav() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/login?switchAccount=1')
   }
 
   return (

@@ -2,6 +2,11 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { fetchDjangoApi } from '@/lib/django'
+import {
+  normalizeRepcCheckInResult,
+  type RepcCheckInResult,
+  type RepcCheckInRpcRow,
+} from '@/lib/repc'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -107,31 +112,418 @@ export async function deleteCategory(categoryId: string, eventId: string) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// REPC Actions
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
+
+function parseInventoryQuantity(value: FormDataEntryValue | null) {
+  if (typeof value !== 'string' || value.trim() === '') return 0
+
+  const parsed = Number.parseInt(value, 10)
+  if (!Number.isFinite(parsed) || parsed < 0) return 0
+
+  return parsed
+}
+
+export async function updateEventShirtInventory(eventId: string, formData: FormData) {
+  const supabase = await createClient()
+
+  const { data: event, error: eventError } = await supabase
+    .from('events')
+    .select('id, organizer_id')
+    .eq('id', eventId)
+    .single()
+
+  if (eventError || !event) {
+    throw new Error(eventError?.message || 'Event not found')
+  }
+
+  const { data: currentRows, error: rowsError } = await supabase
+    .from('event_shirt_inventory')
+    .select('size, claimed_qty')
+    .eq('event_id', eventId)
+
+  if (rowsError) throw new Error(rowsError.message)
+
+  const claimedBySize = new Map(
+    (currentRows ?? []).map((row: { size: string; claimed_qty: number | null }) => [
+      row.size,
+      row.claimed_qty ?? 0,
+    ])
+  )
+
+  const rows = SHIRT_SIZES.map((size) => {
+    const initialQty = parseInventoryQuantity(formData.get(`initial_qty_${size}`))
+    const claimedQty = claimedBySize.get(size) ?? 0
+
+    if (initialQty < claimedQty) {
+      throw new Error(`${size} stock cannot be below ${claimedQty} already claimed shirts.`)
+    }
+
+    return {
+      event_id: eventId,
+      organizer_id: event.organizer_id,
+      size,
+      initial_qty: initialQty,
+      claimed_qty: claimedQty,
+    }
+  })
+
+  const { error: upsertError } = await supabase
+    .from('event_shirt_inventory')
+    .upsert(rows, { onConflict: 'event_id,size' })
+
+  if (upsertError) throw new Error(upsertError.message)
+
+  revalidatePath(`/organizer/events/${eventId}`)
+  revalidatePath(`/organizer/events/${eventId}/repc`)
+  revalidatePath(`/organizer/events/${eventId}/checkin`)
+}
+
+export async function checkInRegistrationByBib(
+  eventId: string,
+  bibNumber: string
+): Promise<RepcCheckInResult> {
+  const supabase = await createClient()
+  const cleanedBibNumber = bibNumber.trim()
+
+  if (!cleanedBibNumber) {
+    return {
+      success: false,
+      message: 'Enter a BIB number.',
+      registrationId: null,
+      bibNumber: null,
+      runnerName: null,
+      shirtSize: null,
+      remainingQty: null,
+      alreadyCheckedIn: false,
+    }
+  }
+
+  let { data: registration, error: registrationError } = await supabase
+    .from('registrations')
+    .select('runner_id, bib_number')
+    .eq('event_id', eventId)
+    .eq('bib_number', cleanedBibNumber)
+    .maybeSingle()
+
+  if (!registration && !registrationError) {
+    const fallback = await supabase
+      .from('registrations')
+      .select('runner_id, bib_number')
+      .eq('event_id', eventId)
+      .ilike('bib_number', cleanedBibNumber)
+      .maybeSingle()
+
+    registration = fallback.data
+    registrationError = fallback.error
+  }
+
+  if (registrationError) {
+    return {
+      success: false,
+      message: registrationError.message,
+      registrationId: null,
+      bibNumber: cleanedBibNumber,
+      runnerName: null,
+      shirtSize: null,
+      remainingQty: null,
+      alreadyCheckedIn: false,
+    }
+  }
+
+  if (!registration?.runner_id || !registration.bib_number) {
+    return {
+      success: false,
+      message: 'Registration not found.',
+      registrationId: null,
+      bibNumber: cleanedBibNumber,
+      runnerName: null,
+      shirtSize: null,
+      remainingQty: null,
+      alreadyCheckedIn: false,
+    }
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const { data, error } = await supabase.rpc('repc_check_in_registration', {
+    p_event_id: eventId,
+    p_runner_id: registration.runner_id,
+    p_bib_number: registration.bib_number,
+    p_is_proxy: false,
+    p_consent_code: null,
+    p_collected_by: user?.email ?? user?.id ?? null,
+  })
+
+  if (error) {
+    return {
+      success: false,
+      message: error.message,
+      registrationId: null,
+      bibNumber: registration.bib_number,
+      runnerName: null,
+      shirtSize: null,
+      remainingQty: null,
+      alreadyCheckedIn: false,
+    }
+  }
+
+  revalidatePath(`/organizer/events/${eventId}`)
+  revalidatePath(`/organizer/events/${eventId}/registrations`)
+  revalidatePath(`/organizer/events/${eventId}/repc`)
+  revalidatePath(`/organizer/events/${eventId}/checkin`)
+
+  return normalizeRepcCheckInResult((data?.[0] ?? null) as RepcCheckInRpcRow | null)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Photo Actions
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function triggerPhotoProcessing(
   eventId: string,
   organizerId: string,
-  storagePaths: string[]
+  storagePaths: string[],
+  batchId = crypto.randomUUID()
 ) {
-  const batchId = crypto.randomUUID()
-
-  try {
-    await fetchDjangoApi('/ai/photos/process', {
-      method: 'POST',
-      body: JSON.stringify({
-        batch_id: batchId,
-        event_id: eventId,
-        organizer_id: organizerId,
-        storage_paths: storagePaths,
-      }),
-    })
-  } catch (err) {
-    // Django may not be running in dev — log and continue
-    console.warn('Django photo processing unavailable:', err)
-  }
+  await fetchDjangoApi('/ai/photos/process', {
+    method: 'POST',
+    body: JSON.stringify({
+      batch_id: batchId,
+      event_id: eventId,
+      organizer_id: organizerId,
+      storage_paths: storagePaths,
+    }),
+  })
 
   revalidatePath(`/organizer/events/${eventId}/photos`)
   return batchId
+}
+
+export async function triggerPhotoProcessingForPrefix(
+  eventId: string,
+  organizerId: string,
+  prefix: string,
+  batchId = crypto.randomUUID()
+) {
+  await fetchDjangoApi('/ai/photos/process-prefix', {
+    method: 'POST',
+    body: JSON.stringify({
+      batch_id: batchId,
+      event_id: eventId,
+      organizer_id: organizerId,
+      bucket: 'race-photos',
+      prefix,
+    }),
+  })
+
+  revalidatePath(`/organizer/events/${eventId}/photos`)
+  return batchId
+}
+
+export type ReviewPhotoActionState = {
+  status: 'idle' | 'success' | 'error'
+  message?: string
+}
+
+function getRequiredFormValue(formData: FormData, key: string) {
+  const value = formData.get(key)
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`${key} is required`)
+  }
+  return value.trim()
+}
+
+async function findRegistrationForBib(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  eventId: string,
+  bibNumber: string
+) {
+  let { data: registration, error: registrationError } = await supabase
+    .from('registrations')
+    .select('id, runner_id, bib_number')
+    .eq('event_id', eventId)
+    .eq('bib_number', bibNumber)
+    .maybeSingle()
+
+  if (!registration && !registrationError) {
+    const fallback = await supabase
+      .from('registrations')
+      .select('id, runner_id, bib_number')
+      .eq('event_id', eventId)
+      .ilike('bib_number', bibNumber)
+      .maybeSingle()
+
+    registration = fallback.data
+    registrationError = fallback.error
+  }
+
+  if (registrationError) throw new Error(registrationError.message)
+  return registration
+}
+
+export async function confirmReviewPhoto(
+  _previousState: ReviewPhotoActionState,
+  formData: FormData
+): Promise<ReviewPhotoActionState> {
+  const supabase = await createClient()
+
+  try {
+    const eventId = getRequiredFormValue(formData, 'eventId')
+    const photoTagId = getRequiredFormValue(formData, 'photoTagId')
+    const storagePath = getRequiredFormValue(formData, 'storagePath')
+    const bibNumber = getRequiredFormValue(formData, 'bibNumber')
+
+    const registration = await findRegistrationForBib(supabase, eventId, bibNumber)
+
+    if (!registration) {
+      return {
+        status: 'error',
+        message: `No registration found for BIB ${bibNumber} in this event.`,
+      }
+    }
+
+    const { data: photoTag, error: photoError } = await supabase
+      .from('photo_tags')
+      .select('id, event_id, organizer_id, storage_path, batch_id')
+      .eq('id', photoTagId)
+      .eq('event_id', eventId)
+      .eq('storage_path', storagePath)
+      .single()
+
+    if (photoError || !photoTag) {
+      return { status: 'error', message: 'Photo tag not found for this event.' }
+    }
+
+    const { error: updateError } = await supabase
+      .from('photo_tags')
+      .update({
+        bib_number: registration.bib_number,
+        registration_id: registration.id,
+        runner_id: registration.runner_id,
+        status: 'confirmed',
+      })
+      .eq('id', photoTag.id)
+      .eq('event_id', eventId)
+
+    if (updateError) {
+      return { status: 'error', message: updateError.message }
+    }
+
+    revalidatePath(`/organizer/events/${eventId}/photos`)
+    return {
+      status: 'success',
+      message: `Confirmed BIB ${registration.bib_number}.`,
+    }
+  } catch (error) {
+    return {
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Could not confirm this photo.',
+    }
+  }
+}
+
+export async function discardReviewPhoto(
+  _previousState: ReviewPhotoActionState,
+  formData: FormData
+): Promise<ReviewPhotoActionState> {
+  const supabase = await createClient()
+
+  try {
+    const eventId = getRequiredFormValue(formData, 'eventId')
+    const photoTagId = getRequiredFormValue(formData, 'photoTagId')
+
+    const { error } = await supabase
+      .from('photo_tags')
+      .update({
+        status: 'discarded',
+        registration_id: null,
+        runner_id: null,
+      })
+      .eq('id', photoTagId)
+      .eq('event_id', eventId)
+      .eq('status', 'review')
+
+    if (error) {
+      return { status: 'error', message: error.message }
+    }
+
+    revalidatePath(`/organizer/events/${eventId}/photos`)
+    return { status: 'success', message: 'Review tag rejected.' }
+  } catch (error) {
+    return {
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Could not reject this photo.',
+    }
+  }
+}
+
+export async function movePhotoTagToReview(
+  _previousState: ReviewPhotoActionState,
+  formData: FormData
+): Promise<ReviewPhotoActionState> {
+  const supabase = await createClient()
+
+  try {
+    const eventId = getRequiredFormValue(formData, 'eventId')
+    const photoTagId = getRequiredFormValue(formData, 'photoTagId')
+
+    const { error } = await supabase
+      .from('photo_tags')
+      .update({
+        status: 'review',
+        registration_id: null,
+        runner_id: null,
+      })
+      .eq('id', photoTagId)
+      .eq('event_id', eventId)
+      .in('status', ['auto', 'confirmed'])
+
+    if (error) {
+      return { status: 'error', message: error.message }
+    }
+
+    revalidatePath(`/organizer/events/${eventId}/photos`)
+    return { status: 'success', message: 'Tag moved back to review.' }
+  } catch (error) {
+    return {
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Could not move this tag to review.',
+    }
+  }
+}
+
+export async function restoreRejectedPhoto(
+  _previousState: ReviewPhotoActionState,
+  formData: FormData
+): Promise<ReviewPhotoActionState> {
+  const supabase = await createClient()
+
+  try {
+    const eventId = getRequiredFormValue(formData, 'eventId')
+    const storagePath = getRequiredFormValue(formData, 'storagePath')
+
+    const { error } = await supabase
+      .from('photo_tags')
+      .update({ status: 'review' })
+      .eq('event_id', eventId)
+      .eq('storage_path', storagePath)
+      .eq('status', 'discarded')
+
+    if (error) {
+      return { status: 'error', message: error.message }
+    }
+
+    revalidatePath(`/organizer/events/${eventId}/photos`)
+    return { status: 'success', message: 'Rejected tags restored to review.' }
+  } catch (error) {
+    return {
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Could not restore this photo.',
+    }
+  }
 }

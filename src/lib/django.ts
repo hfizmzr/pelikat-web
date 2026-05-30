@@ -14,7 +14,8 @@ export async function fetchDjangoApi(endpoint: string, options: RequestInit = {}
   });
 
   if (!response.ok) {
-    throw new Error(`Django API error: ${response.statusText}`);
+    const message = await response.text();
+    throw new Error(`Django API error: ${message || response.statusText}`);
   }
 
   return response.json();

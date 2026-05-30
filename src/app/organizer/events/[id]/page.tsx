@@ -3,10 +3,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Calendar, MapPin, Users, Clock, ArrowLeft } from 'lucide-react'
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { EventSettingsPanel } from '@/components/events/event-settings-panel'
+
+type RaceCategory = {
+  id: string
+  name: string | null
+  gender: string | null
+  min_age: number | null
+  max_age: number | null
+  price: number | null
+  max_slots: number | null
+}
+
+type Registration = {
+  id: string
+  bib_number: string | null
+  checked_in: boolean | null
+  payment_status: string | null
+  runner_profiles: { full_name: string | null } | null
+  race_categories: { name: string | null } | null
+}
+
+type EventStatus = 'draft' | 'published' | 'closed'
+
+type EventDetail = {
+  id: string
+  name: string
+  description: string | null
+  event_date: string
+  location: string | null
+  status: EventStatus
+  race_categories: RaceCategory[] | null
+  registrations: Registration[] | null
+}
 
 export default async function OrganizerEventDetailPage({
   params,
@@ -30,10 +62,14 @@ export default async function OrganizerEventDetailPage({
     notFound()
   }
 
+  const eventDetail = event as EventDetail
+  const raceCategories = eventDetail.race_categories ?? []
+  const registrations = eventDetail.registrations ?? []
+
   const stats = {
-    totalRegistrations: event.registrations?.length || 0,
-    checkedIn: event.registrations?.filter((r: any) => r.checked_in).length || 0,
-    categories: event.race_categories?.length || 0,
+    totalRegistrations: registrations.length,
+    checkedIn: registrations.filter((registration) => registration.checked_in).length,
+    categories: raceCategories.length,
   }
 
   const statusVariant: Record<string, 'default' | 'secondary' | 'outline'> = {
@@ -52,18 +88,18 @@ export default async function OrganizerEventDetailPage({
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">{event.name}</h1>
-            <Badge variant={statusVariant[event.status] ?? 'secondary'}>
-              {event.status}
+            <h1 className="text-3xl font-bold tracking-tight">{eventDetail.name}</h1>
+            <Badge variant={statusVariant[eventDetail.status] ?? 'secondary'}>
+              {eventDetail.status}
             </Badge>
           </div>
           <p className="text-muted-foreground flex items-center gap-2 mt-1">
             <Calendar className="h-4 w-4" />
-            {new Date(event.event_date).toLocaleDateString()}
-            {event.location && (
+            {new Date(eventDetail.event_date).toLocaleDateString()}
+            {eventDetail.location && (
               <>
                 <MapPin className="h-4 w-4 ml-2" />
-                {event.location}
+                {eventDetail.location}
               </>
             )}
           </p>
@@ -71,9 +107,9 @@ export default async function OrganizerEventDetailPage({
 
         {/* Settings panel — client component with delete + status update */}
         <EventSettingsPanel
-          eventId={event.id}
-          currentStatus={event.status}
-          eventName={event.name}
+          eventId={eventDetail.id}
+          currentStatus={eventDetail.status}
+          eventName={eventDetail.name}
         />
       </div>
 
@@ -126,7 +162,7 @@ export default async function OrganizerEventDetailPage({
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                {event.description || 'No description provided'}
+                {eventDetail.description || 'No description provided'}
               </p>
             </CardContent>
           </Card>
@@ -137,19 +173,25 @@ export default async function OrganizerEventDetailPage({
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Link href={`/organizer/events/${event.id}/checkin`} className="block">
+                <Link href={`/organizer/events/${eventDetail.id}/checkin`} className="block">
                   <Button variant="outline" className="w-full justify-start">
                     <Users className="mr-2 h-4 w-4" />
                     Check-in Dashboard
                   </Button>
                 </Link>
-                <Link href={`/organizer/events/${event.id}/photos`} className="block">
+                <Link href={`/organizer/events/${eventDetail.id}/repc`} className="block">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Shirt className="mr-2 h-4 w-4" />
+                    REPC Inventory
+                  </Button>
+                </Link>
+                <Link href={`/organizer/events/${eventDetail.id}/photos`} className="block">
                   <Button variant="outline" className="w-full justify-start">
                     <Clock className="mr-2 h-4 w-4" />
                     Photo Management
                   </Button>
                 </Link>
-                <Link href={`/organizer/events/${event.id}/leaderboard`} className="block">
+                <Link href={`/organizer/events/${eventDetail.id}/leaderboard`} className="block">
                   <Button variant="outline" className="w-full justify-start">
                     <Users className="mr-2 h-4 w-4" />
                     Leaderboard
@@ -163,9 +205,9 @@ export default async function OrganizerEventDetailPage({
                 <CardTitle>Race Categories</CardTitle>
               </CardHeader>
               <CardContent>
-                {event.race_categories && event.race_categories.length > 0 ? (
+                {raceCategories.length > 0 ? (
                   <div className="space-y-2">
-                    {event.race_categories.map((cat: any) => (
+                    {raceCategories.map((cat) => (
                       <div key={cat.id} className="flex items-center justify-between">
                         <span className="text-sm">{cat.name}</span>
                         <Badge variant="outline">{cat.gender || "Open"}</Badge>
@@ -175,7 +217,7 @@ export default async function OrganizerEventDetailPage({
                 ) : (
                   <div className="text-center py-4">
                     <p className="text-sm text-muted-foreground mb-3">No categories yet</p>
-                    <Link href={`/organizer/events/${event.id}/categories`}>
+                    <Link href={`/organizer/events/${eventDetail.id}/categories`}>
                       <Button size="sm" variant="outline">Manage Categories</Button>
                     </Link>
                   </div>
@@ -192,9 +234,9 @@ export default async function OrganizerEventDetailPage({
               <CardDescription>All runner registrations for this event</CardDescription>
             </CardHeader>
             <CardContent>
-              {event.registrations && event.registrations.length > 0 ? (
+              {registrations.length > 0 ? (
                 <div className="space-y-4">
-                  {event.registrations.slice(0, 10).map((reg: any) => (
+                  {registrations.slice(0, 10).map((reg) => (
                     <div key={reg.id} className="flex items-center justify-between border-b pb-2">
                       <div>
                         <p className="font-medium">{reg.runner_profiles?.full_name || 'Unknown'}</p>
@@ -227,14 +269,14 @@ export default async function OrganizerEventDetailPage({
                 <CardTitle>Race Categories</CardTitle>
                 <CardDescription>Manage race categories for this event</CardDescription>
               </div>
-              <Link href={`/organizer/events/${event.id}/categories`}>
+              <Link href={`/organizer/events/${eventDetail.id}/categories`}>
                 <Button size="sm" variant="outline">Manage All</Button>
               </Link>
             </CardHeader>
             <CardContent>
-              {event.race_categories && event.race_categories.length > 0 ? (
+              {raceCategories.length > 0 ? (
                 <div className="space-y-4">
-                  {event.race_categories.map((cat: any) => (
+                  {raceCategories.map((cat) => (
                     <div key={cat.id} className="flex items-center justify-between border-b pb-2">
                       <div>
                         <p className="font-medium">{cat.name}</p>
@@ -252,7 +294,7 @@ export default async function OrganizerEventDetailPage({
               ) : (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground mb-4">No categories yet</p>
-                  <Link href={`/organizer/events/${event.id}/categories`}>
+                  <Link href={`/organizer/events/${eventDetail.id}/categories`}>
                     <Button>Add Category</Button>
                   </Link>
                 </div>

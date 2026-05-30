@@ -61,7 +61,7 @@ export function OrganizerSidebar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/login?switchAccount=1')
   }
 
   return (
@@ -113,7 +113,7 @@ export function OrganizerMobileNav() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/login?switchAccount=1')
   }
 
   return (
@@ -188,6 +188,11 @@ export function getOrganizerEventNavItems(eventId: string) {
       title: 'Photos',
       href: `/organizer/events/${eventId}/photos`,
       icon: Image,
+    },
+    {
+      title: 'REPC',
+      href: `/organizer/events/${eventId}/repc`,
+      icon: Shirt,
     },
     {
       title: 'Check-in',

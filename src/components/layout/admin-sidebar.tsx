@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/sheet'
 import {
   LayoutDashboard,
-  Users,
   FileText,
   Settings,
   Menu,
@@ -20,7 +19,6 @@ import {
   Building2,
   // CreditCard,
 } from 'lucide-react'
-import { useAuth } from '@/hooks/use-auth'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -59,7 +57,7 @@ export function AdminSidebar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/login?switchAccount=1')
   }
 
   return (
@@ -111,7 +109,7 @@ export function AdminMobileNav() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/login?switchAccount=1')
   }
 
   return (
