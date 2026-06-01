@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import QrCode from 'react-qr-code'
+import QRCode from 'qrcode'
 import { ArrowLeft, Download, Share2 } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -41,7 +41,7 @@ export default async function RunnerBibPage({
     notFound()
   }
 
-  let qrPayload: string | null = null
+  let qrSvg: string | null = null
   let qrError: string | null = null
 
   try {
@@ -54,8 +54,17 @@ export default async function RunnerBibPage({
       }),
     })
 
-    qrPayload = typeof response.qr_payload === 'string' ? response.qr_payload : null
-    if (!qrPayload) qrError = 'Secure QR code could not be generated.'
+    const qrPayload = typeof response.qr_payload === 'string' ? response.qr_payload : null
+    if (!qrPayload) {
+      qrError = 'Secure QR code could not be generated.'
+    } else {
+      qrSvg = await QRCode.toString(qrPayload, {
+        type: 'svg',
+        width: 200,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' },
+      })
+    }
   } catch {
     qrError = 'Secure QR service is unavailable. Please refresh after the API is running.'
   }
@@ -86,14 +95,11 @@ export default async function RunnerBibPage({
             <CardDescription>{profile?.full_name}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-6">
-            {qrPayload ? (
-              <div className="bg-white p-4 rounded-lg">
-                <QrCode
-                  value={qrPayload}
-                  size={200}
-                  style={{ height: 'auto', maxWidth: '100%', width: '200px' }}
-                />
-              </div>
+            {qrSvg ? (
+              <div
+                className="bg-white p-4 rounded-lg"
+                dangerouslySetInnerHTML={{ __html: qrSvg }}
+              />
             ) : (
               <div className="flex min-h-[232px] w-[232px] items-center justify-center rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
                 {qrError}

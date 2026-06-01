@@ -12,5 +12,4 @@ services:
       - .env                    # load all env vars from .env
     environment:
       - NODE_ENV=development
-      - HOSTNAME=0.0.0.0
     command: pnpm run dev

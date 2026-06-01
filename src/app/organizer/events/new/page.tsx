@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ArrowLeft, Shirt } from 'lucide-react'
+import { logAudit } from '@/lib/audit'
 
 const SHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
 
@@ -128,6 +129,12 @@ export default function NewEventPage() {
         .upsert(inventoryRows, { onConflict: 'event_id,size' })
 
       if (inventoryError) throw inventoryError
+
+      await logAudit(supabase, 'organizer_create_event', event.id, {
+        name: formData.name,
+        event_date: formData.event_date,
+        location: formData.location,
+      })
 
       router.push(`/organizer/events/${event.id}/repc`)
     } catch (error) {

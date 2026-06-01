@@ -114,5 +114,21 @@ export async function POST(request: Request) {
   }
 
   const result = normalizeRepcCheckInResult((data?.[0] ?? null) as RepcCheckInRpcRow | null)
+
+  // Log successful check-in
+  if (result.success) {
+    await supabase.from('audit_log').insert({
+      actor_id: user.id,
+      actor_email: user.email,
+      action: 'runner_check_in',
+      target_id: verified.runner_id,
+      metadata: {
+        event_id: eventId,
+        bib_number: verified.bib_number,
+        registration_id: result.registrationId,
+      },
+    })
+  }
+
   return NextResponse.json(toApiResponse(result))
 }

@@ -1,6 +1,7 @@
 # ── Build artifacts ────────────────────────────────────────────────
 .next
 .next-build-test
+.next-build-test
 out
 dist
 

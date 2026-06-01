@@ -53,6 +53,22 @@ export default function OrganizerApplyFormPage() {
       return
     }
 
+    supabase.functions.invoke("notify-organizer-application", {
+      body: {
+        organizerName: name,
+        organizerEmail: email,
+        eventName,
+        eventDescription,
+        siteUrl: window.location.origin,
+      },
+    }).then((res) => {
+      if (res.error || !res.data?.success) {
+        console.error("notify-organizer-application failed:", res.error || res.data)
+      }
+    }).catch((err) => {
+      console.error("notify-organizer-application error:", err)
+    })
+
     setSubmitted(true)
     setSubmitting(false)
   }

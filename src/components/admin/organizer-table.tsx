@@ -41,7 +41,7 @@ type SortKey = 'name' | 'slug' | 'contact_email' | 'is_active' | 'sub_expires_at
 type SortDirection = 'asc' | 'desc'
 type StatusFilter = 'all' | 'active' | 'inactive' | 'expiring' | 'expired'
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 25
 
 interface SortHeaderProps {
   label: string

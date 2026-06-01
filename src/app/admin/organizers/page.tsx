@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Loader2, Plus } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Loader2, Plus, Users, UserPlus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -13,13 +14,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { OrganizerTable } from '@/components/admin/organizer-table'
+import { ApplicantTable } from '@/components/admin/applicant-table'
 import { OrganizerFormDialog } from '@/components/admin/organizer-form'
 import type { Organizer } from '@/components/admin/types'
+import { logAudit } from '@/lib/audit'
 
 const supabase = createClient()
 
 export default function AdminOrganizersPage() {
   const [organizers, setOrganizers] = useState<Organizer[]>([])
+  const [applicants, setApplicants] = useState<Organizer[]>([])
   const [loading, setLoading] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
@@ -33,7 +37,18 @@ export default function AdminOrganizersPage() {
         .from('organizers')
         .select('*')
         .order('created_at', { ascending: false })
-      if (data) setOrganizers(data)
+      if (data) {
+        // Organizer table: all approved or admin-created organizers (active + inactive)
+        const allOrganizers = data.filter(
+          (org) => org.approved_at || org.is_active === true
+        )
+        // Pending: only true new applicants (never approved, not rejected, inactive)
+        const pending = data.filter(
+          (org) => org.is_active === false && !org.approved_at && !org.rejected_at
+        )
+        setOrganizers(allOrganizers)
+        setApplicants(pending)
+      }
       setLoading(false)
     }
     fetchOrganizers()
@@ -69,7 +84,12 @@ export default function AdminOrganizersPage() {
       .eq('id', selectedOrganizer.id)
 
     if (!error) {
+      await logAudit(supabase, 'admin_delete_organizer', selectedOrganizer.id, {
+        name: selectedOrganizer.name,
+        email: selectedOrganizer.contact_email,
+      })
       setOrganizers((prev) => prev.filter((o) => o.id !== selectedOrganizer.id))
+      setApplicants((prev) => prev.filter((o) => o.id !== selectedOrganizer.id))
     }
     setDeleting(false)
     setDeleteOpen(false)
@@ -83,11 +103,75 @@ export default function AdminOrganizersPage() {
       .eq('id', organizer.id)
 
     if (!error) {
-      setOrganizers((prev) =>
-        prev.map((o) =>
-          o.id === organizer.id ? { ...o, is_active: !o.is_active } : o
+      const updated = { ...organizer, is_active: !organizer.is_active }
+      await logAudit(supabase, updated.is_active ? 'admin_activate_organizer' : 'admin_deactivate_organizer', organizer.id, {
+        name: organizer.name,
+        previous_state: { is_active: organizer.is_active },
+        new_state: { is_active: updated.is_active },
+      })
+      if (updated.is_active) {
+        // Was inactive, now active
+        setApplicants((prev) => prev.filter((o) => o.id !== updated.id))
+        setOrganizers((prev) => {
+          const exists = prev.some((o) => o.id === updated.id)
+          return exists
+            ? prev.map((o) => (o.id === updated.id ? updated : o))
+            : [updated, ...prev]
+        })
+      } else {
+        // Was active, now inactive — stays in organizers table (has approved_at)
+        setOrganizers((prev) =>
+          prev.map((o) => (o.id === updated.id ? updated : o))
         )
-      )
+      }
+    }
+  }
+
+  const handleApprove = async (applicant: Organizer) => {
+    const now = new Date().toISOString()
+    const { error } = await supabase
+      .from('organizers')
+      .update({ is_active: true, approved_at: now })
+      .eq('id', applicant.id)
+
+    if (!error) {
+      const approved = { ...applicant, is_active: true, approved_at: now }
+      await logAudit(supabase, 'admin_approve_organizer', applicant.id, {
+        name: applicant.name,
+        email: applicant.contact_email,
+      })
+      setApplicants((prev) => prev.filter((o) => o.id !== approved.id))
+      setOrganizers((prev) => [approved, ...prev])
+    }
+  }
+
+  const handleReject = async (applicant: Organizer) => {
+    const { error } = await supabase
+      .from('organizers')
+      .update({ rejected_at: new Date().toISOString() })
+      .eq('id', applicant.id)
+
+    if (!error) {
+      await logAudit(supabase, 'admin_reject_organizer', applicant.id, {
+        name: applicant.name,
+        email: applicant.contact_email,
+      })
+      setApplicants((prev) => prev.filter((o) => o.id !== applicant.id))
+    }
+  }
+
+  const handleDeleteApplicant = async (applicant: Organizer) => {
+    const { error } = await supabase
+      .from('organizers')
+      .delete()
+      .eq('id', applicant.id)
+
+    if (!error) {
+      await logAudit(supabase, 'admin_delete_applicant', applicant.id, {
+        name: applicant.name,
+        email: applicant.contact_email,
+      })
+      setApplicants((prev) => prev.filter((o) => o.id !== applicant.id))
     }
   }
 
@@ -97,7 +181,7 @@ export default function AdminOrganizersPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Organizers</h1>
           <p className="text-muted-foreground">
-            Manage event organizers on the platform
+            Manage event organizers and applications on the platform
           </p>
         </div>
       </div>
@@ -148,32 +232,66 @@ export default function AdminOrganizersPage() {
         </DialogContent>
       </Dialog>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      {/* Active Organizers Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Users className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-xl font-semibold tracking-tight">
+            Organizers
+          </h2>
+          <Badge variant="secondary" className="ml-2">
+            {organizers.length}
+          </Badge>
         </div>
-      ) : (
-        <OrganizerTable
-          organizers={organizers}
-          loading={loading}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onToggleActive={handleToggleActive}
-          onAdd={() => setCreateOpen(true)}
-        />
-      )}
 
-      {!loading && organizers.length === 0 && (
-        <Card className="border-border">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground mb-4">No organizers yet</p>
-            <Button variant="outline" onClick={() => setCreateOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create your first organizer
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <OrganizerTable
+            organizers={organizers}
+            loading={loading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onToggleActive={handleToggleActive}
+            onAdd={() => setCreateOpen(true)}
+          />
+        )}
+
+        {!loading && organizers.length === 0 && (
+          <Card className="border-border">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <p className="text-muted-foreground mb-4">No organizers yet</p>
+              <Button variant="outline" onClick={() => setCreateOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create your first organizer
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Pending Applications Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <UserPlus className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-xl font-semibold tracking-tight">
+            Pending Applications
+          </h2>
+          <Badge variant="secondary" className="ml-2">
+            {applicants.length}
+          </Badge>
+        </div>
+
+        <ApplicantTable
+          applicants={applicants}
+          loading={loading}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onDelete={handleDeleteApplicant}
+        />
+      </div>
     </div>
   )
 }
