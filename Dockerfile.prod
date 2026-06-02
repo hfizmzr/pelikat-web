@@ -1,7 +1,7 @@
 ############################################################
 # Stage 1 — base: Alpine + pnpm
 ############################################################
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 RUN apk add --no-cache libc6-compat
 RUN corepack enable && corepack prepare pnpm@10 --activate
 
@@ -33,7 +33,7 @@ RUN pnpm run build
 # Stage 4 — runner: minimal production image (~200-400 MB)
 #   Relies on `output: "standalone"` in next.config.ts
 ############################################################
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
@@ -49,8 +49,8 @@ RUN addgroup --system --gid 1001 nodejs && \
 
 # Only copy what Next.js standalone needs
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next-build-test/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next-build-test/static   ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static   ./.next/static
 
 USER nextjs
 

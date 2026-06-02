@@ -2,11 +2,16 @@
   "name": "pelikat-web",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
+    "docker:dev": "docker compose -f docker-compose.dev.yml up --build --force-recreate",
+    "docker:dev:clean": "docker compose -f docker-compose.dev.yml down -v && docker compose -f docker-compose.dev.yml up --build --force-recreate",
+    "docker:build": "docker compose -f docker-compose.prod.yml build",
+    "docker:prod": "docker compose -f docker-compose.prod.yml up",
     "test": "echo 'No test runner configured. Add tests to package.json scripts.'"
   },
   "dependencies": {
@@ -41,7 +46,6 @@
     "@serwist/next": "^9.5.11",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.3",
-    "@types/qrcode": "^1.5.6",
     "@vercel/analytics": "^2.0.1",
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.1",
@@ -75,6 +79,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/qrcode": "^1.5.6",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",

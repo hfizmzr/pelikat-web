@@ -32,7 +32,12 @@ enabled = true
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://localhost:3000"]
+additional_redirect_urls = [
+  "https://localhost:3000",
+  "http://localhost:3000/**",
+  "http://dev.pelikat.local:3000/**",
+  "http://192.168.1.12:3000/**"
+]
 jwt_expiry = 3600
 
 [auth.email]

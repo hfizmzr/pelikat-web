@@ -10,9 +10,19 @@ const withSerwist = withSerwistInit({
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : undefined
 
+const tunnelOrigin = process.env.NEXT_PUBLIC_TUNNEL_URL
+  ? new URL(process.env.NEXT_PUBLIC_TUNNEL_URL).hostname
+  : undefined
+
 const nextConfig: NextConfig = {
   output: "standalone",
+  outputFileTracingRoot: __dirname,
   turbopack: {},
+  allowedDevOrigins: [
+    'localhost',
+    '127.0.0.1',
+    ...(tunnelOrigin ? [tunnelOrigin] : []),
+  ],
   images: {
     remotePatterns: [
       ...(supabaseHostname

@@ -26,6 +26,7 @@ docker-compose*
 .dockerignore
 
 # ── Environment ───────────────────────────────────────────────────
+.env
 .env.local
 .env.*.local
 
