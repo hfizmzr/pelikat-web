@@ -2,10 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, QrCode, Image as ImageIcon, ArrowLeft } from 'lucide-react'
+import { Calendar, MapPin, QrCode, Image as ImageIcon, ArrowLeft, CreditCard } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { RunnerRegistrationActions } from '@/components/events/runner-registration-actions'
+import { CancelRegistrationButton } from '@/components/events/cancel-registration-button'
 
 interface RaceCategory {
   id: string
@@ -111,7 +112,7 @@ export default async function RunnerEventDetailPage({
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">${cat.price}</p>
+                        <p className="font-bold">RM {cat.price ?? 0}</p>
                         {cat.max_slots && (
                           <p className="text-xs text-muted-foreground">{cat.max_slots} slots</p>
                         )}
@@ -160,12 +161,23 @@ export default async function RunnerEventDetailPage({
                         View Digital BIB
                       </Button>
                     </Link>
+                    {registration.payment_status !== 'paid' && (
+                      <Link href={`/runner/events/${event.id}/payment`} className="block">
+                        <Button variant="default" className="w-full">
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          Pay Now
+                        </Button>
+                      </Link>
+                    )}
                     <Link href={`/runner/events/${event.id}/gallery`} className="block">
                       <Button variant="outline" className="w-full">
                         <ImageIcon className="mr-2 h-4 w-4" />
                         My Photos
                       </Button>
                     </Link>
+                    {!registration.checked_in && (
+                      <CancelRegistrationButton eventId={event.id} />
+                    )}
                   </div>
                 </div>
               ) : (

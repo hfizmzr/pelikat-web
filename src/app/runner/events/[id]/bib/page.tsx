@@ -3,10 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import QRCode from 'qrcode'
-import { ArrowLeft, Download, Share2 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { fetchDjangoApi } from '@/lib/django'
+import { BibActionButtons } from '@/components/events/bib-action-buttons'
 
 export default async function RunnerBibPage({
   params,
@@ -131,16 +132,15 @@ export default async function RunnerBibPage({
               </div>
             </div>
 
-            <div className="flex gap-2 w-full">
-              <Button variant="outline" className="flex-1">
-                <Download className="mr-2 h-4 w-4" />
-                Save
+            <BibActionButtons
+              bibNumber={registration.bib_number}
+              eventName={event.name}
+            />
+            <Link href={`/runner/events/${id}/bib/consent`} className="block">
+              <Button variant="outline" className="w-full">
+                Generate Proxy Collection Code
               </Button>
-              <Button variant="outline" className="flex-1">
-                <Share2 className="mr-2 h-4 w-4" />
-                Share
-              </Button>
-            </div>
+            </Link>
           </CardContent>
         </Card>
       </div>

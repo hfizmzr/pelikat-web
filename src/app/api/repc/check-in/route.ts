@@ -106,6 +106,7 @@ export async function POST(request: Request) {
   })
 
   if (error) {
+    console.error('repc_check_in_registration RPC error:', { message: error.message, eventId, runnerId: verified.runner_id, bib: verified.bib_number })
     return NextResponse.json({
       success: false,
       valid: false,

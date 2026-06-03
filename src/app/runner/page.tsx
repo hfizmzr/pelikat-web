@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, QrCode, Trophy, Award } from 'lucide-react'
+import { Calendar, MapPin, QrCode, Trophy, Award, History } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function RunnerDashboard() {
@@ -157,6 +158,56 @@ export default async function RunnerDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <History className="h-5 w-5" />
+            Registration History
+          </CardTitle>
+          <CardDescription>All your event registrations</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {registrations && registrations.length > 0 ? (
+            <div className="space-y-3">
+              {registrations.map((reg) => (
+                <div
+                  key={reg.id}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
+                  <div className="space-y-1 min-w-0">
+                    <p className="font-medium truncate">{reg.events?.name}</p>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <span className="font-mono">{reg.bib_number}</span>
+                      <span>{reg.race_categories?.name}</span>
+                      <span>
+                        {new Date(reg.events?.event_date).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4 shrink-0">
+                    <Badge variant={reg.payment_status === 'paid' ? 'default' : 'secondary'}>
+                      {reg.payment_status}
+                    </Badge>
+                    <Badge variant={reg.checked_in ? 'default' : 'outline'}>
+                      {reg.checked_in ? 'Checked In' : 'Registered'}
+                    </Badge>
+                    <Link href={`/runner/events/${reg.events?.id}/bib`}>
+                      <Button variant="ghost" size="icon">
+                        <QrCode className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-4">
+              No registrations yet. Browse events to register!
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
