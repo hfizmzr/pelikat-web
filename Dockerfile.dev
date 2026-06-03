@@ -9,7 +9,7 @@ WORKDIR /app
 
 # ── Install deps first (cached unless lock file changes) ──────────
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # ── Source files are mounted via volume — no COPY needed in dev ───
 # docker-compose.dev.yml mounts .:/app and keeps /app/node_modules
