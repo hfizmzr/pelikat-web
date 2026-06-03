@@ -7,6 +7,7 @@ import { getUserRole } from '@/lib/auth/requireRole'
 import { RunnerSidebar, RunnerMobileNav } from '@/components/layout/runner-sidebar'
 import { UserMenu } from '@/components/auth/user-menu'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { BadgeToast } from '@/components/gamification/badge-toast'
 
 export default function RunnerLayout({
   children,
@@ -43,6 +44,7 @@ export default function RunnerLayout({
         </header>
         <main className="flex-1 p-6">{children}</main>
       </div>
+      <BadgeToast />
     </div>
   )
 }

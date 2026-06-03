@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, QrCode, Trophy, Award, History } from 'lucide-react'
+import { Calendar, MapPin, QrCode, Trophy, Award, History, Flame } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function RunnerDashboard() {
@@ -39,6 +39,15 @@ export default async function RunnerDashboard() {
     .eq('runner_id', profile?.id)
     .then(({ data }) => data?.reduce((acc, r) => acc + Number(r.distance_km || 0), 0) || 0)
 
+  const { data: streakData } = await supabase
+    .from('runner_streaks')
+    .select('current_streak, longest_streak')
+    .eq('runner_id', profile?.id)
+    .single()
+
+  const currentStreak = streakData?.current_streak || 0
+  const longestStreak = streakData?.longest_streak || 0
+
   return (
     <div className="space-y-8">
       <div>
@@ -48,7 +57,7 @@ export default async function RunnerDashboard() {
         <p className="text-muted-foreground">Welcome to your runner dashboard</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card className="border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Upcoming Events</CardTitle>
@@ -74,6 +83,18 @@ export default async function RunnerDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{badges?.length || 0}</div>
+          </CardContent>
+        </Card>
+        <Card className="border-border">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
+            <Flame className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {currentStreak > 0 ? `${currentStreak}d` : '—'}
+            </div>
+            <p className="text-xs text-muted-foreground">Best: {longestStreak}d</p>
           </CardContent>
         </Card>
         <Card className="border-border">

@@ -1,10 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Trophy, Medal, Crown } from 'lucide-react'
+import { Trophy } from 'lucide-react'
+import { LiveLeaderboard } from '@/components/gamification/live-leaderboard'
+import { LeaderboardFilters } from './filters'
+import { ExportCSV } from './export-csv'
 
-export default async function RunnerLeaderboardPage() {
+interface SearchParams {
+  event_id?: string
+  gender?: string
+}
+
+export default async function RunnerLeaderboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>
+}) {
   const supabase = await createClient()
+  const { event_id, gender } = await searchParams
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -14,27 +26,21 @@ export default async function RunnerLeaderboardPage() {
     .eq('user_id', user?.id)
     .single()
 
-  const { data: leaderboard } = await supabase
-    .from('leaderboard_virtual')
-    .select('*')
-    .order('rank', { ascending: true })
-    .limit(50)
+  let query = supabase.from('leaderboard_virtual').select('*').limit(50)
 
-  const myRankIndex = leaderboard?.findIndex(l => l.runner_id === profile?.id) ?? -1
-  const myStats = myRankIndex >= 0 ? leaderboard?.[myRankIndex] : null
-
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <Crown className="h-6 w-6 text-yellow-500" />
-      case 2:
-        return <Medal className="h-6 w-6 text-gray-400" />
-      case 3:
-        return <Medal className="h-6 w-6 text-amber-700" />
-      default:
-        return <span className="text-muted-foreground font-bold text-lg">#{rank}</span>
-    }
+  if (event_id && event_id !== 'all') {
+    query = query.eq('event_id', event_id)
   }
+  if (gender && gender !== 'all') {
+    query = query.eq('gender', gender)
+  }
+
+  const { data: leaderboard } = await query.order('rank', { ascending: true })
+
+  const { data: events } = await supabase
+    .from('events')
+    .select('id, name')
+    .order('event_date', { ascending: false })
 
   return (
     <div className="space-y-6">
@@ -43,25 +49,13 @@ export default async function RunnerLeaderboardPage() {
         <p className="text-muted-foreground">Virtual run rankings across all events</p>
       </div>
 
-      {myStats && (
-        <Card className="border-primary">
-          <CardHeader>
-            <CardTitle>Your Ranking</CardTitle>
-            <CardDescription>Your position in the global leaderboard</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-6">
-              <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center">
-                {getRankIcon(myStats.rank)}
-              </div>
-              <div>
-                <p className="text-2xl font-bold">Rank #{myStats.rank}</p>
-                <p className="text-muted-foreground">{myStats.total_km} KM total</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <LeaderboardFilters events={events || []} />
+        <ExportCSV
+          eventId={event_id}
+          gender={gender}
+        />
+      </div>
 
       <Card className="border-border">
         <CardHeader>
@@ -72,38 +66,10 @@ export default async function RunnerLeaderboardPage() {
           <CardDescription>Global rankings by total distance</CardDescription>
         </CardHeader>
         <CardContent>
-          {leaderboard && leaderboard.length > 0 ? (
-            <div className="space-y-4">
-              {leaderboard.map((entry) => (
-                <div
-                  key={entry.runner_id}
-                  className={`flex items-center justify-between p-4 rounded-lg ${
-                    entry.runner_id === profile?.id ? 'bg-primary/10 border border-primary' : 'bg-secondary/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 flex items-center justify-center">
-                      {getRankIcon(entry.rank)}
-                    </div>
-                    <div>
-                      <p className="font-medium">{entry.full_name}</p>
-                      {entry.runner_id === profile?.id && (
-                        <Badge variant="default" className="text-xs">You</Badge>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-lg">{entry.total_km} KM</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Trophy className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No leaderboard data yet</p>
-            </div>
-          )}
+          <LiveLeaderboard
+            initialData={leaderboard || []}
+            currentRunnerId={profile?.id}
+          />
         </CardContent>
       </Card>
     </div>
