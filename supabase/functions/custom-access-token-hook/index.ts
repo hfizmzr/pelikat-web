@@ -35,15 +35,20 @@ serve(async (req) => {
       .eq("contact_email", email)
       .maybeSingle();
 
-    let role = "user";
-    let organizerId = null;
+    // Preserve existing role from claims (e.g., admin)
+    let role = claims.app_metadata?.role || "user";
+    let organizerId = claims.app_metadata?.organizer_id || null;
 
     if (organizer) {
       organizerId = organizer.id;
-      role = organizer.is_active ? "organizer" : "expired";
+      // Only override non-admin roles
+      if (role !== "admin") {
+        role = organizer.is_active ? "organizer" : "expired";
+      }
 
       const currentRole = claims.app_metadata?.role;
-      if (currentRole !== role) {
+      const currentOrganizerId = claims.app_metadata?.organizer_id;
+      if (currentRole !== role || currentOrganizerId !== organizerId) {
         await adminClient.auth.admin.updateUserById(userId, {
           app_metadata: { organizer_id: organizerId, role },
         });

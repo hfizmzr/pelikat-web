@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { LogOut, Repeat2, User, Settings } from 'lucide-react'
+import { logAudit } from '@/lib/audit'
 import { useRouter } from 'next/navigation'
 
 export function UserMenu() {
@@ -21,6 +22,7 @@ export function UserMenu() {
   const { user, profile, role } = useAuth()
 
   const handleLogout = async () => {
+    await logAudit(supabase, 'user_logout')
     await supabase.auth.signOut()
     router.push('/login')
   }

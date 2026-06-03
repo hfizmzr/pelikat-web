@@ -11,6 +11,91 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Registration Actions
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function confirmDummyPayment(registrationId: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase.rpc('confirm_dummy_payment', {
+    p_registration_id: registrationId,
+  })
+
+  if (error) throw new Error(error.message)
+}
+
+export async function cancelRegistration(eventId: string) {
+  const supabase = await createClient()
+
+  const { data: profile } = await supabase
+    .from('runner_profiles')
+    .select('id')
+    .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+    .single()
+
+  if (!profile) throw new Error('Runner profile not found')
+
+  const { data: registration } = await supabase
+    .from('registrations')
+    .select('id')
+    .eq('event_id', eventId)
+    .eq('runner_id', profile.id)
+    .single()
+
+  if (!registration) throw new Error('Registration not found')
+
+  const { error } = await supabase.rpc('cancel_registration', {
+    p_registration_id: registration.id,
+  })
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/runner/events/${eventId}`)
+}
+
+export async function generateConsentCode(registrationId: string) {
+  const supabase = await createClient()
+
+  const { data: registration, error: regError } = await supabase
+    .from('registrations')
+    .select('id, organizer_id')
+    .eq('id', registrationId)
+    .single()
+
+  if (regError || !registration) throw new Error('Registration not found')
+
+  return fetchDjangoApi('/ai/qr/consent-code', {
+    method: 'POST',
+    body: JSON.stringify({ registration_id: registrationId }),
+  })
+}
+
+export async function exportRegistrationsCsv(
+  registrations: {
+    bib_number: string
+    checked_in: boolean
+    payment_status: string
+    runner_profiles: { full_name: string; phone: string } | null
+    race_categories: { name: string } | null
+  }[]
+) {
+  'use server'
+
+  const headers = ['BIB', 'Name', 'Category', 'Phone', 'Payment', 'Checked In']
+  const rows = registrations.map((reg) => [
+    reg.bib_number,
+    reg.runner_profiles?.full_name || '',
+    reg.race_categories?.name || '',
+    reg.runner_profiles?.phone || '',
+    reg.payment_status,
+    reg.checked_in ? 'Yes' : 'No',
+  ])
+
+  const escapeCsv = (val: string) => `"${val.replace(/"/g, '""')}"`
+  return [headers, ...rows].map((row) => row.map(escapeCsv).join(',')).join('\n')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Event Actions
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -260,6 +345,7 @@ export async function checkInRegistrationByBib(
   })
 
   if (error) {
+    console.error('repc_check_in_registration RPC error:', { message: error.message, eventId, bib: registration.bib_number })
     return {
       success: false,
       message: error.message,

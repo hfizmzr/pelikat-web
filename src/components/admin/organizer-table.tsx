@@ -41,7 +41,7 @@ type SortKey = 'name' | 'slug' | 'contact_email' | 'is_active' | 'sub_expires_at
 type SortDirection = 'asc' | 'desc'
 type StatusFilter = 'all' | 'active' | 'inactive' | 'expiring' | 'expired'
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 25
 
 interface SortHeaderProps {
   label: string
@@ -97,14 +97,16 @@ export function OrganizerTable({
       } else if (statusFilter === 'inactive') {
         matchesStatus = !org.is_active
       } else if (statusFilter === 'expiring') {
-        matchesStatus =
+        matchesStatus = !!(
           org.is_active &&
           org.sub_expires_at &&
           new Date(org.sub_expires_at) <= sevenDaysFromNow &&
           new Date(org.sub_expires_at) > now
+        )
       } else if (statusFilter === 'expired') {
-        matchesStatus =
+        matchesStatus = !!(
           org.is_active && org.sub_expires_at && new Date(org.sub_expires_at) <= now
+        )
       }
 
       return matchesSearch && matchesStatus

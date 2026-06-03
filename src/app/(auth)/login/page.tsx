@@ -10,11 +10,13 @@ function LoginForm() {
   const error = params.get('error')
   const isSwitchingAccount = params.get('switchAccount') === '1'
 
+  const redirectTo = `${typeof window !== 'undefined' ? window.location.origin : ''}/callback`
+
   const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/callback`,
+        redirectTo,
         queryParams: {
           prompt: 'select_account',
         },

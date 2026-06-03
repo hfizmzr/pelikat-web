@@ -1,5 +1,7 @@
 # ── Build artifacts ────────────────────────────────────────────────
 .next
+.next-build-test
+.next-build
 out
 dist
 
@@ -14,12 +16,17 @@ node_modules
 .vscode
 .idea
 
+# ── Development tooling ────────────────────────────────────────────
+.opencode
+everything-claude-code
+
 # ── Docker ────────────────────────────────────────────────────────
 Dockerfile*
 docker-compose*
 .dockerignore
 
 # ── Environment ───────────────────────────────────────────────────
+.env
 .env.local
 .env.*.local
 

@@ -12,4 +12,32 @@ services:
       - .env                    # load all env vars from .env
     environment:
       - NODE_ENV=development
+      - DJANGO_URL=http://api:8000
+    user: "1000:1000"
     command: pnpm run dev
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - pelikat-shared
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    env_file:
+      - .env
+    environment:
+      - TUNNEL_LOGLEVEL=info
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - pelikat-shared
+    restart: unless-stopped
+
+networks:
+  pelikat-shared:
+    external: true

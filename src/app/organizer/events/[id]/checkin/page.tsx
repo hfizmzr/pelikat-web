@@ -5,10 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Html5QrcodeScanner } from 'html5-qrcode'
-import { QrCode, Search, CheckCircle, XCircle } from 'lucide-react'
+import { Html5Qrcode } from 'html5-qrcode'
+import { QrCode, Search, CheckCircle, XCircle, Users } from 'lucide-react'
 import { checkInRegistrationByBib } from '@/components/events/actions'
 import type { RepcCheckInResult } from '@/lib/repc'
+import { createClient } from '@/lib/supabase/client'
 
 type ScanResult = {
   success: boolean
@@ -57,9 +58,14 @@ export default function OrganizerCheckinPage({
   const [searchQuery, setSearchQuery] = useState('')
   const [checkingIn, setCheckingIn] = useState(false)
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
+  const [cameraError, setCameraError] = useState<string | null>(null)
   const [recentCheckins, setRecentCheckins] = useState<RecentCheckIn[]>([])
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null)
+  const scannerRef = useRef<Html5Qrcode | null>(null)
   const scanBusyRef = useRef(false)
+
+  const [proxyBib, setProxyBib] = useState('')
+  const [proxyCode, setProxyCode] = useState('')
+  const [proxyChecking, setProxyChecking] = useState(false)
 
   const handleScan = useCallback(async (qrPayload: string) => {
     if (scanBusyRef.current) return
@@ -126,30 +132,47 @@ export default function OrganizerCheckinPage({
   }, [eventId])
 
   useEffect(() => {
-    if (scanning && !scannerRef.current) {
-      scannerRef.current = new Html5QrcodeScanner(
-        'qr-reader',
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        false
-      )
+    let cancelled = false
 
-      scannerRef.current.render(
-        async (decodedText) => {
-          await handleScan(decodedText)
-        },
-        (error) => {
-          console.log('Scan error:', error)
-        }
-      )
+    if (scanning) {
+      if (!scannerRef.current) {
+        const scanner = new Html5Qrcode('qr-reader')
+        scannerRef.current = scanner
+
+        scanner
+          .start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            async (decodedText) => {
+              if (!cancelled) await handleScan(decodedText)
+            },
+            () => {}
+          )
+          .catch(() => {
+            if (!cancelled) setCameraError('Could not start camera. Check permissions or switch to Manual Search.')
+          })
+      }
     }
 
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear()
-        scannerRef.current = null
+      cancelled = true
+      const scanner = scannerRef.current
+      scannerRef.current = null
+      if (scanner) {
+        scanner.stop().then(() => scanner.clear()).catch(() => {})
       }
     }
   }, [handleScan, scanning])
+
+  const toggleScanning = () => {
+    if (scanning) {
+      setScanning(false)
+      return
+    }
+
+    setCameraError(null)
+    setScanning(true)
+  }
 
   const handleManualSearch = async () => {
     if (!searchQuery) return
@@ -180,6 +203,84 @@ export default function OrganizerCheckinPage({
     }
   }
 
+  const handleProxyCheckIn = async () => {
+    if (!proxyBib || !proxyCode) return
+
+    setProxyChecking(true)
+    setScanResult(null)
+
+    try {
+      const supabase = createClient()
+
+      const { data: registration } = await supabase
+        .from('registrations')
+        .select('runner_id, bib_number')
+        .eq('event_id', eventId)
+        .eq('bib_number', proxyBib.trim())
+        .maybeSingle()
+
+      if (!registration) {
+        setScanResult({ success: false, message: 'Registration not found' })
+        return
+      }
+
+      const { data: userData } = await supabase.auth.getUser()
+
+      const { data, error } = await supabase.rpc('repc_check_in_registration', {
+        p_event_id: eventId,
+        p_runner_id: registration.runner_id,
+        p_bib_number: registration.bib_number,
+        p_is_proxy: true,
+        p_consent_code: proxyCode.trim().toUpperCase(),
+        p_collected_by: userData.user?.email ?? userData.user?.id ?? null,
+      })
+
+      if (error) {
+        setScanResult({ success: false, message: error.message })
+        return
+      }
+
+      const row = data?.[0] ?? null
+      const sl = row?.success ?? false
+      if (sl) {
+        setScanResult({
+          success: true,
+          message: row?.message || 'Proxy check-in successful',
+          alreadyCheckedIn: row?.already_checked_in ?? false,
+          runner: {
+            name: row?.runner_name || 'Unknown',
+            bib: row?.bib_number || '',
+            shirtSize: row?.shirt_size,
+            remainingQty: row?.remaining_qty ?? null,
+          },
+        })
+
+        setRecentCheckins((prev) => [
+          {
+            name: row?.runner_name || 'Unknown',
+            bib: row?.bib_number || '',
+            shirtSize: row?.shirt_size,
+            time: new Date(),
+            alreadyCheckedIn: row?.already_checked_in ?? false,
+          },
+          ...prev.slice(0, 4),
+        ])
+
+        setProxyBib('')
+        setProxyCode('')
+      } else {
+        setScanResult({
+          success: false,
+          message: row?.message || 'Proxy check-in failed',
+        })
+      }
+    } catch {
+      setScanResult({ success: false, message: 'Could not complete proxy check-in' })
+    } finally {
+      setProxyChecking(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -198,13 +299,20 @@ export default function OrganizerCheckinPage({
           </CardHeader>
           <CardContent className="space-y-4">
             <Button
-              onClick={() => setScanning(!scanning)}
+              onClick={toggleScanning}
               className="w-full"
               variant={scanning ? 'destructive' : 'default'}
               disabled={checkingIn}
             >
               {scanning ? 'Stop Scanning' : 'Start Scanning'}
             </Button>
+
+            {cameraError && (
+              <div className="flex items-center gap-2 rounded-lg bg-red-500/10 p-3 text-sm text-red-500">
+                <XCircle className="h-4 w-4 shrink-0" />
+                <span>{cameraError}</span>
+              </div>
+            )}
 
             {checkingIn && (
               <p className="text-sm text-muted-foreground">Checking registration and shirt stock...</p>
@@ -265,6 +373,40 @@ export default function OrganizerCheckinPage({
                 <Search className="h-4 w-4" />
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Proxy Collection
+            </CardTitle>
+            <CardDescription>Check in using a consent code for someone else</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Input
+                placeholder="Enter BIB number"
+                value={proxyBib}
+                onChange={(e) => setProxyBib(e.target.value)}
+              />
+              <Input
+                placeholder="Enter consent code"
+                value={proxyCode}
+                onChange={(e) => setProxyCode(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleProxyCheckIn()}
+                className="font-mono tracking-widest text-center text-lg"
+                maxLength={6}
+              />
+            </div>
+            <Button
+              className="w-full"
+              onClick={handleProxyCheckIn}
+              disabled={proxyChecking || !proxyBib || !proxyCode}
+            >
+              {proxyChecking ? 'Checking...' : 'Check In (Proxy)'}
+            </Button>
           </CardContent>
         </Card>
 
