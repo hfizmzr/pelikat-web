@@ -660,11 +660,11 @@ export default async function OrganizerEventPhotosPage({
                             <p className="text-xs font-medium uppercase text-muted-foreground">
                               Detected BIBs
                             </p>
-                            {photo.tags.some((tag: any) => tag.bib_number) ? (
+                            {photo.tags.some((tag) => tag.bib_number) ? (
                               <div className="mt-1 flex flex-wrap gap-1.5">
                                 {photo.tags
-                                  .filter((tag: any) => tag.bib_number)
-                                  .map((tag: any) => (
+                                  .filter((tag) => tag.bib_number)
+                                  .map((tag) => (
                                   <Badge
                                     key={tag.id}
                                     variant="outline"
@@ -683,7 +683,7 @@ export default async function OrganizerEventPhotosPage({
                           </Badge>
                         </div>
                         <div className="space-y-2">
-                          {photo.tags.map((tag: any) => (
+                          {photo.tags.map((tag) => (
                             <div
                               key={tag.id}
                               className="space-y-3 rounded-md border border-border bg-background/40 p-3"
@@ -916,11 +916,11 @@ export default async function OrganizerEventPhotosPage({
                             <p className="text-xs font-medium uppercase text-muted-foreground">
                               Rejected BIBs
                             </p>
-                            {photo.tags.some((tag: any) => tag.bib_number) ? (
+                            {photo.tags.some((tag) => tag.bib_number) ? (
                               <div className="mt-1 flex flex-wrap gap-1.5">
                                 {photo.tags
-                                  .filter((tag: any) => tag.bib_number)
-                                  .map((tag: any) => (
+                                  .filter((tag) => tag.bib_number)
+                                  .map((tag) => (
                                   <Badge
                                     key={tag.id}
                                     variant="outline"
