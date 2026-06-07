@@ -11,7 +11,7 @@ import { PhotoBatchFilter } from '@/components/events/photo-batch-filter'
 import { PhotoReviewActions } from '@/components/events/photo-review-actions'
 import { PhotoGalleryTagActions } from '@/components/events/photo-gallery-tag-actions'
 import { PhotoRestoreActions } from '@/components/events/photo-restore-actions'
-import Image from 'next/image'
+import { PhotoPreviewDialog } from '@/components/events/photo-preview-dialog'
 
 const REVIEW_PAGE_SIZE = 24
 const GALLERY_PAGE_SIZE = 48
@@ -639,26 +639,21 @@ export default async function OrganizerEventPhotosPage({
                       key={photo.id}
                       className="overflow-hidden rounded-lg border border-border bg-card"
                     >
-                      <div className="relative aspect-[4/3] bg-secondary">
-                        {photo.url ? (
-                          <Image
-                            src={photo.url}
-                            alt={`Review photo for BIB ${photo.bib_number ?? 'unknown'}`}
-                            fill
-                            className="object-contain"
-                            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <ImageIcon className="h-10 w-10 text-muted-foreground" />
-                          </div>
-                        )}
+                      <PhotoPreviewDialog
+                        src={photo.url}
+                        alt={`Review photo for BIB ${photo.bib_number ?? 'unknown'}`}
+                        title="Review photo preview"
+                        description={photo.fileName}
+                        thumbnailClassName="relative aspect-[4/3] w-full bg-secondary"
+                        thumbnailImageClassName="object-contain"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                      >
                         {photo.confidence != null && (
                           <Badge variant="outline" className="absolute right-3 top-3 bg-background/85">
                             {(photo.confidence * 100).toFixed(0)}%
                           </Badge>
                         )}
-                      </div>
+                      </PhotoPreviewDialog>
                       <div className="space-y-3 p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -791,22 +786,18 @@ export default async function OrganizerEventPhotosPage({
                   {galleryPhotos.map((photo) => (
                     <div
                       key={photo.id}
-                      className="relative aspect-square rounded-lg overflow-hidden bg-secondary"
+                      className="relative aspect-square overflow-hidden rounded-lg bg-secondary"
                     >
-                      {photo.url ? (
-                        <Image
-                          src={photo.url}
-                          alt={`BIB ${photo.bib_number ?? 'unknown'}`}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 50vw, 16vw"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                      <PhotoPreviewDialog
+                        src={photo.url}
+                        alt={`BIB ${photo.bib_number ?? 'unknown'}`}
+                        title="Gallery photo preview"
+                        description={photo.fileName}
+                        thumbnailClassName="absolute inset-0 bg-secondary"
+                        thumbnailImageClassName="object-cover"
+                        sizes="(max-width: 768px) 50vw, 16vw"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/80 to-transparent">
                         <p className="text-white text-xs font-medium">
                           {photo.runner?.full_name || 'Unmatched runner'}
                         </p>
@@ -837,7 +828,7 @@ export default async function OrganizerEventPhotosPage({
                         </div>
                       </div>
                       {photo.confidence != null && (
-                        <div className="absolute top-2 right-2">
+                        <div className="absolute top-2 right-2 z-10">
                           <Badge variant="outline" className="bg-background/80 text-xs">
                             {(photo.confidence * 100).toFixed(0)}%
                           </Badge>
@@ -904,26 +895,21 @@ export default async function OrganizerEventPhotosPage({
                       key={photo.id}
                       className="overflow-hidden rounded-lg border border-border bg-card"
                     >
-                      <div className="relative aspect-[4/3] bg-secondary">
-                        {photo.url ? (
-                          <Image
-                            src={photo.url}
-                            alt={`Rejected photo for BIB ${photo.bib_number ?? 'unknown'}`}
-                            fill
-                            className="object-contain opacity-75"
-                            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <ImageIcon className="h-10 w-10 text-muted-foreground" />
-                          </div>
-                        )}
+                      <PhotoPreviewDialog
+                        src={photo.url}
+                        alt={`Rejected photo for BIB ${photo.bib_number ?? 'unknown'}`}
+                        title="Rejected photo preview"
+                        description={photo.fileName}
+                        thumbnailClassName="relative aspect-[4/3] w-full bg-secondary"
+                        thumbnailImageClassName="object-contain opacity-75"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                      >
                         {photo.confidence != null && (
                           <Badge variant="outline" className="absolute right-3 top-3 bg-background/85">
                             {(photo.confidence * 100).toFixed(0)}%
                           </Badge>
                         )}
-                      </div>
+                      </PhotoPreviewDialog>
                       <div className="space-y-3 p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div>
