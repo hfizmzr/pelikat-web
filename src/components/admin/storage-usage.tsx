@@ -4,12 +4,16 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Loader2, HardDrive } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 
 interface BucketUsage {
   name: string
   size: number
   fileCount: number
+}
+
+interface StorageResponse {
+  buckets: BucketUsage[]
+  totalSize: number
 }
 
 export function StorageUsage() {
@@ -19,37 +23,20 @@ export function StorageUsage() {
 
   useEffect(() => {
     async function fetchStorageUsage() {
-      const supabase = createClient()
-
-      const { data: bucketsList } = await supabase.storage.listBuckets()
-
-      if (!bucketsList) {
+      try {
+        const res = await fetch('/api/admin/storage')
+        if (!res.ok) {
+          setLoading(false)
+          return
+        }
+        const data: StorageResponse = await res.json()
+        setBuckets(data.buckets)
+        setTotalSize(data.totalSize)
+      } catch {
+        // silently fail
+      } finally {
         setLoading(false)
-        return
       }
-
-      const bucketUsage: BucketUsage[] = []
-      let total = 0
-
-      for (const bucket of bucketsList) {
-        const { data: objects } = await supabase.storage
-          .from(bucket.name)
-          .list('', { limit: 1000 })
-
-        const fileCount = objects?.length || 0
-        const estimatedSize = fileCount * 500000
-
-        bucketUsage.push({
-          name: bucket.name,
-          size: estimatedSize,
-          fileCount,
-        })
-        total += estimatedSize
-      }
-
-      setBuckets(bucketUsage)
-      setTotalSize(total)
-      setLoading(false)
     }
 
     fetchStorageUsage()

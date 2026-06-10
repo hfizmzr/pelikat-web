@@ -1,7 +1,10 @@
-import Link from "next/link"
+"use client"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, Camera, QrCode, BarChart3, LayoutDashboard } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import ApplyForm from "@/components/organizer/apply-form"
 
 const features = [
   { icon: Camera, title: "AI Photo Engine", description: "Facial and bib recognition for instant runner photo search." },
@@ -11,6 +14,12 @@ const features = [
 ]
 
 export default function OrganizerApplyPage() {
+  const [showForm, setShowForm] = useState(false)
+
+  if (showForm) {
+    return <ApplyForm />
+  }
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
@@ -58,8 +67,8 @@ export default function OrganizerApplyPage() {
                     </li>
                   ))}
                 </ul>
-                <Button asChild size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Link href="/organizer/apply/form">Apply Now</Link>
+                <Button size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setShowForm(true)}>
+                  Apply Now
                 </Button>
               </CardContent>
             </Card>

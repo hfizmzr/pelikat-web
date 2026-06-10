@@ -1,14 +1,23 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { redirectAfterLogin } from '@/lib/auth/redirectAfterLogin'
+import Link from 'next/link'
+import { Input } from '@/components/ui/input'
 
 function LoginForm() {
   const supabase = createClient()
+  const router = useRouter()
   const params = useSearchParams()
-  const error = params.get('error')
+  const urlError = params.get('error')
   const isSwitchingAccount = params.get('switchAccount') === '1'
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const redirectTo = `${typeof window !== 'undefined' ? window.location.origin : ''}/callback`
 
@@ -24,8 +33,33 @@ function LoginForm() {
     })
   }
 
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormError(null)
+    setIsLoading(true)
+
+    if (!email.trim() || !password) {
+      setFormError('Please enter both email and password')
+      setIsLoading(false)
+      return
+    }
+
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    })
+
+    if (signInError || !data?.user) {
+      setFormError(signInError?.message || 'Invalid email or password')
+      setIsLoading(false)
+      return
+    }
+
+    await redirectAfterLogin(data.user, router, supabase)
+  }
+
   return (
-    <div className="w-full max-w-sm flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-6">
       {/* Logo */}
       <div className="text-center mb-2">
         <div className="inline-flex items-center gap-2 mb-6">
@@ -45,11 +79,64 @@ function LoginForm() {
       </div>
 
       {/* Error banner */}
-      {error && (
+      {(urlError || formError) && (
         <div className="px-4 py-3 rounded-lg bg-destructive/10 border border-destructive/30 text-sm text-destructive text-center">
-          Authentication failed. Please try again.
+          {formError || 'Authentication failed. Please try again.'}
         </div>
       )}
+
+      {/* Email/Password form */}
+      <form onSubmit={handleEmailLogin} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="login-email" className="text-sm font-medium text-foreground">
+            Email
+          </label>
+          <Input
+            id="login-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            required
+            disabled={isLoading}
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="login-password" className="text-sm font-medium text-foreground">
+            Password
+          </label>
+          <Input
+            id="login-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            required
+            disabled={isLoading}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground" />
+          ) : (
+            'Sign In'
+          )}
+        </button>
+      </form>
+
+      {/* Divider */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+        </div>
+      </div>
 
       {/* Google button */}
       <button
@@ -67,6 +154,14 @@ function LoginForm() {
         {isSwitchingAccount ? 'Choose Google account' : 'Continue with Google'}
       </button>
 
+      {/* Register link */}
+      <p className="text-sm text-center text-muted-foreground">
+        Don't have an account?{' '}
+        <Link href="/register" className="text-primary font-medium hover:underline underline-offset-2">
+          Register now
+        </Link>
+      </p>
+
       <p className="text-xs text-muted-foreground text-center leading-relaxed">
         By signing in, you agree to our{' '}
         <span className="text-primary underline underline-offset-2 cursor-pointer">Terms</span>
@@ -79,35 +174,28 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen bg-background items-center justify-center px-4">
-      {/* Subtle background gradient */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/5 rounded-full blur-3xl" />
+    <>
+      <div className="bg-card border border-border rounded-2xl p-8 shadow-2xl">
+        <Suspense fallback={null}>
+          <LoginForm />
+        </Suspense>
       </div>
 
-      <div className="relative w-full max-w-sm">
-        <div className="bg-card border border-border rounded-2xl p-8 shadow-2xl">
-          <Suspense fallback={null}>
-            <LoginForm />
-          </Suspense>
+      {/* Role indicators */}
+      <div className="mt-6 flex justify-center gap-6 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-primary" />
+          Runners
         </div>
-
-        {/* Role indicators */}
-        <div className="mt-6 flex justify-center gap-6 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-primary" />
-            Runners
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-[#34d399]" />
-            Organizers
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-destructive" />
-            Admins
-          </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[#34d399]" />
+          Organizers
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-destructive" />
+          Admins
         </div>
       </div>
-    </div>
+    </>
   )
 }
