@@ -45,9 +45,10 @@ export async function proxy(request: NextRequest) {
     }
 
     const subscriptionExpiredPath = '/organizer/subscription-expired'
+    const paymentPath = '/organizer/payment'
 
-    // Always allow access to the subscription-expired page
-    if (pathname.startsWith(subscriptionExpiredPath)) {
+    // Always allow access to special pages
+    if (pathname.startsWith(subscriptionExpiredPath) || pathname.startsWith(paymentPath)) {
       return response
     }
 
@@ -68,10 +69,13 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL(subscriptionExpiredPath, request.url))
     }
 
-    if (
-      organizer.sub_expires_at &&
-      new Date(organizer.sub_expires_at) <= new Date()
-    ) {
+    // Redirect to payment page if subscription has never been set up
+    if (!organizer.sub_expires_at) {
+      return NextResponse.redirect(new URL(paymentPath, request.url))
+    }
+
+    // Redirect to expired page if subscription has expired
+    if (new Date(organizer.sub_expires_at) <= new Date()) {
       return NextResponse.redirect(new URL(subscriptionExpiredPath, request.url))
     }
   }

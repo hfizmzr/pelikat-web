@@ -54,6 +54,12 @@ export function Header() {
               >
                 Log In
               </Link>
+              <Link
+                href="/register"
+                className="text-base font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Register
+              </Link>
               <Button
                 asChild
                 className="mt-2 bg-primary text-primary-foreground hover:bg-primary/90"
@@ -91,10 +97,16 @@ export function Header() {
               ))}
               <hr className="my-2 border-border" />
               <Link
-            href="/login"
+                href="/login"
                 className="text-base font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 Log In
+              </Link>
+              <Link
+                href="/register"
+                className="text-base font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Register
               </Link>
               <Button
                 asChild

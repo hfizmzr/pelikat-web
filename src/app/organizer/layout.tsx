@@ -18,7 +18,9 @@ export default function OrganizerLayout({
   const pathname = usePathname()
   const supabase = createClient()
 
-  const showSidebar = !pathname.startsWith('/organizer/subscription-expired')
+  const showSidebar =
+    !pathname.startsWith('/organizer/subscription-expired') &&
+    !pathname.startsWith('/organizer/payment')
 
   if (pathname.startsWith('/organizer/apply')) {
     return <>{children}</>
@@ -28,16 +30,28 @@ export default function OrganizerLayout({
     async function checkRole() {
       const { data: { user } } = await supabase.auth.getUser()
       const role = getUserRole(user)
-      
+
       if (role === 'expired') {
         if (!pathname.startsWith('/organizer/subscription-expired')) {
           router.push('/organizer/subscription-expired')
         }
         return
       }
-      
+
       if (role !== 'organizer') {
         router.push('/')
+        return
+      }
+
+      // Redirect to payment page if subscription has never been set up
+      const { data: org } = await supabase
+        .from('organizers')
+        .select('sub_expires_at')
+        .eq('id', user?.app_metadata?.organizer_id)
+        .maybeSingle()
+
+      if (org && !org.sub_expires_at && !pathname.startsWith('/organizer/payment')) {
+        router.push('/organizer/payment')
       }
     }
     checkRole()

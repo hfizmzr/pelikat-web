@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, CheckCircle } from "lucide-react"
 
-export default function OrganizerApplyFormPage() {
+export default function ApplyForm() {
   const router = useRouter()
   const supabase = createClient()
 

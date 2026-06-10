@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { redirectAfterLogin } from '@/lib/auth/redirectAfterLogin'
 
 export default function CallbackPage() {
   const router = useRouter()
@@ -24,33 +25,7 @@ export default function CallbackPage() {
         return
       }
 
-      const user = data.user
-      const role =
-        user.app_metadata?.role ||
-        user.user_metadata?.role ||
-        'runner'
-
-      // Log the login event
-      await supabase.from('audit_log').insert({
-        actor_id: user.id,
-        actor_email: user.email,
-        actor_name: (user.user_metadata?.full_name as string) || (user.user_metadata?.name as string) || null,
-        action: 'user_login',
-        metadata: {
-          provider: user.app_metadata?.provider || null,
-          role: user.app_metadata?.role || null,
-        },
-      })
-
-      if (role === 'admin') {
-        router.push('/admin')
-      } else if (role === 'organizer') {
-        router.push('/organizer')
-      } else if (role === 'expired') {
-        router.push('/organizer/subscription-expired')
-      } else {
-        router.push('/runner')
-      }
+      await redirectAfterLogin(data.user, router, supabase)
     }
 
     process()
