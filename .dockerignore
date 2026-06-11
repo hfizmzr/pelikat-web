@@ -50,3 +50,8 @@ docs/
 public/sw.js
 public/workbox-*.js
 public/worker-*.js
+
+# ── Testing (not needed in Docker build context) ──────────────────
+test-results/
+playwright-report/
+k6/

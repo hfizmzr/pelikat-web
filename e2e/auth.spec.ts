@@ -3,25 +3,20 @@ import { test, expect } from '@playwright/test'
 test.describe('Security: Authentication', () => {
   test('unauthenticated users redirected from organizer pages', async ({ page }) => {
     await page.goto('/organizer/dashboard')
-    
-    // Should be redirected to login
-    await page.waitForURL('/login')
+    // Middleware redirects to /login?redirect=...
+    await page.waitForURL((url) => url.pathname === '/login', { timeout: 10000 })
     expect(page.url()).toContain('/login')
   })
 
   test('unauthenticated users redirected from admin pages', async ({ page }) => {
     await page.goto('/admin/dashboard')
-    
-    // Should be redirected to login
-    await page.waitForURL('/login')
+    await page.waitForURL((url) => url.pathname === '/login', { timeout: 10000 })
     expect(page.url()).toContain('/login')
   })
 
   test('unauthenticated users redirected from runner protected pages', async ({ page }) => {
     await page.goto('/runner/events')
-    
-    // Should be redirected to login
-    await page.waitForURL('/login')
+    await page.waitForURL((url) => url.pathname === '/login', { timeout: 10000 })
     expect(page.url()).toContain('/login')
   })
 

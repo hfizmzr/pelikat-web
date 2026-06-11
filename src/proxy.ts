@@ -31,6 +31,26 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
+  // Protect admin routes
+  if (pathname.startsWith('/admin/')) {
+    if (!user) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    return response
+  }
+
+  // Protect runner routes
+  if (pathname.startsWith('/runner/')) {
+    if (!user) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    return response
+  }
+
   // Protect organizer routes
   if (pathname.startsWith('/organizer/')) {
     // Allow unauthenticated access to the public apply pages
@@ -84,5 +104,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/organizer/:path*'],
+  matcher: ['/organizer/:path*', '/admin/:path*', '/runner/:path*'],
 }

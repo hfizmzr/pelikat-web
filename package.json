@@ -17,7 +17,9 @@
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:k6": "k6 run k6/load-test.js"
+    "test:e2e:pwa": "playwright test --config=playwright.pwa.config.ts",
+    "test:k6": "k6 run k6/load-test.js",
+    "test:k6:local": "k6 run k6/load-test.local.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",

@@ -47,6 +47,13 @@ next-env.d.ts
 public/sw.js
 public/swe-worker*
 
+# Playwright (test output artifacts)
+/test-results/
+/playwright-report/
+
+# k6
+.last-run.json
+
 .opencode
 everything-claude-code/
 .pnpm-store
@@ -55,3 +62,5 @@ everything-claude-code/
 .codex/config.toml
 .codex/*.local.toml
 .codex/.credentials.json
+
+/docs

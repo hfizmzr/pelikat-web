@@ -3,75 +3,73 @@ import { check, sleep } from 'k6';
 
 /**
  * Performance Load Test: pelikat-web (Next.js)
- * 
+ *
  * NFR: All CRUD API responses shall complete within 500ms under normal load
  *      of up to 500 concurrent users.
- * 
- * Usage: k6 run k6/load-test.js
- * 
+ *
+ * Usage:
+ *   k6 run k6/load-test.js                              # 500 VUs (staging/prod)
+ *   k6 run k6/load-test.local.js                        # 20 VUs (local smoke)
+ *   K6_VUS=100 k6 run k6/load-test.js                   # override VU count
+ *
  * Environment variables:
- *   - WEB_BASE_URL: Base URL of the Next.js app (default: http://localhost:3000)
+ *   WEB_BASE_URL  — Base URL (default: http://localhost:3000)
+ *   K6_VUS        — Max VU count (default: 500)
  */
 
 const BASE_URL = __ENV.WEB_BASE_URL || 'http://localhost:3000';
 
+const MAX_VUS = parseInt(__ENV.K6_VUS) || 500;
+
 export const options = {
   stages: [
-    { duration: '30s', target: 100 },   // Ramp up to 100 VUs
-    { duration: '30s', target: 500 },  // Ramp up to 500 VUs
-    { duration: '1m', target: 500 },    // Sustain 500 VUs for 1 minute
-    { duration: '30s', target: 0 },    // Ramp down
+    { duration: '30s', target: Math.min(MAX_VUS * 0.2, 100) },
+    { duration: '30s', target: Math.min(MAX_VUS, 500) },
+    { duration: '1m', target: MAX_VUS },
+    { duration: '30s', target: 0 },
   ],
   thresholds: {
-    http_req_duration: ['p(95)<500'],   // 95% of requests < 500ms
-    http_req_duration: ['p(99)<1000'],  // 99% of requests < 1000ms
-    http_req_failed: ['rate<0.01'],     // Error rate < 1%
+    http_req_duration: ['p(95)<500'],
+    http_req_failed: ['rate<0.01'],
   },
 };
 
 export default function () {
-  // Test 1: Landing page (static, cached)
   const res1 = http.get(`${BASE_URL}/`);
   check(res1, {
-    'Landing page status is 200': (r) => r.status === 200,
-    'Landing page duration < 500ms': (r) => r.timings.duration < 500,
+    'Landing page 200': (r) => r.status === 200,
+    'Landing page < 500ms': (r) => r.timings.duration < 500,
   });
 
-  // Test 2: Login page (static, SSR)
   const res2 = http.get(`${BASE_URL}/login`);
   check(res2, {
-    'Login page status is 200': (r) => r.status === 200,
-    'Login page duration < 500ms': (r) => r.timings.duration < 500,
+    'Login page 200': (r) => r.status === 200,
+    'Login page < 500ms': (r) => r.timings.duration < 500,
   });
 
-  // Test 3: Register page (static, SSR)
   const res3 = http.get(`${BASE_URL}/register`);
   check(res3, {
-    'Register page status is 200': (r) => r.status === 200,
-    'Register page duration < 500ms': (r) => r.timings.duration < 500,
+    'Register page 200': (r) => r.status === 200,
+    'Register page < 500ms': (r) => r.timings.duration < 500,
   });
 
-  // Test 4: Organizer apply page (static, public)
   const res4 = http.get(`${BASE_URL}/organizer/apply`);
   check(res4, {
-    'Organizer apply status is 200': (r) => r.status === 200,
-    'Organizer apply duration < 500ms': (r) => r.timings.duration < 500,
+    'Organizer apply 200': (r) => r.status === 200,
+    'Organizer apply < 500ms': (r) => r.timings.duration < 500,
   });
 
-  // Test 5: API health endpoint (if available)
   const res5 = http.get(`${BASE_URL}/api/admin/health`);
   check(res5, {
-    'API health status is 200 or 404': (r) => r.status === 200 || r.status === 404,
-    'API health duration < 500ms': (r) => r.timings.duration < 500,
+    'API health 200 or 404': (r) => r.status === 200 || r.status === 404,
+    'API health < 500ms': (r) => r.timings.duration < 500,
   });
 
-  // Test 6: Static assets (CSS, JS)
   const res6 = http.get(`${BASE_URL}/manifest.json`);
   check(res6, {
-    'Manifest status is 200': (r) => r.status === 200,
-    'Manifest duration < 500ms': (r) => r.timings.duration < 500,
+    'Manifest 200': (r) => r.status === 200,
+    'Manifest < 500ms': (r) => r.timings.duration < 500,
   });
 
-  // Random sleep between 0.5s and 2s to simulate realistic user behavior
   sleep(Math.random() * 1.5 + 0.5);
 }
