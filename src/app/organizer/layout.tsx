@@ -22,11 +22,8 @@ export default function OrganizerLayout({
     !pathname.startsWith('/organizer/subscription-expired') &&
     !pathname.startsWith('/organizer/payment')
 
-  if (pathname.startsWith('/organizer/apply')) {
-    return <>{children}</>
-  }
-
   useEffect(() => {
+    if (pathname.startsWith('/organizer/apply')) return
     async function checkRole() {
       const { data: { user } } = await supabase.auth.getUser()
       const role = getUserRole(user)
@@ -56,6 +53,10 @@ export default function OrganizerLayout({
     }
     checkRole()
   }, [router, supabase, pathname])
+
+  if (pathname.startsWith('/organizer/apply')) {
+    return <>{children}</>
+  }
 
   return (
     <div className="flex min-h-screen bg-background">

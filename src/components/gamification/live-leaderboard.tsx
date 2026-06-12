@@ -91,6 +91,7 @@ export function LiveLeaderboard({
           {isLive ? "Live updates" : "Paused"}
         </p>
         <button
+          type="button"
           onClick={() => setIsLive(!isLive)}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >

@@ -100,6 +100,7 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName }: EventS
                 const isActive = currentStatus === option.value
                 return (
                   <button
+                    type="button"
                     key={option.value}
                     onClick={() => handleStatusChange(option.value)}
                     disabled={isPending || isActive}

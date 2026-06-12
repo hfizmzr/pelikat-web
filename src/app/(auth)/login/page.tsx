@@ -140,6 +140,7 @@ function LoginForm() {
 
       {/* Google button */}
       <button
+        type="button"
         id="btn-google-login"
         onClick={handleGoogleLogin}
         className="flex items-center justify-center gap-3 w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground font-semibold hover:bg-muted hover:border-primary/50 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"

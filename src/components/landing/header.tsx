@@ -72,6 +72,7 @@ export function Header() {
         <Sheet>
           <SheetTrigger asChild className="md:hidden">
             <button
+              type="button"
               className="inline-flex h-11 w-11 touch-manipulation items-center justify-center rounded-md hover:bg-accent"
               aria-label="Open menu"
             >

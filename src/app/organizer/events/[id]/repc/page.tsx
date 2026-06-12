@@ -14,6 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'REPC Inventory - Pelikat',
+  description: 'Race entry pack collection inventory management',
+}
 
 const SHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
 
@@ -51,8 +57,10 @@ export default async function OrganizerEventRepcPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
-  const supabase = await createClient()
+  const [{ id }, supabase] = await Promise.all([
+    params,
+    createClient(),
+  ])
 
   const { data: event } = await supabase
     .from('events')

@@ -2,6 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Package, ShoppingCart } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Merchandise - Pelikat',
+  description: 'Your merchandise orders',
+}
 
 export default async function RunnerMerchPage() {
   const supabase = await createClient()

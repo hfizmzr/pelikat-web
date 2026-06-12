@@ -7,6 +7,12 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { RunnerRegistrationActions } from '@/components/events/runner-registration-actions'
 import { CancelRegistrationButton } from '@/components/events/cancel-registration-button'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Event Details - Pelikat',
+  description: 'View event details and register for races',
+}
 
 interface RaceCategory {
   id: string
@@ -23,8 +29,10 @@ export default async function RunnerEventDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
-  const supabase = await createClient()
+  const [{ id }, supabase] = await Promise.all([
+    params,
+    createClient(),
+  ])
 
   const { data: { user } } = await supabase.auth.getUser()
 

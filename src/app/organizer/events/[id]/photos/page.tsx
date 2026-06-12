@@ -12,6 +12,12 @@ import { PhotoReviewActions } from '@/components/events/photo-review-actions'
 import { PhotoGalleryTagActions } from '@/components/events/photo-gallery-tag-actions'
 import { PhotoRestoreActions } from '@/components/events/photo-restore-actions'
 import { PhotoPreviewDialog } from '@/components/events/photo-preview-dialog'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Photo Management - Pelikat',
+  description: 'AI-powered photo tagging for your event',
+}
 
 const REVIEW_PAGE_SIZE = 24
 const GALLERY_PAGE_SIZE = 48
@@ -141,9 +147,11 @@ export default async function OrganizerEventPhotosPage({
     rejectedPage?: string
   }>
 }) {
-  const { id } = await params
-  const query = await searchParams
-  const supabase = await createClient()
+  const [{ id }, query, supabase] = await Promise.all([
+    params,
+    searchParams,
+    createClient(),
+  ])
 
   const { data: event } = await supabase
     .from('events')

@@ -3,6 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Package, Edit, Trash2 } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Merchandise - Pelikat',
+  description: 'Manage event merchandise',
+}
 
 export default async function OrganizerMerchPage() {
   const supabase = await createClient()

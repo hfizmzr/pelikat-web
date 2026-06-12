@@ -7,6 +7,7 @@ import {
   type RepcCheckInResult,
   type RepcCheckInRpcRow,
 } from '@/lib/repc'
+import { requireAuth } from '@/lib/auth/requireUser'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -15,7 +16,7 @@ import { redirect } from 'next/navigation'
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function confirmDummyPayment(registrationId: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   const { error } = await supabase.rpc('confirm_dummy_payment', {
     p_registration_id: registrationId,
@@ -54,7 +55,7 @@ export async function cancelRegistration(eventId: string) {
 }
 
 export async function generateConsentCode(registrationId: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   const { data: registration, error: regError } = await supabase
     .from('registrations')
@@ -81,6 +82,9 @@ export async function exportRegistrationsCsv(
 ) {
   'use server'
 
+  const { user } = await requireAuth()
+  void user
+
   const headers = ['BIB', 'Name', 'Category', 'Phone', 'Payment', 'Checked In']
   const rows = registrations.map((reg) => [
     reg.bib_number,
@@ -100,7 +104,7 @@ export async function exportRegistrationsCsv(
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function deleteEvent(eventId: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   const { error } = await supabase.from('events').delete().eq('id', eventId)
   if (error) throw new Error(error.message)
@@ -112,7 +116,7 @@ export async function updateEventStatus(
   eventId: string,
   status: 'draft' | 'published' | 'closed'
 ) {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   const { error } = await supabase
     .from('events')
@@ -129,7 +133,7 @@ export async function updateEventStatus(
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function createCategory(eventId: string, formData: FormData) {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   const { data: event } = await supabase
     .from('events')
@@ -162,7 +166,7 @@ export async function updateCategory(
   eventId: string,
   formData: FormData
 ) {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   const { error } = await supabase
     .from('race_categories')
@@ -184,7 +188,7 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(categoryId: string, eventId: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   const { error } = await supabase
     .from('race_categories')
@@ -212,7 +216,7 @@ function parseInventoryQuantity(value: FormDataEntryValue | null) {
 }
 
 export async function updateEventShirtInventory(eventId: string, formData: FormData) {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   const { data: event, error: eventError } = await supabase
     .from('events')
@@ -376,6 +380,8 @@ export async function triggerPhotoProcessing(
   storagePaths: string[],
   batchId = crypto.randomUUID()
 ) {
+  await requireAuth()
+
   await fetchDjangoApi('/ai/photos/process', {
     method: 'POST',
     body: JSON.stringify({
@@ -396,6 +402,8 @@ export async function triggerPhotoProcessingForPrefix(
   prefix: string,
   batchId = crypto.randomUUID()
 ) {
+  await requireAuth()
+
   await fetchDjangoApi('/ai/photos/process-prefix', {
     method: 'POST',
     body: JSON.stringify({
@@ -456,7 +464,7 @@ export async function confirmReviewPhoto(
   _previousState: ReviewPhotoActionState,
   formData: FormData
 ): Promise<ReviewPhotoActionState> {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   try {
     const eventId = getRequiredFormValue(formData, 'eventId')
@@ -517,7 +525,7 @@ export async function discardReviewPhoto(
   _previousState: ReviewPhotoActionState,
   formData: FormData
 ): Promise<ReviewPhotoActionState> {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   try {
     const eventId = getRequiredFormValue(formData, 'eventId')
@@ -552,7 +560,7 @@ export async function movePhotoTagToReview(
   _previousState: ReviewPhotoActionState,
   formData: FormData
 ): Promise<ReviewPhotoActionState> {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   try {
     const eventId = getRequiredFormValue(formData, 'eventId')
@@ -587,7 +595,7 @@ export async function restoreRejectedPhoto(
   _previousState: ReviewPhotoActionState,
   formData: FormData
 ): Promise<ReviewPhotoActionState> {
-  const supabase = await createClient()
+  const { supabase } = await requireAuth()
 
   try {
     const eventId = getRequiredFormValue(formData, 'eventId')

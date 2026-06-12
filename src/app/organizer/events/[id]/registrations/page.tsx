@@ -1,14 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { RegistrationsClient } from '@/components/events/registrations-client'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Registrations - Pelikat',
+  description: 'Manage event registrations',
+}
 
 export default async function OrganizerEventRegistrationsPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
-  const supabase = await createClient()
+  const [{ id }, supabase] = await Promise.all([
+    params,
+    createClient(),
+  ])
 
   const { data: event } = await supabase
     .from('events')

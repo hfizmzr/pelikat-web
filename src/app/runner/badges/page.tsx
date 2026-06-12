@@ -1,6 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Badges - Pelikat',
+  description: 'Your achievements and milestones',
+}
 
 export default async function RunnerBadgesPage() {
   const supabase = await createClient()

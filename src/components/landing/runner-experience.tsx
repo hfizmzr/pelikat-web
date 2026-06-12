@@ -17,7 +17,7 @@ export function RunnerExperience() {
                   <span className="text-xs font-semibold text-primary">
                     PELIKAT RUN
                   </span>
-                  <button className="text-muted-foreground">
+                  <button type="button" className="text-muted-foreground">
                     <MoreHorizontal className="size-5" />
                   </button>
                 </div>

@@ -7,6 +7,12 @@ import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { EventSettingsPanel } from '@/components/events/event-settings-panel'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Event Details - Pelikat',
+  description: 'Manage event details and registrations',
+}
 
 type RaceCategory = {
   id: string
@@ -45,8 +51,10 @@ export default async function OrganizerEventDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
-  const supabase = await createClient()
+  const [{ id }, supabase] = await Promise.all([
+    params,
+    createClient(),
+  ])
 
   const { data: event } = await supabase
     .from('events')

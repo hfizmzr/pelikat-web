@@ -5,6 +5,12 @@ import { RunnerExperience } from "@/components/landing/runner-experience"
 import { CommandControl } from "@/components/landing/command-control"
 import { CTASection } from "@/components/landing/cta-section"
 import { Footer } from "@/components/landing/footer"
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Pelikat',
+  description: "Malaysia's premier race management platform for runners and organizers",
+}
 
 export default function Home() {
   return (

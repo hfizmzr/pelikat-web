@@ -5,14 +5,22 @@ import { Image as ImageIcon } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { RunnerPhotoActions } from '@/components/events/runner-photo-actions'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'My Photos - Pelikat',
+  description: 'Race photos from your events',
+}
 
 export default async function RunnerGalleryPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
-  const supabase = await createClient()
+  const [{ id }, supabase] = await Promise.all([
+    params,
+    createClient(),
+  ])
 
   const { data: { user } } = await supabase.auth.getUser()
 

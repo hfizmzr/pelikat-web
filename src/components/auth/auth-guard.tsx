@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 import { Loader2 } from 'lucide-react'
@@ -13,7 +13,8 @@ interface AuthGuardProps {
 export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
   const { user, role, loading } = useAuth()
   const router = useRouter()
-  const [isAuthorized, setIsAuthorized] = useState(false)
+
+  const isAuthorized = !loading && !!user && (!allowedRoles || !role || allowedRoles.includes(role))
 
   useEffect(() => {
     if (loading) return
@@ -33,8 +34,6 @@ export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
       }
       return
     }
-
-    setIsAuthorized(true)
   }, [user, role, loading, router, allowedRoles])
 
   if (loading || !isAuthorized) {
