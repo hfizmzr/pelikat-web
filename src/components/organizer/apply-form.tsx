@@ -10,6 +10,13 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, CheckCircle } from "lucide-react"
 
+function generateSlug(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+}
+
 export default function ApplyForm() {
   const router = useRouter()
   const supabase = createClient()
@@ -21,13 +28,6 @@ export default function ApplyForm() {
   const [eventName, setEventName] = useState("")
   const [eventDescription, setEventDescription] = useState("")
   const [error, setError] = useState("")
-
-  const generateSlug = (value: string) => {
-    return value
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "")
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

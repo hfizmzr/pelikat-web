@@ -134,6 +134,62 @@ function PhotoPaginationControls({
   )
 }
 
+function getBibBadgeClass(photo: { status?: string | null; registration_id?: string | null }) {
+  if (photo.status === 'discarded') {
+    return 'border-destructive/60 bg-destructive/10 text-destructive'
+  }
+
+  if (photo.status === 'auto' || photo.status === 'confirmed' || photo.registration_id) {
+    return 'border-green-500/60 bg-green-500/10 text-green-500'
+  }
+
+  return ''
+}
+
+function getTagMatchText(photo: { runner?: { full_name?: string | null } | null; registration_id?: string | null }) {
+  if (photo.runner?.full_name) return photo.runner.full_name
+  if (photo.registration_id) return 'Matched registration'
+  return 'No registration match found'
+}
+
+function groupPhotosByStoragePath(sourcePhotos: Record<string, unknown>[]) {
+  return Array.from(
+    sourcePhotos.reduce((groups: Map<string, Record<string, unknown>>, photo: Record<string, unknown>) => {
+      const groupKey = (photo.storage_path as string) || (photo.id as string)
+      const currentGroup = groups.get(groupKey)
+
+      if (currentGroup) {
+        const tags = currentGroup.tags as Record<string, unknown>[]
+        tags.push(photo)
+        const bibNumbers = currentGroup.bibNumbers as string[]
+
+        if (photo.bib_number && !bibNumbers.includes(photo.bib_number as string)) {
+          bibNumbers.push(photo.bib_number as string)
+        }
+
+        currentGroup.tagCount = (currentGroup.tagCount as number) + 1
+
+        if (
+          photo.confidence != null &&
+          (currentGroup.confidence == null || (photo.confidence as number) > (currentGroup.confidence as number))
+        ) {
+          currentGroup.confidence = photo.confidence
+        }
+      } else {
+        groups.set(groupKey, {
+          ...photo,
+          bibNumbers: photo.bib_number ? [photo.bib_number as string] : [],
+          tagCount: 1,
+          tags: [photo],
+        })
+      }
+
+      return groups
+    }, new Map<string, Record<string, unknown>>())
+      .values()
+  )
+}
+
 export default async function OrganizerEventPhotosPage({
   params,
   searchParams,
@@ -442,61 +498,7 @@ export default async function OrganizerEventPhotosPage({
     tags: PhotoWithUrl[]
   }
 
-  function getBibBadgeClass(photo: PhotoWithUrl) {
-    if (photo.status === 'discarded') {
-      return 'border-destructive/60 bg-destructive/10 text-destructive'
-    }
-
-    if (photo.status === 'auto' || photo.status === 'confirmed' || photo.registration_id) {
-      return 'border-green-500/60 bg-green-500/10 text-green-500'
-    }
-
-    return ''
-  }
-
-  function getTagMatchText(photo: PhotoWithUrl) {
-    if (photo.runner?.full_name) return photo.runner.full_name
-    if (photo.registration_id) return 'Matched registration'
-    return 'No registration match found'
-  }
-
-  function groupPhotosByStoragePath(sourcePhotos: PhotoWithUrl[]) {
-    return Array.from(
-      sourcePhotos.reduce((groups: Map<string, PhotoGroup>, photo: PhotoWithUrl) => {
-        const groupKey = photo.storage_path || photo.id
-        const currentGroup = groups.get(groupKey)
-
-        if (currentGroup) {
-          currentGroup.tags.push(photo)
-
-          if (photo.bib_number && !currentGroup.bibNumbers.includes(photo.bib_number)) {
-            currentGroup.bibNumbers.push(photo.bib_number)
-          }
-
-          currentGroup.tagCount += 1
-
-          if (
-            photo.confidence != null &&
-            (currentGroup.confidence == null || photo.confidence > currentGroup.confidence)
-          ) {
-            currentGroup.confidence = photo.confidence
-          }
-        } else {
-          groups.set(groupKey, {
-            ...photo,
-            bibNumbers: photo.bib_number ? [photo.bib_number] : [],
-            tagCount: 1,
-            tags: [photo],
-          })
-        }
-
-        return groups
-      }, new Map<string, PhotoGroup>())
-        .values()
-    )
-  }
-
-  const reviewPhotoGroups = groupPhotosByStoragePath(reviewPhotos)
+  const reviewPhotoGroups = groupPhotosByStoragePath(reviewPhotos as Record<string, unknown>[])
   const rejectedPhotoGroups = groupPhotosByStoragePath(rejectedPhotos)
 
   return (

@@ -12,6 +12,19 @@ export const metadata: Metadata = {
   description: 'Virtual run leaderboard for this event',
 }
 
+function getRankIcon(rank: number) {
+  switch (rank) {
+    case 1:
+      return <Crown className="h-5 w-5 text-yellow-500" />
+    case 2:
+      return <Medal className="h-5 w-5 text-gray-400" />
+    case 3:
+      return <Medal className="h-5 w-5 text-amber-700" />
+    default:
+      return <span className="text-muted-foreground font-medium">#{rank}</span>
+  }
+}
+
 export default async function OrganizerEventLeaderboardPage({
   params,
 }: {
@@ -46,19 +59,6 @@ export default async function OrganizerEventLeaderboardPage({
       .order('logged_at', { ascending: false })
       .limit(10),
   ])
-
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <Crown className="h-5 w-5 text-yellow-500" />
-      case 2:
-        return <Medal className="h-5 w-5 text-gray-400" />
-      case 3:
-        return <Medal className="h-5 w-5 text-amber-700" />
-      default:
-        return <span className="text-muted-foreground font-medium">#{rank}</span>
-    }
-  }
 
   return (
     <div className="space-y-6">

@@ -65,6 +65,27 @@ function SortHeader({ label, sortKeyVal, onSort }: SortHeaderProps) {
   )
 }
 
+function getSubscriptionStatus(organizer: Organizer) {
+  if (!organizer.is_active) {
+    return { label: 'Inactive', variant: 'secondary' as const }
+  }
+  if (!organizer.sub_expires_at) {
+    return { label: 'Active', variant: 'default' as const }
+  }
+
+  const now = new Date()
+  const expires = new Date(organizer.sub_expires_at)
+  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+  if (expires <= now) {
+    return { label: 'Expired', variant: 'destructive' as const }
+  }
+  if (expires <= sevenDaysFromNow) {
+    return { label: 'Expiring Soon', variant: 'warning' as const }
+  }
+  return { label: 'Active', variant: 'default' as const }
+}
+
 export function OrganizerTable({
   organizers,
   loading,
@@ -147,27 +168,6 @@ export function OrganizerTable({
     }
     setCurrentPage(1)
   }, [sortKey])
-
-  const getSubscriptionStatus = (organizer: Organizer) => {
-    if (!organizer.is_active) {
-      return { label: 'Inactive', variant: 'secondary' as const }
-    }
-    if (!organizer.sub_expires_at) {
-      return { label: 'Active', variant: 'default' as const }
-    }
-
-    const now = new Date()
-    const expires = new Date(organizer.sub_expires_at)
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-
-    if (expires <= now) {
-      return { label: 'Expired', variant: 'destructive' as const }
-    }
-    if (expires <= sevenDaysFromNow) {
-      return { label: 'Expiring Soon', variant: 'warning' as const }
-    }
-    return { label: 'Active', variant: 'default' as const }
-  }
 
   if (loading) {
     return (

@@ -25,6 +25,13 @@ interface OrganizerFormDialogProps {
   trigger?: React.ReactNode
 }
 
+function generateSlug(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
+
 export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, trigger }: OrganizerFormDialogProps) {
   const [submitting, setSubmitting] = useState(false)
   const [name, setName] = useState('')
@@ -47,13 +54,6 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
       resetForm()
     }
   }, [open])
-
-  const generateSlug = (value: string) => {
-    return value
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

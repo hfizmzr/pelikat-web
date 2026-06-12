@@ -43,6 +43,14 @@ interface RunnerProfile {
   id: string
 }
 
+function formatTime(secs: number) {
+  const h = Math.floor(secs / 3600)
+  const m = Math.floor((secs % 3600) / 60)
+  const s = secs % 60
+  if (h > 0) return `${h}h ${m}m ${s}s`
+  return `${m}m ${s}s`
+}
+
 export default function RunnerRunLogPage() {
   const { user } = useAuth()
   const supabase = createClient()
@@ -177,14 +185,6 @@ export default function RunnerRunLogPage() {
 
   const totalDistance = runLogs.reduce((acc, l) => acc + Number(l.distance_km || 0), 0)
   const totalTime = runLogs.reduce((acc, l) => acc + (l.duration_sec || 0), 0)
-
-  const formatTime = (secs: number) => {
-    const h = Math.floor(secs / 3600)
-    const m = Math.floor((secs % 3600) / 60)
-    const s = secs % 60
-    if (h > 0) return `${h}h ${m}m ${s}s`
-    return `${m}m ${s}s`
-  }
 
   if (loading) {
     return <div className="p-8">Loading...</div>

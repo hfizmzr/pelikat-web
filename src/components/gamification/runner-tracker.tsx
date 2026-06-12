@@ -30,6 +30,15 @@ interface RunResult {
   gps_points: GpsPoint[]
 }
 
+function formatTime(secs: number) {
+  const h = Math.floor(secs / 3600)
+  const m = Math.floor((secs % 3600) / 60)
+  const s = secs % 60
+  const mm = m.toString().padStart(2, "0")
+  const ss = s.toString().padStart(2, "0")
+  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
+}
+
 export default function RunnerTracker() {
   const [state, setState] = useState<TrackerState>("idle")
   const [elapsed, setElapsed] = useState(0)
@@ -125,15 +134,6 @@ export default function RunnerTracker() {
     localStorage.setItem("tracker_result", JSON.stringify(result))
     window.location.href = "/runner/run-log"
   }, [elapsed, gpsDistance, clearTimers])
-
-  const formatTime = (secs: number) => {
-    const h = Math.floor(secs / 3600)
-    const m = Math.floor((secs % 3600) / 60)
-    const s = secs % 60
-    const mm = m.toString().padStart(2, "0")
-    const ss = s.toString().padStart(2, "0")
-    return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
-  }
 
   const pace =
     elapsed > 0 && gpsDistance > 0

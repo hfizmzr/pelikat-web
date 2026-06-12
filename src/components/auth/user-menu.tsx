@@ -16,6 +16,16 @@ import { LogOut, Repeat2, User, Settings } from 'lucide-react'
 import { logAudit } from '@/lib/audit'
 import { useRouter } from 'next/navigation'
 
+function getInitials(name: string | null | undefined) {
+  if (!name) return 'U'
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
 export function UserMenu() {
   const supabase = createClient()
   const router = useRouter()
@@ -30,16 +40,6 @@ export function UserMenu() {
   const handleSwitchAccount = async () => {
     await supabase.auth.signOut()
     router.push('/login?switchAccount=1')
-  }
-
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'U'
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
   }
 
   const getDisplayName = () => {

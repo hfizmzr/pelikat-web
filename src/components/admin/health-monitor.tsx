@@ -17,6 +17,19 @@ interface HealthResponse {
   checks: Record<string, HealthCheck>
 }
 
+function getStatusBadge(status: string) {
+  switch (status) {
+    case 'healthy':
+      return <Badge className="bg-green-500">Healthy</Badge>
+    case 'degraded':
+      return <Badge className="bg-amber-500">Degraded</Badge>
+    case 'unhealthy':
+      return <Badge variant="destructive">Unhealthy</Badge>
+    default:
+      return <Badge variant="secondary">Unknown</Badge>
+  }
+}
+
 export function HealthMonitor() {
   const [loading, setLoading] = useState(true)
   const [health, setHealth] = useState<HealthResponse | null>(null)
@@ -37,19 +50,6 @@ export function HealthMonitor() {
     fetchHealth()
     return () => controller.abort()
   }, [])
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'healthy':
-        return <Badge className="bg-green-500">Healthy</Badge>
-      case 'degraded':
-        return <Badge className="bg-amber-500">Degraded</Badge>
-      case 'unhealthy':
-        return <Badge variant="destructive">Unhealthy</Badge>
-      default:
-        return <Badge variant="secondary">Unknown</Badge>
-    }
-  }
 
   if (loading) {
     return (

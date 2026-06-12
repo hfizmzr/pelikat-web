@@ -36,17 +36,18 @@ export default async function RunnerEventDetailPage({
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: profile } = await supabase
-    .from('runner_profiles')
-    .select('id')
-    .eq('user_id', user?.id)
-    .single()
-
-  const { data: event } = await supabase
-    .from('events')
-    .select('*, organizers(name), race_categories(*)')
-    .eq('id', id)
-    .single()
+  const [{ data: profile }, { data: event }] = await Promise.all([
+    supabase
+      .from('runner_profiles')
+      .select('id')
+      .eq('user_id', user?.id)
+      .single(),
+    supabase
+      .from('events')
+      .select('*, organizers(name), race_categories(*)')
+      .eq('id', id)
+      .single(),
+  ])
 
   if (!event) {
     notFound()
