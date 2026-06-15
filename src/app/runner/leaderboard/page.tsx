@@ -4,6 +4,12 @@ import { Trophy } from 'lucide-react'
 import { LiveLeaderboard } from '@/components/gamification/live-leaderboard'
 import { LeaderboardFilters } from './filters'
 import { ExportCSV } from './export-csv'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Leaderboard - Pelikat',
+  description: 'Virtual run rankings across all events',
+}
 
 interface SearchParams {
   event_id?: string
@@ -15,8 +21,10 @@ export default async function RunnerLeaderboardPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const supabase = await createClient()
-  const { event_id, gender } = await searchParams
+  const [supabase, { event_id, gender }] = await Promise.all([
+    createClient(),
+    searchParams,
+  ])
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -35,12 +43,13 @@ export default async function RunnerLeaderboardPage({
     query = query.eq('gender', gender)
   }
 
-  const { data: leaderboard } = await query.order('rank', { ascending: true })
-
-  const { data: events } = await supabase
-    .from('events')
-    .select('id, name')
-    .order('event_date', { ascending: false })
+  const [{ data: leaderboard }, { data: events }] = await Promise.all([
+    query.order('rank', { ascending: true }),
+    supabase
+      .from('events')
+      .select('id, name')
+      .order('event_date', { ascending: false }),
+  ])
 
   return (
     <div className="space-y-6">

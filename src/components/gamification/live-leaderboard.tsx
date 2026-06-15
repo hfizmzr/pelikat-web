@@ -14,6 +14,19 @@ interface LeaderboardEntry {
   rank: number
 }
 
+function getRankIcon(rank: number) {
+  switch (rank) {
+    case 1:
+      return <Crown className="h-6 w-6 text-yellow-500" />
+    case 2:
+      return <Medal className="h-6 w-6 text-gray-400" />
+    case 3:
+      return <Medal className="h-6 w-6 text-amber-700" />
+    default:
+      return <span className="text-muted-foreground font-bold text-lg">#{rank}</span>
+  }
+}
+
 export function LiveLeaderboard({
   initialData,
   currentRunnerId,
@@ -69,19 +82,6 @@ export function LiveLeaderboard({
     }
   }, [initialData])
 
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <Crown className="h-6 w-6 text-yellow-500" />
-      case 2:
-        return <Medal className="h-6 w-6 text-gray-400" />
-      case 3:
-        return <Medal className="h-6 w-6 text-amber-700" />
-      default:
-        return <span className="text-muted-foreground font-bold text-lg">#{rank}</span>
-    }
-  }
-
   const myStats = entries?.find((e) => e.runner_id === currentRunnerId)
 
   return (
@@ -91,6 +91,7 @@ export function LiveLeaderboard({
           {isLive ? "Live updates" : "Paused"}
         </p>
         <button
+          type="button"
           onClick={() => setIsLive(!isLive)}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >

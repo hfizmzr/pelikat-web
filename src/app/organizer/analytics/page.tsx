@@ -4,6 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { BarChart3, TrendingUp, Users, DollarSign } from 'lucide-react'
 import OrganizerAnalyticsCharts, { type AnalyticsData } from '@/components/organizer/analytics-charts'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Analytics - Pelikat',
+  description: 'Track your event performance and revenue',
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

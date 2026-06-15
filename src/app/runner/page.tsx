@@ -4,6 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, MapPin, QrCode, Trophy, Award, History, Flame } from 'lucide-react'
 import Link from 'next/link'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Runner Dashboard - Pelikat',
+  description: 'Your runner dashboard with events, badges, and stats',
+}
 
 export default async function RunnerDashboard() {
   const supabase = await createClient()
@@ -16,34 +22,36 @@ export default async function RunnerDashboard() {
     .eq('user_id', user?.id)
     .single()
 
-  const { data: registrations } = await supabase
-    .from('registrations')
-    .select('*, events(*), race_categories(*)')
-    .eq('runner_id', profile?.id)
-    .order('created_at', { ascending: false })
-
-  const { data: badges } = await supabase
-    .from('runner_badges')
-    .select('*')
-    .eq('runner_id', profile?.id)
-    .order('awarded_at', { ascending: false })
-    .limit(5)
+  const [{ data: registrations }, { data: badges }] = await Promise.all([
+    supabase
+      .from('registrations')
+      .select('*, events(*), race_categories(*)')
+      .eq('runner_id', profile?.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('runner_badges')
+      .select('*')
+      .eq('runner_id', profile?.id)
+      .order('awarded_at', { ascending: false })
+      .limit(5),
+  ])
 
   const upcomingEvents = registrations
     ?.filter(r => r.events?.status === 'published' && new Date(r.events.event_date) >= new Date())
     .slice(0, 3) || []
 
-  const totalRunDistance = await supabase
-    .from('run_logs')
-    .select('distance_km')
-    .eq('runner_id', profile?.id)
-    .then(({ data }) => data?.reduce((acc, r) => acc + Number(r.distance_km || 0), 0) || 0)
-
-  const { data: streakData } = await supabase
-    .from('runner_streaks')
-    .select('current_streak, longest_streak')
-    .eq('runner_id', profile?.id)
-    .single()
+  const [totalRunDistance, { data: streakData }] = await Promise.all([
+    supabase
+      .from('run_logs')
+      .select('distance_km')
+      .eq('runner_id', profile?.id)
+      .then(({ data }) => data?.reduce((acc, r) => acc + Number(r.distance_km || 0), 0) || 0),
+    supabase
+      .from('runner_streaks')
+      .select('current_streak, longest_streak')
+      .eq('runner_id', profile?.id)
+      .single(),
+  ])
 
   const currentStreak = streakData?.current_streak || 0
   const longestStreak = streakData?.longest_streak || 0

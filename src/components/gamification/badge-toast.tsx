@@ -169,6 +169,7 @@ export function BadgeToast() {
               <p className="text-xs text-muted-foreground">{newBadge.description}</p>
             </div>
             <button
+              type="button"
               onClick={() => setVisible(false)}
               className="text-muted-foreground hover:text-foreground"
             >

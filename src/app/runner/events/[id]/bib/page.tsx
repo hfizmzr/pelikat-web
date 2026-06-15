@@ -8,14 +8,22 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { fetchDjangoApi } from '@/lib/django'
 import { BibActionButtons } from '@/components/events/bib-action-buttons'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Digital BIB - Pelikat',
+  description: 'Your digital race BIB with QR code',
+}
 
 export default async function RunnerBibPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
-  const supabase = await createClient()
+  const [{ id }, supabase] = await Promise.all([
+    params,
+    createClient(),
+  ])
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -25,18 +33,19 @@ export default async function RunnerBibPage({
     .eq('user_id', user?.id)
     .single()
 
-  const { data: registration } = await supabase
-    .from('registrations')
-    .select('*, events(*), race_categories(*)')
-    .eq('event_id', id)
-    .eq('runner_id', profile?.id)
-    .single()
-
-  const { data: event } = await supabase
-    .from('events')
-    .select('name, event_date, location')
-    .eq('id', id)
-    .single()
+  const [{ data: registration }, { data: event }] = await Promise.all([
+    supabase
+      .from('registrations')
+      .select('*, events(*), race_categories(*)')
+      .eq('event_id', id)
+      .eq('runner_id', profile?.id)
+      .single(),
+    supabase
+      .from('events')
+      .select('name, event_date, location')
+      .eq('id', id)
+      .single(),
+  ])
 
   if (!registration || !event) {
     notFound()

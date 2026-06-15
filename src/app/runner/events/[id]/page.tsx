@@ -7,6 +7,12 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { RunnerRegistrationActions } from '@/components/events/runner-registration-actions'
 import { CancelRegistrationButton } from '@/components/events/cancel-registration-button'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Event Details - Pelikat',
+  description: 'View event details and register for races',
+}
 
 interface RaceCategory {
   id: string
@@ -23,22 +29,25 @@ export default async function RunnerEventDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
-  const supabase = await createClient()
+  const [{ id }, supabase] = await Promise.all([
+    params,
+    createClient(),
+  ])
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: profile } = await supabase
-    .from('runner_profiles')
-    .select('id')
-    .eq('user_id', user?.id)
-    .single()
-
-  const { data: event } = await supabase
-    .from('events')
-    .select('*, organizers(name), race_categories(*)')
-    .eq('id', id)
-    .single()
+  const [{ data: profile }, { data: event }] = await Promise.all([
+    supabase
+      .from('runner_profiles')
+      .select('id')
+      .eq('user_id', user?.id)
+      .single(),
+    supabase
+      .from('events')
+      .select('*, organizers(name), race_categories(*)')
+      .eq('id', id)
+      .single(),
+  ])
 
   if (!event) {
     notFound()

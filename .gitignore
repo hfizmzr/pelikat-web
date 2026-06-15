@@ -64,3 +64,4 @@ everything-claude-code/
 .codex/.credentials.json
 
 /docs
+graphify-out/

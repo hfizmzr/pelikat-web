@@ -30,6 +30,15 @@ interface RunResult {
   gps_points: GpsPoint[]
 }
 
+function formatTime(secs: number) {
+  const h = Math.floor(secs / 3600)
+  const m = Math.floor((secs % 3600) / 60)
+  const s = secs % 60
+  const mm = m.toString().padStart(2, "0")
+  const ss = s.toString().padStart(2, "0")
+  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
+}
+
 export default function RunnerTracker() {
   const [state, setState] = useState<TrackerState>("idle")
   const [elapsed, setElapsed] = useState(0)
@@ -126,15 +135,6 @@ export default function RunnerTracker() {
     window.location.href = "/runner/run-log"
   }, [elapsed, gpsDistance, clearTimers])
 
-  const formatTime = (secs: number) => {
-    const h = Math.floor(secs / 3600)
-    const m = Math.floor((secs % 3600) / 60)
-    const s = secs % 60
-    const mm = m.toString().padStart(2, "0")
-    const ss = s.toString().padStart(2, "0")
-    return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
-  }
-
   const pace =
     elapsed > 0 && gpsDistance > 0
       ? (elapsed / 60 / gpsDistance).toFixed(1)
@@ -178,6 +178,7 @@ export default function RunnerTracker() {
               <p className="text-neutral-400">Your GPS route will be captured</p>
             </div>
             <button
+              type="button"
               onClick={startTracking}
               className="flex items-center gap-3 rounded-full bg-green-500 px-12 py-4 text-lg font-bold text-white shadow-lg shadow-green-500/30 transition hover:bg-green-400 active:scale-95"
             >
@@ -234,6 +235,7 @@ export default function RunnerTracker() {
             {state === "tracking" ? (
               <>
                 <button
+                  type="button"
                   onClick={pauseTracking}
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white/10 py-4 font-semibold text-white transition hover:bg-white/20 active:scale-95"
                 >
@@ -241,6 +243,7 @@ export default function RunnerTracker() {
                   Pause
                 </button>
                 <button
+                  type="button"
                   onClick={finishTracking}
                   className="flex flex-[2] items-center justify-center gap-2 rounded-xl bg-red-600 py-4 font-bold text-white transition hover:bg-red-500 active:scale-95"
                 >
@@ -251,6 +254,7 @@ export default function RunnerTracker() {
             ) : (
               <>
                 <button
+                  type="button"
                   onClick={resumeTracking}
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-green-500 py-4 font-semibold text-white transition hover:bg-green-400 active:scale-95"
                 >
@@ -258,6 +262,7 @@ export default function RunnerTracker() {
                   Resume
                 </button>
                 <button
+                  type="button"
                   onClick={finishTracking}
                   className="flex flex-[2] items-center justify-center gap-2 rounded-xl bg-red-600 py-4 font-bold text-white transition hover:bg-red-500 active:scale-95"
                 >

@@ -5,14 +5,35 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Trophy, Medal, Crown } from 'lucide-react'
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Event Leaderboard - Pelikat',
+  description: 'Virtual run leaderboard for this event',
+}
+
+function getRankIcon(rank: number) {
+  switch (rank) {
+    case 1:
+      return <Crown className="h-5 w-5 text-yellow-500" />
+    case 2:
+      return <Medal className="h-5 w-5 text-gray-400" />
+    case 3:
+      return <Medal className="h-5 w-5 text-amber-700" />
+    default:
+      return <span className="text-muted-foreground font-medium">#{rank}</span>
+  }
+}
 
 export default async function OrganizerEventLeaderboardPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
-  const supabase = await createClient()
+  const [{ id }, supabase] = await Promise.all([
+    params,
+    createClient(),
+  ])
 
   const { data: event } = await supabase
     .from('events')
@@ -24,32 +45,20 @@ export default async function OrganizerEventLeaderboardPage({
     notFound()
   }
 
-  const { data: leaderboard } = await supabase
-    .from('leaderboard_virtual')
-    .select('*')
-    .eq('event_id', id)
-    .order('rank', { ascending: true })
-    .limit(20)
-
-  const { data: runLogs } = await supabase
-    .from('run_logs')
-    .select('*, runner_profiles(full_name)')
-    .eq('event_id', id)
-    .order('logged_at', { ascending: false })
-    .limit(10)
-
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <Crown className="h-5 w-5 text-yellow-500" />
-      case 2:
-        return <Medal className="h-5 w-5 text-gray-400" />
-      case 3:
-        return <Medal className="h-5 w-5 text-amber-700" />
-      default:
-        return <span className="text-muted-foreground font-medium">#{rank}</span>
-    }
-  }
+  const [{ data: leaderboard }, { data: runLogs }] = await Promise.all([
+    supabase
+      .from('leaderboard_virtual')
+      .select('*')
+      .eq('event_id', id)
+      .order('rank', { ascending: true })
+      .limit(20),
+    supabase
+      .from('run_logs')
+      .select('*, runner_profiles(full_name)')
+      .eq('event_id', id)
+      .order('logged_at', { ascending: false })
+      .limit(10),
+  ])
 
   return (
     <div className="space-y-6">

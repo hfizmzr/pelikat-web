@@ -1,14 +1,14 @@
-export function DashboardPreview() {
-  const barData = [
-    { height: 40 },
-    { height: 65 },
-    { height: 45 },
-    { height: 80 },
-    { height: 60 },
-    { height: 90 },
-    { height: 100 },
-  ]
+const BAR_DATA = [
+  { height: 40 },
+  { height: 65 },
+  { height: 45 },
+  { height: 80 },
+  { height: 60 },
+  { height: 90 },
+  { height: 100 },
+]
 
+export function DashboardPreview() {
   return (
     <div className="w-full overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
       {/* Window Chrome */}
@@ -30,7 +30,7 @@ export function DashboardPreview() {
 
         {/* Bar Chart */}
         <div className="mt-4 flex h-32 items-end gap-3">
-          {barData.map((bar, index) => (
+          {BAR_DATA.map((bar, index) => (
             <div
               key={index}
               className="flex-1 rounded-t bg-primary transition-all hover:bg-primary/80"

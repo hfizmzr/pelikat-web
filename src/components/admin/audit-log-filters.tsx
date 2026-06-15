@@ -30,6 +30,15 @@ export interface AuditLogFilters {
   endDate: Date | undefined
 }
 
+function formatDate(date: Date | undefined) {
+  if (!date) return ''
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
 export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
   const [search, setSearch] = useState('')
   const [actionType, setActionType] = useState('all')
@@ -46,15 +55,6 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
     setStartDate(undefined)
     setEndDate(undefined)
     onFilterChange({ search: '', actionType: 'all', startDate: undefined, endDate: undefined })
-  }
-
-  const formatDate = (date: Date | undefined) => {
-    if (!date) return ''
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
   }
 
   return (

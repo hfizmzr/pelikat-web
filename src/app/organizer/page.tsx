@@ -4,6 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Users, Flag, Plus, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Organizer Dashboard - Pelikat',
+  description: 'Your event overview and statistics',
+}
 
 export default async function OrganizerDashboard() {
   const supabase = await createClient()

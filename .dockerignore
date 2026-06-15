@@ -45,6 +45,7 @@ README.md
 docs/
 .github/
 *.md
+graphify-out/
 
 # ── PWA generated files (re-built at runtime) ────────────────────
 public/sw.js

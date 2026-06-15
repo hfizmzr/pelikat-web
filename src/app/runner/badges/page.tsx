@@ -1,6 +1,21 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Badges - Pelikat',
+  description: 'Your achievements and milestones',
+}
+
+const badgeDefinitions: Record<string, { name: string; description: string; icon: string }> = {
+  first_run: { name: 'First Run', description: 'Completed your first virtual run', icon: '🏃' },
+  '5k_club': { name: '5K Club', description: 'Ran a total of 5 kilometers', icon: '🎯' },
+  '10k_club': { name: '10K Club', description: 'Ran a total of 10 kilometers', icon: '🏆' },
+  'marathon_club': { name: 'Marathon Club', description: 'Ran a total of 42.195 kilometers', icon: '🌟' },
+  event_complete: { name: 'Event Finisher', description: 'Completed a race event', icon: '🏅' },
+  early_bird: { name: 'Early Bird', description: 'Registered early for an event', icon: '🐦' },
+}
 
 export default async function RunnerBadgesPage() {
   const supabase = await createClient()
@@ -18,15 +33,6 @@ export default async function RunnerBadgesPage() {
     .select('*, events(name)')
     .eq('runner_id', profile?.id)
     .order('awarded_at', { ascending: false })
-
-  const badgeDefinitions: Record<string, { name: string; description: string; icon: string }> = {
-    first_run: { name: 'First Run', description: 'Completed your first virtual run', icon: '🏃' },
-    '5k_club': { name: '5K Club', description: 'Ran a total of 5 kilometers', icon: '🎯' },
-    '10k_club': { name: '10K Club', description: 'Ran a total of 10 kilometers', icon: '🏆' },
-    'marathon_club': { name: 'Marathon Club', description: 'Ran a total of 42.195 kilometers', icon: '🌟' },
-    event_complete: { name: 'Event Finisher', description: 'Completed a race event', icon: '🏅' },
-    early_bird: { name: 'Early Bird', description: 'Registered early for an event', icon: '🐦' },
-  }
 
   return (
     <div className="space-y-6">

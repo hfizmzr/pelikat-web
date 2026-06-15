@@ -7,14 +7,22 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AddCategoryDialog } from '@/components/events/add-category-dialog'
 import { CategoryCardActions } from '@/components/events/category-card-actions'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Race Categories - Pelikat',
+  description: 'Manage race categories for this event',
+}
 
 export default async function OrganizerEventCategoriesPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
-  const supabase = await createClient()
+  const [{ id }, supabase] = await Promise.all([
+    params,
+    createClient(),
+  ])
 
   const { data: event } = await supabase
     .from('events')

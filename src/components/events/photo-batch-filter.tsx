@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import {
   Select,
   SelectContent,
@@ -25,10 +25,9 @@ export function PhotoBatchFilter({
   selectedBatchId,
 }: PhotoBatchFilterProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   const handleChange = (value: string) => {
-    const nextParams = new URLSearchParams(searchParams.toString())
+    const nextParams = new URLSearchParams(new URL(window.location.href).searchParams)
 
     nextParams.delete('reviewPage')
     nextParams.delete('galleryPage')
