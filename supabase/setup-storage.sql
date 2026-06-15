@@ -10,7 +10,8 @@ values
   ('photo-gallery', 'photo-gallery', false),
   ('receipts', 'receipts', false),
   ('certificates', 'certificates', false),
-  ('avatars', 'avatars', true)
+  ('avatars', 'avatars', true),
+  ('ic-documents', 'ic-documents', false)
 on conflict (id) do nothing;
 
 -- ── STORAGE RLS POLICIES ──────────────────────────────────────
@@ -52,5 +53,25 @@ create policy "authenticated upload own avatar" on storage.objects
 create policy "authenticated update own avatar" on storage.objects
   for update using (
     bucket_id = 'avatars' and
+    (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- ic-documents: private bucket for IC/passport images
+-- Runners can upload raw temp files; Django encrypts and replaces them
+create policy "runner uploads own ic document" on storage.objects
+  for insert with check (
+    bucket_id = 'ic-documents' and
+    (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+create policy "runner reads own ic document" on storage.objects
+  for select using (
+    bucket_id = 'ic-documents' and
+    (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+create policy "runner deletes own ic document" on storage.objects
+  for delete using (
+    bucket_id = 'ic-documents' and
     (storage.foldername(name))[1] = auth.uid()::text
   );

@@ -2,6 +2,8 @@
 
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
+import DocumentCapture from "@/components/profile/document-capture";
+import { deleteRunnerAccount } from "@/lib/actions/account";
 import {
   Card,
   CardContent,
@@ -31,6 +33,10 @@ export default function RunnerProfilePage() {
     gender: "",
     t_shirt_size: "",
   });
+
+  const [deleteStep, setDeleteStep] = useState<'idle' | 'confirm' | 'deleting'>('idle')
+  const [deleteConfirm, setDeleteConfirm] = useState('')
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -193,14 +199,15 @@ export default function RunnerProfilePage() {
                 type="checkbox"
                 id="pdpa"
                 checked={profile?.pdpa_agreed || false}
-                onChange={async (e) => {
-                  await supabase
+                onChange={(e) => {
+                  const checked = e.target.checked
+                  setProfile({ ...profile, pdpa_agreed: checked })
+                  supabase
                     .from("runner_profiles")
                     .upsert(
-                      { user_id: user?.id, pdpa_agreed: e.target.checked },
+                      { user_id: user?.id, pdpa_agreed: checked },
                       { onConflict: "user_id" },
-                    );
-                  setProfile({ ...profile, pdpa_agreed: e.target.checked });
+                    )
                 }}
                 className="h-4 w-4"
               />
@@ -211,6 +218,110 @@ export default function RunnerProfilePage() {
             </div>
           </CardContent>
         </Card>
+
+        <div className="lg:col-span-2">
+          <DocumentCapture
+            userId={user?.id || ""}
+            currentDocument={{
+              path: profile?.ic_document_path || null,
+              mime: profile?.ic_document_mime || null,
+            }}
+          />
+        </div>
+
+        <div className="lg:col-span-2">
+          <Card className="border-destructive/30">
+            <CardHeader>
+              <CardTitle className="text-destructive">Delete Account</CardTitle>
+              <CardDescription>
+                Permanently delete your account and all personal data.
+                This action cannot be undone.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-md bg-destructive/10 px-4 py-3 text-sm">
+                <p className="font-medium text-destructive">What will be deleted:</p>
+                <ul className="mt-2 list-inside list-disc space-y-1 text-muted-foreground">
+                  <li>Your name, phone number, date of birth, and gender</li>
+                  <li>Your IC/Passport document</li>
+                  <li>Your PDPA consent records</li>
+                  <li>Your authentication account</li>
+                </ul>
+                <p className="mt-2 font-medium text-destructive">What will be preserved:</p>
+                <ul className="mt-2 list-inside list-disc space-y-1 text-muted-foreground">
+                  <li>Your anonymized registration records</li>
+                  <li>Your event leaderboard rankings</li>
+                  <li>Your earned badges</li>
+                </ul>
+              </div>
+
+              {deleteStep === 'idle' && (
+                <Button variant="destructive" onClick={() => setDeleteStep('confirm')}>
+                  Delete My Account
+                </Button>
+              )}
+
+              {deleteStep === 'confirm' && (
+                <div className="space-y-3">
+                  <div className="grid gap-2">
+                    <Label htmlFor="delete-confirm">
+                      Type <span className="font-semibold">DELETE</span> to confirm
+                    </Label>
+                    <Input
+                      id="delete-confirm"
+                      value={deleteConfirm}
+                      onChange={(e) => setDeleteConfirm(e.target.value)}
+                      placeholder="DELETE"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="destructive"
+                      disabled={deleteConfirm !== 'DELETE'}
+                      onClick={async () => {
+                        setDeleteStep('deleting')
+                        setDeleteError(null)
+                        try {
+                          await deleteRunnerAccount()
+                        } catch (err) {
+                          setDeleteError(err instanceof Error ? err.message : 'Deletion failed')
+                          setDeleteStep('idle')
+                        }
+                      }}
+                    >
+                      Yes, Delete My Account Forever
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setDeleteStep('idle')
+                        setDeleteConfirm('')
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {deleteStep === 'deleting' && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Deleting your account...
+                </div>
+              )}
+
+              {deleteError && (
+                <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {deleteError}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
