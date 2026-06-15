@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -34,6 +35,7 @@ interface OrganizerTableProps {
   onEdit: (organizer: Organizer) => void
   onDelete: (organizer: Organizer) => void
   onToggleActive: (organizer: Organizer) => void
+  onUpdateSubExpiry: (organizer: Organizer, subExpiresAt: string) => void
   onAdd: () => void
 }
 
@@ -92,6 +94,7 @@ export function OrganizerTable({
   onEdit,
   onDelete,
   onToggleActive,
+  onUpdateSubExpiry,
   onAdd,
 }: OrganizerTableProps) {
   const [search, setSearch] = useState('')
@@ -99,6 +102,9 @@ export function OrganizerTable({
   const [sortKey, setSortKey] = useState<SortKey>('created_at')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [currentPage, setCurrentPage] = useState(1)
+  const [editingExpiry, setEditingExpiry] = useState<string | null>(null)
+  const [editingExpiryValue, setEditingExpiryValue] = useState('')
+  const expiryInputRef = useRef<HTMLInputElement>(null)
 
   const filteredOrganizers = useMemo(() => {
     const now = new Date()
@@ -168,6 +174,12 @@ export function OrganizerTable({
     }
     setCurrentPage(1)
   }, [sortKey])
+
+  useEffect(() => {
+    if (editingExpiry && expiryInputRef.current) {
+      expiryInputRef.current.focus()
+    }
+  }, [editingExpiry])
 
   if (loading) {
     return (
@@ -260,18 +272,75 @@ export function OrganizerTable({
             ) : (
               paginatedOrganizers.map((organizer) => {
                 const subStatus = getSubscriptionStatus(organizer)
+                const isEditingExpiry = editingExpiry === organizer.id
                 return (
                   <TableRow key={organizer.id}>
                     <TableCell className="font-medium">{organizer.name}</TableCell>
                     <TableCell className="font-mono text-sm">@{organizer.slug}</TableCell>
                     <TableCell>{organizer.contact_email || '-'}</TableCell>
                     <TableCell>
-                      <Badge variant={subStatus.variant}>{subStatus.label}</Badge>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={organizer.is_active}
+                          onCheckedChange={() => onToggleActive(organizer)}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {organizer.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>
-                      {organizer.sub_expires_at
-                        ? new Date(organizer.sub_expires_at).toLocaleDateString()
-                        : '-'}
+                      {isEditingExpiry ? (
+                        <div className="flex items-center gap-1">
+                          <Input
+                            ref={expiryInputRef}
+                            type="date"
+                            value={editingExpiryValue}
+                            onChange={(e) => setEditingExpiryValue(e.target.value)}
+                            onBlur={() => {
+                              if (editingExpiryValue) {
+                                onUpdateSubExpiry(organizer, editingExpiryValue)
+                              }
+                              setEditingExpiry(null)
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                if (editingExpiryValue) {
+                                  onUpdateSubExpiry(organizer, editingExpiryValue)
+                                }
+                                setEditingExpiry(null)
+                              }
+                              if (e.key === 'Escape') {
+                                setEditingExpiry(null)
+                              }
+                            }}
+                            className="w-36 h-8 text-xs"
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => setEditingExpiry(null)}
+                          >
+                            <span className="text-xs">✕</span>
+                          </Button>
+                        </div>
+                      ) : (
+                        <button
+                          className="text-left cursor-pointer hover:underline"
+                          onClick={() => {
+                            const dateStr = organizer.sub_expires_at
+                              ? new Date(organizer.sub_expires_at).toISOString().split('T')[0]
+                              : ''
+                            setEditingExpiryValue(dateStr)
+                            setEditingExpiry(organizer.id)
+                          }}
+                        >
+                          {organizer.sub_expires_at
+                            ? new Date(organizer.sub_expires_at).toLocaleDateString()
+                            : '—'}
+                        </button>
+                      )}
                     </TableCell>
                     <TableCell>
                       {new Date(organizer.created_at).toLocaleDateString()}
@@ -287,11 +356,6 @@ export function OrganizerTable({
                           <DropdownMenuItem onClick={() => onEdit(organizer)}>
                             <Pencil className="mr-2 h-4 w-4" />
                             Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => onToggleActive(organizer)}
-                          >
-                            {organizer.is_active ? 'Deactivate' : 'Activate'}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-destructive"

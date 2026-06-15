@@ -48,6 +48,8 @@ type EventDetail = {
   event_date: string
   location: string | null
   status: EventStatus
+  reg_open: string | null
+  reg_close: string | null
   race_categories: RaceCategory[] | null
   registrations: Registration[] | null
 }
@@ -120,6 +122,8 @@ export default async function OrganizerEventDetailPage({
           eventId={eventDetail.id}
           currentStatus={eventDetail.status}
           eventName={eventDetail.name}
+          regOpen={eventDetail.reg_open}
+          regClose={eventDetail.reg_close}
         />
       </div>
 

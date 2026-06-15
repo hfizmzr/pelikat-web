@@ -110,7 +110,6 @@ export default function AdminOrganizersPage() {
         new_state: { is_active: updated.is_active },
       })
       if (updated.is_active) {
-        // Was inactive, now active
         setApplicants((prev) => prev.filter((o) => o.id !== updated.id))
         setOrganizers((prev) => {
           const exists = prev.some((o) => o.id === updated.id)
@@ -119,11 +118,34 @@ export default function AdminOrganizersPage() {
             : [updated, ...prev]
         })
       } else {
-        // Was active, now inactive — stays in organizers table (has approved_at)
         setOrganizers((prev) =>
           prev.map((o) => (o.id === updated.id ? updated : o))
         )
       }
+    }
+  }
+
+  const handleUpdateSubExpiry = async (organizer: Organizer, subExpiresAt: string) => {
+    const expiryDate = subExpiresAt
+      ? new Date(subExpiresAt).toISOString()
+      : null
+
+    const { error } = await supabase
+      .from('organizers')
+      .update({ sub_expires_at: expiryDate })
+      .eq('id', organizer.id)
+
+    if (!error) {
+      await logAudit(supabase, 'admin_update_subscription', organizer.id, {
+        name: organizer.name,
+        previous_expiry: organizer.sub_expires_at,
+        new_expiry: expiryDate,
+      })
+      setOrganizers((prev) =>
+        prev.map((o) =>
+          o.id === organizer.id ? { ...o, sub_expires_at: expiryDate } : o
+        )
+      )
     }
   }
 
@@ -255,6 +277,7 @@ export default function AdminOrganizersPage() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onToggleActive={handleToggleActive}
+            onUpdateSubExpiry={handleUpdateSubExpiry}
             onAdd={() => setCreateOpen(true)}
           />
         )}

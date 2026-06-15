@@ -128,6 +128,22 @@ export async function updateEventStatus(
   revalidatePath(`/organizer/events/${eventId}`)
 }
 
+export async function updateEventDates(
+  eventId: string,
+  updates: { reg_open?: string | null; reg_close?: string | null }
+) {
+  const { supabase } = await requireAuth()
+
+  const { error } = await supabase
+    .from('events')
+    .update(updates)
+    .eq('id', eventId)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/organizer/events/${eventId}`)
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Category Actions
 // ─────────────────────────────────────────────────────────────────────────────
