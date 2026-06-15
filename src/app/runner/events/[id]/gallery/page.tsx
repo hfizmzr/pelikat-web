@@ -113,7 +113,12 @@ export default async function RunnerGalleryPage({
                     </div>
                   )}
                   <div className="absolute right-2 top-2 z-10">
-                    <RunnerPhotoActions imageUrl={photo.url} fileName={photo.fileName} />
+                      <RunnerPhotoActions
+                        imageUrl={photo.url}
+                        fileName={photo.fileName}
+                        eventId={id}
+                        photoTagId={photo.id}
+                      />
                   </div>
                   {photo.confidence && (
                     <div className="absolute left-2 top-2">

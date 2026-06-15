@@ -27,6 +27,7 @@ import { Upload, Loader2, CheckCircle2, AlertCircle, ImageIcon, X } from 'lucide
 import {
   triggerPhotoProcessing,
   triggerPhotoProcessingForPrefix,
+  type PhotoProcessingSummary,
 } from '@/components/events/actions'
 
 interface PhotoUploaderProps {
@@ -48,6 +49,7 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
   const [uploadedCount, setUploadedCount] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
   const [batchId, setBatchId] = useState<string | null>(null)
+  const [processingSummary, setProcessingSummary] = useState<PhotoProcessingSummary | null>(null)
   const [storagePaths, setStoragePaths] = useState<string[]>([])
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [existingBatches, setExistingBatches] = useState<ExistingBatch[]>([])
@@ -79,6 +81,7 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
     setProgress(0)
     setErrorMsg(null)
     setBatchId(nextBatchId)
+    setProcessingSummary(null)
     setStoragePaths([])
 
     const paths: string[] = []
@@ -117,7 +120,8 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
 
     startTransition(async () => {
       try {
-        await triggerPhotoProcessing(eventId, organizerId, storagePaths, batchId)
+        const summary = await triggerPhotoProcessing(eventId, organizerId, storagePaths, batchId)
+        setProcessingSummary(summary)
         setProgress(100)
         setState('done')
       } catch (err: unknown) {
@@ -178,6 +182,7 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
 
     const nextBatchId = crypto.randomUUID()
     setBatchId(nextBatchId)
+    setProcessingSummary(null)
     setStoragePaths([])
     setUploadedCount(0)
     setTotalCount(0)
@@ -187,7 +192,8 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
 
     startTransition(async () => {
       try {
-        await triggerPhotoProcessingForPrefix(eventId, organizerId, selectedExistingPrefix, nextBatchId)
+        const summary = await triggerPhotoProcessingForPrefix(eventId, organizerId, selectedExistingPrefix, nextBatchId)
+        setProcessingSummary(summary)
         setProgress(100)
         setState('done')
       } catch (err: unknown) {
@@ -209,6 +215,7 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
     setUploadedCount(0)
     setTotalCount(0)
     setBatchId(null)
+    setProcessingSummary(null)
     setStoragePaths([])
     setCurrentUserId(null)
     setExistingBatches([])
@@ -443,9 +450,33 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
             <Badge variant="outline" className="ml-auto">AI Tagging Complete</Badge>
           </div>
           <p className="text-xs text-muted-foreground">
-            The AI pipeline detected BIB numbers and saved photo tags.
+            The AI pipeline finished and saved the batch results.
             Refresh the gallery below to see the latest results.
           </p>
+          {processingSummary && (
+            <div className="grid gap-2 sm:grid-cols-5">
+              <div className="rounded-md border border-border bg-background/60 p-3">
+                <p className="text-xs text-muted-foreground">Processed</p>
+                <p className="text-lg font-semibold">{processingSummary.processed}</p>
+              </div>
+              <div className="rounded-md border border-green-500/30 bg-green-500/10 p-3">
+                <p className="text-xs text-muted-foreground">Auto-tagged</p>
+                <p className="text-lg font-semibold text-green-600">{processingSummary.auto}</p>
+              </div>
+              <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3">
+                <p className="text-xs text-muted-foreground">Needs review</p>
+                <p className="text-lg font-semibold text-amber-600">{processingSummary.review}</p>
+              </div>
+              <div className="rounded-md border border-muted bg-background/60 p-3">
+                <p className="text-xs text-muted-foreground">No match</p>
+                <p className="text-lg font-semibold">{processingSummary.discarded}</p>
+              </div>
+              <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3">
+                <p className="text-xs text-muted-foreground">Failed</p>
+                <p className="text-lg font-semibold text-destructive">{processingSummary.failed}</p>
+              </div>
+            </div>
+          )}
           <Button variant="outline" size="sm" onClick={handleReset}>
             <ImageIcon className="mr-2 h-4 w-4" />
             Upload More Photos

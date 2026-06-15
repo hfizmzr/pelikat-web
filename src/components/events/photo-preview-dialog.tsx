@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent, ReactNode, WheelEvent } from 'react'
 import Image from 'next/image'
-import { ImageIcon, Maximize2, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
+import Link from 'next/link'
+import { ChevronLeft, ChevronRight, ImageIcon, Maximize2, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,6 +25,12 @@ interface PhotoPreviewDialogProps {
   thumbnailClassName: string
   thumbnailImageClassName?: string
   previewImageClassName?: string
+  details?: ReactNode
+  triggerId?: string
+  previousTriggerId?: string
+  nextTriggerId?: string
+  previousHref?: string
+  nextHref?: string
   children?: ReactNode
 }
 
@@ -40,8 +47,15 @@ export function PhotoPreviewDialog({
   thumbnailClassName,
   thumbnailImageClassName,
   previewImageClassName,
+  details,
+  triggerId,
+  previousTriggerId,
+  nextTriggerId,
+  previousHref,
+  nextHref,
   children,
 }: PhotoPreviewDialogProps) {
+  const [open, setOpen] = useState(false)
   const [zoom, setZoom] = useState(MIN_ZOOM)
   const [hasMoved, setHasMoved] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
@@ -87,6 +101,14 @@ export function PhotoPreviewDialog({
     setHasMoved(false)
     setIsDragging(false)
     applyTransform()
+  }
+
+  function openLinkedPreview(triggerId: string) {
+    setOpen(false)
+    resetZoom()
+    window.setTimeout(() => {
+      document.getElementById(triggerId)?.click()
+    }, 0)
   }
 
   function setZoomLevel(nextZoom: number) {
@@ -161,9 +183,16 @@ export function PhotoPreviewDialog({
   }
 
   return (
-    <Dialog onOpenChange={(open) => !open && resetZoom()}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        if (!nextOpen) resetZoom()
+      }}
+    >
       <DialogTrigger asChild>
         <button
+          id={triggerId}
           type="button"
           className={cn(
             thumbnailClassName,
@@ -184,11 +213,61 @@ export function PhotoPreviewDialog({
           {children}
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-[calc(100vw-2rem)] border-border bg-background/95 p-3 sm:max-w-6xl">
+      <DialogContent className="max-w-[calc(100vw-2rem)] border-border bg-background/95 p-3 sm:max-w-7xl">
         <DialogHeader className="sr-only">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description ?? alt}</DialogDescription>
         </DialogHeader>
+        <div className="mb-2 flex min-h-9 items-center justify-end gap-1 pr-10">
+          {previousTriggerId ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="bg-black/70 text-white hover:bg-black/80 hover:text-white"
+              onClick={() => openLinkedPreview(previousTriggerId)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Prev
+            </Button>
+          ) : previousHref ? (
+            <Button
+              asChild
+              size="sm"
+              variant="secondary"
+              className="bg-black/70 text-white hover:bg-black/80 hover:text-white"
+            >
+              <Link href={previousHref}>
+                <ChevronLeft className="h-4 w-4" />
+                Prev page
+              </Link>
+            </Button>
+          ) : null}
+          {nextTriggerId ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="bg-black/70 text-white hover:bg-black/80 hover:text-white"
+              onClick={() => openLinkedPreview(nextTriggerId)}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : nextHref ? (
+            <Button
+              asChild
+              size="sm"
+              variant="secondary"
+              className="bg-black/70 text-white hover:bg-black/80 hover:text-white"
+            >
+              <Link href={nextHref}>
+                Next page
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          ) : null}
+        </div>
         <div className="absolute left-5 top-5 z-10 flex items-center gap-1 rounded-md border border-white/15 bg-black/70 p-1 text-white shadow-sm">
           <Button
             type="button"
@@ -230,28 +309,35 @@ export function PhotoPreviewDialog({
             <span className="sr-only">Reset zoom</span>
           </Button>
         </div>
-        <div
-          className={cn(
-            'relative h-[82vh] max-h-[82vh] w-full touch-none overflow-hidden rounded-md bg-black',
-            zoom > MIN_ZOOM && (isDragging ? 'cursor-grabbing' : 'cursor-grab')
-          )}
-          onDoubleClick={() => (zoomRef.current > MIN_ZOOM ? resetZoom() : setZoomLevel(2))}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          onWheel={handleWheel}
-        >
-          <div ref={imageLayerRef} className="absolute inset-0 will-change-transform">
-            <Image
-              src={src}
-              alt={alt}
-              fill
-              draggable={false}
-              className={cn('select-none object-contain', previewImageClassName)}
-              sizes="100vw"
-            />
+        <div className={cn('grid gap-3', details && 'lg:grid-cols-[minmax(0,1fr)_380px]')}>
+          <div
+            className={cn(
+              'relative h-[82vh] max-h-[82vh] w-full touch-none overflow-hidden rounded-md bg-black',
+              zoom > MIN_ZOOM && (isDragging ? 'cursor-grabbing' : 'cursor-grab')
+            )}
+            onDoubleClick={() => (zoomRef.current > MIN_ZOOM ? resetZoom() : setZoomLevel(2))}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onWheel={handleWheel}
+          >
+            <div ref={imageLayerRef} className="absolute inset-0 will-change-transform">
+              <Image
+                src={src}
+                alt={alt}
+                fill
+                draggable={false}
+                className={cn('select-none object-contain', previewImageClassName)}
+                sizes="100vw"
+              />
+            </div>
           </div>
+          {details && (
+            <div className="max-h-[82vh] overflow-y-auto rounded-md border border-border bg-card p-4">
+              {details}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

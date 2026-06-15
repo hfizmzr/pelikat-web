@@ -390,15 +390,69 @@ export async function checkInRegistrationByBib(
 // Photo Actions
 // ─────────────────────────────────────────────────────────────────────────────
 
+export type PhotoProcessingSummary = {
+  batchId: string
+  processed: number
+  savedTags: number
+  auto: number
+  review: number
+  confirmed: number
+  discarded: number
+  failed: number
+  totalTags: number
+}
+
+type PhotoProcessingApiResult = {
+  processed?: number
+  saved_tags?: number
+  results?: { error?: unknown }[]
+}
+
+async function getPhotoProcessingSummary(
+  eventId: string,
+  batchId: string,
+  apiResult: PhotoProcessingApiResult
+): Promise<PhotoProcessingSummary> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('photo_tags')
+    .select('status')
+    .eq('event_id', eventId)
+    .eq('batch_id', batchId)
+
+  if (error) throw new Error(error.message)
+
+  const counts = {
+    auto: 0,
+    review: 0,
+    confirmed: 0,
+    discarded: 0,
+  }
+
+  for (const row of data ?? []) {
+    const status = row.status as keyof typeof counts
+    if (status in counts) counts[status] += 1
+  }
+
+  return {
+    batchId,
+    processed: apiResult.processed ?? 0,
+    savedTags: apiResult.saved_tags ?? data?.length ?? 0,
+    failed: apiResult.results?.filter((result) => Boolean(result.error)).length ?? 0,
+    totalTags: data?.length ?? 0,
+    ...counts,
+  }
+}
+
 export async function triggerPhotoProcessing(
   eventId: string,
   organizerId: string,
   storagePaths: string[],
   batchId = crypto.randomUUID()
-) {
+): Promise<PhotoProcessingSummary> {
   await requireAuth()
 
-  await fetchDjangoApi('/ai/photos/process', {
+  const result = await fetchDjangoApi('/ai/photos/process', {
     method: 'POST',
     body: JSON.stringify({
       batch_id: batchId,
@@ -409,7 +463,7 @@ export async function triggerPhotoProcessing(
   })
 
   revalidatePath(`/organizer/events/${eventId}/photos`)
-  return batchId
+  return getPhotoProcessingSummary(eventId, batchId, result)
 }
 
 export async function triggerPhotoProcessingForPrefix(
@@ -417,10 +471,10 @@ export async function triggerPhotoProcessingForPrefix(
   organizerId: string,
   prefix: string,
   batchId = crypto.randomUUID()
-) {
+): Promise<PhotoProcessingSummary> {
   await requireAuth()
 
-  await fetchDjangoApi('/ai/photos/process-prefix', {
+  const result = await fetchDjangoApi('/ai/photos/process-prefix', {
     method: 'POST',
     body: JSON.stringify({
       batch_id: batchId,
@@ -432,7 +486,7 @@ export async function triggerPhotoProcessingForPrefix(
   })
 
   revalidatePath(`/organizer/events/${eventId}/photos`)
-  return batchId
+  return getPhotoProcessingSummary(eventId, batchId, result)
 }
 
 export type ReviewPhotoActionState = {
@@ -603,6 +657,45 @@ export async function movePhotoTagToReview(
     return {
       status: 'error',
       message: error instanceof Error ? error.message : 'Could not move this tag to review.',
+    }
+  }
+}
+
+export async function requestRunnerPhotoReview(
+  _previousState: ReviewPhotoActionState,
+  formData: FormData
+): Promise<ReviewPhotoActionState> {
+  const { supabase } = await requireAuth()
+
+  try {
+    const eventId = getRequiredFormValue(formData, 'eventId')
+    const photoTagId = getRequiredFormValue(formData, 'photoTagId')
+
+    const { data, error } = await supabase.rpc('runner_request_photo_review', {
+      p_event_id: eventId,
+      p_photo_tag_id: photoTagId,
+    })
+
+    if (error) {
+      return { status: 'error', message: error.message }
+    }
+
+    const result = data?.[0] as { success?: boolean; message?: string } | undefined
+
+    if (!result?.success) {
+      return {
+        status: 'error',
+        message: result?.message ?? 'Could not send this photo back to review.',
+      }
+    }
+
+    revalidatePath(`/runner/events/${eventId}/gallery`)
+    revalidatePath(`/organizer/events/${eventId}/photos`)
+    return { status: 'success', message: result.message ?? 'Photo sent back to organizer review.' }
+  } catch (error) {
+    return {
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Could not send this photo back to review.',
     }
   }
 }
