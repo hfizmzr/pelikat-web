@@ -5,11 +5,18 @@ RUN apk add --no-cache libc6-compat
 
 RUN corepack enable && corepack prepare pnpm@10 --activate
 
+# Set pnpm home directory for caching
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
 WORKDIR /app
 
 # ── Install deps first (cached unless lock file changes) ──────────
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --no-frozen-lockfile
+
+# Use BuildKit cache mount to persist the pnpm store across builds
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --no-frozen-lockfile
 
 # ── Source files are mounted via volume — no COPY needed in dev ───
 # docker-compose.dev.yml mounts .:/app and keeps /app/node_modules
