@@ -118,18 +118,23 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
         </div>
       )}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
+        <DialogContent className="bg-[#201f22] border border-[#494454]/40 text-[#e5e1e4] rounded-xl shadow-2xl">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit Organizer' : 'Add New Organizer'}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-jakarta text-[18px] text-[#e5e1e4] flex items-center gap-2">
+            <span className="material-symbols-outlined text-[20px] text-[#d0bcff]">
+              {isEdit ? 'edit' : 'add_business'}
+            </span>
+            {isEdit ? 'Edit Organizer' : 'Add New Organizer'}
+          </DialogTitle>
+          <DialogDescription className="text-[#cbc3d7] font-inter text-[13px]">
             {isEdit
               ? 'Update organizer details. The organizer will still be able to access their dashboard if active.'
               : 'Create a new organizer account. They can then sign in to manage their events.'}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor={isEdit ? 'edit-name' : 'name'}>Organizer Name</Label>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-1">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-semibold text-[#cbc3d7] font-inter" htmlFor={isEdit ? 'edit-name' : 'name'}>Organizer Name</label>
             <Input
               id={isEdit ? 'edit-name' : 'name'}
               placeholder="e.g., Jakarta Marathon"
@@ -137,49 +142,61 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
               onChange={(e) => setName(e.target.value)}
               onBlur={(e) => !isEdit && setSlug(generateSlug(e.target.value))}
               required
+              className="bg-[#131315] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#494454] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor={isEdit ? 'edit-slug' : 'slug'}>URL Slug</Label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-semibold text-[#cbc3d7] font-inter" htmlFor={isEdit ? 'edit-slug' : 'slug'}>URL Slug</label>
             <Input
               id={isEdit ? 'edit-slug' : 'slug'}
               placeholder="jakarta-marathon"
               value={slug}
               onChange={(e) => setSlug(generateSlug(e.target.value))}
               required
+              className="bg-[#131315] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#494454] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
             />
-            <p className="text-xs text-muted-foreground">This will be used as: pelikat.com/o/{slug}</p>
+            <p className="text-[11px] text-[#958ea0] font-inter">Used as: pelikat.com/o/{slug}</p>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor={isEdit ? 'edit-contactEmail' : 'contactEmail'}>Contact Email</Label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-semibold text-[#cbc3d7] font-inter" htmlFor={isEdit ? 'edit-contactEmail' : 'contactEmail'}>Contact Email</label>
             <Input
               id={isEdit ? 'edit-contactEmail' : 'contactEmail'}
               type="email"
               placeholder="organizer@example.com"
               value={contactEmail}
               onChange={(e) => setContactEmail(e.target.value)}
+              className="bg-[#131315] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#494454] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
             />
-            <p className="text-xs text-muted-foreground">Used for login and notifications</p>
+            <p className="text-[11px] text-[#958ea0] font-inter">Used for login and notifications</p>
           </div>
           {isEdit && (
-            <div className="space-y-2">
-              <Label htmlFor="edit-expires">Subscription Expires</Label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-semibold text-[#cbc3d7] font-inter" htmlFor="edit-expires">Subscription Expires</label>
               <Input
                 id="edit-expires"
                 type="date"
                 value={subExpiresAt}
                 onChange={(e) => setSubExpiresAt(e.target.value)}
+                className="bg-[#131315] border-[#494454]/40 text-[#e5e1e4] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
               />
             </div>
           )}
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              className="px-4 py-2 rounded-lg bg-[#2a2a2c] hover:bg-[#353437] text-[#e5e1e4] text-[13px] font-medium font-inter transition-colors border border-[#494454]/30"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
-            </Button>
-            <Button type="submit" disabled={submitting}>
-              {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#d0bcff] hover:bg-[#6d3bd7] text-[#3c0091] hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter disabled:opacity-50"
+            >
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Create Organizer'}
-            </Button>
+            </button>
           </div>
         </form>
       </DialogContent>
