@@ -5,8 +5,6 @@ import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
 import { OrganizerSidebar, OrganizerMobileNav } from '@/components/layout/organizer-sidebar'
-import { UserMenu } from '@/components/auth/user-menu'
-import { ThemeToggle } from '@/components/theme-toggle'
 import { Toaster } from '@/components/ui/sonner'
 
 export default function OrganizerLayout({
@@ -40,7 +38,6 @@ export default function OrganizerLayout({
         return
       }
 
-      // Redirect to payment page if subscription has never been set up
       const { data: org } = await supabase
         .from('organizers')
         .select('sub_expires_at')
@@ -59,24 +56,58 @@ export default function OrganizerLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-[#131315]">
+      {/* Sidebar */}
       {showSidebar && (
-        <div className="hidden lg:sticky lg:top-0 lg:h-screen lg:flex lg:flex-col">
+        <div className="hidden lg:sticky lg:top-0 lg:h-screen lg:flex lg:flex-col shrink-0">
           <OrganizerSidebar />
         </div>
       )}
-      <div className="flex flex-1 flex-col overflow-hidden">
+
+      {/* Main content */}
+      <div className="flex flex-1 flex-col min-w-0">
         {showSidebar && (
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card px-6">
-            <OrganizerMobileNav />
-            <div className="flex items-center gap-4 ml-auto">
-              <ThemeToggle />
-              <UserMenu />
+          <header className="sticky top-0 z-40 bg-[#0f0f13]/90 backdrop-blur-xl border-b border-[#23232b] px-6 h-16 flex items-center justify-between gap-4">
+            {/* Mobile nav trigger */}
+            <div className="lg:hidden">
+              <OrganizerMobileNav />
+            </div>
+
+            {/* Left breadcrumb area */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#d0bcff]/10 border border-[#d0bcff]/20">
+                <span className="w-2 h-2 rounded-full bg-[#d0bcff] animate-pulse" />
+                <span className="text-[10px] leading-[14px] tracking-[0.05em] text-[#e9ddff] font-semibold">
+                  Organizer Hub
+                </span>
+              </div>
+            </div>
+
+            {/* Right actions */}
+            <div className="flex items-center gap-2">
+              <button
+                className="relative p-2 rounded-lg text-[#cbc3d7] hover:text-[#e5e1e4] hover:bg-[#2a2a2c] transition-colors"
+                title="Notifications"
+              >
+                <span className="material-symbols-outlined text-[20px]">notifications</span>
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#d0bcff] ring-2 ring-[#0f0f13]" />
+              </button>
+              <a
+                href="/organizer/events/new"
+                className="px-4 py-1.5 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-[#a078ff] transition-all shadow-[0_0_16px_rgba(208,188,255,0.25)]"
+              >
+                <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                <span>Create Event</span>
+              </a>
             </div>
           </header>
         )}
-        <main className="flex-1 p-6 overflow-y-auto">{children}</main>
+
+        <main className="flex-1 overflow-y-auto">
+          {children}
+        </main>
       </div>
+
       <Toaster richColors position="bottom-right" />
     </div>
   )
