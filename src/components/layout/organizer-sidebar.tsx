@@ -172,14 +172,6 @@ function SidebarContent({ pathname }: { pathname: string }) {
       {/* Bottom user section */}
       <div className="p-2 border-t border-[#23232b] flex flex-col gap-2 bg-[#0f0f13]/80 shrink-0">
         <button
-          onClick={() => router.push('/organizer/mobile')}
-          className="w-full py-2 px-3 bg-[#d0bcff]/10 text-[#d0bcff] hover:bg-[#d0bcff]/20 text-[12px] leading-[16px] font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-[#d0bcff]/20 shadow-sm"
-          title="Open on-site mobile view"
-        >
-          <span className="material-symbols-outlined text-[16px]">smartphone</span>
-          <span>Mobile Hub (PWA)</span>
-        </button>
-        <button
           onClick={() => router.push('/organizer/events/new')}
           className="w-full py-2 px-3 bg-[#4edea3]/20 text-[#4edea3] hover:bg-[#4edea3]/30 text-[12px] leading-[16px] font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-[#4edea3]/20 shadow-sm"
         >

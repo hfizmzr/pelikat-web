@@ -97,7 +97,8 @@ export default async function OrganizerRunnersPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] overflow-hidden">
+        <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] overflow-x-auto">
+          <div className="min-w-[800px]">
           <div className="grid grid-cols-[auto_1fr_1fr_auto_auto_auto] gap-0 text-[10px] leading-[14px] tracking-[0.05em] font-semibold text-[#958ea0] uppercase px-5 py-3 border-b border-[#23232b] bg-[#201f22]">
             <div className="pr-4">#</div>
             <div>Runner</div>
@@ -160,6 +161,7 @@ export default async function OrganizerRunnersPage() {
               <p className="text-[12px] mt-1">Create and publish an event to accept registrations</p>
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>

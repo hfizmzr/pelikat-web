@@ -139,7 +139,7 @@ export default async function OrganizerMobileConsolePage() {
             <p className="text-[10px] text-[#958ea0] truncate max-w-[220px]">{event.name}</p>
           </div>
           <Link
-            href={`/organizer/events/${event.id}/checkin`}
+            href={`/organizer/mobile/scanner`}
             className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#d0bcff] text-[#3c0091] text-[11px] font-bold"
           >
             <span className="material-symbols-outlined text-[13px]">qr_code_scanner</span>

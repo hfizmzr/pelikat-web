@@ -20,7 +20,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 
 # ── Install Playwright browsers and dependencies for the container ──
 # This ensures the browser binaries are baked right into the image layer
-RUN npx playwright install --with-deps
+RUN npx playwright install
 
 EXPOSE 3000
 

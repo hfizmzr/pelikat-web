@@ -18,7 +18,16 @@ export default function OrganizerLayout({
 
   const showSidebar =
     !pathname.startsWith('/organizer/subscription-expired') &&
-    !pathname.startsWith('/organizer/payment')
+    !pathname.startsWith('/organizer/payment') &&
+    !pathname.startsWith('/organizer/mobile')
+
+  useEffect(() => {
+    // Detect standalone PWA mode
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in navigator && (navigator as any).standalone)
+    if (isStandalone && !pathname.startsWith('/organizer/mobile')) {
+      router.replace('/organizer/mobile')
+    }
+  }, [pathname, router])
 
   useEffect(() => {
     if (pathname.startsWith('/organizer/apply')) return
@@ -103,7 +112,7 @@ export default function OrganizerLayout({
           </header>
         )}
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
           {children}
         </main>
       </div>

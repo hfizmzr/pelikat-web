@@ -84,7 +84,7 @@ export default async function OrganizerMobileEventsPage() {
             <p className="text-[10px] text-[#958ea0]">{events.length} total • {upcoming.length} upcoming</p>
           </div>
           <Link
-            href="/organizer/events/new"
+            href="/organizer/mobile/events/new"
             className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#d0bcff] text-[#3c0091] text-[11px] font-bold active:scale-95 transition-transform"
           >
             <span className="material-symbols-outlined text-[14px]">add</span>
@@ -141,18 +141,11 @@ export default async function OrganizerMobileEventsPage() {
                     {/* Action buttons */}
                     <div className="flex gap-2">
                       <Link
-                        href={`/organizer/events/${event.id}/checkin`}
+                        href={`/organizer/mobile/scanner`}
                         className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-[#d0bcff] text-[#3c0091] text-[11px] font-bold active:scale-95 transition-transform"
                       >
                         <span className="material-symbols-outlined text-[14px]">qr_code_scanner</span>
                         Check-in
-                      </Link>
-                      <Link
-                        href={`/organizer/events/${event.id}`}
-                        className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-[#2a2a2c] text-[#cbc3d7] text-[11px] font-medium active:scale-95 transition-transform"
-                      >
-                        <span className="material-symbols-outlined text-[14px]">open_in_full</span>
-                        Details
                       </Link>
                     </div>
                   </div>
@@ -170,10 +163,9 @@ export default async function OrganizerMobileEventsPage() {
             </h2>
             <div className="flex flex-col gap-2">
               {past.map((event) => (
-                <Link
+                <div
                   key={event.id}
-                  href={`/organizer/events/${event.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-[#1c1b1d] border border-[#353437]/30 active:scale-95 transition-transform"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-[#1c1b1d] border border-[#353437]/30"
                 >
                   <div className="w-10 h-10 rounded-lg bg-[#353437] flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[18px] text-[#958ea0]">event</span>
@@ -185,7 +177,7 @@ export default async function OrganizerMobileEventsPage() {
                     </p>
                   </div>
                   {statusChip(event.status)}
-                </Link>
+                </div>
               ))}
             </div>
           </section>
@@ -197,7 +189,7 @@ export default async function OrganizerMobileEventsPage() {
             <p className="text-[14px] font-medium">No events yet</p>
             <p className="text-[12px] mt-1">Create your first running event</p>
             <Link
-              href="/organizer/events/new"
+              href="/organizer/mobile/events/new"
               className="mt-4 px-5 py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold"
             >
               Create Event

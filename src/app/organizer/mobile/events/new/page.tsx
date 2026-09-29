@@ -91,7 +91,7 @@ export default function NewEventPage() {
       if (inventoryError) throw inventoryError
 
       await logAudit(supabase, 'organizer_create_event', event.id, { name: formData.name, event_date: formData.event_date, location: formData.location })
-      router.push(`/organizer/events/${event.id}/repc`)
+      router.push(`/organizer/mobile/events`)
     } catch (error) {
       console.error('Error creating event:', error)
     } finally {
@@ -108,7 +108,7 @@ export default function NewEventPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => router.push('/organizer/events')}
+            onClick={() => router.push('/organizer/mobile/events')}
             className="w-10 h-10 rounded-xl bg-[#1c1b1d] border border-[#23232b] flex items-center justify-center text-[#cbc3d7] hover:bg-[#201f22] hover:text-[#e5e1e4] transition-colors"
           >
             <span className="material-symbols-outlined text-[20px]">arrow_back</span>
@@ -234,7 +234,7 @@ export default function NewEventPage() {
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => router.push('/organizer/events')}
+                onClick={() => router.push('/organizer/mobile/events')}
                 className="px-5 py-2.5 rounded-lg text-[14px] font-semibold text-[#cbc3d7] hover:text-[#e5e1e4] hover:bg-[#2a2a2c] transition-colors"
               >
                 Cancel

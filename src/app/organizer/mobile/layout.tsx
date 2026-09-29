@@ -71,31 +71,33 @@ export default function OrganizerMobileLayout({
   }, [router, supabase])
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#131315] overscroll-none select-none">
-      {/* Main scrollable content area - padded for bottom nav */}
-      <main className="flex-1 overflow-y-auto pb-28 pt-0">{children}</main>
+    <div className="min-h-screen bg-[#0e0e10] flex justify-center overflow-hidden">
+      <div className="flex flex-col w-full max-w-md h-[100dvh] bg-[#131315] overscroll-none select-none relative shadow-2xl border-x border-[#23232b]/30">
+        {/* Main scrollable content area - padded for bottom nav */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 pt-0">{children}</main>
 
-      {/* Floating pill bottom nav */}
-      <nav className="fixed bottom-0 inset-x-0 z-50 pb-safe pointer-events-none flex justify-center">
-        <div className="pointer-events-auto mb-3 mx-4 w-full max-w-[420px] bg-[#1c1b1d]/90 backdrop-blur-2xl rounded-full px-2 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-around border border-[#353437]/60">
-          {NAV_ITEMS.map((item) => {
-            // Active if current path matches exactly or starts with (for sub-routes)
-            const active =
-              pathname === item.href ||
-              (item.href !== '/organizer/mobile' &&
-                pathname.startsWith(item.href))
-            return (
-              <BottomNavLink
-                key={item.href}
-                href={item.href}
-                icon={item.icon}
-                label={item.label}
-                active={active}
-              />
-            )
-          })}
-        </div>
-      </nav>
+        {/* Floating pill bottom nav */}
+        <nav className="absolute bottom-0 inset-x-0 z-50 pb-safe pointer-events-none flex justify-center pb-3 px-4">
+          <div className="pointer-events-auto w-full bg-[#1c1b1d]/90 backdrop-blur-2xl rounded-full px-2 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-around border border-[#353437]/60">
+            {NAV_ITEMS.map((item) => {
+              // Active if current path matches exactly or starts with (for sub-routes)
+              const active =
+                pathname === item.href ||
+                (item.href !== '/organizer/mobile' &&
+                  pathname.startsWith(item.href))
+              return (
+                <BottomNavLink
+                  key={item.href}
+                  href={item.href}
+                  icon={item.icon}
+                  label={item.label}
+                  active={active}
+                />
+              )
+            })}
+          </div>
+        </nav>
+      </div>
     </div>
   )
 }

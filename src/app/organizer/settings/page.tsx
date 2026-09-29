@@ -158,7 +158,7 @@ export default function OrganizerSettingsPage() {
     <div className="relative w-full min-h-full px-6 py-8 bg-[#131315]">
       <div className="absolute -top-20 -right-20 w-80 h-80 bg-[#d0bcff]/8 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col gap-6 max-w-3xl">
+      <div className="relative z-10 flex flex-col gap-6 w-full">
         {/* Header */}
         <div className="flex flex-col gap-1">
           <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-[#d0bcff]/10 text-[#e9ddff] uppercase w-fit">

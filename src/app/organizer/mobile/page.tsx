@@ -325,7 +325,7 @@ export default async function OrganizerMobileHome() {
                 </span>
               </div>
               <Link
-                href={`/organizer/events/${data.nextEvent.id}/checkin`}
+                href={`/organizer/mobile/scanner`}
                 className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold active:scale-95 transition-transform"
               >
                 <span className="material-symbols-outlined text-[16px]">qr_code_scanner</span>
