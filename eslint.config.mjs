@@ -12,6 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Non-app dirs: vendored bundles, tooling, artifacts, Deno/migrations
+    "everything-claude-code/**",
+    ".opencode/**",
+    "supabase/**",
+    "k6/**",
+    "graphify-out/**",
+    "playwright-report/**",
+    "test-results/**",
   ]),
   {
     rules: {

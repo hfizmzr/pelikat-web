@@ -5,11 +5,9 @@ import {
   QrCode,
   Trophy,
   BarChart3,
+  Share2,
+  Medal,
 } from "lucide-react"
-import { 
-  FaInstagram, 
-  FaTwitter 
-} from "react-icons/fa"
 import { Badge } from "@/components/ui/badge"
 import { FeatureCard } from "./feature-card"
 
@@ -96,10 +94,10 @@ export function FeaturesSection() {
           >
             <div className="mt-4 flex gap-2">
               <span className="flex size-8 items-center justify-center rounded-full bg-[#1DA1F2]/10 text-[#1DA1F2]">
-                <FaTwitter className="size-4" />
+                <Share2 className="size-4" />
               </span>
               <span className="flex size-8 items-center justify-center rounded-full bg-[#E1306C]/10 text-[#E1306C]">
-                <FaInstagram className="size-4" />
+                <Medal className="size-4" />
               </span>
             </div>
           </FeatureCard>

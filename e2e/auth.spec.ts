@@ -2,14 +2,14 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Security: Authentication', () => {
   test('unauthenticated users redirected from organizer pages', async ({ page }) => {
-    await page.goto('/organizer/dashboard')
+    await page.goto('/organizer')
     // Middleware redirects to /login?redirect=...
     await page.waitForURL((url) => url.pathname === '/login', { timeout: 10000 })
     expect(page.url()).toContain('/login')
   })
 
   test('unauthenticated users redirected from admin pages', async ({ page }) => {
-    await page.goto('/admin/dashboard')
+    await page.goto('/admin')
     await page.waitForURL((url) => url.pathname === '/login', { timeout: 10000 })
     expect(page.url()).toContain('/login')
   })

@@ -85,13 +85,3 @@ export function useAuth(): UseAuthResult {
 
   return { user, profile, role, loading }
 }
-
-export function useUser() {
-  const { user, loading } = useAuth()
-  return { user, loading }
-}
-
-export function useRole() {
-  const { role, loading } = useAuth()
-  return { role, loading }
-}
