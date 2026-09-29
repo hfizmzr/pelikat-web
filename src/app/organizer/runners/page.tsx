@@ -114,21 +114,27 @@ export default async function OrganizerRunnersPage() {
                   <div className="pr-4 text-[12px] text-[#958ea0] font-mono">{i + 1}</div>
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-full bg-[#d0bcff]/20 flex items-center justify-center text-[#d0bcff] text-[12px] font-bold shrink-0">
-                      {(reg.runner_profiles?.full_name || 'U').charAt(0).toUpperCase()}
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {(((reg as any).runner_profiles as any)?.full_name || 'U').charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <div className="text-[14px] leading-[20px] font-medium text-[#e5e1e4]">{reg.runner_profiles?.full_name || 'Unknown'}</div>
-                      <div className="text-[11px] text-[#958ea0]">{reg.runner_profiles?.email || '—'}</div>
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      <div className="text-[14px] leading-[20px] font-medium text-[#e5e1e4]">{((reg as any).runner_profiles as any)?.full_name || 'Unknown'}</div>
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      <div className="text-[11px] text-[#958ea0]">{((reg as any).runner_profiles as any)?.email || '—'}</div>
                     </div>
                   </div>
                   <div>
-                    <div className="text-[13px] leading-[20px] text-[#cbc3d7]">{reg.events?.name || '—'}</div>
-                    <div className="text-[11px] text-[#958ea0]">{reg.race_categories?.name || '—'}</div>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    <div className="text-[13px] leading-[20px] text-[#cbc3d7]">{((reg as any).events as any)?.name || '—'}</div>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    <div className="text-[11px] text-[#958ea0]">{((reg as any).race_categories as any)?.name || '—'}</div>
                   </div>
                   <div className="px-4 text-center">
                     {reg.bib_number ? (
                       <span className="px-2.5 py-1 rounded-lg bg-[#d0bcff]/15 text-[#d0bcff] text-[11px] font-mono font-semibold border border-[#d0bcff]/20">
-                        {reg.race_categories?.bib_prefix || ''}{reg.bib_number}
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                        {((reg as any).race_categories as any)?.bib_prefix || ''}{reg.bib_number}
                       </span>
                     ) : (
                       <span className="text-[11px] text-[#494454]">—</span>

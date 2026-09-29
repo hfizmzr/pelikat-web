@@ -23,9 +23,9 @@ export default async function OrganizerFinancialPage() {
 
   // Revenue aggregation
   const paidRegs = registrations?.filter(r => r.payment_status === 'paid') || []
-  const grossRevenue = paidRegs.reduce((a, r) => a + Number(r.race_categories?.price || 0), 0)
+  const grossRevenue = paidRegs.reduce((a, r) => a + Number((r.race_categories as any)?.price || 0), 0)
   const pendingRevenue = (registrations?.filter(r => r.payment_status === 'pending') || [])
-    .reduce((a, r) => a + Number(r.race_categories?.price || 0), 0)
+    .reduce((a, r) => a + Number((r.race_categories as any)?.price || 0), 0)
 
   // Monthly breakdown (last 6 months)
   const now = new Date()
@@ -37,7 +37,7 @@ export default async function OrganizerFinancialPage() {
         const rd = new Date(r.created_at)
         return rd.getMonth() === d.getMonth() && rd.getFullYear() === d.getFullYear()
       })
-      .reduce((a, r) => a + Number(r.race_categories?.price || 0), 0)
+      .reduce((a, r) => a + Number((r.race_categories as any)?.price || 0), 0)
     return { label, revenue }
   })
   const maxMonthly = Math.max(...monthlyData.map(m => m.revenue), 1)
@@ -45,10 +45,10 @@ export default async function OrganizerFinancialPage() {
   // Per-event revenue
   const eventRevMap: Record<string, { name: string; revenue: number; count: number }> = {}
   paidRegs.forEach(r => {
-    const eid = (r.events as { id: string; name: string } | null)?.id || 'unknown'
-    const ename = (r.events as { id: string; name: string } | null)?.name || 'Unknown Event'
+    const eid = ((r as any).events as { id: string; name: string } | null)?.id || 'unknown'
+    const ename = ((r as any).events as { id: string; name: string } | null)?.name || 'Unknown Event'
     if (!eventRevMap[eid]) eventRevMap[eid] = { name: ename, revenue: 0, count: 0 }
-    eventRevMap[eid].revenue += Number(r.race_categories?.price || 0)
+    eventRevMap[eid].revenue += Number((r.race_categories as any)?.price || 0)
     eventRevMap[eid].count++
   })
   const eventRevList = Object.values(eventRevMap).sort((a, b) => b.revenue - a.revenue)

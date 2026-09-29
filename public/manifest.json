@@ -3,19 +3,41 @@
   "short_name": "Pelikat",
   "description": "Multi-tenant event management and e-bib checkin platform.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#111111",
+  "orientation": "portrait-primary",
+  "background_color": "#131315",
   "theme_color": "#7c3aed",
   "icons": [
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Organizer Hub",
+      "short_name": "Hub",
+      "description": "Open Organizer PWA",
+      "url": "/organizer/mobile",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "BIB Scanner",
+      "short_name": "Scanner",
+      "description": "Open the BIB check-in scanner",
+      "url": "/organizer/mobile/scanner",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["productivity", "sports", "utilities"],
+  "prefer_related_applications": false
 }

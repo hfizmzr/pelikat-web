@@ -18,9 +18,9 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --no-frozen-lockfile
 
-# ── Source files are mounted via volume — no COPY needed in dev ───
-# docker-compose.dev.yml mounts .:/app and keeps /app/node_modules
-# from this image layer, so the install above is what matters.
+# ── Install Playwright browsers and dependencies for the container ──
+# This ensures the browser binaries are baked right into the image layer
+RUN npx playwright install --with-deps
 
 EXPOSE 3000
 

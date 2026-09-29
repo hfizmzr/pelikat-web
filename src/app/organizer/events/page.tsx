@@ -26,7 +26,7 @@ export default async function OrganizerEventsPage() {
     .from('events')
     .select(`
       id, name, status, event_date, location, description,
-      race_categories(id, name, max_participants),
+      race_categories(id, name, max_slots),
       registrations(id, payment_status, checked_in)
     `)
     .eq('organizer_id', organizerId)
@@ -50,7 +50,7 @@ export default async function OrganizerEventsPage() {
     const paid = regs.filter((r: { payment_status: string }) => r.payment_status === 'paid').length
     const checkedIn = regs.filter((r: { checked_in: boolean }) => r.checked_in).length
     const cats = event.race_categories || []
-    const totalCap = cats.reduce((a: number, c: { max_participants?: number | null }) => a + (c.max_participants || 0), 0)
+    const totalCap = cats.reduce((a: number, c: { max_slots?: number | null }) => a + (c.max_slots || 0), 0)
     const fillPct = totalCap > 0 ? Math.round((regs.length / totalCap) * 100) : 0
     const daysLeft = Math.ceil((new Date(event.event_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 

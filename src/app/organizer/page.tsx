@@ -18,7 +18,7 @@ export default async function OrganizerDashboard() {
       .from('events')
       .select(`
         id, name, status, event_date, location,
-        race_categories(id, name, max_participants, bib_prefix),
+        race_categories(id, name, max_slots, bib_prefix),
         registrations(id, payment_status, checked_in)
       `)
       .eq('organizer_id', organizerId)
@@ -37,7 +37,7 @@ export default async function OrganizerDashboard() {
       .limit(8),
     supabase
       .from('organizers')
-      .select('name, tier')
+      .select('name')
       .eq('id', organizerId)
       .maybeSingle(),
   ])
@@ -260,8 +260,8 @@ export default async function OrganizerDashboard() {
                 {activeCategories.map((cat, i) => {
                   const colors = ['bg-[#4cd7f6]', 'bg-[#d0bcff]', 'bg-[#4edea3]', 'bg-[#958ea0]']
                   const dotColors = ['bg-[#4cd7f6]', 'bg-[#d0bcff]', 'bg-[#4edea3]', 'bg-[#958ea0]']
-                  const fillPercent = cat.max_participants
-                    ? Math.round((0 / cat.max_participants) * 100) // placeholder until we join regs
+                  const fillPercent = cat.max_slots
+                    ? Math.round((0 / cat.max_slots) * 100) // placeholder until we join regs
                     : 0
                   const isAlmostFull = fillPercent >= 90
 
@@ -274,7 +274,7 @@ export default async function OrganizerDashboard() {
                             <span className="text-[12px] leading-[16px] tracking-[0.02em] text-[#e5e1e4] font-semibold">{cat.name}</span>
                           </div>
                           <span className="text-[11px] text-[#958ea0] mt-0.5 block">
-                            {cat.bib_prefix || 'BIB'}-#### • {cat.max_participants || '∞'} slots
+                            {cat.bib_prefix || 'BIB'}-#### • {cat.max_slots || '∞'} slots
                           </span>
                         </div>
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${isAlmostFull ? 'bg-[#ffb4ab]/15 text-[#ffb4ab]' : 'bg-[#4cd7f6]/15 text-[#4cd7f6]'}`}>
@@ -283,9 +283,9 @@ export default async function OrganizerDashboard() {
                       </div>
                       <div>
                         <div className="flex justify-between text-[10px] text-[#cbc3d7] mb-1.5 font-medium">
-                          <span>0 of {cat.max_participants || '?'} slots</span>
+                          <span>0 of {cat.max_slots || '?'} slots</span>
                           <span className={isAlmostFull ? 'text-[#ffb4ab]' : 'text-[#958ea0]'}>
-                            {cat.max_participants ? cat.max_participants : '?'} left
+                            {cat.max_slots ? cat.max_slots : '?'} left
                           </span>
                         </div>
                         <div className="w-full bg-[#353437] rounded-full h-1.5 overflow-hidden">
@@ -331,14 +331,17 @@ export default async function OrganizerDashboard() {
                   <div key={reg.id} className="flex items-center justify-between px-6 py-3 hover:bg-[#201f22] transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-[#d0bcff]/20 flex items-center justify-center text-[#d0bcff] text-[12px] font-bold shrink-0">
-                        {(reg.runner_profiles?.full_name || 'U').charAt(0).toUpperCase()}
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                        {(((reg as any).runner_profiles as any)?.full_name || 'U').charAt(0).toUpperCase()}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-[14px] leading-[20px] font-medium text-[#e5e1e4]">
-                          {reg.runner_profiles?.full_name || 'Unknown Runner'}
+                           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                           {((reg as any).runner_profiles as any)?.full_name || 'Unknown Runner'}
                         </span>
                         <span className="text-[12px] leading-[16px] text-[#958ea0]">
-                          {reg.events?.name} {reg.race_categories?.name ? `· ${reg.race_categories.name}` : ''}
+                           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                           {((reg as any).events as any)?.name || '—'}{((reg as any).race_categories as any)?.name ? ` · ${((reg as any).race_categories as any)?.name}` : ''}
                         </span>
                       </div>
                     </div>
