@@ -3,10 +3,6 @@
 import { useAuth } from '@/hooks/use-auth'
 import { createClient } from '@/lib/supabase/client'
 import { evaluateBadges } from '@/lib/badges'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Plus, MapPin, Clock, Trophy, Trash2, Navigation, Award } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -187,224 +183,224 @@ export default function RunnerRunLogPage() {
   const totalTime = runLogs.reduce((acc, l) => acc + (l.duration_sec || 0), 0)
 
   if (loading) {
-    return <div className="p-8">Loading...</div>
+    return (
+      <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center">
+        <span className="material-symbols-outlined text-[32px] text-[#cbc3d7] animate-spin">progress_activity</span>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Run Log</h1>
-        <p className="text-muted-foreground">Track your virtual run progress</p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Distance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-primary" />
-              {totalDistance.toFixed(1)} KM
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Time</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              {formatTime(totalTime)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Runs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-primary" />
-              {runLogs.length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {gpsRoutePoints.length >= 2 && (
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle>Your Route</CardTitle>
-            <CardDescription>
-              {gpsRoutePoints.length} GPS points captured
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RouteMap points={gpsRoutePoints} />
-          </CardContent>
-        </Card>
-      )}
-
-      <Card className="border-border">
-        <CardHeader>
-          <CardTitle>Log a Run</CardTitle>
-          <CardDescription>Add your virtual run activity or start GPS tracking</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-3">
-            <Button variant="outline" asChild>
-              <Link href="/runner/run-log/track">
-                <Navigation className="mr-2 h-4 w-4" />
-                Start GPS Tracking
-              </Link>
-            </Button>
+    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+        <div className="flex items-center h-14 px-4 pt-safe">
+          <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
+            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+          </Link>
+          <div className="flex-1 flex flex-col items-center mr-8 truncate">
+            <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
+              Run Log
+            </h1>
           </div>
+        </div>
+      </header>
 
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="grid gap-2">
-              <Label>Distance (KM)</Label>
-              <Input
-                type="number"
-                step="0.001"
-                placeholder="5.0"
-                value={newRun.distance_km}
-                onChange={(e) => setNewRun({ ...newRun, distance_km: e.target.value })}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>Hours</Label>
-              <Input
-                type="number"
-                min="0"
-                value={newRun.duration_hours}
-                onChange={(e) => setNewRun({ ...newRun, duration_hours: e.target.value })}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>Minutes</Label>
-              <Input
-                type="number"
-                min="0"
-                max="59"
-                value={newRun.duration_minutes}
-                onChange={(e) => setNewRun({ ...newRun, duration_minutes: e.target.value })}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>Seconds</Label>
-              <Input
-                type="number"
-                min="0"
-                max="59"
-                value={newRun.duration_seconds}
-                onChange={(e) => setNewRun({ ...newRun, duration_seconds: e.target.value })}
-              />
-            </div>
+      <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto pb-24">
+        
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
+            <span className="material-symbols-outlined text-[20px] text-[#4cd7f6] mb-1">map</span>
+            <span className="text-[12px] text-[#958ea0] font-medium uppercase tracking-wider">Total Distance</span>
+            <span className="text-[20px] font-extrabold text-[#e5e1e4] font-mono leading-none">{totalDistance.toFixed(1)} <span className="text-[14px]">KM</span></span>
           </div>
-          <Button onClick={handleAddRun} disabled={submitting}>
-            <Plus className="mr-2 h-4 w-4" />
-            {submitting ? 'Logging...' : 'Log Run'}
-          </Button>
-        </CardContent>
-      </Card>
+          <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
+            <span className="material-symbols-outlined text-[20px] text-[#d0bcff] mb-1">schedule</span>
+            <span className="text-[12px] text-[#958ea0] font-medium uppercase tracking-wider">Total Time</span>
+            <span className="text-[16px] font-bold text-[#e5e1e4] mt-1 leading-none">{formatTime(totalTime)}</span>
+          </div>
+          <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-1 col-span-2 active:scale-[0.98] transition-transform">
+            <div className="flex justify-between items-center">
+              <span className="material-symbols-outlined text-[20px] text-[#4edea3]">directions_run</span>
+              <span className="text-[20px] font-extrabold text-[#e5e1e4] font-mono leading-none">{runLogs.length}</span>
+            </div>
+            <span className="text-[12px] text-[#958ea0] font-medium uppercase tracking-wider mt-2">Total Runs Logged</span>
+          </div>
+        </div>
 
-      {newBadges.length > 0 && (
-        <Card className="border-primary bg-primary/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
-              Badges Earned
-            </CardTitle>
-            <CardDescription>Congratulations! You earned new achievements.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {gpsRoutePoints.length >= 2 && (
+          <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-[#353437]/60 flex items-center justify-between">
+              <h2 className="text-[14px] font-bold text-[#e5e1e4]">Your Last Route</h2>
+              <span className="text-[10px] text-[#cbc3d7] bg-[#23232b] px-2 py-0.5 rounded uppercase tracking-wider">{gpsRoutePoints.length} Points</span>
+            </div>
+            <div className="p-2 aspect-video bg-[#131315]">
+              <RouteMap points={gpsRoutePoints} />
+            </div>
+          </section>
+        )}
+
+        {/* Log a Run */}
+        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-[#353437]/60">
+            <h2 className="text-[14px] font-bold text-[#e5e1e4]">Log a Run</h2>
+            <p className="text-[12px] text-[#958ea0]">Add your virtual run activity</p>
+          </div>
+          
+          <div className="p-5 flex flex-col gap-4">
+            <Link 
+              href="/runner/run-log/track"
+              className="w-full py-3.5 rounded-xl border border-[#4edea3]/40 bg-[#4edea3]/5 text-[#4edea3] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+            >
+              <span className="material-symbols-outlined text-[18px]">satellite_alt</span>
+              Start GPS Tracking
+            </Link>
+
+            <div className="w-full h-px bg-[#353437]/40 my-1 relative flex items-center justify-center">
+              <span className="bg-[#1c1b1d] px-2 text-[#958ea0] text-[10px] font-bold uppercase tracking-widest absolute">or manual</span>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-bold text-[#cbc3d7] ml-1 uppercase tracking-wider">Distance (KM)</label>
+                <input
+                  type="number"
+                  step="0.001"
+                  placeholder="5.0"
+                  value={newRun.distance_km}
+                  onChange={(e) => setNewRun({ ...newRun, distance_km: e.target.value })}
+                  className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-bold text-[#cbc3d7] ml-1 uppercase tracking-wider">Hrs</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newRun.duration_hours}
+                    onChange={(e) => setNewRun({ ...newRun, duration_hours: e.target.value })}
+                    className="w-full h-12 px-3 text-center rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-bold text-[#cbc3d7] ml-1 uppercase tracking-wider">Min</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={newRun.duration_minutes}
+                    onChange={(e) => setNewRun({ ...newRun, duration_minutes: e.target.value })}
+                    className="w-full h-12 px-3 text-center rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-bold text-[#cbc3d7] ml-1 uppercase tracking-wider">Sec</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={newRun.duration_seconds}
+                    onChange={(e) => setNewRun({ ...newRun, duration_seconds: e.target.value })}
+                    className="w-full h-12 px-3 text-center rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={handleAddRun} 
+              disabled={submitting}
+              className="w-full py-3.5 mt-2 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+            >
+              {submitting ? (
+                <>
+                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                  Logging...
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[18px]">add</span>
+                  Log Run
+                </>
+              )}
+            </button>
+          </div>
+        </section>
+
+        {newBadges.length > 0 && (
+          <section className="bg-[#4edea3]/10 border border-[#4edea3]/30 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#4edea3]/20 blur-2xl rounded-full -mt-10 -mr-10 pointer-events-none" />
+            <div className="flex items-center gap-2 text-[#4edea3]">
+              <span className="material-symbols-outlined text-[24px]">emoji_events</span>
+              <h2 className="text-[16px] font-bold">Badges Earned!</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-3 relative z-10">
               {newBadges.map((badge) => (
-                <div
-                  key={badge.badge_key}
-                  className="flex items-center gap-3 rounded-lg border border-primary/30 p-3 bg-background"
-                >
-                  <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center text-2xl shrink-0">
-                    {badge.icon}
-                  </div>
-                  <div>
-                    <p className="font-semibold">{badge.name}</p>
-                    <p className="text-xs text-muted-foreground">{badge.description}</p>
-                  </div>
+                <div key={badge.badge_key} className="bg-[#131315]/80 p-3 rounded-xl border border-[#4edea3]/20 flex flex-col items-center text-center">
+                  <span className="text-[24px] mb-2">{badge.icon}</span>
+                  <p className="text-[12px] font-bold text-[#e5e1e4] leading-tight">{badge.name}</p>
                 </div>
               ))}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-3"
+            <button 
               onClick={() => setNewBadges([])}
+              className="w-full py-2.5 rounded-lg bg-[#4edea3]/20 text-[#4edea3] text-[12px] font-bold active:scale-95 transition-transform"
             >
               Dismiss
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+            </button>
+          </section>
+        )}
 
-      <Card className="border-border">
-        <CardHeader>
-          <CardTitle>Run History</CardTitle>
-          <CardDescription>Your logged activities</CardDescription>
-        </CardHeader>
-        <CardContent>
+        <section className="flex flex-col gap-3">
+          <h2 className="text-[16px] font-bold text-[#e5e1e4] ml-1">Run History</h2>
+          
           {runLogs.length > 0 ? (
-            <div className="space-y-4">
+            <div className="flex flex-col gap-3">
               {runLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="flex items-center justify-between border-b pb-4 last:border-0"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
-                      {log.gps_data ? (
-                        <Navigation className="h-6 w-6 text-primary" />
-                      ) : (
-                        <MapPin className="h-6 w-6 text-primary" />
-                      )}
+                <div key={log.id} className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      log.gps_data ? 'bg-[#4cd7f6]/10 text-[#4cd7f6]' : 'bg-[#d0bcff]/10 text-[#d0bcff]'
+                    }`}>
+                      <span className="material-symbols-outlined text-[20px]">
+                        {log.gps_data ? 'satellite_alt' : 'directions_run'}
+                      </span>
                     </div>
-                    <div>
-                      <p className="font-medium">{log.distance_km} KM</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formatTime(log.duration_sec)}
-                        <span className="mx-2">•</span>
-                        {(log.pace_min_km || 0).toFixed(1)} min/km
-                      </p>
+                    <div className="flex flex-col">
+                      <span className="text-[15px] font-bold text-[#e5e1e4]">{log.distance_km} KM</span>
+                      <div className="flex items-center gap-1.5 text-[11px] text-[#958ea0]">
+                        <span>{formatTime(log.duration_sec)}</span>
+                        <span>•</span>
+                        <span>{(log.pace_min_km || 0).toFixed(1)} min/km</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(log.logged_at).toLocaleDateString()}
-                    </p>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(log.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="text-[10px] text-[#cbc3d7]">
+                      {new Date(log.logged_at).toLocaleDateString('en-MY', { month: 'short', day: 'numeric' })}
+                    </span>
+                    <button 
+                      onClick={() => handleDelete(log.id)}
+                      className="w-8 h-8 rounded-full bg-[#ffb4ab]/10 text-[#ffb4ab] flex items-center justify-center active:scale-95 transition-transform"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-8">No runs logged yet</p>
+            <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-8 flex flex-col items-center text-center">
+              <span className="material-symbols-outlined text-[32px] text-[#353437] mb-2">history</span>
+              <p className="text-[13px] text-[#958ea0]">No runs logged yet</p>
+            </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
+        </section>
 
-function Label({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
-  return (
-    <label
-      htmlFor={htmlFor}
-      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-    >
-      {children}
-    </label>
+      </div>
+    </div>
   )
 }

@@ -2,10 +2,6 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 
 interface RaceCategory {
@@ -42,7 +38,6 @@ export function RunnerRegistrationActions({
       setError('Complete your runner profile before registering.')
       return
     }
-
     if (!selectedCategoryId) {
       setError('Choose a race category before registering.')
       return
@@ -53,58 +48,77 @@ export function RunnerRegistrationActions({
         p_event_id: eventId,
         p_category_id: selectedCategoryId,
       })
-
       if (error) {
         setError(error.message)
         return
       }
-
       router.refresh()
     })
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-muted-foreground">You haven&apos;t registered for this event yet.</p>
-
-      {categories.length > 1 && (
-        <RadioGroup
-          value={selectedCategoryId}
-          onValueChange={setSelectedCategoryId}
-          className="space-y-2"
-          disabled={isPending}
-        >
-          {categories.map((category) => (
-            <div
-              key={category.id}
-              className="flex items-center justify-between gap-3 rounded-md border border-border p-3"
-            >
-              <div className="flex items-center gap-3">
-                <RadioGroupItem value={category.id} id={`register-category-${category.id}`} />
-                <Label htmlFor={`register-category-${category.id}`} className="font-medium">
-                  {category.name}
-                </Label>
-              </div>
-              <span className="text-sm font-semibold">RM {category.price ?? 0}</span>
-            </div>
-          ))}
-        </RadioGroup>
+    <div className="flex flex-col gap-4">
+      {categories.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {categories.map((category) => {
+            const isSelected = selectedCategoryId === category.id
+            return (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategoryId(category.id)}
+                disabled={isPending}
+                className={`flex flex-col text-left p-4 rounded-xl border transition-all ${
+                  isSelected 
+                    ? 'bg-[#d0bcff]/10 border-[#d0bcff]' 
+                    : 'bg-[#1c1b1d] border-[#353437]/60 hover:border-[#cbc3d7]/30'
+                }`}
+              >
+                <div className="flex justify-between items-center w-full mb-1">
+                  <span className={`text-[14px] font-bold ${isSelected ? 'text-[#d0bcff]' : 'text-[#e5e1e4]'}`}>
+                    {category.name}
+                  </span>
+                  <span className={`text-[14px] font-bold ${isSelected ? 'text-[#d0bcff]' : 'text-[#e5e1e4]'}`}>
+                    RM {category.price ?? 0}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-[#958ea0]">
+                  <span>{category.gender || 'Any'}</span>
+                  <span>•</span>
+                  <span>Ages {category.min_age || '0'}-{category.max_age || '99'}</span>
+                  {category.max_slots && (
+                    <>
+                      <span>•</span>
+                      <span>{category.max_slots} slots max</span>
+                    </>
+                  )}
+                </div>
+              </button>
+            )
+          })}
+        </div>
       )}
 
       {error && (
-        <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
+          <span className="material-symbols-outlined text-[16px]">error</span>
           {error}
-        </p>
+        </div>
       )}
 
-      <Button
-        className="w-full"
+      <button
         onClick={handleRegister}
         disabled={isPending || categories.length === 0}
+        className="w-full py-3.5 mt-2 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
       >
-        {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-        Register Now
-      </Button>
+        {isPending ? (
+          <>
+            <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+            Processing...
+          </>
+        ) : (
+          'Register Now'
+        )}
+      </button>
     </div>
   )
 }

@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { storeEncryptedDocument, deleteDocument } from '@/lib/actions/account'
 
 interface Props {
@@ -130,88 +128,110 @@ export default function DocumentCapture({ userId, currentDocument }: Props) {
   }
 
   return (
-    <Card className="border-border">
-      <CardHeader>
-        <CardTitle>Identification Document</CardTitle>
-        <CardDescription>
+    <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
+      <div className="p-5 border-b border-[#353437]/60">
+        <h3 className="text-[16px] font-bold text-[#e5e1e4] flex items-center gap-2">
+          <span className="material-symbols-outlined text-[20px] text-[#4cd7f6]">badge</span>
+          Identification Document
+        </h3>
+        <p className="text-[12px] text-[#958ea0] mt-1 leading-relaxed">
           Upload a photo of your IC or Passport for identity verification.
           Your document is validated, encrypted, and stored securely.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </p>
+      </div>
+
+      <div className="p-5 flex flex-col gap-4">
         {hasDocument ? (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 rounded-md bg-green-50 dark:bg-green-950 px-3 py-2 text-sm text-green-700 dark:text-green-300">
-              <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2 rounded-xl bg-[#4edea3]/10 border border-[#4edea3]/20 px-4 py-3 text-[13px] text-[#4edea3] font-medium">
+              <span className="material-symbols-outlined text-[18px]">verified_user</span>
               Document securely stored
             </div>
+            
             {warning && (
-              <div className="flex items-center gap-2 rounded-md bg-yellow-50 dark:bg-yellow-950 px-3 py-2 text-sm text-yellow-700 dark:text-yellow-300">
-                <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
+              <div className="flex items-center gap-2 rounded-xl bg-[#e3c45b]/10 border border-[#e3c45b]/20 px-4 py-3 text-[13px] text-[#e3c45b]">
+                <span className="material-symbols-outlined text-[18px]">warning</span>
                 {warning}
               </div>
             )}
-            <Button
-              variant="outline"
-              size="sm"
+            
+            <button
               onClick={handleDelete}
               disabled={deleting}
-              className="text-destructive border-destructive/30 hover:bg-destructive/10"
+              className="py-3 px-4 w-full rounded-xl border border-[#ffb4ab]/30 text-[#ffb4ab] bg-[#ffb4ab]/5 text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
             >
-              {deleting ? 'Removing...' : 'Remove Document'}
-            </Button>
+              {deleting ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                  Removing...
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                  Remove Document
+                </>
+              )}
+            </button>
           </div>
         ) : previewUrl ? (
-          <div className="space-y-3">
-            <div className="relative overflow-hidden rounded-md border">
+          <div className="flex flex-col gap-4">
+            <div className="relative overflow-hidden rounded-xl border border-[#353437]/60 bg-[#131315]">
               <img
                 src={previewUrl}
                 alt="IC/Passport preview"
-                className="max-h-64 w-full object-contain"
+                className="max-h-48 w-full object-contain"
               />
             </div>
+            
             <div className="flex gap-2">
-              <Button onClick={handleUpload} disabled={encrypting}>
-                {encrypting ? 'Validating & Encrypting...' : 'Save Document'}
-              </Button>
-              <Button
-                variant="ghost"
+              <button 
+                onClick={handleUpload} 
+                disabled={encrypting}
+                className="flex-1 py-3 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+              >
+                {encrypting ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                    Validating...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[16px]">cloud_upload</span>
+                    Save Document
+                  </>
+                )}
+              </button>
+              
+              <button
                 onClick={() => {
                   setRawFile(null)
                   setPreviewUrl(null)
                 }}
                 disabled={encrypting}
+                className="py-3 px-6 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold active:scale-95 transition-transform disabled:opacity-50"
               >
                 Cancel
-              </Button>
+              </button>
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-3">
+              <button
                 onClick={() => fileInputRef.current?.click()}
+                className="py-3.5 px-2 rounded-xl border border-[#353437] text-[#cbc3d7] bg-[#23232b] text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
               >
-                <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
+                <span className="material-symbols-outlined text-[24px]">folder_open</span>
                 Upload File
-              </Button>
-              <Button
-                variant="outline"
+              </button>
+              
+              <button
                 onClick={() => cameraInputRef.current?.click()}
+                className="py-3.5 px-2 rounded-xl border border-[#353437] text-[#cbc3d7] bg-[#23232b] text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
               >
-                <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+                <span className="material-symbols-outlined text-[24px]">photo_camera</span>
                 Take Photo
-              </Button>
+              </button>
             </div>
 
             <input
@@ -239,18 +259,20 @@ export default function DocumentCapture({ userId, currentDocument }: Props) {
               }}
             />
 
-            <p className="text-xs text-muted-foreground">
-              Accepted formats: JPEG, PNG, WebP. Max 10MB. Image will be resized and validated before storage.
+            <p className="text-[11px] text-[#958ea0] text-center">
+              Accepted formats: JPEG, PNG, WebP. Max 10MB.<br/>
+              Image will be resized and validated before storage.
             </p>
           </div>
         )}
 
         {error && (
-          <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px]">error</span>
             {error}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

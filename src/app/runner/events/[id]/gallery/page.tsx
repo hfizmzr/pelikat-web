@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Image as ImageIcon } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 import { RunnerPhotoActions } from '@/components/events/runner-photo-actions'
 import type { Metadata } from 'next'
 
@@ -78,81 +76,97 @@ export default async function RunnerGalleryPage({
   )
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Photos</h1>
-        <p className="text-muted-foreground">Photos from {event.name}</p>
-      </div>
-
-      {photosWithUrls.length > 0 ? (
-        <>
-          <div className="flex items-center justify-between">
-            <p className="text-muted-foreground">
-              {photosWithUrls.length} photos found
+    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+        <div className="flex items-center h-14 px-4 pt-safe">
+          <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
+            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+          </Link>
+          <div className="flex-1 flex flex-col items-center mr-8 truncate">
+            <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
+              My Photos
+            </h1>
+            <p className="text-[11px] text-[#958ea0] truncate max-w-full">
+              {event.name}
             </p>
-            <div className="flex gap-2">
-              <Badge variant="outline">BIB: {registration.bib_number}</Badge>
-            </div>
           </div>
+        </div>
+      </header>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {photosWithUrls.map((photo) => (
-              <Card key={photo.id} className="border-border overflow-hidden">
-                <div className="aspect-square relative bg-secondary">
-                  {photo.url ? (
-                    <Image
-                      src={photo.url}
-                      alt={`Race photo for BIB ${photo.bib_number ?? registration.bib_number}`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <ImageIcon className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="absolute right-2 top-2 z-10">
+      <div className="flex flex-col px-5 py-6 gap-4">
+        {photosWithUrls.length > 0 ? (
+          <>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-[#4edea3]">photo_library</span>
+                <span className="text-[14px] font-bold text-[#e5e1e4]">{photosWithUrls.length} photos</span>
+              </div>
+              <span className="px-2 py-0.5 bg-[#4edea3]/10 text-[#4edea3] text-[10px] font-bold uppercase tracking-wider rounded border border-[#4edea3]/20">
+                BIB {registration.bib_number}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {photosWithUrls.map((photo) => (
+                <div key={photo.id} className="relative flex flex-col bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden active:scale-[0.98] transition-transform">
+                  <div className="aspect-[4/5] relative bg-[#23232b] w-full">
+                    {photo.url ? (
+                      <Image
+                        src={photo.url}
+                        alt={`Race photo for BIB ${photo.bib_number ?? registration.bib_number}`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[32px] text-[#353437]">broken_image</span>
+                      </div>
+                    )}
+                    
+                    {/* Action buttons wrapper overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+                    
+                    <div className="absolute right-2 bottom-2 z-10 pointer-events-auto flex items-center gap-1">
                       <RunnerPhotoActions
                         imageUrl={photo.url}
                         fileName={photo.fileName}
                         eventId={id}
                         photoTagId={photo.id}
                       />
+                    </div>
+
+                    {photo.confidence && (
+                      <div className="absolute left-2 top-2 z-10">
+                        <span className="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md text-[#4edea3] text-[9px] font-bold flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[10px]">robot_2</span>
+                          {(photo.confidence * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    )}
+                    {!photo.url && photo.urlError && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-3 text-center">
+                        <span className="text-[10px] text-[#ffb4ab]">{photo.urlError}</span>
+                      </div>
+                    )}
                   </div>
-                  {photo.confidence && (
-                    <div className="absolute left-2 top-2">
-                      <Badge variant="secondary" className="bg-background/80">
-                        {(photo.confidence * 100).toFixed(0)}%
-                      </Badge>
-                    </div>
-                  )}
-                  {!photo.url && photo.urlError && (
-                    <div className="absolute bottom-2 left-2 right-2 rounded-md bg-background/90 p-2 text-xs text-destructive">
-                      {photo.urlError}
-                    </div>
-                  )}
                 </div>
-                <CardContent className="p-3">
-                  <p className="truncate text-xs text-muted-foreground" title={photo.storage_path}>
-                    {photo.fileName}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </>
-      ) : (
-        <Card className="border-border">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground mb-2">No photos yet</p>
-            <p className="text-sm text-muted-foreground">
-              Photos will appear here after the event photo processing is complete
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-[#1c1b1d] border border-[#353437]/40">
+            <div className="w-16 h-16 bg-[#201f22] rounded-full flex items-center justify-center mb-4">
+              <span className="material-symbols-outlined text-[32px] text-[#958ea0]">add_a_photo</span>
+            </div>
+            <p className="text-[16px] font-bold text-[#e5e1e4] mb-2">No photos found yet</p>
+            <p className="text-[13px] text-[#958ea0]">
+              Our AI is still processing the event photos. Once we find you, they will appear here!
             </p>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

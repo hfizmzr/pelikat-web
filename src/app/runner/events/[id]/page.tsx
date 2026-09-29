@@ -1,8 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, QrCode, Image as ImageIcon, ArrowLeft, CreditCard } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { RunnerRegistrationActions } from '@/components/events/runner-registration-actions'
@@ -62,152 +58,158 @@ export default async function RunnerEventDetailPage({
 
   const isRegistered = !!registration
   const raceCategories = (event.race_categories ?? []) as RaceCategory[]
+  const eventDate = new Date(event.event_date)
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/runner/events">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">{event.name}</h1>
-            <Badge variant={event.status === 'published' ? 'default' : 'secondary'}>
+    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+        <div className="flex items-center h-14 px-4 pt-safe">
+          <Link href="/runner/events" className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
+            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+          </Link>
+          <h1 className="flex-1 text-[16px] font-bold text-[#e5e1e4] text-center mr-8 truncate">
+            {event.name}
+          </h1>
+        </div>
+      </header>
+
+      {/* Hero Banner Placeholder */}
+      <div className="w-full h-48 bg-[#23232b] relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#131315] to-transparent opacity-90" />
+        <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
+          <div className="flex flex-col">
+            <span className="px-2 py-1 mb-2 w-max rounded text-[10px] font-bold uppercase tracking-wider bg-[#d0bcff]/10 text-[#d0bcff] border border-[#d0bcff]/20">
               {event.status}
-            </Badge>
+            </span>
+            <h2 className="text-[24px] font-bold text-[#e5e1e4] leading-tight drop-shadow-md">
+              {event.name}
+            </h2>
           </div>
-          <p className="text-muted-foreground flex items-center gap-2 mt-1">
-            <Calendar className="h-4 w-4" />
-            {new Date(event.event_date).toLocaleDateString()}
-            {event.location && (
-              <>
-                <MapPin className="h-4 w-4 ml-2" />
-                {event.location}
-              </>
-            )}
-          </p>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle>About This Event</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                {event.description || 'No description available'}
-              </p>
-            </CardContent>
-          </Card>
+      <div className="flex flex-col px-5 py-6 gap-6">
+        
+        {/* Date & Location */}
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center gap-4 bg-[#1c1b1d] p-4 rounded-2xl border border-[#353437]/60">
+            <div className="w-12 h-12 bg-[#353437]/50 rounded-xl flex flex-col items-center justify-center">
+              <span className="text-[10px] font-bold text-[#ffb4ab] uppercase">{eventDate.toLocaleDateString('en-MY', { month: 'short' })}</span>
+              <span className="text-[16px] font-extrabold text-[#e5e1e4] leading-none">{eventDate.getDate()}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[14px] font-bold text-[#e5e1e4]">
+                {eventDate.toLocaleDateString('en-MY', { weekday: 'long', year: 'numeric' })}
+              </span>
+              <span className="text-[12px] text-[#958ea0]">Starts at 6:00 AM</span>
+            </div>
+          </div>
+          
+          {event.location && (
+            <div className="flex items-center gap-4 bg-[#1c1b1d] p-4 rounded-2xl border border-[#353437]/60">
+              <div className="w-12 h-12 bg-[#353437]/50 rounded-xl flex items-center justify-center">
+                <span className="material-symbols-outlined text-[20px] text-[#4cd7f6]">location_on</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[14px] font-bold text-[#e5e1e4]">Event Location</span>
+                <span className="text-[12px] text-[#958ea0]">{event.location}</span>
+              </div>
+            </div>
+          )}
+        </section>
 
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle>Race Categories</CardTitle>
-              <CardDescription>Available categories for this event</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {raceCategories.length > 0 ? (
-                <div className="space-y-4">
-                  {raceCategories.map((cat) => (
-                    <div key={cat.id} className="flex items-center justify-between border-b pb-4 last:border-0">
-                      <div>
-                        <p className="font-medium">{cat.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {cat.gender} | Ages {cat.min_age || 'Open'}-{cat.max_age || 'Open'}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">RM {cat.price ?? 0}</p>
-                        {cat.max_slots && (
-                          <p className="text-xs text-muted-foreground">{cat.max_slots} slots</p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground">No categories available</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        {/* About */}
+        <section className="flex flex-col gap-2">
+          <h3 className="text-[16px] font-bold text-[#e5e1e4]">About the Race</h3>
+          <p className="text-[13px] text-[#958ea0] leading-relaxed">
+            {event.description || 'No description available for this event.'}
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-[12px] text-[#cbc3d7]">Organized by:</span>
+            <span className="text-[12px] font-bold text-[#e5e1e4]">{event.organizers?.name || 'Unknown Organizer'}</span>
+          </div>
+        </section>
 
-        <div className="space-y-6">
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle>Registration Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isRegistered ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-green-500">
-                    <Badge variant="default">Registered</Badge>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">BIB Number</span>
-                      <span className="font-mono font-bold">{registration.bib_number}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Category</span>
-                      <span>{registration.race_categories?.name}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Status</span>
-                      <Badge variant={registration.payment_status === 'paid' ? 'default' : 'secondary'}>
-                        {registration.payment_status}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Link href={`/runner/events/${event.id}/bib`} className="block">
-                      <Button className="w-full">
-                        <QrCode className="mr-2 h-4 w-4" />
-                        View Digital BIB
-                      </Button>
-                    </Link>
-                    {registration.payment_status !== 'paid' && (
-                      <Link href={`/runner/events/${event.id}/payment`} className="block">
-                        <Button variant="default" className="w-full">
-                          <CreditCard className="mr-2 h-4 w-4" />
-                          Pay Now
-                        </Button>
-                      </Link>
-                    )}
-                    <Link href={`/runner/events/${event.id}/gallery`} className="block">
-                      <Button variant="outline" className="w-full">
-                        <ImageIcon className="mr-2 h-4 w-4" />
-                        My Photos
-                      </Button>
-                    </Link>
-                    {!registration.checked_in && (
-                      <CancelRegistrationButton eventId={event.id} />
-                    )}
+        {/* Registration Section */}
+        <section className="mt-4 pt-6 border-t border-[#353437]/60 flex flex-col gap-4">
+          <h3 className="text-[16px] font-bold text-[#e5e1e4]">Registration</h3>
+          
+          {isRegistered ? (
+            <div className="flex flex-col gap-4">
+              <div className="p-5 rounded-2xl bg-[#4edea3]/10 border border-[#4edea3]/20 flex flex-col gap-4 relative overflow-hidden">
+                <div className="absolute right-0 top-0 w-32 h-32 bg-[#4edea3]/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[24px] text-[#4edea3]">check_circle</span>
+                  <div className="flex flex-col">
+                    <span className="text-[14px] font-bold text-[#4edea3]">You're Registered!</span>
+                    <span className="text-[11px] text-[#4edea3]/80">See you at the start line.</span>
                   </div>
                 </div>
-              ) : (
-                <RunnerRegistrationActions
-                  eventId={event.id}
-                  categories={raceCategories}
-                  hasRunnerProfile={!!profile}
-                />
-              )}
-            </CardContent>
-          </Card>
+                
+                <div className="grid grid-cols-2 gap-4 mt-2">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-[#cbc3d7] uppercase font-bold tracking-wider mb-1">BIB Number</span>
+                    <span className="text-[16px] font-mono font-bold text-[#e5e1e4]">{registration.bib_number || 'TBA'}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-[#cbc3d7] uppercase font-bold tracking-wider mb-1">Category</span>
+                    <span className="text-[14px] font-bold text-[#e5e1e4] truncate">{registration.race_categories?.name}</span>
+                  </div>
+                  <div className="flex flex-col col-span-2 pt-3 border-t border-[#4edea3]/20">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-[#cbc3d7] uppercase font-bold tracking-wider">Payment Status</span>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#23232b] text-[#e5e1e4]">
+                        {registration.payment_status?.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle>Organizer</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-medium">{event.organizers?.name || 'Unknown'}</p>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="flex flex-col gap-3 mt-2">
+                <Link
+                  href={`/runner/events/${event.id}/bib`}
+                  className="w-full py-3.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                >
+                  <span className="material-symbols-outlined text-[18px]">qr_code_2</span>
+                  View Digital BIB Pass
+                </Link>
+
+                {registration.payment_status !== 'paid' && (
+                  <Link
+                    href={`/runner/events/${event.id}/payment`}
+                    className="w-full py-3.5 rounded-xl bg-[#4cd7f6] text-[#00363d] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">credit_card</span>
+                    Complete Payment
+                  </Link>
+                )}
+                
+                <Link
+                  href={`/runner/events/${event.id}/gallery`}
+                  className="w-full py-3.5 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                >
+                  <span className="material-symbols-outlined text-[18px]">photo_library</span>
+                  Event Photos
+                </Link>
+
+                {!registration.checked_in && (
+                  <div className="mt-4 pt-4 border-t border-[#353437]/40">
+                    <CancelRegistrationButton eventId={event.id} />
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <RunnerRegistrationActions
+              eventId={event.id}
+              categories={raceCategories}
+              hasRunnerProfile={!!profile}
+            />
+          )}
+        </section>
+
       </div>
     </div>
   )

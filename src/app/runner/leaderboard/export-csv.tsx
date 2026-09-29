@@ -1,8 +1,5 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Download } from 'lucide-react'
-
 export function ExportCSV({
   eventId,
   gender,
@@ -29,9 +26,12 @@ export function ExportCSV({
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handleExport}>
-      <Download className="mr-2 h-4 w-4" />
-      Export CSV
-    </Button>
+    <button
+      onClick={handleExport}
+      className="py-2.5 px-3 rounded-xl bg-[#2a2a2c] border border-[#353437] text-[#e5e1e4] text-[13px] font-bold flex items-center gap-1.5 active:scale-95 transition-transform shrink-0"
+    >
+      <span className="material-symbols-outlined text-[18px]">download</span>
+      <span className="hidden sm:inline">Export</span>
+    </button>
   )
 }
