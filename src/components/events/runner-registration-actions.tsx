@@ -49,7 +49,13 @@ export function RunnerRegistrationActions({
         p_category_id: selectedCategoryId,
       })
       if (error) {
-        setError(error.message)
+        // Unique violation on (event_id, runner_id) → HTTP 409 from PostgREST
+        setError(
+          error.code === '23505' &&
+            error.message.includes('registrations_event_runner_unique')
+            ? 'You are already registered for this event.'
+            : error.message
+        )
         return
       }
       router.refresh()

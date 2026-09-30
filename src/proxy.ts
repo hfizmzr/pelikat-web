@@ -31,8 +31,14 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
+  // Bare paths (/admin, /runner, /organizer) must be covered too —
+  // startsWith('/x/') alone misses them.
+  const inAdmin = pathname === '/admin' || pathname.startsWith('/admin/')
+  const inRunner = pathname === '/runner' || pathname.startsWith('/runner/')
+  const inOrganizer = pathname === '/organizer' || pathname.startsWith('/organizer/')
+
   // Protect admin routes
-  if (pathname.startsWith('/admin/')) {
+  if (inAdmin) {
     if (!user) {
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
@@ -42,17 +48,41 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protect runner routes
-  if (pathname.startsWith('/runner/')) {
+  if (inRunner) {
     if (!user) {
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)
     }
+
+    // Profile completion gate (UC10): block runner routes until the
+    // profile is complete. Always allow the profile page itself.
+    if (pathname !== '/runner/profile') {
+      const { data: profile } = await supabase
+        .from('runner_profiles')
+        .select('full_name, dob, gender, phone, pdpa_agreed, ic_encrypted')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      const complete =
+        !!profile &&
+        !!profile.full_name &&
+        !!profile.dob &&
+        !!profile.gender &&
+        !!profile.phone &&
+        !!profile.pdpa_agreed &&
+        !!profile.ic_encrypted
+
+      if (!complete) {
+        return NextResponse.redirect(new URL('/runner/profile', request.url))
+      }
+    }
+
     return response
   }
 
   // Protect organizer routes
-  if (pathname.startsWith('/organizer/')) {
+  if (inOrganizer) {
     // Allow unauthenticated access to the public apply pages
     if (pathname.startsWith('/organizer/apply')) {
       return response

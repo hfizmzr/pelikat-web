@@ -64,6 +64,7 @@ export default function RunnerRunLogPage() {
     duration_minutes: '0',
     duration_seconds: '0',
   })
+  const [logError, setLogError] = useState<string | null>(null)
 
   const gpsTrackDataRef = useRef<GpsPoint[]>([])
 
@@ -128,6 +129,7 @@ export default function RunnerRunLogPage() {
   const handleAddRun = async () => {
     if (!profile || !newRun.distance_km || parseFloat(newRun.distance_km) <= 0) return
     setSubmitting(true)
+    setLogError(null)
 
     const durationSec =
       parseInt(newRun.duration_hours) * 3600 +
@@ -135,41 +137,41 @@ export default function RunnerRunLogPage() {
       parseInt(newRun.duration_seconds)
 
     if (durationSec <= 0) {
+      setLogError('Enter a time greater than 0.')
       setSubmitting(false)
       return
     }
 
-    const { data, error } = await supabase
-      .from('run_logs')
-      .insert({
-        runner_id: profile.id,
-        distance_km: parseFloat(newRun.distance_km),
-        duration_sec: durationSec,
-        pace_min_km: durationSec / 60 / parseFloat(newRun.distance_km),
-        gps_data: gpsTrackDataRef.current.length > 0 ? gpsTrackDataRef.current : null,
-      })
-      .select()
-      .single()
+    // Server-side validation + pace calculation via log_run RPC (FR-61)
+    const { data, error } = await supabase.rpc('log_run', {
+      p_distance_km: parseFloat(newRun.distance_km),
+      p_duration_sec: durationSec,
+      p_gps_data: gpsTrackDataRef.current.length > 0 ? gpsTrackDataRef.current : null,
+    })
 
-    if (!error && data) {
-      setRunLogs([data, ...runLogs])
-      gpsTrackDataRef.current = []
-      setGpsRoutePoints([])
-
-      setNewRun({
-        distance_km: '',
-        duration_hours: '0',
-        duration_minutes: '0',
-        duration_seconds: '0',
-      })
-
-      try {
-        const result = await evaluateBadges(profile.id, null)
-        if (result.awarded && result.awarded.length > 0) {
-          setNewBadges(result.awarded)
-        }
-      } catch {}
+    if (error) {
+      setLogError(error.message || 'Failed to log run. Please check your values.')
+      setSubmitting(false)
+      return
     }
+
+    setRunLogs([data as RunLogEntry, ...runLogs])
+    gpsTrackDataRef.current = []
+    setGpsRoutePoints([])
+
+    setNewRun({
+      distance_km: '',
+      duration_hours: '0',
+      duration_minutes: '0',
+      duration_seconds: '0',
+    })
+
+    try {
+      const result = await evaluateBadges(profile.id, null)
+      if (result.awarded && result.awarded.length > 0) {
+        setNewBadges(result.awarded)
+      }
+    } catch {}
 
     setSubmitting(false)
   }
@@ -309,8 +311,15 @@ export default function RunnerRunLogPage() {
               </div>
             </div>
 
-            <button 
-              onClick={handleAddRun} 
+            {logError && (
+              <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px]">error</span>
+                {logError}
+              </div>
+            )}
+
+            <button
+              onClick={handleAddRun}
               disabled={submitting}
               className="w-full py-3.5 mt-2 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
             >

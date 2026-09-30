@@ -70,19 +70,20 @@ export default function RunnerLayout({
     checkRole()
   }, [router, supabase])
 
-  useEffect(() => {
-    // Detect standalone PWA mode
-    const checkIsStandalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in navigator && (navigator as any).standalone)
-    setIsStandalone(checkIsStandalone)
-  }, [])
+  // TEMP: bypassed standalone-PWA gate for desktop verification — restore before release
+  // useEffect(() => {
+  //   // Detect standalone PWA mode
+  //   const checkIsStandalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in navigator && (navigator as any).standalone)
+  //   setIsStandalone(checkIsStandalone)
+  // }, [])
 
-  // Show nothing while checking display mode to avoid flicker
-  if (isStandalone === null) return null
+  // // Show nothing while checking display mode to avoid flicker
+  // if (isStandalone === null) return null
 
-  // If not standalone, force the installation prompt
-  if (!isStandalone) {
-    return <PWAInstallPrompt />
-  }
+  // // If not standalone, force the installation prompt
+  // if (!isStandalone) {
+  //   return <PWAInstallPrompt />
+  // }
 
   return (
     <div className="min-h-screen bg-[#0e0e10] flex justify-center overflow-hidden font-sans">

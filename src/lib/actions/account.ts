@@ -32,6 +32,27 @@ export async function storeEncryptedDocument(result: {
   revalidatePath('/runner/profile')
 }
 
+export async function storeEncryptedIc(icNumber: string) {
+  const { supabase, user } = await requireAuth()
+
+  const result: { ic_encrypted: string } = await fetchDjangoApi(
+    '/ai/documents/encrypt-ic',
+    {
+      method: 'POST',
+      body: JSON.stringify({ ic_number: icNumber, user_id: user.id }),
+    }
+  )
+
+  const { error } = await supabase
+    .from('runner_profiles')
+    .update({ ic_encrypted: result.ic_encrypted })
+    .eq('user_id', user.id)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/runner/profile')
+}
+
 export async function deleteDocument(storagePath: string | null) {
   const { supabase, user } = await requireAuth()
 
