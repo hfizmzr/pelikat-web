@@ -18,12 +18,23 @@ interface RunnerRegistrationActionsProps {
   eventId: string
   categories: RaceCategory[]
   hasRunnerProfile: boolean
+  runner: {
+    email: string | null
+    tShirtSize: string | null
+  }
+  eventSummary: {
+    name: string
+    date: string
+    location: string | null
+  }
 }
 
 export function RunnerRegistrationActions({
   eventId,
   categories,
   hasRunnerProfile,
+  runner,
+  eventSummary,
 }: RunnerRegistrationActionsProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -44,7 +55,7 @@ export function RunnerRegistrationActions({
     }
 
     startTransition(async () => {
-      const { error } = await supabase.rpc('register_for_event', {
+      const { data, error } = await supabase.rpc('register_for_event', {
         p_event_id: eventId,
         p_category_id: selectedCategoryId,
       })
@@ -58,6 +69,33 @@ export function RunnerRegistrationActions({
         )
         return
       }
+
+      // Fire-and-forget confirmation email (UC11 step 8). The edge
+      // function is a no-op stub when RESEND_API_KEY is absent.
+      const category = categories.find((c) => c.id === selectedCategoryId)
+      void supabase.functions
+        .invoke('send-transactional-email', {
+          body: {
+            type: 'registration_confirmation',
+            runnerEmail: runner.email,
+            runnerName: 'Runner',
+            eventName: eventSummary.name,
+            eventDate: eventSummary.date,
+            location: eventSummary.location,
+            categoryName: category?.name ?? '',
+            bibNumber: data?.bib_number ?? '',
+            eventUrl: `${window.location.origin}/runner/events/${eventId}/bib`,
+          },
+        })
+        .then((res) => {
+          if (res.error || !res.data?.success) {
+            console.error('send-transactional-email failed:', res.error || res.data)
+          }
+        })
+        .catch((err) => {
+          console.error('send-transactional-email error:', err)
+        })
+
       router.refresh()
     })
   }
@@ -101,6 +139,37 @@ export function RunnerRegistrationActions({
               </button>
             )
           })}
+        </div>
+      )}
+
+      {/* T-shirt confirm (UC11 step 3): size comes from the profile */}
+      {hasRunnerProfile && (
+        <div
+          className={`flex items-center justify-between p-4 rounded-xl border ${
+            runner.tShirtSize
+              ? 'bg-[#1c1b1d] border-[#353437]/60'
+              : 'bg-[#e3c45b]/5 border-[#e3c45b]/30'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-[20px] text-[#cbc3d7]">checkroom</span>
+            <div className="flex flex-col">
+              <span className="text-[13px] font-bold text-[#e5e1e4]">
+                T-Shirt Size: {runner.tShirtSize || 'Not set'}
+              </span>
+              {runner.tShirtSize ? (
+                <span className="text-[11px] text-[#958ea0]">From your profile — collected at REPC</span>
+              ) : (
+                <span className="text-[11px] text-[#e3c45b]">Set a size in your profile so the right shirt is reserved</span>
+              )}
+            </div>
+          </div>
+          <a
+            href="/runner/profile"
+            className="text-[12px] font-bold text-[#d0bcff] hover:underline shrink-0"
+          >
+            {runner.tShirtSize ? 'Verify' : 'Set size'}
+          </a>
         </div>
       )}
 

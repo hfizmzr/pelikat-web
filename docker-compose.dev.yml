@@ -13,9 +13,6 @@ services:
     environment:
       - NODE_ENV=development
       - DJANGO_URL=http://api:8000
-    extra_hosts:
-      # Bridge "api" to a Django dev server running on the host
-      - "api:host-gateway"
     user: "1000:1000"
     command: pnpm run dev
     healthcheck:

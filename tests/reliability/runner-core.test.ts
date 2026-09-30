@@ -81,3 +81,78 @@ describe('Reliability: Runner Core Loop (Phase 1)', () => {
     expect(views).toContain('re.fullmatch')
   })
 })
+
+describe('Polish: Registration & Emails (Phase 2)', () => {
+  it('registration flow confirms profile t-shirt size (UC11 step 3)', () => {
+    const actions = read(
+      'src',
+      'components',
+      'events',
+      'runner-registration-actions.tsx'
+    )
+    expect(actions).toContain('T-Shirt Size:')
+    expect(actions).toContain('runner.tShirtSize')
+    expect(actions).toContain('"/runner/profile"')
+
+    const page = read('src', 'app', 'runner', 'events', '[id]', 'page.tsx')
+    expect(page).toContain("select('id, t_shirt_size')")
+    expect(page).toContain('runner={{ email: user?.email ?? null, tShirtSize: profile?.t_shirt_size ?? null }}')
+  })
+
+  it('register_for_event retries BIB assignment on unique collisions', () => {
+    const migration = read(
+      'supabase',
+      'migrations',
+      '050_register_bib_retry.sql'
+    )
+    expect(migration).toContain('for v_attempt in 1..3 loop')
+    expect(migration).toContain('when unique_violation then')
+    expect(migration).toContain("position('registrations_event_runner_unique' in sqlerrm) > 0")
+    expect(migration).toContain("raise exception 'Already registered for this event'")
+    // silent retry: recompute next number inside the loop and exit after insert
+    expect(migration).toContain('into v_next_number')
+    expect(migration).toContain('exit;')
+  })
+
+  it('transactional emails are stubbed without RESEND_API_KEY', () => {
+    const fn = read(
+      'supabase',
+      'functions',
+      'send-transactional-email',
+      'index.ts'
+    )
+    expect(fn).toContain('RESEND_API_KEY')
+    expect(fn).toContain('skipped: "email_disabled"')
+    expect(fn).toContain('body.type === "registration_confirmation"')
+    expect(fn).toContain('body.type === "organizer_welcome"')
+    expect(fn).toContain('EMAILS_DISABLED')
+  })
+
+  it('confirmation email fires after successful registration', () => {
+    const actions = read(
+      'src',
+      'components',
+      'events',
+      'runner-registration-actions.tsx'
+    )
+    expect(actions).toContain("invoke('send-transactional-email'")
+    expect(actions).toContain("type: 'registration_confirmation'")
+    expect(actions).toContain('bibNumber: data?.bib_number')
+  })
+
+  it('welcome email fires after organizer creation (UC01 step 5)', () => {
+    const form = read('src', 'components', 'admin', 'organizer-form.tsx')
+    expect(form).toContain("invoke('send-transactional-email'")
+    expect(form).toContain("type: 'organizer_welcome'")
+    expect(form).toContain('organizerEmail: contactEmail')
+  })
+
+  it('organizer slug is normalized on submit, not per keystroke', () => {
+    const form = read('src', 'components', 'admin', 'organizer-form.tsx')
+    // free typing + single normalization point
+    expect(form).toContain('const finalSlug = generateSlug(slug)')
+    expect(form).toContain('onChange={(e) => setSlug(e.target.value)}')
+    // name-blur autofill only when slug is empty
+    expect(form).toContain('!isEdit && !slug && setSlug(generateSlug(e.target.value))')
+  })
+})
