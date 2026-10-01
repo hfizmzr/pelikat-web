@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { LiveLeaderboard } from '@/components/gamification/live-leaderboard'
+import { LiveLeaderboard, type LeaderboardEntry } from '@/components/gamification/live-leaderboard'
 import { LeaderboardFilters } from './filters'
 import { ExportCSV } from './export-csv'
 import Link from 'next/link'
@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 interface SearchParams {
   event_id?: string
   gender?: string
+  category_id?: string
 }
 
 export default async function RunnerLeaderboardPage({
@@ -20,7 +21,7 @@ export default async function RunnerLeaderboardPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const [supabase, { event_id, gender }] = await Promise.all([
+  const [supabase, { event_id, gender, category_id }] = await Promise.all([
     createClient(),
     searchParams,
   ])
@@ -33,22 +34,48 @@ export default async function RunnerLeaderboardPage({
     .eq('user_id', user?.id)
     .single()
 
-  let query = supabase.from('leaderboard_virtual').select('*').limit(50)
-
-  if (event_id && event_id !== 'all') {
-    query = query.eq('event_id', event_id)
-  }
-  if (gender && gender !== 'all') {
-    query = query.eq('gender', gender)
-  }
-
-  const [{ data: leaderboard }, { data: events }] = await Promise.all([
-    query.order('rank', { ascending: true }),
+  const [{ data: events }, { data: categories }] = await Promise.all([
     supabase
       .from('events')
-      .select('id, name')
+      .select('id, name, results_published')
       .order('event_date', { ascending: false }),
+    event_id && event_id !== 'all'
+      ? supabase
+          .from('race_categories')
+          .select('id, name')
+          .eq('event_id', event_id)
+          .order('name')
+      : Promise.resolve({ data: [] }),
   ])
+
+  // FR-69: results are hidden until the organizer publishes them
+  const publishedIds = (events ?? []).filter((e) => e.results_published).map((e) => e.id)
+  const resultsLocked = event_id && event_id !== 'all'
+    ? !(events ?? []).some((e) => e.id === event_id && e.results_published)
+    : publishedIds.length === 0
+
+  let leaderboard: LeaderboardEntry[] | null = null
+  if (!resultsLocked) {
+    let query = supabase.from('leaderboard_virtual').select('*').limit(50)
+
+    if (event_id && event_id !== 'all') {
+      query = query.eq('event_id', event_id)
+    } else if (publishedIds.length > 0) {
+      query = query.in('event_id', publishedIds)
+    }
+    if (gender && gender !== 'all') {
+      // view stores M/F; tolerate legacy male/female params
+      const g = gender === 'male' ? 'M' : gender === 'female' ? 'F' : gender
+      query = query.eq('gender', g)
+    }
+    if (category_id && category_id !== 'all') {
+      query = query.eq('category_id', category_id)
+    }
+
+    leaderboard = (await query.order('rank', { ascending: true })).data
+  }
+
+  const publishedEvents = (events ?? []).filter((e) => publishedIds.includes(e.id))
 
   return (
     <div className="flex flex-col w-full min-h-full bg-[#131315]">
@@ -78,7 +105,11 @@ export default async function RunnerLeaderboardPage({
 
         <div className="flex flex-col gap-3 p-3 bg-[#1c1b1d] rounded-2xl border border-[#353437]/60">
           <div className="flex items-center justify-between gap-3">
-            <LeaderboardFilters events={events || []} />
+            <LeaderboardFilters
+              events={events ?? []}
+              categories={(categories as { id: string; name: string }[]) ?? []}
+              showCategories={!!event_id && event_id !== 'all'}
+            />
             <ExportCSV
               eventId={event_id}
               gender={gender}
@@ -86,10 +117,27 @@ export default async function RunnerLeaderboardPage({
           </div>
         </div>
 
-        <LiveLeaderboard
-          initialData={leaderboard || []}
-          currentRunnerId={profile?.id}
-        />
+        {resultsLocked ? (
+          <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-10 flex flex-col items-center text-center gap-3">
+            <span className="material-symbols-outlined text-[40px] text-[#e3c45b]">hourglass_top</span>
+            <div>
+              <h2 className="text-[16px] font-bold text-[#e5e1e4] mb-1">Results coming soon. Stay tuned!</h2>
+              <p className="text-[13px] text-[#958ea0]">
+                The organizer hasn&apos;t published results for this event yet.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <LiveLeaderboard
+            initialData={leaderboard || []}
+            currentRunnerId={profile?.id}
+            filters={{
+              event_id: event_id && event_id !== 'all' ? event_id : undefined,
+              gender: gender && gender !== 'all' ? (gender === 'male' ? 'M' : gender === 'female' ? 'F' : gender) : undefined,
+              category_id: category_id && category_id !== 'all' ? category_id : undefined,
+            }}
+          />
+        )}
 
       </div>
     </div>

@@ -128,6 +128,19 @@ export async function updateEventStatus(
   revalidatePath(`/organizer/events/${eventId}`)
 }
 
+export async function setResultsPublished(eventId: string, published: boolean) {
+  const { supabase } = await requireAuth()
+
+  const { error } = await supabase
+    .from('events')
+    .update({ results_published: published })
+    .eq('id', eventId)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/organizer/events/${eventId}`)
+}
+
 export async function updateEventDates(
   eventId: string,
   updates: { reg_open?: string | null; reg_close?: string | null }

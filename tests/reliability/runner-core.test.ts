@@ -156,3 +156,67 @@ describe('Polish: Registration & Emails (Phase 2)', () => {
     expect(form).toContain('!isEdit && !slug && setSlug(generateSlug(e.target.value))')
   })
 })
+
+describe('Polish: Analytics & Leaderboard (Phase 4)', () => {
+  it('migration adds results_published gate and category to leaderboard view', () => {
+    const migration = read(
+      'supabase',
+      'migrations',
+      '051_results_publish_and_leaderboard_category.sql'
+    )
+    expect(migration).toContain('results_published boolean default false')
+    expect(migration).toContain('r.category_id')
+    expect(migration).toContain('rc.name as category_name')
+    // new columns appended; old columns kept for create-or-replace compatibility
+    expect(migration.indexOf('rp.gender')).toBeLessThan(migration.indexOf('r.category_id'))
+  })
+
+  it('organizer can toggle results publishing from event settings', () => {
+    const actions = read('src', 'components', 'events', 'actions.ts')
+    expect(actions).toContain('export async function setResultsPublished')
+    expect(actions).toContain('results_published: published')
+
+    const panel = read('src', 'components', 'events', 'event-settings-panel.tsx')
+    expect(panel).toContain('resultsPublished')
+    expect(panel).toContain('onCheckedChange={handleResultsToggle}')
+
+    const page = read('src', 'app', 'organizer', 'events', '[id]', 'page.tsx')
+    expect(page).toContain('resultsPublished={eventDetail.results_published ?? false}')
+  })
+
+  it('runner leaderboard is gated until results are published (FR-69)', () => {
+    const page = read('src', 'app', 'runner', 'leaderboard', 'page.tsx')
+    expect(page).toContain('resultsLocked')
+    expect(page).toContain('Results coming soon. Stay tuned!')
+    expect(page).toContain('.in(\'event_id\', publishedIds)')
+  })
+
+  it('leaderboard supports category filter alongside gender', () => {
+    const page = read('src', 'app', 'runner', 'leaderboard', 'page.tsx')
+    expect(page).toContain("category_id")
+    expect(page).toContain(".eq('category_id', category_id)")
+
+    const filters = read('src', 'app', 'runner', 'leaderboard', 'filters.tsx')
+    expect(filters).toContain("updateParams('category_id', e.target.value)")
+    // gender values match the view's M/F (was male/female — never matched)
+    expect(filters).toContain('<option value="M">Male</option>')
+    expect(filters).not.toContain('<option value="male">Male</option>')
+
+    const live = read('src', 'components', 'gamification', 'live-leaderboard.tsx')
+    // realtime refresh re-applies active filters instead of resetting them
+    expect(live).toContain('filtersRef.current')
+    expect(live).toContain("query.eq(\"category_id\", f.category_id)")
+  })
+
+  it('per-event analytics page renders category-by-gender chart (FR-33)', () => {
+    const page = read('src', 'app', 'organizer', 'events', '[id]', 'analytics', 'page.tsx')
+    expect(page).toContain('CategoryBreakdownChart')
+    expect(page).toContain('checkInRate')
+    expect(page).toContain('FR-33')
+
+    const chart = read('src', 'components', 'organizer', 'category-breakdown-chart.tsx')
+    expect(chart).toContain("from 'recharts'")
+    expect(chart).toContain('dataKey="male"')
+    expect(chart).toContain('dataKey="female"')
+  })
+})

@@ -3,13 +3,21 @@
 import { useEffect, useState, useRef, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 
-interface LeaderboardEntry {
+export interface LeaderboardEntry {
   runner_id: string
   full_name: string
   gender: string | null
   event_id: string
   total_km: number
   rank: number
+  category_id?: string | null
+  category_name?: string | null
+}
+
+export interface LeaderboardFilters {
+  event_id?: string
+  gender?: string
+  category_id?: string
 }
 
 function getRankIcon(rank: number) {
@@ -28,22 +36,37 @@ function getRankIcon(rank: number) {
 export function LiveLeaderboard({
   initialData,
   currentRunnerId,
+  filters,
 }: {
   initialData: LeaderboardEntry[]
   currentRunnerId: string | undefined
+  filters?: LeaderboardFilters
 }) {
   const supabase = createClient()
   const [entries, setEntries] = useState<LeaderboardEntry[]>(() => initialData)
   const [isLive, setIsLive] = useState(true)
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
   const prevDataKey = useRef(initialData.length)
+  const filtersRef = useRef(filters)
+
+  useEffect(() => {
+    filtersRef.current = filters
+  }, [filters])
 
   const refreshData = useCallback(async () => {
-    const { data } = await supabase
+    // Re-apply the active filters so realtime refreshes don't reset them
+    const f = filtersRef.current ?? {}
+    let query = supabase
       .from("leaderboard_virtual")
       .select("*")
       .order("rank", { ascending: true })
       .limit(50)
+
+    if (f.event_id) query = query.eq("event_id", f.event_id)
+    if (f.gender) query = query.eq("gender", f.gender)
+    if (f.category_id) query = query.eq("category_id", f.category_id)
+
+    const { data } = await query
 
     if (data) {
       setEntries(data as LeaderboardEntry[])

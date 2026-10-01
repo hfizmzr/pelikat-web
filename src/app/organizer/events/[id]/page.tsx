@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt } from 'lucide-react'
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { EventSettingsPanel } from '@/components/events/event-settings-panel'
@@ -50,6 +50,7 @@ type EventDetail = {
   status: EventStatus
   reg_open: string | null
   reg_close: string | null
+  results_published: boolean | null
   race_categories: RaceCategory[] | null
   registrations: Registration[] | null
 }
@@ -124,7 +125,14 @@ export default async function OrganizerEventDetailPage({
           eventName={eventDetail.name}
           regOpen={eventDetail.reg_open}
           regClose={eventDetail.reg_close}
+          resultsPublished={eventDetail.results_published ?? false}
         />
+        <Link href={`/organizer/events/${eventDetail.id}/analytics`}>
+          <Button variant="outline">
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Analytics
+          </Button>
+        </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
