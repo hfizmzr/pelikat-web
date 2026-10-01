@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { confirmDummyPayment } from '@/components/events/actions'
+import { createCheckout, confirmPayment } from '@/lib/payments/mock'
 
 export default function PaymentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -50,6 +51,18 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
     startTransition(async () => {
       try {
         if (!registration) throw new Error('Registration not found')
+
+        // Mock gateway flow (PAYMENT_PROVIDER=mock) — swap point for the
+        // real provider. confirm_dummy_payment then applies the DB state
+        // (ownership check, pending→paid, audit) unchanged.
+        const session = await createCheckout({
+          amount: registration.race_categories?.price ?? 0,
+          description: `Registration ${registration.bib_number} — ${registration.events?.name}`,
+          referenceId: registration.id,
+          metadata: { type: 'event_registration', bib_number: registration.bib_number },
+        })
+        await confirmPayment(session)
+
         await confirmDummyPayment(registration.id)
         setSuccess(true)
         router.refresh()
@@ -150,8 +163,8 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
             <div className="flex items-start gap-3">
               <span className="material-symbols-outlined text-[20px] text-[#d0bcff]">credit_score</span>
               <div className="flex flex-col">
-                <span className="text-[14px] font-bold text-[#e5e1e4]">Dummy Gateway</span>
-                <span className="text-[12px] text-[#958ea0]">This simulates a successful payment. No real transaction occurs.</span>
+                <span className="text-[14px] font-bold text-[#e5e1e4]">Mock Gateway</span>
+                <span className="text-[12px] text-[#958ea0]">This simulates a successful payment (PAYMENT_PROVIDER=mock). No real transaction occurs.</span>
               </div>
             </div>
 
