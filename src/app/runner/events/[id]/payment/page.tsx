@@ -129,7 +129,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
             </div>
             <div className="flex justify-between items-center text-[13px]">
               <span className="text-[#958ea0]">BIB</span>
-              <span className="font-mono text-[#e5e1e4] font-medium">{registration.bib_number}</span>
+              <span className="font-mono text-[#e5e1e4] font-medium">{registration.bib_number ?? 'TBA'}</span>
             </div>
             <div className="flex justify-between items-center text-[13px]">
               <span className="text-[#958ea0]">Status</span>

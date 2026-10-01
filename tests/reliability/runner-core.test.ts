@@ -220,3 +220,40 @@ describe('Polish: Analytics & Leaderboard (Phase 4)', () => {
     expect(chart).toContain('dataKey="female"')
   })
 })
+
+describe('Polish: Payment-First BIB Lifecycle', () => {
+  it('registrations are created pending without a BIB number', () => {
+    const migration = read(
+      'supabase',
+      'migrations',
+      '052_payment_first_bib.sql'
+    )
+    expect(migration).toContain('alter column bib_number drop not null')
+    // register_for_event no longer assigns a BIB
+    expect(migration).toContain("null,\n    'pending'")
+    expect(migration).toContain("'runner_registered'")
+    // registration audit no longer logs a bib
+    expect(migration).not.toContain("'bib_number', v_bib,\n      'category_id', p_category_id")
+  })
+
+  it('BIB is allocated only at payment confirmation (UC04 retry preserved)', () => {
+    const migration = read(
+      'supabase',
+      'migrations',
+      '052_payment_first_bib.sql'
+    )
+    expect(migration).toContain("set bib_number = v_bib,\n          payment_status = 'paid'")
+    expect(migration).toContain('for v_attempt in 1..3 loop')
+    expect(migration).toContain('when unique_violation then')
+    expect(migration).toContain("raise exception 'Could not assign BIB, please try again'")
+    expect(migration).toContain("'payment_confirmed'")
+  })
+
+  it('checkout-to-confirmation UI handles the unassigned-BIB state', () => {
+    const paymentPage = read('src', 'app', 'runner', 'events', '[id]', 'payment', 'page.tsx')
+    expect(paymentPage).toContain("registration.bib_number ?? 'TBA'")
+    // mock payment still routes through the stub before the DB RPC
+    expect(paymentPage).toContain('await confirmPayment(session)')
+    expect(paymentPage).toContain('await confirmDummyPayment(registration.id)')
+  })
+})
