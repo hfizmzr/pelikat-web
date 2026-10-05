@@ -90,13 +90,13 @@ describe('Polish: Registration & Emails (Phase 2)', () => {
       'events',
       'runner-registration-actions.tsx'
     )
-    expect(actions).toContain('T-Shirt Size:')
+    expect(actions).toContain('T-Shirt Size')
     expect(actions).toContain('runner.tShirtSize')
     expect(actions).toContain('"/runner/profile"')
 
     const page = read('src', 'app', 'runner', 'events', '[id]', 'page.tsx')
-    expect(page).toContain("select('id, t_shirt_size')")
-    expect(page).toContain('runner={{ email: user?.email ?? null, tShirtSize: profile?.t_shirt_size ?? null }}')
+    expect(page).toContain("select('id, t_shirt_size, full_name, emergency_contact_name, emergency_contact_phone')")
+    expect(page).toContain('tShirtSize: profile?.t_shirt_size ?? null')
   })
 
   it('register_for_event retries BIB assignment on unique collisions', () => {
@@ -255,5 +255,45 @@ describe('Polish: Payment-First BIB Lifecycle', () => {
     // mock payment still routes through the stub before the DB RPC
     expect(paymentPage).toContain('await confirmPayment(session)')
     expect(paymentPage).toContain('await confirmDummyPayment(registration.id)')
+  })
+})
+
+describe('Polish: E-Certificates & Re-Registration (Phase 5)', () => {
+  it('django badges service generates certs at award time with isolation', () => {
+    const services = read('..', 'pelikat-api', 'apps', 'badges', 'services.py')
+    expect(services).toContain('from apps.ecert.services import generate_cert')
+    expect(services).toContain('_generate_milestone_cert')
+    expect(services).toContain('entry["cert_url"] = cert_url')
+    // cert failures never block the badge award
+    expect(services).toContain('except Exception:\n                    pass')
+  })
+
+  it('badges page offers on-demand certificate download (FR-63)', () => {
+    const page = read('src', 'app', 'runner', 'badges', 'page.tsx')
+    expect(page).toContain('BadgeCertificateButton')
+
+    const action = read('src', 'lib', 'actions', 'cert.ts')
+    expect(action).toContain('/ai/ecert/generate')
+    expect(action).toContain("'runner_badges'")
+    // PostgREST null matching requires .is(); eq(null) matches nothing
+    expect(action).toContain("badgeQuery.is('event_id', null)")
+
+    const button = read('src', 'components', 'gamification', 'certificate-download.tsx')
+    expect(button).toContain('Download Certificate')
+    expect(button).toContain('window.open(url')
+  })
+
+  it('run-log badge toast links fresh certs after award (UC14)', () => {
+    const page = read('src', 'app', 'runner', 'run-log', 'page.tsx')
+    expect(page).toContain('badge.cert_url')
+    expect(page).toContain('Download Certificate')
+  })
+
+  it('registration shows saved profile + emergency contact (FR-46)', () => {
+    const actions = read('src', 'components', 'events', 'runner-registration-actions.tsx')
+    expect(actions).toContain('Using Your Saved Profile')
+    expect(actions).toContain('runner.emergencyContactName')
+    expect(actions).toContain('runner.emergencyContactPhone')
+    expect(actions).toContain('href="/runner/profile"')
   })
 })

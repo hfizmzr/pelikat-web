@@ -23,6 +23,7 @@ interface AwardedBadge {
   name: string
   description: string
   icon: string
+  cert_url?: string
 }
 
 interface RunLogEntry {
@@ -350,6 +351,17 @@ export default function RunnerRunLogPage() {
                 <div key={badge.badge_key} className="bg-[#131315]/80 p-3 rounded-xl border border-[#4edea3]/20 flex flex-col items-center text-center">
                   <span className="text-[24px] mb-2">{badge.icon}</span>
                   <p className="text-[12px] font-bold text-[#e5e1e4] leading-tight">{badge.name}</p>
+                  {badge.cert_url && (
+                    <a
+                      href={badge.cert_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 w-full py-1.5 rounded-md bg-[#4edea3] text-[#003926] text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform"
+                    >
+                      <span className="material-symbols-outlined text-[12px]">download</span>
+                      Download Certificate
+                    </a>
+                  )}
                 </div>
               ))}
             </div>

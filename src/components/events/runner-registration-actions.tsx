@@ -19,8 +19,11 @@ interface RunnerRegistrationActionsProps {
   categories: RaceCategory[]
   hasRunnerProfile: boolean
   runner: {
+    name: string | null
     email: string | null
     tShirtSize: string | null
+    emergencyContactName: string | null
+    emergencyContactPhone: string | null
   }
   eventSummary: {
     name: string
@@ -142,34 +145,51 @@ export function RunnerRegistrationActions({
         </div>
       )}
 
-      {/* T-shirt confirm (UC11 step 3): size comes from the profile */}
+      {/* Re-registration prefill (FR-46): one-glance saved profile data */}
       {hasRunnerProfile && (
-        <div
-          className={`flex items-center justify-between p-4 rounded-xl border ${
-            runner.tShirtSize
-              ? 'bg-[#1c1b1d] border-[#353437]/60'
-              : 'bg-[#e3c45b]/5 border-[#e3c45b]/30'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-[20px] text-[#cbc3d7]">checkroom</span>
-            <div className="flex flex-col">
-              <span className="text-[13px] font-bold text-[#e5e1e4]">
-                T-Shirt Size: {runner.tShirtSize || 'Not set'}
+        <div className={`p-4 rounded-xl border ${
+          runner.tShirtSize
+            ? 'bg-[#1c1b1d] border-[#353437]/60'
+            : 'bg-[#e3c45b]/5 border-[#e3c45b]/30'
+        } flex flex-col gap-3`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px] text-[#4edea3]">person</span>
+              <span className="text-[12px] font-bold text-[#e5e1e4] uppercase tracking-wider">Using Your Saved Profile</span>
+            </div>
+            <a href="/runner/profile" className="text-[11px] font-bold text-[#d0bcff] hover:underline shrink-0">
+              Edit
+            </a>
+          </div>
+
+          <div className="grid gap-2 text-[12px]">
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Name</span>
+              <span className="text-[#e5e1e4] font-medium text-right truncate">{runner.name || 'Not set'}</span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Email</span>
+              <span className="text-[#e5e1e4] font-medium text-right truncate">{runner.email || 'Not set'}</span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">T-Shirt Size</span>
+              <span className={`font-medium text-right ${runner.tShirtSize ? 'text-[#e5e1e4]' : 'text-[#e3c45b]'}`}>
+                {runner.tShirtSize || 'Not set'}
               </span>
-              {runner.tShirtSize ? (
-                <span className="text-[11px] text-[#958ea0]">From your profile — collected at REPC</span>
-              ) : (
-                <span className="text-[11px] text-[#e3c45b]">Set a size in your profile so the right shirt is reserved</span>
-              )}
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Emergency Contact</span>
+              <span className={`font-medium text-right truncate ${runner.emergencyContactName ? 'text-[#e5e1e4]' : 'text-[#e3c45b]'}`}>
+                {runner.emergencyContactName
+                  ? `${runner.emergencyContactName}${runner.emergencyContactPhone ? ` · ${runner.emergencyContactPhone}` : ''}`
+                  : 'Not set'}
+              </span>
             </div>
           </div>
-          <a
-            href="/runner/profile"
-            className="text-[12px] font-bold text-[#d0bcff] hover:underline shrink-0"
-          >
-            {runner.tShirtSize ? 'Verify' : 'Set size'}
-          </a>
+
+          {!runner.tShirtSize && (
+            <p className="text-[11px] text-[#e3c45b]">Set a t-shirt size in your profile so the right shirt is reserved at REPC.</p>
+          )}
         </div>
       )}
 

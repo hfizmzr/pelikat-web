@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { BadgeCertificateButton } from '@/components/gamification/certificate-download'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -87,6 +88,14 @@ export default async function RunnerBadgesPage() {
                   <span className="text-[10px] text-[#958ea0]">
                     {new Date(badge.awarded_at).toLocaleDateString('en-MY', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
+                  <BadgeCertificateButton
+                    badge={{
+                      runnerId: badge.runner_id,
+                      badgeKey: badge.badge_key,
+                      eventId: badge.event_id ?? null,
+                      badgeName: def.name,
+                    }}
+                  />
                 </div>
               </div>
             )

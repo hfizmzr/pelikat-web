@@ -35,7 +35,7 @@ export default async function RunnerEventDetailPage({
   const [{ data: profile }, { data: event }] = await Promise.all([
     supabase
       .from('runner_profiles')
-      .select('id, t_shirt_size')
+      .select('id, t_shirt_size, full_name, emergency_contact_name, emergency_contact_phone')
       .eq('user_id', user?.id)
       .single(),
     supabase
@@ -206,7 +206,13 @@ export default async function RunnerEventDetailPage({
               eventId={event.id}
               categories={raceCategories}
               hasRunnerProfile={!!profile}
-              runner={{ email: user?.email ?? null, tShirtSize: profile?.t_shirt_size ?? null }}
+              runner={{
+                name: profile?.full_name ?? null,
+                email: user?.email ?? null,
+                tShirtSize: profile?.t_shirt_size ?? null,
+                emergencyContactName: profile?.emergency_contact_name ?? null,
+                emergencyContactPhone: profile?.emergency_contact_phone ?? null,
+              }}
               eventSummary={{
                 name: event.name,
                 date: eventDate.toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
