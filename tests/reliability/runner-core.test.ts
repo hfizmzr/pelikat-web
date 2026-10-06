@@ -95,7 +95,9 @@ describe('Polish: Registration & Emails (Phase 2)', () => {
     expect(actions).toContain('"/runner/profile"')
 
     const page = read('src', 'app', 'runner', 'events', '[id]', 'page.tsx')
-    expect(page).toContain("select('id, t_shirt_size, full_name, emergency_contact_name, emergency_contact_phone')")
+    expect(page).toContain(
+      "select('id, t_shirt_size, full_name, emergency_contact_name, emergency_contact_phone, dob, gender, phone, ic_encrypted')"
+    )
     expect(page).toContain('tShirtSize: profile?.t_shirt_size ?? null')
   })
 
@@ -292,8 +294,17 @@ describe('Polish: E-Certificates & Re-Registration (Phase 5)', () => {
   it('registration shows saved profile + emergency contact (FR-46)', () => {
     const actions = read('src', 'components', 'events', 'runner-registration-actions.tsx')
     expect(actions).toContain('Using Your Saved Profile')
+    expect(actions).toContain('runner.name')
+    expect(actions).toContain('runner.dob')
+    expect(actions).toContain('runner.gender')
+    expect(actions).toContain('runner.phone')
+    expect(actions).toContain('runner.icOnFile')
+    expect(actions).toContain('runner.tShirtSize')
     expect(actions).toContain('runner.emergencyContactName')
     expect(actions).toContain('runner.emergencyContactPhone')
-    expect(actions).toContain('href="/runner/profile"')
+    expect(actions).toContain('/runner/profile')
+
+    const page = read('src', 'app', 'runner', 'events', '[id]', 'page.tsx')
+    expect(page).toContain('icOnFile: !!profile?.ic_encrypted')
   })
 })

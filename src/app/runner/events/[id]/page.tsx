@@ -35,7 +35,7 @@ export default async function RunnerEventDetailPage({
   const [{ data: profile }, { data: event }] = await Promise.all([
     supabase
       .from('runner_profiles')
-      .select('id, t_shirt_size, full_name, emergency_contact_name, emergency_contact_phone')
+      .select('id, t_shirt_size, full_name, emergency_contact_name, emergency_contact_phone, dob, gender, phone, ic_encrypted')
       .eq('user_id', user?.id)
       .single(),
     supabase
@@ -142,7 +142,7 @@ export default async function RunnerEventDetailPage({
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[24px] text-[#4edea3]">check_circle</span>
                   <div className="flex flex-col">
-                    <span className="text-[14px] font-bold text-[#4edea3]">You're Registered!</span>
+                    <span className="text-[14px] font-bold text-[#4edea3]">You&apos;re Registered!</span>
                     <span className="text-[11px] text-[#4edea3]/80">See you at the start line.</span>
                   </div>
                 </div>
@@ -212,6 +212,10 @@ export default async function RunnerEventDetailPage({
                 tShirtSize: profile?.t_shirt_size ?? null,
                 emergencyContactName: profile?.emergency_contact_name ?? null,
                 emergencyContactPhone: profile?.emergency_contact_phone ?? null,
+                dob: profile?.dob ?? null,
+                gender: profile?.gender ?? null,
+                phone: profile?.phone ?? null,
+                icOnFile: !!profile?.ic_encrypted,
               }}
               eventSummary={{
                 name: event.name,

@@ -24,6 +24,10 @@ interface RunnerRegistrationActionsProps {
     tShirtSize: string | null
     emergencyContactName: string | null
     emergencyContactPhone: string | null
+    dob: string | null
+    gender: string | null
+    phone: string | null
+    icOnFile: boolean
   }
   eventSummary: {
     name: string
@@ -170,6 +174,29 @@ export function RunnerRegistrationActions({
             <div className="flex justify-between gap-3">
               <span className="text-[#958ea0]">Email</span>
               <span className="text-[#e5e1e4] font-medium text-right truncate">{runner.email || 'Not set'}</span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Date of Birth</span>
+              <span className="text-[#e5e1e4] font-medium text-right truncate">
+                {runner.dob ? new Date(runner.dob).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not set'}
+              </span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Gender</span>
+              <span className="text-[#e5e1e4] font-medium text-right truncate">
+                {!!runner.gender && (runner.gender === 'M' ? 'Male' : runner.gender === 'F' ? 'Female' : runner.gender)}
+              </span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">IC / Passport</span>
+              <span className={runner.icOnFile ? 'text-[#4edea3] font-medium' : 'text-[#e3c45b] font-medium'}>
+                {/* IC count never leaves the database encrypted; display matches the profile page's own policy. */}
+                {runner.icOnFile ? 'Securely on file (encrypted)' : 'Not set'}
+              </span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Phone</span>
+              <span className="text-[#e5e1e4] font-medium text-right truncate">{runner.phone || 'Not set'}</span>
             </div>
             <div className="flex justify-between gap-3">
               <span className="text-[#958ea0]">T-Shirt Size</span>
