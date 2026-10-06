@@ -44,6 +44,10 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)
     }
+    // Layout-level role checks are defense-in-depth; the wall belongs here.
+    if (user.app_metadata?.role !== 'admin') {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
     return response
   }
 

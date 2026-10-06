@@ -35,8 +35,9 @@ serve(async (req) => {
       .eq("contact_email", email)
       .maybeSingle();
 
-    // Preserve existing role from claims (e.g., admin)
-    let role = claims.app_metadata?.role || "user";
+    // Preserve existing role from claims (e.g., admin). 'user' was never a
+    // valid role — stamp 'runner' so the claim is always in the enum.
+    let role = claims.app_metadata?.role || "runner";
     let organizerId = claims.app_metadata?.organizer_id || null;
 
     if (organizer) {

@@ -3,16 +3,14 @@
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
+import { getUserRole } from '@/lib/auth/requireRole'
 
 export async function redirectAfterLogin(
   user: User,
   router: ReturnType<typeof useRouter>,
   supabase: ReturnType<typeof createClient>
 ) {
-  const role =
-    user.app_metadata?.role ||
-    user.user_metadata?.role ||
-    'runner'
+  const role = getUserRole(user)
 
   // Log the login event
   await supabase.from('audit_log').insert({
