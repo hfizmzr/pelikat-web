@@ -78,12 +78,15 @@ function renderOrganizerWelcome(p: OrganizerWelcomePayload): string {
 }
 
 function validateBody(body: Record<string, unknown>): { error?: string } {
-  if (body.type === "registration_confirmation") {
-    const p = body as unknown as RegistrationConfirmationPayload;
-    if (!p.runnerEmail || !p.eventName || !p.bibNumber) {
-      return { error: "runnerEmail, eventName and bibNumber are required" };
-    }
-  } else if (body.type === "organizer_welcome") {
+    if (body.type === "registration_confirmation") {
+      const p = body as RegistrationConfirmationPayload;
+      // Payment-first BIB: bibNumber is legitimately absent at registration
+      // time — render as TBA instead of rejecting the confirmation.
+      if (!p.runnerEmail || !p.eventName) {
+        return { error: "runnerEmail and eventName are required" };
+      }
+      if (!p.bibNumber) p.bibNumber = "TBA";
+    } else if (body.type === "organizer_welcome") {
     const p = body as unknown as OrganizerWelcomePayload;
     if (!p.organizerEmail || !p.organizerName) {
       return { error: "organizerEmail and organizerName are required" };

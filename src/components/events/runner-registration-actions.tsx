@@ -85,12 +85,13 @@ export function RunnerRegistrationActions({
           body: {
             type: 'registration_confirmation',
             runnerEmail: runner.email,
-            runnerName: 'Runner',
+            runnerName: runner.name || 'Runner',
             eventName: eventSummary.name,
             eventDate: eventSummary.date,
             location: eventSummary.location,
             categoryName: category?.name ?? '',
-            bibNumber: data?.bib_number ?? '',
+            // Payment-first BIB: number unassigned until payment, so 'TBA'.
+            bibNumber: data?.bib_number || 'TBA',
             eventUrl: `${window.location.origin}/runner/events/${eventId}/bib`,
           },
         })
