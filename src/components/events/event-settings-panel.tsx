@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
   Sheet,
@@ -22,8 +24,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Settings, Trash2, Globe, EyeOff, XCircle, Loader2 } from 'lucide-react'
-import { deleteEvent, updateEventStatus } from '@/components/events/actions'
+import { Settings, Trash2, Globe, EyeOff, XCircle, Loader2, Clock, Save } from 'lucide-react'
+import { deleteEvent, updateEventStatus, updateEventDates } from '@/components/events/actions'
 
 type EventStatus = 'draft' | 'published' | 'closed'
 
@@ -31,6 +33,8 @@ interface EventSettingsPanelProps {
   eventId: string
   currentStatus: EventStatus
   eventName: string
+  regOpen: string | null
+  regClose: string | null
 }
 
 const STATUS_OPTIONS: { value: EventStatus; label: string; icon: React.ReactNode; description: string }[] = [
@@ -54,10 +58,13 @@ const STATUS_OPTIONS: { value: EventStatus; label: string; icon: React.ReactNode
   },
 ]
 
-export function EventSettingsPanel({ eventId, currentStatus, eventName }: EventSettingsPanelProps) {
+export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen, regClose }: EventSettingsPanelProps) {
   const [isPending, startTransition] = useTransition()
   const [isDeleting, startDeleting] = useTransition()
   const [open, setOpen] = useState(false)
+  const [regOpenValue, setRegOpenValue] = useState(regOpen ?? '')
+  const [regCloseValue, setRegCloseValue] = useState(regClose ?? '')
+  const [savingDates, setSavingDates] = useState(false)
 
   const handleStatusChange = (newStatus: EventStatus) => {
     if (newStatus === currentStatus) return
@@ -70,6 +77,15 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName }: EventS
     startDeleting(async () => {
       await deleteEvent(eventId)
     })
+  }
+
+  const handleSaveDates = async () => {
+    setSavingDates(true)
+    await updateEventDates(eventId, {
+      reg_open: regOpenValue || null,
+      reg_close: regCloseValue || null,
+    })
+    setSavingDates(false)
   }
 
   return (
@@ -131,7 +147,56 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName }: EventS
             </div>
           </div>
 
-          {/* ── Danger Zone ─────────────────────────────────── */}
+          {/* ── Registration Window ──────────────────────── */}
+          <div className="space-y-3 pt-4 border-t border-border">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Registration Window
+              </h3>
+            </div>
+            <div className="grid gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="reg-open" className="text-xs">Opens</Label>
+                <Input
+                  id="reg-open"
+                  type="datetime-local"
+                  value={regOpenValue}
+                  onChange={(e) => setRegOpenValue(e.target.value)}
+                  className="h-9 text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  If set, runners cannot register before this date
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="reg-close" className="text-xs">Closes</Label>
+                <Input
+                  id="reg-close"
+                  type="datetime-local"
+                  value={regCloseValue}
+                  onChange={(e) => setRegCloseValue(e.target.value)}
+                  className="h-9 text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  If set, runners cannot register after this date
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSaveDates}
+                disabled={savingDates}
+              >
+                {savingDates ? (
+                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-3 w-3" />
+                )}
+                Save Dates
+              </Button>
+            </div>
+          </div>
           <div className="space-y-3 pt-4 border-t border-border">
             <h3 className="text-sm font-semibold text-destructive uppercase tracking-wide">
               Danger Zone

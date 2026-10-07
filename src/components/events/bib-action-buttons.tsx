@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Download, Share2 } from 'lucide-react'
+import { Download, Printer, Share2 } from 'lucide-react'
 
 export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; eventName: string }) {
   const handleSave = () => {
@@ -48,11 +48,19 @@ export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; 
     }
   }
 
+  const handlePrint = () => {
+    window.print()
+  }
+
   return (
-    <div className="flex gap-2 w-full">
+    <div className="flex w-full flex-col gap-2 print:hidden sm:flex-row">
       <Button variant="outline" className="flex-1" onClick={handleSave}>
         <Download className="mr-2 h-4 w-4" />
         Save
+      </Button>
+      <Button variant="outline" className="flex-1" onClick={handlePrint}>
+        <Printer className="mr-2 h-4 w-4" />
+        Print/PDF
       </Button>
       <Button variant="outline" className="flex-1" onClick={handleShare}>
         <Share2 className="mr-2 h-4 w-4" />

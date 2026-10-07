@@ -151,3 +151,52 @@
     @apply bg-gradient-to-br from-[#7c3aed] via-[#8b5cf6] to-[#6d28d9];
   }
 }
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  body:has(.bib-print-page) {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  body:has(.bib-print-page) header,
+  body:has(.bib-print-page) nav,
+  body:has(.bib-print-page) .bib-print-hide,
+  body:has(.bib-print-page) .lg\:block {
+    display: none !important;
+  }
+
+  body:has(.bib-print-page) main {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  body:has(.bib-print-page) .bib-print-page {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body:has(.bib-print-page) .bib-print-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin: 0 auto !important;
+    max-width: 420px !important;
+    width: 100% !important;
+  }
+
+  body:has(.bib-print-page) .bib-print-card * {
+    color: #000000 !important;
+  }
+
+  body:has(.bib-print-page) .bib-print-muted {
+    color: #555555 !important;
+  }
+
+  body:has(.bib-print-page) .bib-print-status {
+    color: #16a34a !important;
+  }
+}

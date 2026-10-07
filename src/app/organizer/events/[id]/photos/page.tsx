@@ -44,6 +44,29 @@ function getPageRange(page: number, total: number, pageSize: number) {
   return `${start}-${end} of ${total}`
 }
 
+type PhotoTagRecord = {
+  id: string
+  storage_path: string | null
+  bib_number: string | null
+  confidence: number | null
+  status: string | null
+  registration_id: string | null
+  runner_id: string | null
+}
+
+type PhotoWithUrl = PhotoTagRecord & {
+  fileName: string
+  url: string | null
+  registration: { id: string; bib_number: string | null } | null
+  runner: { id: string; full_name: string | null } | null
+}
+
+type PhotoGroup = PhotoWithUrl & {
+  bibNumbers: string[]
+  tagCount: number
+  tags: PhotoWithUrl[]
+}
+
 function getPhotoPageHref(
   eventId: string,
   tab: PhotoTab,
@@ -152,40 +175,38 @@ function getTagMatchText(photo: { runner?: { full_name?: string | null } | null;
   return 'No registration match found'
 }
 
-function groupPhotosByStoragePath(sourcePhotos: Record<string, unknown>[]) {
+function groupPhotosByStoragePath(sourcePhotos: PhotoWithUrl[]): PhotoGroup[] {
   return Array.from(
-    sourcePhotos.reduce((groups: Map<string, Record<string, unknown>>, photo: Record<string, unknown>) => {
-      const groupKey = (photo.storage_path as string) || (photo.id as string)
+    sourcePhotos.reduce((groups: Map<string, PhotoGroup>, photo) => {
+      const groupKey = photo.storage_path || photo.id
       const currentGroup = groups.get(groupKey)
 
       if (currentGroup) {
-        const tags = currentGroup.tags as Record<string, unknown>[]
-        tags.push(photo)
-        const bibNumbers = currentGroup.bibNumbers as string[]
+        currentGroup.tags.push(photo)
 
-        if (photo.bib_number && !bibNumbers.includes(photo.bib_number as string)) {
-          bibNumbers.push(photo.bib_number as string)
+        if (photo.bib_number && !currentGroup.bibNumbers.includes(photo.bib_number)) {
+          currentGroup.bibNumbers.push(photo.bib_number)
         }
 
-        currentGroup.tagCount = (currentGroup.tagCount as number) + 1
+        currentGroup.tagCount += 1
 
         if (
           photo.confidence != null &&
-          (currentGroup.confidence == null || (photo.confidence as number) > (currentGroup.confidence as number))
+          (currentGroup.confidence == null || photo.confidence > currentGroup.confidence)
         ) {
           currentGroup.confidence = photo.confidence
         }
       } else {
         groups.set(groupKey, {
           ...photo,
-          bibNumbers: photo.bib_number ? [photo.bib_number as string] : [],
+          bibNumbers: photo.bib_number ? [photo.bib_number] : [],
           tagCount: 1,
           tags: [photo],
         })
       }
 
       return groups
-    }, new Map<string, Record<string, unknown>>())
+    }, new Map<string, PhotoGroup>())
       .values()
   )
 }
@@ -410,7 +431,7 @@ export default async function OrganizerEventPhotosPage({
       ...(rejectedPhotosResult.data ?? []),
     ].map((photo) => [photo.id, photo])
   )
-  const photos = Array.from(photosById.values())
+  const photos = Array.from(photosById.values()) as PhotoTagRecord[]
   const photosError =
     totalCountResult.error ??
     autoCountResult.error ??
@@ -460,16 +481,18 @@ export default async function OrganizerEventPhotosPage({
   )
 
   // Generate signed URLs for photos that have a storage path
-  const photosWithUrls = await Promise.all(
+  const photosWithUrls: PhotoWithUrl[] = await Promise.all(
     (photos ?? []).map(async (photo) => {
       const registration = photo.registration_id
-        ? registrationById.get(photo.registration_id) ?? null
+        ? (registrationById.get(photo.registration_id) as PhotoWithUrl['registration'] | undefined) ?? null
         : null
       const runner = photo.runner_id
-        ? runnerById.get(photo.runner_id) ?? null
+        ? (runnerById.get(photo.runner_id) as PhotoWithUrl['runner'] | undefined) ?? null
         : null
 
-      if (!photo.storage_path) return { ...photo, registration, runner, url: null }
+      if (!photo.storage_path) {
+        return { ...photo, registration, runner, fileName: 'Uploaded photo', url: null }
+      }
       const { data } = await supabase.storage
         .from('race-photos')
         .createSignedUrl(photo.storage_path, 3600) // 1h expiry
@@ -491,15 +514,91 @@ export default async function OrganizerEventPhotosPage({
   const rejectedPhotos = photosWithUrls.filter((photo) =>
     rejectedPhotoIds.has(photo.id) && photo.status === 'discarded'
   )
-  type PhotoWithUrl = (typeof photosWithUrls)[number]
-  type PhotoGroup = PhotoWithUrl & {
-    bibNumbers: string[]
-    tagCount: number
-    tags: PhotoWithUrl[]
-  }
 
-  const reviewPhotoGroups = groupPhotosByStoragePath(reviewPhotos as Record<string, unknown>[])
+  const reviewPhotoGroups = groupPhotosByStoragePath(reviewPhotos)
   const rejectedPhotoGroups = groupPhotosByStoragePath(rejectedPhotos)
+  const renderReviewPhotoDetails = (photo: PhotoGroup) => (
+    <div className="space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium uppercase text-muted-foreground">
+            Detected BIBs
+          </p>
+          {photo.tags.some((tag) => tag.bib_number) ? (
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {photo.tags
+                .filter((tag) => tag.bib_number)
+                .map((tag) => (
+                  <Badge
+                    key={tag.id}
+                    variant="outline"
+                    className={`text-base font-semibold ${getBibBadgeClass(tag)}`}
+                  >
+                    {tag.bib_number}
+                  </Badge>
+                ))}
+            </div>
+          ) : (
+            <p className="text-2xl font-semibold leading-none">Unknown</p>
+          )}
+        </div>
+        <Badge variant="secondary">
+          {photo.tagCount} tag{photo.tagCount !== 1 ? 's' : ''}
+        </Badge>
+      </div>
+      <div className="space-y-2">
+        {photo.tags.map((tag) => (
+          <div
+            key={tag.id}
+            className="space-y-3 rounded-md border border-border bg-background/40 p-3"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={`text-sm font-semibold ${getBibBadgeClass(tag)}`}
+                >
+                  {tag.bib_number || 'Unknown'}
+                </Badge>
+                <div>
+                  <p className="text-sm font-medium">{getTagMatchText(tag)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {tag.status === 'review'
+                      ? tag.registration_id
+                        ? 'Ready for confirmation'
+                        : 'Waiting for manual match or bib correction'
+                      : tag.status}
+                  </p>
+                </div>
+              </div>
+              {tag.status !== 'review' && (
+                <Badge
+                  variant={tag.status === 'discarded' ? 'outline' : 'default'}
+                  className={getBibBadgeClass(tag)}
+                >
+                  {tag.status}
+                </Badge>
+              )}
+            </div>
+            {tag.status === 'review' && (
+              <PhotoReviewActions
+                eventId={id}
+                photoTagId={tag.id}
+                storagePath={tag.storage_path ?? ''}
+                detectedBib={tag.bib_number}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+        <span className="truncate" title={photo.storage_path ?? undefined}>
+          {photo.fileName}
+        </span>
+        <span className="shrink-0">Storage saved</span>
+      </div>
+    </div>
+  )
 
   return (
     <div className="space-y-6">
@@ -644,108 +743,63 @@ export default async function OrganizerEventPhotosPage({
               />
               {reviewPhotoGroups.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {reviewPhotoGroups.map((photo) => (
-                    <div
-                      key={photo.id}
-                      className="overflow-hidden rounded-lg border border-border bg-card"
-                    >
-                      <PhotoPreviewDialog
-                        src={photo.url}
-                        alt={`Review photo for BIB ${photo.bib_number ?? 'unknown'}`}
-                        title="Review photo preview"
-                        description={photo.fileName}
-                        thumbnailClassName="relative aspect-[4/3] w-full bg-secondary"
-                        thumbnailImageClassName="object-contain"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                  {reviewPhotoGroups.map((photo, index) => {
+                    const triggerId = `review-photo-${photo.id}`
+                    const previousPhoto = reviewPhotoGroups[index - 1]
+                    const nextPhoto = reviewPhotoGroups[index + 1]
+                    const previousHref = !previousPhoto && reviewPage > 1
+                      ? getPhotoPageHref(
+                        id,
+                        'review',
+                        reviewPage - 1,
+                        galleryPage,
+                        rejectedPage,
+                        selectedBatchId
+                      )
+                      : undefined
+                    const nextHref = !nextPhoto && reviewPage * REVIEW_PAGE_SIZE < stats.review
+                      ? getPhotoPageHref(
+                        id,
+                        'review',
+                        reviewPage + 1,
+                        galleryPage,
+                        rejectedPage,
+                        selectedBatchId
+                      )
+                      : undefined
+
+                    return (
+                      <div
+                        key={photo.id}
+                        className="overflow-hidden rounded-lg border border-border bg-card"
                       >
-                        {photo.confidence != null && (
-                          <Badge variant="outline" className="absolute right-3 top-3 bg-background/85">
-                            {(photo.confidence * 100).toFixed(0)}%
-                          </Badge>
-                        )}
-                      </PhotoPreviewDialog>
-                      <div className="space-y-3 p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-xs font-medium uppercase text-muted-foreground">
-                              Detected BIBs
-                            </p>
-                            {photo.tags.some((tag) => tag.bib_number) ? (
-                              <div className="mt-1 flex flex-wrap gap-1.5">
-                                {photo.tags
-                                  .filter((tag) => tag.bib_number)
-                                  .map((tag) => (
-                                  <Badge
-                                    key={tag.id}
-                                    variant="outline"
-                                    className={`text-base font-semibold ${getBibBadgeClass(tag)}`}
-                                  >
-                                    {tag.bib_number}
-                                  </Badge>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-2xl font-semibold leading-none">Unknown</p>
-                            )}
-                          </div>
-                          <Badge variant="secondary">
-                            {photo.tagCount} tag{photo.tagCount !== 1 ? 's' : ''}
-                          </Badge>
-                        </div>
-                        <div className="space-y-2">
-                          {photo.tags.map((tag) => (
-                            <div
-                              key={tag.id}
-                              className="space-y-3 rounded-md border border-border bg-background/40 p-3"
-                            >
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                  <Badge
-                                    variant="outline"
-                                    className={`text-sm font-semibold ${getBibBadgeClass(tag)}`}
-                                  >
-                                    {tag.bib_number || 'Unknown'}
-                                  </Badge>
-                                  <div>
-                                    <p className="text-sm font-medium">{getTagMatchText(tag)}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {tag.status === 'review'
-                                        ? tag.registration_id
-                                          ? 'Ready for confirmation'
-                                          : 'Waiting for manual match or bib correction'
-                                        : tag.status}
-                                    </p>
-                                  </div>
-                                </div>
-                                {tag.status !== 'review' && (
-                                  <Badge
-                                    variant={tag.status === 'discarded' ? 'outline' : 'default'}
-                                    className={getBibBadgeClass(tag)}
-                                  >
-                                    {tag.status}
-                                  </Badge>
-                                )}
-                              </div>
-                              {tag.status === 'review' && (
-                                <PhotoReviewActions
-                                  eventId={id}
-                                  photoTagId={tag.id}
-                                  storagePath={tag.storage_path}
-                                  detectedBib={tag.bib_number}
-                                />
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                          <span className="truncate" title={photo.storage_path}>
-                            {photo.fileName}
-                          </span>
-                          <span className="shrink-0">Storage saved</span>
+                        <PhotoPreviewDialog
+                          src={photo.url}
+                          alt={`Review photo for BIB ${photo.bib_number ?? 'unknown'}`}
+                          title="Review photo preview"
+                          description={photo.fileName}
+                          thumbnailClassName="relative aspect-[4/3] w-full bg-secondary"
+                          thumbnailImageClassName="object-contain"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                          details={renderReviewPhotoDetails(photo)}
+                          triggerId={triggerId}
+                          previousTriggerId={previousPhoto ? `review-photo-${previousPhoto.id}` : undefined}
+                          nextTriggerId={nextPhoto ? `review-photo-${nextPhoto.id}` : undefined}
+                          previousHref={previousHref}
+                          nextHref={nextHref}
+                        >
+                          {photo.confidence != null && (
+                            <Badge variant="outline" className="absolute right-3 top-3 bg-background/85">
+                              {(photo.confidence * 100).toFixed(0)}%
+                            </Badge>
+                          )}
+                        </PhotoPreviewDialog>
+                        <div className="p-4">
+                          {renderReviewPhotoDetails(photo)}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               ) : (
                 <div className="rounded-lg border border-dashed border-border py-10 text-center">
@@ -956,10 +1010,10 @@ export default async function OrganizerEventPhotosPage({
                         </div>
                         <PhotoRestoreActions
                           eventId={id}
-                          storagePath={photo.storage_path}
+                          storagePath={photo.storage_path ?? ''}
                         />
                         <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                          <span className="truncate" title={photo.storage_path}>
+                          <span className="truncate" title={photo.storage_path ?? undefined}>
                             {photo.fileName}
                           </span>
                           <span className="shrink-0">Storage saved</span>

@@ -22,6 +22,8 @@ interface FormData {
   event_date: string
   location: string
   status: string
+  reg_open: string
+  reg_close: string
 }
 
 interface FormErrors {
@@ -61,7 +63,9 @@ export default function NewEventPage() {
     description: '',
     event_date: '',
     location: '',
-    status: 'draft'
+    status: 'draft',
+    reg_open: '',
+    reg_close: '',
   })
 
   const validate = (): boolean => {
@@ -109,7 +113,9 @@ export default function NewEventPage() {
         description: formData.description.trim() || null,
         event_date: formData.event_date,
         location: formData.location.trim() || null,
-        status: formData.status
+        status: formData.status,
+        reg_open: formData.reg_open || null,
+        reg_close: formData.reg_close || null,
         })
         .select('id')
         .single()
@@ -205,6 +211,34 @@ export default function NewEventPage() {
                   value={formData.location}
                   onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                 />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="reg_open">Registration Opens</Label>
+                <Input
+                  id="reg_open"
+                  type="datetime-local"
+                  value={formData.reg_open}
+                  onChange={(e) => setFormData(prev => ({ ...prev, reg_open: e.target.value }))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Leave empty for no start limit
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reg_close">Registration Closes</Label>
+                <Input
+                  id="reg_close"
+                  type="datetime-local"
+                  value={formData.reg_close}
+                  onChange={(e) => setFormData(prev => ({ ...prev, reg_close: e.target.value }))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Leave empty for no end limit
+                </p>
               </div>
             </div>
 

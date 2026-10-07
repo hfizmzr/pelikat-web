@@ -9,7 +9,6 @@ import { Html5Qrcode } from 'html5-qrcode'
 import { QrCode, Search, CheckCircle, XCircle, Users } from 'lucide-react'
 import { checkInRegistrationByBib } from '@/components/events/actions'
 import type { RepcCheckInResult } from '@/lib/repc'
-import { createClient } from '@/lib/supabase/client'
 
 type ScanResult = {
   success: boolean
@@ -31,6 +30,8 @@ type RecentCheckIn = {
   alreadyCheckedIn?: boolean
 }
 
+type ScannerMode = 'checkin' | 'collector' | null
+
 function resultFromRpc(result: RepcCheckInResult): ScanResult {
   return {
     success: result.success,
@@ -47,6 +48,12 @@ function resultFromRpc(result: RepcCheckInResult): ScanResult {
   }
 }
 
+function vibrate(pattern: number | number[]) {
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(pattern)
+  }
+}
+
 export default function OrganizerCheckinPage({
   params,
 }: {
@@ -54,7 +61,7 @@ export default function OrganizerCheckinPage({
 }) {
   const { id: eventId } = use(params)
   
-  const [scanning, setScanning] = useState(false)
+  const [scannerMode, setScannerMode] = useState<ScannerMode>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [checkingIn, setCheckingIn] = useState(false)
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
@@ -65,14 +72,31 @@ export default function OrganizerCheckinPage({
 
   const [proxyBib, setProxyBib] = useState('')
   const [proxyCode, setProxyCode] = useState('')
+  const [collectorQrPayload, setCollectorQrPayload] = useState('')
   const [proxyChecking, setProxyChecking] = useState(false)
+  const scanning = scannerMode !== null
 
   const handleScan = useCallback(async (qrPayload: string) => {
     if (scanBusyRef.current) return
 
     scanBusyRef.current = true
-    setCheckingIn(true)
     setScanResult(null)
+
+    if (scannerMode === 'collector') {
+      setCollectorQrPayload(qrPayload)
+      setScanResult({
+        success: true,
+        message: 'Collector QR captured. Enter the absent runner BIB and consent code to complete proxy collection.',
+      })
+      vibrate(80)
+      setScannerMode(null)
+      window.setTimeout(() => {
+        scanBusyRef.current = false
+      }, 700)
+      return
+    }
+
+    setCheckingIn(true)
 
     try {
       const response = await fetch('/api/repc/check-in', {
@@ -99,6 +123,7 @@ export default function OrganizerCheckinPage({
         }
 
         setScanResult(result)
+        vibrate(result.alreadyCheckedIn ? [80, 60, 80] : 120)
 
         if (result.runner) {
           setRecentCheckins((prev) => [
@@ -117,24 +142,26 @@ export default function OrganizerCheckinPage({
           success: false,
           message: data.message || 'Invalid QR code',
         })
+        vibrate([80, 80, 80])
       }
     } catch {
       setScanResult({
         success: false,
         message: 'Error verifying QR code',
       })
+      vibrate([80, 80, 80])
     } finally {
       setCheckingIn(false)
       window.setTimeout(() => {
         scanBusyRef.current = false
       }, 1200)
     }
-  }, [eventId])
+  }, [eventId, scannerMode])
 
   useEffect(() => {
     let cancelled = false
 
-    if (scanning) {
+    if (scannerMode) {
       if (!scannerRef.current) {
         const scanner = new Html5Qrcode('qr-reader')
         scannerRef.current = scanner
@@ -162,16 +189,16 @@ export default function OrganizerCheckinPage({
         scanner.stop().then(() => scanner.clear()).catch(() => {})
       }
     }
-  }, [handleScan, scanning])
+  }, [handleScan, scannerMode])
 
-  const toggleScanning = () => {
-    if (scanning) {
-      setScanning(false)
+  const toggleScanning = (mode: Exclude<ScannerMode, null>) => {
+    if (scannerMode === mode) {
+      setScannerMode(null)
       return
     }
 
     setCameraError(null)
-    setScanning(true)
+    setScannerMode(mode)
   }
 
   const handleManualSearch = async () => {
@@ -183,6 +210,7 @@ export default function OrganizerCheckinPage({
     try {
       const result = resultFromRpc(await checkInRegistrationByBib(eventId, searchQuery))
       setScanResult(result)
+      vibrate(result.success ? 120 : [80, 80, 80])
 
       if (result.success && result.runner) {
         setRecentCheckins((prev) => [
@@ -198,84 +226,78 @@ export default function OrganizerCheckinPage({
       }
     } catch {
       setScanResult({ success: false, message: 'Could not check in this runner' })
+      vibrate([80, 80, 80])
     } finally {
       setCheckingIn(false)
     }
   }
 
   const handleProxyCheckIn = async () => {
-    if (!proxyBib || !proxyCode) return
+    if (!proxyBib || !proxyCode || !collectorQrPayload) return
 
     setProxyChecking(true)
     setScanResult(null)
 
     try {
-      const supabase = createClient()
-
-      const { data: registration } = await supabase
-        .from('registrations')
-        .select('runner_id, bib_number')
-        .eq('event_id', eventId)
-        .eq('bib_number', proxyBib.trim())
-        .maybeSingle()
-
-      if (!registration) {
-        setScanResult({ success: false, message: 'Registration not found' })
-        return
-      }
-
-      const { data: userData } = await supabase.auth.getUser()
-
-      const { data, error } = await supabase.rpc('repc_check_in_registration', {
-        p_event_id: eventId,
-        p_runner_id: registration.runner_id,
-        p_bib_number: registration.bib_number,
-        p_is_proxy: true,
-        p_consent_code: proxyCode.trim().toUpperCase(),
-        p_collected_by: userData.user?.email ?? userData.user?.id ?? null,
+      const response = await fetch('/api/repc/proxy-check-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_id: eventId,
+          absent_bib_number: proxyBib.trim(),
+          consent_code: proxyCode.trim().toUpperCase(),
+          collector_qr_payload: collectorQrPayload,
+        }),
       })
 
-      if (error) {
-        setScanResult({ success: false, message: error.message })
-        return
-      }
+      const data = await response.json()
 
-      const row = data?.[0] ?? null
-      const sl = row?.success ?? false
-      if (sl) {
-        setScanResult({
+      if (data.success) {
+        const result: ScanResult = {
           success: true,
-          message: row?.message || 'Proxy check-in successful',
-          alreadyCheckedIn: row?.already_checked_in ?? false,
-          runner: {
-            name: row?.runner_name || 'Unknown',
-            bib: row?.bib_number || '',
-            shirtSize: row?.shirt_size,
-            remainingQty: row?.remaining_qty ?? null,
-          },
-        })
+          message: data.collector?.name
+            ? `${data.message || 'Proxy check-in successful'} - collected by ${data.collector.name} (BIB #${data.collector.bib})`
+            : data.message || 'Proxy check-in successful',
+          alreadyCheckedIn: data.already_checked_in,
+          runner: data.runner
+            ? {
+                name: data.runner.name || 'Unknown',
+                bib: data.runner.bib || '',
+                shirtSize: data.runner.shirt_size ?? null,
+                remainingQty: data.runner.remaining_qty ?? null,
+              }
+            : undefined,
+        }
 
-        setRecentCheckins((prev) => [
-          {
-            name: row?.runner_name || 'Unknown',
-            bib: row?.bib_number || '',
-            shirtSize: row?.shirt_size,
-            time: new Date(),
-            alreadyCheckedIn: row?.already_checked_in ?? false,
-          },
-          ...prev.slice(0, 4),
-        ])
+        setScanResult(result)
+        vibrate(result.alreadyCheckedIn ? [80, 60, 80] : 120)
+
+        if (result.runner) {
+          setRecentCheckins((prev) => [
+            {
+              name: result.runner?.name || 'Unknown',
+              bib: result.runner?.bib || '',
+              shirtSize: result.runner?.shirtSize,
+              time: new Date(),
+              alreadyCheckedIn: result.alreadyCheckedIn,
+            },
+            ...prev.slice(0, 4),
+          ])
+        }
 
         setProxyBib('')
         setProxyCode('')
+        setCollectorQrPayload('')
       } else {
         setScanResult({
           success: false,
-          message: row?.message || 'Proxy check-in failed',
+          message: data.message || 'Proxy check-in failed',
         })
+        vibrate([80, 80, 80])
       }
     } catch {
       setScanResult({ success: false, message: 'Could not complete proxy check-in' })
+      vibrate([80, 80, 80])
     } finally {
       setProxyChecking(false)
     }
@@ -293,18 +315,22 @@ export default function OrganizerCheckinPage({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <QrCode className="h-5 w-5" />
-              QR Scanner
+              {scannerMode === 'collector' ? 'Collector QR Scanner' : 'QR Scanner'}
             </CardTitle>
-            <CardDescription>Scan runner QR codes for quick check-in</CardDescription>
+            <CardDescription>
+              {scannerMode === 'collector'
+                ? "Scan the collector's own Digital BIB QR before proxy collection"
+                : 'Scan runner QR codes for quick check-in'}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button
-              onClick={toggleScanning}
+              onClick={() => toggleScanning('checkin')}
               className="w-full"
-              variant={scanning ? 'destructive' : 'default'}
+              variant={scannerMode === 'checkin' ? 'destructive' : 'default'}
               disabled={checkingIn}
             >
-              {scanning ? 'Stop Scanning' : 'Start Scanning'}
+              {scannerMode === 'checkin' ? 'Stop Runner Scanner' : 'Start Runner Scanner'}
             </Button>
 
             {cameraError && (
@@ -385,9 +411,33 @@ export default function OrganizerCheckinPage({
             <CardDescription>Check in using a consent code for someone else</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="rounded-md border border-border bg-muted/20 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium">Collector QR</p>
+                  <p className="text-xs text-muted-foreground">
+                    {collectorQrPayload
+                      ? 'Collector QR captured and ready for server validation.'
+                      : "Scan the collector's own Digital BIB QR first."}
+                  </p>
+                </div>
+                <Badge variant={collectorQrPayload ? 'default' : 'secondary'}>
+                  {collectorQrPayload ? 'Captured' : 'Required'}
+                </Badge>
+              </div>
+              <Button
+                type="button"
+                variant={scannerMode === 'collector' ? 'destructive' : 'outline'}
+                className="mt-3 w-full"
+                onClick={() => toggleScanning('collector')}
+              >
+                <QrCode className="mr-2 h-4 w-4" />
+                {scannerMode === 'collector' ? 'Stop Collector Scanner' : 'Scan Collector QR'}
+              </Button>
+            </div>
             <div className="space-y-2">
               <Input
-                placeholder="Enter BIB number"
+                placeholder="Absent runner BIB number"
                 value={proxyBib}
                 onChange={(e) => setProxyBib(e.target.value)}
               />
@@ -403,7 +453,7 @@ export default function OrganizerCheckinPage({
             <Button
               className="w-full"
               onClick={handleProxyCheckIn}
-              disabled={proxyChecking || !proxyBib || !proxyCode}
+              disabled={proxyChecking || !proxyBib || !proxyCode || !collectorQrPayload}
             >
               {proxyChecking ? 'Checking...' : 'Check In (Proxy)'}
             </Button>
