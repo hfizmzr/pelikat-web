@@ -81,7 +81,7 @@ export function useAuth(): UseAuthResult {
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [supabase])
 
   return { user, profile, role, loading }
 }

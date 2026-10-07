@@ -1,11 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
 import Link from 'next/link'
-import { PWAInstallPrompt } from '@/components/pwa/install-prompt'
 
 function BottomNavLink({
   href,
@@ -56,7 +55,6 @@ export default function RunnerLayout({
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
-  const [isStandalone, setIsStandalone] = useState<boolean | null>(null)
 
   useEffect(() => {
     async function checkRole() {

@@ -28,13 +28,16 @@ export interface AnalyticsData {
 // Stitch color palette for charts
 const CHART_COLORS = ['#a078ff', '#4edea3', '#4cd7f6', '#ffb4ab', '#e5e1e4']
 
+type TooltipEntry = { color?: string; name?: string; value?: number | string }
+type RechartsTooltipProps = { active?: boolean; payload?: TooltipEntry[]; label?: string }
+
 // Custom Tooltip
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label }: RechartsTooltipProps) {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-[#1c1b1d] border border-[#23232b] rounded-lg px-3 py-2 text-[12px] shadow-xl text-[#e5e1e4]">
       {label && <p className="font-semibold mb-1 text-[#cbc3d7]">{label}</p>}
-      {payload.map((entry: any, index: number) => (
+      {payload.map((entry, index: number) => (
         <div key={index} className="flex items-center gap-2">
           <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
           <span className="text-[#958ea0]">{entry.name}:</span>
@@ -56,10 +59,10 @@ export default function OrganizerAnalyticsCharts({ data }: { data: AnalyticsData
     <div className="flex flex-col gap-6 w-full mt-6">
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-[#23232b] pb-2">
-        {['overview', 'revenue', 'demographics'].map(tab => (
+        {(['overview', 'revenue', 'demographics'] as const).map(tab => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab as any)}
+            onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 text-[13px] font-semibold tracking-wide uppercase transition-colors rounded-t-lg border-b-2 ${
               activeTab === tab 
                 ? 'text-[#d0bcff] border-[#d0bcff] bg-[#d0bcff]/5' 

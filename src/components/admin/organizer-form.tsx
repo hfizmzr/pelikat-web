@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 import {
   Dialog,
@@ -12,7 +11,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import type { Organizer } from './types'
 
 const supabase = createClient()
@@ -53,6 +51,8 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
     if (open) {
       resetForm()
     }
+    // Purposely re-runs only on dialog open; resetForm is stable at call time
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   const handleSubmit = async (e: React.FormEvent) => {

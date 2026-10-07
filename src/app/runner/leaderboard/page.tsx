@@ -75,7 +75,6 @@ export default async function RunnerLeaderboardPage({
     leaderboard = (await query.order('rank', { ascending: true })).data
   }
 
-  const publishedEvents = (events ?? []).filter((e) => publishedIds.includes(e.id))
 
   return (
     <div className="flex flex-col w-full min-h-full bg-[#131315]">

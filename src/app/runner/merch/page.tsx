@@ -74,7 +74,7 @@ export default async function RunnerMerchPage() {
                 </div>
                 
                 <div className="p-4 flex flex-col gap-3">
-                  {order.merch_order_items?.map((item: any) => (
+                  {order.merch_order_items?.map((item: { id: string; quantity: number; unit_price: number; merch_variants: { merch_products: { name: string } | null } | null }) => (
                     <div key={item.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-[#23232b] border border-[#353437] flex items-center justify-center text-[#cbc3d7]">

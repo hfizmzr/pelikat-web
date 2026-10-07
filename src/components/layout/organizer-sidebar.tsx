@@ -82,7 +82,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
   const router = useRouter()
   const [orgName, setOrgName] = useState<string>('My Organization')
   const [userName, setUserName] = useState<string>('Organizer')
-  const [userEmail, setUserEmail] = useState<string>('')
+  const [, setUserEmail] = useState<string>('')
 
   useEffect(() => {
     async function fetchData() {
