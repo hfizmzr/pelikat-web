@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Loader2, HardDrive } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 interface BucketUsage {
   name: string
@@ -17,9 +15,9 @@ interface StorageResponse {
 }
 
 function formatBytes(bytes: number) {
-  if (bytes === 0) return '0 Bytes'
+  if (bytes === 0) return '0 B'
   const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
@@ -46,64 +44,61 @@ export function StorageUsage() {
         setLoading(false)
       }
     }
-
     fetchStorageUsage()
   }, [])
 
   const maxBucketSize = Math.max(...buckets.map((b) => b.size), 1)
 
-  if (loading) {
-    return (
-      <Card className="border-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <HardDrive className="h-5 w-5" />
-            Storage Usage
-          </CardTitle>
-          <CardDescription>Loading storage information...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+  // Bucket color mapping
+  const bucketColors = ['bg-[#d0bcff]', 'bg-[#4cd7f6]', 'bg-[#4edea3]', 'bg-[#ffb4ab]']
 
   return (
-    <Card className="border-border">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <HardDrive className="h-5 w-5" />
-          Storage Usage
-        </CardTitle>
-        <CardDescription>
-          Total: {formatBytes(totalSize)} across {buckets.length} bucket(s)
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {buckets.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No storage buckets found</p>
-        ) : (
-          <div className="space-y-4">
-            {buckets.map((bucket) => (
-              <div key={bucket.name} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{bucket.name}</span>
-                  <span className="text-muted-foreground">
-                    {formatBytes(bucket.size)} ({bucket.fileCount} files)
+    <div className="rounded-xl bg-[#1c1b1d] p-5 shadow-md border border-[#494454]/30 flex flex-col gap-4 font-inter">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-[#d0bcff] text-[20px]">hard_drive</span>
+          <h3 className="font-semibold text-[#e5e1e4] text-[15px] font-jakarta">Storage Usage</h3>
+        </div>
+        <span className="text-[11px] text-[#958ea0] font-mono">
+          {formatBytes(totalSize)} total
+        </span>
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="flex items-center justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin text-[#d0bcff]" />
+        </div>
+      ) : buckets.length === 0 ? (
+        <p className="text-[13px] text-[#958ea0] py-4 text-center">No storage buckets found</p>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {buckets.map((bucket, i) => {
+            const pct = Math.round((bucket.size / maxBucketSize) * 100)
+            const color = bucketColors[i % bucketColors.length]
+            return (
+              <div key={bucket.name} className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-[12px]">
+                  <span className="font-semibold text-[#e5e1e4] font-inter">{bucket.name}</span>
+                  <span className="text-[#958ea0] font-mono">
+                    {formatBytes(bucket.size)} · {bucket.fileCount} files
                   </span>
                 </div>
-                <Progress
-                  value={(bucket.size / maxBucketSize) * 100}
-                  className="h-2"
-                />
+                <div className="w-full bg-[#353437] rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className={`${color} h-1.5 rounded-full transition-all`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+            )
+          })}
+          <p className="text-[10px] text-[#494454] font-inter pt-1">
+            {buckets.length} bucket{buckets.length !== 1 ? 's' : ''} · AWS ap-southeast-1
+          </p>
+        </div>
+      )}
+    </div>
   )
 }

@@ -2,8 +2,6 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { XCircle, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { cancelRegistration } from '@/components/events/actions'
 
 export function CancelRegistrationButton({ eventId }: { eventId: string }) {
@@ -24,38 +22,34 @@ export function CancelRegistrationButton({ eventId }: { eventId: string }) {
 
   if (!showConfirm) {
     return (
-      <Button
-        variant="outline"
-        className="w-full text-destructive hover:bg-destructive/10"
+      <button
         onClick={() => setShowConfirm(true)}
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#ffb4ab]/10 text-[#ffb4ab] text-[13px] font-bold active:scale-95 transition-transform"
       >
-        <XCircle className="mr-2 h-4 w-4" />
+        <span className="material-symbols-outlined text-[18px]">cancel</span>
         Cancel Registration
-      </Button>
+      </button>
     )
   }
 
   return (
-    <div className="space-y-2">
-      <p className="text-sm text-muted-foreground text-center">Are you sure?</p>
+    <div className="flex flex-col gap-3 p-4 rounded-xl bg-[#ffb4ab]/5 border border-[#ffb4ab]/20">
+      <p className="text-[12px] text-[#ffb4ab] text-center font-medium">Are you sure you want to cancel?</p>
       <div className="flex gap-2">
-        <Button
-          variant="destructive"
-          className="flex-1"
+        <button
           onClick={handleCancel}
           disabled={isPending}
+          className="flex-1 py-2.5 rounded-lg bg-[#ffb4ab] text-[#690005] text-[12px] font-bold active:scale-95 transition-transform disabled:opacity-50"
         >
-          {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Yes, Cancel
-        </Button>
-        <Button
-          variant="outline"
-          className="flex-1"
+          {isPending ? 'Canceling...' : 'Yes, Cancel'}
+        </button>
+        <button
           onClick={() => setShowConfirm(false)}
           disabled={isPending}
+          className="flex-1 py-2.5 rounded-lg bg-[#2a2a2c] text-[#e5e1e4] text-[12px] font-bold active:scale-95 transition-transform disabled:opacity-50"
         >
-          Keep
-        </Button>
+          Keep It
+        </button>
       </div>
     </div>
   )

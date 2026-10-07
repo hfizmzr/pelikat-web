@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+
 @custom-variant dark (&:where(.dark *));
 @custom-variant light (&:where(.light *));
 
@@ -84,6 +85,39 @@
   --purple-gradient-start: oklch(0.7 0.25 292);
   --purple-gradient-end: oklch(0.55 0.28 285);
   --success: oklch(0.7 0.2 145);
+
+  /* ── Obsidian Velocity Admin Design System ── */
+  /* Material-You Dark Surface Hierarchy */
+  --ov-surface:               #131315;
+  --ov-surface-dim:           #131315;
+  --ov-surface-bright:        #39393b;
+  --ov-surface-lowest:        #0e0e10;
+  --ov-surface-low:           #1c1b1d;
+  --ov-surface-container:     #201f22;
+  --ov-surface-high:          #2a2a2c;
+  --ov-surface-highest:       #353437;
+  --ov-on-surface:            #e5e1e4;
+  --ov-on-surface-variant:    #cbc3d7;
+  --ov-outline:               #958ea0;
+  --ov-outline-variant:       #494454;
+  /* Primary (Electric Violet) */
+  --ov-primary:               #d0bcff;
+  --ov-on-primary:            #3c0091;
+  --ov-primary-container:     #a078ff;
+  --ov-on-primary-container:  #340080;
+  --ov-inverse-primary:       #6d3bd7;
+  /* Secondary (Cyber Cyan) */
+  --ov-secondary:             #4cd7f6;
+  --ov-on-secondary:          #003640;
+  --ov-secondary-container:   #03b5d3;
+  /* Tertiary (Cyber Emerald) */
+  --ov-tertiary:              #4edea3;
+  --ov-on-tertiary:           #003824;
+  --ov-tertiary-container:    #00a572;
+  /* Error */
+  --ov-error:                 #ffb4ab;
+  --ov-error-container:       #93000a;
+  --ov-on-error-container:    #ffdad6;
 }
 
 @theme inline {
@@ -150,6 +184,20 @@
   .bg-gradient-cta {
     @apply bg-gradient-to-br from-[#7c3aed] via-[#8b5cf6] to-[#6d28d9];
   }
+
+  /* Obsidian Velocity Admin Utilities */
+  .font-inter { font-family: 'Inter', sans-serif; }
+  .font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .font-tabular { font-variant-numeric: tabular-nums; }
+
+  /* Glow utilities */
+  .glow-primary  { box-shadow: 0 0 20px rgba(208, 188, 255, 0.3); }
+  .glow-tertiary { box-shadow: 0 0 12px rgba(78, 222, 163, 0.5); }
+  .glow-error    { box-shadow: 0 0 12px rgba(255, 180, 171, 0.4); }
+
+  /* Admin scrollbar hide */
+  .scrollbar-none { scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
 }
 
 @media print {

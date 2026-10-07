@@ -1,9 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import QRCode from 'qrcode'
-import { ArrowLeft, CheckCircle2, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { fetchDjangoApi } from '@/lib/django'
@@ -75,145 +71,125 @@ export default async function RunnerBibPage({
     } else {
       qrSvg = await QRCode.toString(qrPayload, {
         type: 'svg',
-        width: 200,
-        margin: 2,
-        color: { dark: isCheckedIn ? '#15803d' : '#000000', light: '#ffffff' },
+        width: 220,
+        margin: 1,
+        color: { dark: isCheckedIn ? '#4edea3' : '#e5e1e4', light: '#00000000' },
       })
     }
   } catch {
-    qrError = 'Secure QR service is unavailable. Please refresh after the API is running.'
+    qrError = 'Secure QR service is unavailable.'
   }
 
   return (
-    <div className="bib-print-page space-y-6 print:space-y-0">
-      <div className="bib-print-hide flex items-center gap-4">
-        <Link href={`/runner/events/${id}`}>
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Your Digital BIB</h1>
-          <p className="text-muted-foreground">{event.name}</p>
+    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+        <div className="flex items-center h-14 px-4 pt-safe">
+          <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
+            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+          </Link>
+          <h1 className="flex-1 text-[16px] font-bold text-[#e5e1e4] text-center mr-8 truncate">
+            Digital BIB
+          </h1>
         </div>
-      </div>
+      </header>
 
-      <div className="flex justify-center">
-        <Card
-          className={`bib-print-card w-full max-w-md print:border print:border-neutral-300 print:bg-white print:text-black print:shadow-none ${
-            isCheckedIn
-              ? 'border-green-500/60 bg-green-500/5'
-              : 'border-border'
-          }`}
-        >
-          <CardHeader className="text-center">
-            <Badge
-              variant={isCheckedIn ? 'default' : 'outline'}
-              className={`w-fit mx-auto mb-2 ${
-                isCheckedIn ? 'bg-green-600 text-white hover:bg-green-600' : ''
-              }`}
-            >
+      <div className="flex flex-col px-5 py-8 items-center max-w-sm mx-auto w-full gap-6">
+        
+        {/* Ticket Wallet Container */}
+        <div className="w-full relative">
+          {/* Main Ticket */}
+          <div className={`relative overflow-hidden rounded-[2rem] p-6 pt-8 flex flex-col items-center bg-[#1c1b1d] border shadow-2xl ${
+            isCheckedIn ? 'border-[#4edea3]/40' : 'border-[#353437]/60'
+          }`}>
+            
+            {/* Blurry glow */}
+            <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl pointer-events-none ${
+              isCheckedIn ? 'bg-[#4edea3]/10' : 'bg-[#d0bcff]/10'
+            }`} />
+
+            <div className="relative z-10 flex flex-col items-center w-full">
               {isCheckedIn ? (
-                <>
-                  <CheckCircle2 className="mr-1 h-3 w-3" />
-                  CHECKED IN
-                </>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20 mb-4">
+                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                  <span className="text-[10px] font-bold tracking-wider uppercase">Checked In</span>
+                </div>
               ) : (
-                'BIB NUMBER'
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d0bcff]/10 text-[#d0bcff] border border-[#d0bcff]/20 mb-4">
+                  <span className="material-symbols-outlined text-[16px]">qr_code_scanner</span>
+                  <span className="text-[10px] font-bold tracking-wider uppercase">Ready for Scan</span>
+                </div>
               )}
-            </Badge>
-            <CardTitle className="text-6xl font-bold tracking-wider">
-              {registration.bib_number}
-            </CardTitle>
-            <CardDescription>{profile?.full_name}</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center space-y-6">
-            {qrSvg ? (
-              <div
-                className={`rounded-lg p-4 ${
-                  isCheckedIn ? 'bg-green-50 ring-2 ring-green-500/40' : 'bg-white'
-                }`}
-                dangerouslySetInnerHTML={{ __html: qrSvg }}
-              />
-            ) : (
-              <div className="flex min-h-[232px] w-[232px] items-center justify-center rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-                {qrError}
-              </div>
-            )}
 
-            <div className="w-full space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Event</span>
-                <span className="font-medium">{event.name}</span>
+              <h2 className="text-[12px] font-bold text-[#958ea0] tracking-widest uppercase mb-1">BIB NUMBER</h2>
+              <div className="text-[54px] font-mono font-bold text-[#e5e1e4] leading-none mb-6 drop-shadow-md">
+                {registration.bib_number}
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Date</span>
-                <span className="font-medium">
-                  {new Date(event.event_date).toLocaleDateString()}
-                </span>
-              </div>
-              {event.location && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Location</span>
-                  <span className="font-medium">{event.location}</span>
+
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-[#353437] to-transparent mb-6" />
+
+              <div className="w-full flex justify-center mb-6">
+                <div className={`p-3 rounded-2xl ${isCheckedIn ? 'bg-[#4edea3]/5' : 'bg-[#e5e1e4]/5'} backdrop-blur-sm border border-[#353437]/40`}>
+                  {qrSvg ? (
+                    <div dangerouslySetInnerHTML={{ __html: qrSvg }} />
+                  ) : (
+                    <div className="w-[220px] h-[220px] flex items-center justify-center text-center text-[#ffb4ab] text-[12px] px-4 border border-dashed border-[#ffb4ab]/30 rounded-xl">
+                      {qrError}
+                    </div>
+                  )}
                 </div>
-              )}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Category</span>
-                <span className="font-medium">
-                  {registration.race_categories?.name}
-                </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="bib-print-muted text-muted-foreground">REPC Status</span>
-                <span className={isCheckedIn ? 'bib-print-status font-medium text-green-600' : 'font-medium'}>
-                  {isCheckedIn ? 'Checked In' : 'Not Checked In'}
-                </span>
-              </div>
-              {checkedInAt && (
-                <div className="flex justify-between gap-4 text-sm">
-                  <span className="text-muted-foreground">Checked In At</span>
-                  <span className="text-right font-medium">{checkedInAt}</span>
+
+              <div className="w-full flex flex-col gap-3 text-center mb-2">
+                <div>
+                  <h3 className="text-[16px] font-bold text-[#e5e1e4] leading-tight mb-0.5">{profile?.full_name}</h3>
+                  <p className="text-[12px] text-[#cbc3d7]">{registration.race_categories?.name}</p>
                 </div>
-              )}
+                <div className="w-full h-px bg-[#353437]/40 my-1" />
+                <div className="flex flex-col gap-1">
+                  <span className="text-[13px] font-bold text-[#e5e1e4] truncate">{event.name}</span>
+                  <span className="text-[11px] text-[#958ea0]">
+                    {new Date(event.event_date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                  {checkedInAt && (
+                    <span className="text-[10px] text-[#4edea3] mt-1">Scanned at {checkedInAt}</span>
+                  )}
+                </div>
+              </div>
             </div>
+            
+            {/* Cutouts for ticket effect */}
+            <div className="absolute top-[65%] -left-3 w-6 h-6 rounded-full bg-[#131315] border-r border-[#353437]/60" />
+            <div className="absolute top-[65%] -right-3 w-6 h-6 rounded-full bg-[#131315] border-l border-[#353437]/60" />
+          </div>
+        </div>
 
-            <BibActionButtons
-              bibNumber={registration.bib_number}
-              eventName={event.name}
-            />
-            <Link href={`/runner/events/${id}/bib/consent`} className="bib-print-hide block">
-              <Button variant="outline" className="w-full">
-                Generate Proxy Collection Code
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <BibActionButtons
+          bibNumber={registration.bib_number}
+          eventName={event.name}
+        />
+
+        <Link
+          href={`/runner/events/${id}/bib/consent`}
+          className="w-full py-3.5 mt-2 rounded-xl border border-[#353437] text-[#cbc3d7] text-[13px] font-bold flex items-center justify-center gap-2 active:bg-[#1c1b1d] transition-colors"
+        >
+          <span className="material-symbols-outlined text-[18px]">group</span>
+          Generate Proxy Collection Code
+        </Link>
+        
+        <div className="bg-[#1c1b1d] p-4 rounded-xl border border-[#353437]/40 w-full mt-2">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="material-symbols-outlined text-[18px] text-[#4cd7f6]">info</span>
+            <span className="text-[13px] font-bold text-[#e5e1e4]">Instructions</span>
+          </div>
+          <ol className="text-[12px] text-[#958ea0] space-y-2 list-decimal list-inside marker:text-[#cbc3d7]">
+            <li>Show this QR code at the check-in counter on race day.</li>
+            <li>Ensure your screen brightness is turned up.</li>
+            <li>Take a screenshot as a backup.</li>
+          </ol>
+        </div>
+
       </div>
-
-      <Card className="bib-print-hide border-border">
-        <CardHeader>
-          <CardTitle>Instructions</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          {isCheckedIn ? (
-            <p className="flex items-center gap-2 text-green-600">
-              <CheckCircle2 className="h-4 w-4" />
-              Your race pack has been collected. Keep this BIB for race-day reference.
-            </p>
-          ) : (
-            <>
-              <p>1. Show this QR code at the check-in point on race day.</p>
-              <p>2. The race official will scan your code to verify your registration.</p>
-              <p>3. Make sure your phone screen is bright enough for scanning.</p>
-              <p className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Take a screenshot as a backup in case of poor network connectivity.
-              </p>
-            </>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }

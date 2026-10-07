@@ -1,17 +1,8 @@
 'use client'
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import {
   Select,
@@ -26,8 +17,30 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Pencil, Trash2, MoreHorizontal, ArrowUpDown, Search } from 'lucide-react'
+import { ArrowUpDown, Loader2 } from 'lucide-react'
 import type { Organizer } from './types'
+
+// ─── CSV export helper ────────────────────────────────────────────────────────
+function exportOrganizersCSV(organizers: Organizer[]) {
+  const headers = ['Name', 'Slug', 'Email', 'Active', 'Subscription Expires', 'Created']
+  const rows = organizers.map((o) => [
+    o.name,
+    o.slug,
+    o.contact_email || '',
+    o.is_active ? 'Yes' : 'No',
+    o.sub_expires_at ? new Date(o.sub_expires_at).toLocaleDateString() : '',
+    new Date(o.created_at).toLocaleDateString(),
+  ].map((v) => `"${String(v).replace(/"/g, '""')}"`))
+
+  const csv = [headers, ...rows].map((r) => r.join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `organizers-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 interface OrganizerTableProps {
   organizers: Organizer[]
@@ -45,34 +58,30 @@ type StatusFilter = 'all' | 'active' | 'inactive' | 'expiring' | 'expired'
 
 const ITEMS_PER_PAGE = 25
 
-interface SortHeaderProps {
-  label: string
-  sortKeyVal: SortKey
-  onSort: (key: SortKey) => void
-}
+// ─── Color palette for organizer initials ────────────────────────────────────
+const ORG_COLORS = [
+  { bg: 'bg-[#a078ff]/20', text: 'text-[#d0bcff]' },
+  { bg: 'bg-[#4cd7f6]/20', text: 'text-[#4cd7f6]' },
+  { bg: 'bg-[#4edea3]/20', text: 'text-[#4edea3]' },
+  { bg: 'bg-[#ffb4ab]/20', text: 'text-[#ffb4ab]' },
+  { bg: 'bg-[#d0bcff]/20', text: 'text-[#d0bcff]' },
+]
 
-function SortHeader({ label, sortKeyVal, onSort }: SortHeaderProps) {
-  return (
-    <TableHead>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-3 h-8 data-[state=open]:bg-accent"
-        onClick={() => onSort(sortKeyVal)}
-      >
-        {label}
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    </TableHead>
-  )
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 }
 
 function getSubscriptionStatus(organizer: Organizer) {
   if (!organizer.is_active) {
-    return { label: 'Inactive', variant: 'secondary' as const }
+    return { label: 'Inactive', color: 'text-[#958ea0] bg-[#958ea0]/10 border-[#958ea0]/20', dot: 'bg-[#958ea0]' }
   }
   if (!organizer.sub_expires_at) {
-    return { label: 'Active', variant: 'default' as const }
+    return { label: 'Active', color: 'text-[#4edea3] bg-[#4edea3]/10 border-[#4edea3]/20', dot: 'bg-[#4edea3]' }
   }
 
   const now = new Date()
@@ -80,14 +89,38 @@ function getSubscriptionStatus(organizer: Organizer) {
   const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
   if (expires <= now) {
-    return { label: 'Expired', variant: 'destructive' as const }
+    return { label: 'Expired', color: 'text-[#ffb4ab] bg-[#ffb4ab]/10 border-[#ffb4ab]/20', dot: 'bg-[#ffb4ab]' }
   }
   if (expires <= sevenDaysFromNow) {
-    return { label: 'Expiring Soon', variant: 'warning' as const }
+    return { label: 'Expiring Soon', color: 'text-[#ffb4ab] bg-[#ffb4ab]/10 border-[#ffb4ab]/20', dot: 'bg-[#ffb4ab]' }
   }
-  return { label: 'Active', variant: 'default' as const }
+  return { label: 'Active', color: 'text-[#4edea3] bg-[#4edea3]/10 border-[#4edea3]/20', dot: 'bg-[#4edea3]' }
 }
 
+// ─── Sort column header ───────────────────────────────────────────────────────
+function SortHeader({
+  label,
+  sortKeyVal,
+  onSort,
+}: {
+  label: string
+  sortKeyVal: SortKey
+  onSort: (key: SortKey) => void
+}) {
+  return (
+    <th className="py-3 px-4">
+      <button
+        className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#958ea0] hover:text-[#cbc3d7] transition-colors font-inter"
+        onClick={() => onSort(sortKeyVal)}
+      >
+        {label}
+        <ArrowUpDown className="h-3 w-3 opacity-60" />
+      </button>
+    </th>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 export function OrganizerTable({
   organizers,
   loading,
@@ -165,15 +198,18 @@ export function OrganizerTable({
     currentPage * ITEMS_PER_PAGE
   )
 
-  const handleSort = useCallback((key: SortKey) => {
-    if (sortKey === key) {
-      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
-    } else {
-      setSortKey(key)
-      setSortDirection('asc')
-    }
-    setCurrentPage(1)
-  }, [sortKey])
+  const handleSort = useCallback(
+    (key: SortKey) => {
+      if (sortKey === key) {
+        setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+      } else {
+        setSortKey(key)
+        setSortDirection('asc')
+      }
+      setCurrentPage(1)
+    },
+    [sortKey]
+  )
 
   useEffect(() => {
     if (editingExpiry && expiryInputRef.current) {
@@ -183,27 +219,36 @@ export function OrganizerTable({
 
   if (loading) {
     return (
-      <div className="rounded-md border">
-        <div className="p-8 text-center text-muted-foreground">Loading organizers...</div>
+      <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 p-8 text-center text-[#958ea0] font-inter text-[13px]">
+        <span className="material-symbols-outlined text-[#d0bcff] text-[32px] animate-pulse block mb-2">
+          sync
+        </span>
+        Loading organizers...
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-col gap-4 font-inter">
+      {/* ── Filters & Search ──────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        {/* Search */}
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#958ea0] text-[18px]">
+            search
+          </span>
           <Input
-            placeholder="Search organizers..."
+            placeholder="Search by name, slug or email…"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
               setCurrentPage(1)
             }}
-            className="pl-8"
+            className="pl-9 bg-[#201f22] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#958ea0] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
           />
         </div>
+
+        {/* Status filter */}
         <Select
           value={statusFilter}
           onValueChange={(value) => {
@@ -211,10 +256,10 @@ export function OrganizerTable({
             setCurrentPage(1)
           }}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[160px] bg-[#201f22] border-[#494454]/40 text-[#e5e1e4] text-[13px] rounded-lg focus:ring-1 focus:ring-[#d0bcff]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-[#201f22] border-[#494454]/40 text-[#e5e1e4]">
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
@@ -222,74 +267,99 @@ export function OrganizerTable({
             <SelectItem value="expired">Expired</SelectItem>
           </SelectContent>
         </Select>
-        <Button onClick={onAdd}>Add Organizer</Button>
+
+        {/* Add + Export buttons */}
+        <div className="flex items-center gap-2 ml-auto">
+          <button
+            onClick={() => exportOrganizersCSV(filteredOrganizers)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] text-[13px] font-medium font-inter border border-[#494454]/30 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px] text-[#d0bcff]">download</span>
+            Export CSV
+          </button>
+          <button
+            onClick={onAdd}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#d0bcff] hover:bg-[#6d3bd7] text-[#3c0091] hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter"
+          >
+            <span className="material-symbols-outlined text-[18px]">add_business</span>
+            Add Organizer
+          </button>
+        </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <SortHeader
-                label="Name"
-                sortKeyVal="name"
-                onSort={handleSort}
-              />
-              <SortHeader
-                label="Slug"
-                sortKeyVal="slug"
-                onSort={handleSort}
-              />
-              <SortHeader
-                label="Email"
-                sortKeyVal="contact_email"
-                onSort={handleSort}
-              />
-              <SortHeader
-                label="Status"
-                sortKeyVal="is_active"
-                onSort={handleSort}
-              />
-              <SortHeader
-                label="Expires"
-                sortKeyVal="sub_expires_at"
-                onSort={handleSort}
-              />
-              <SortHeader
-                label="Created"
-                sortKeyVal="created_at"
-                onSort={handleSort}
-              />
-              <TableHead className="w-[70px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      {/* ── Table ────────────────────────────────────────────────────── */}
+      <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-[#494454]/30">
+              <SortHeader label="Organization" sortKeyVal="name" onSort={handleSort} />
+              <SortHeader label="Slug" sortKeyVal="slug" onSort={handleSort} />
+              <SortHeader label="Email" sortKeyVal="contact_email" onSort={handleSort} />
+              <SortHeader label="Status" sortKeyVal="is_active" onSort={handleSort} />
+              <SortHeader label="Sub Expires" sortKeyVal="sub_expires_at" onSort={handleSort} />
+              <SortHeader label="Created" sortKeyVal="created_at" onSort={handleSort} />
+              <th className="py-3 px-4 text-right">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#958ea0]">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#353437]/30 text-[13px]">
             {paginatedOrganizers.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  No organizers found.
-                </TableCell>
-              </TableRow>
+              <tr>
+                <td colSpan={7} className="py-12 text-center text-[#958ea0]">
+                  No organizers match your search.
+                </td>
+              </tr>
             ) : (
-              paginatedOrganizers.map((organizer) => {
+              paginatedOrganizers.map((organizer, i) => {
                 const subStatus = getSubscriptionStatus(organizer)
                 const isEditingExpiry = editingExpiry === organizer.id
+                const color = ORG_COLORS[(i + (currentPage - 1) * ITEMS_PER_PAGE) % ORG_COLORS.length]
+                const initials = getInitials(organizer.name)
+
                 return (
-                  <TableRow key={organizer.id}>
-                    <TableCell className="font-medium">{organizer.name}</TableCell>
-                    <TableCell className="font-mono text-sm">@{organizer.slug}</TableCell>
-                    <TableCell>{organizer.contact_email || '-'}</TableCell>
-                    <TableCell>
+                  <tr key={organizer.id} className="hover:bg-[#201f22]/60 transition-colors">
+                    {/* Organization */}
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-9 h-9 rounded-lg ${color.bg} flex items-center justify-center ${color.text} font-bold text-[12px] shrink-0 font-jakarta`}
+                        >
+                          {initials}
+                        </div>
+                        <span className="text-[#e5e1e4] font-semibold font-jakarta">{organizer.name}</span>
+                      </div>
+                    </td>
+
+                    {/* Slug */}
+                    <td className="py-4 px-4">
+                      <span className="text-[#958ea0] font-mono text-[12px]">@{organizer.slug}</span>
+                    </td>
+
+                    {/* Email */}
+                    <td className="py-4 px-4">
+                      <span className="text-[#cbc3d7]">{organizer.contact_email || '—'}</span>
+                    </td>
+
+                    {/* Status + Toggle */}
+                    <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
                         <Switch
                           checked={organizer.is_active}
                           onCheckedChange={() => onToggleActive(organizer)}
+                          className="data-[state=checked]:bg-[#a078ff]"
                         />
-                        <span className="text-sm text-muted-foreground">
-                          {organizer.is_active ? 'Active' : 'Inactive'}
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold inline-flex items-center gap-1.5 border ${subStatus.color}`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${subStatus.dot}`} />
+                          {subStatus.label}
                         </span>
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+
+                    {/* Expiry */}
+                    <td className="py-4 px-4">
                       {isEditingExpiry ? (
                         <div className="flex items-center gap-1">
                           <Input
@@ -314,20 +384,20 @@ export function OrganizerTable({
                                 setEditingExpiry(null)
                               }
                             }}
-                            className="w-36 h-8 text-xs"
+                            className="w-36 h-8 text-xs bg-[#201f22] border-[#494454]/40 text-[#e5e1e4] focus:ring-1 focus:ring-[#d0bcff]"
                           />
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6"
+                            className="h-7 w-7 text-[#958ea0] hover:text-[#ffb4ab]"
                             onClick={() => setEditingExpiry(null)}
                           >
-                            <span className="text-xs">✕</span>
+                            <span className="material-symbols-outlined text-[16px]">close</span>
                           </Button>
                         </div>
                       ) : (
                         <button
-                          className="text-left cursor-pointer hover:underline"
+                          className="text-left text-[#cbc3d7] hover:text-[#d0bcff] hover:underline transition-colors font-mono text-[12px] cursor-pointer"
                           onClick={() => {
                             const dateStr = organizer.sub_expires_at
                               ? new Date(organizer.sub_expires_at).toISOString().split('T')[0]
@@ -341,67 +411,109 @@ export function OrganizerTable({
                             : '—'}
                         </button>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(organizer.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
+                    </td>
+
+                    {/* Created */}
+                    <td className="py-4 px-4">
+                      <span className="text-[#958ea0] font-mono text-[12px]">
+                        {new Date(organizer.created_at).toLocaleDateString()}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-4 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {/* Impersonate / Open portal */}
+                        <a
+                          href={`/organizer`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-lg bg-[#4cd7f6]/10 hover:bg-[#4cd7f6]/20 text-[#4cd7f6] transition-all border border-[#4cd7f6]/20"
+                          title={`Open ${organizer.name} organizer portal`}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">switch_account</span>
+                        </a>
+
+                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
+                          <button className="p-1.5 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] hover:text-[#e5e1e4] transition-all border border-[#494454]/30">
+                            <span className="material-symbols-outlined text-[18px]">more_horiz</span>
+                          </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => onEdit(organizer)}>
-                            <Pencil className="mr-2 h-4 w-4" />
+                        <DropdownMenuContent
+                          align="end"
+                          className="bg-[#201f22] border border-[#494454]/40 text-[#e5e1e4] rounded-lg shadow-xl"
+                        >
+                          <DropdownMenuItem
+                            className="hover:bg-[#2a2a2c] cursor-pointer text-[13px] focus:bg-[#2a2a2c] focus:text-[#d0bcff]"
+                            onClick={() => onEdit(organizer)}
+                          >
+                            <span className="material-symbols-outlined text-[16px] mr-2 text-[#d0bcff]">edit</span>
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="text-destructive"
+                            className="text-[#ffb4ab] hover:bg-[#93000a]/20 cursor-pointer text-[13px] focus:bg-[#93000a]/20 focus:text-[#ffb4ab]"
                             onClick={() => onDelete(organizer)}
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span className="material-symbols-outlined text-[16px] mr-2">delete</span>
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                        </DropdownMenu>
+                      </div>
+                    </td>
+                  </tr>
                 )
               })
             )}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
 
+      {/* ── Pagination ────────────────────────────────────────────────── */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
-            {Math.min(currentPage * ITEMS_PER_PAGE, filteredOrganizers.length)} of{' '}
-            {filteredOrganizers.length} organizers
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+          <p className="text-[12px] text-[#958ea0] font-inter">
+            Showing{' '}
+            <span className="text-[#e5e1e4] font-semibold">
+              {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+              {Math.min(currentPage * ITEMS_PER_PAGE, filteredOrganizers.length)}
+            </span>{' '}
+            of{' '}
+            <span className="text-[#e5e1e4] font-semibold">{filteredOrganizers.length}</span>{' '}
+            organizers
           </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+          <div className="flex items-center gap-1">
+            <button
+              className="px-3 py-1.5 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] text-[12px] transition-colors border border-[#494454]/30 disabled:opacity-40 disabled:cursor-not-allowed font-inter"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
             >
               Previous
-            </Button>
-            <span className="text-sm">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, j) => {
+              const page = j + 1
+              return (
+                <button
+                  key={page}
+                  className={`px-3 py-1.5 rounded-lg text-[12px] transition-colors font-inter ${
+                    currentPage === page
+                      ? 'bg-[#d0bcff] text-[#3c0091] font-bold'
+                      : 'bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] border border-[#494454]/30'
+                  }`}
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </button>
+              )
+            })}
+            <button
+              className="px-3 py-1.5 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] text-[12px] transition-colors border border-[#494454]/30 disabled:opacity-40 disabled:cursor-not-allowed font-inter"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(currentPage + 1)}
             >
               Next
-            </Button>
+            </button>
           </div>
         </div>
       )}

@@ -4,18 +4,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import DocumentCapture from "@/components/profile/document-capture";
 import { deleteRunnerAccount } from "@/lib/actions/account";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function RunnerProfilePage() {
   const { user } = useAuth();
@@ -62,7 +53,7 @@ export default function RunnerProfilePage() {
     if (user) {
       fetchProfile();
     }
-  }, [user]);
+  }, [user, supabase]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -84,97 +75,110 @@ export default function RunnerProfilePage() {
   };
 
   if (loading) {
-    return <div className="p-8">Loading...</div>;
+    return (
+      <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center">
+        <span className="material-symbols-outlined text-[32px] text-[#cbc3d7] animate-spin">progress_activity</span>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
-        <p className="text-muted-foreground">Manage your runner profile</p>
-      </div>
+    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+        <div className="flex items-center h-14 px-4 pt-safe">
+          <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
+            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+          </Link>
+          <div className="flex-1 flex flex-col items-center mr-8 truncate">
+            <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
+              Profile
+            </h1>
+          </div>
+        </div>
+      </header>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
-            <CardDescription>Your basic details</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="full_name">Full Name</Label>
-              <Input
+      <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto pb-24">
+        
+        {/* Personal Info */}
+        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
+          <div className="p-5 border-b border-[#353437]/60">
+            <h2 className="text-[16px] font-bold text-[#e5e1e4]">Personal Information</h2>
+            <p className="text-[12px] text-[#958ea0]">Your basic details</p>
+          </div>
+          <div className="p-5 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="full_name" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Full Name</label>
+              <input
                 id="full_name"
+                type="text"
                 value={formData.full_name}
-                onChange={(e) =>
-                  setFormData({ ...formData, full_name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="phone" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Phone Number</label>
+              <input
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" value={user?.email || ""} disabled />
+            <div className="flex flex-col gap-1.5 opacity-60">
+              <label htmlFor="email" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Email</label>
+              <input
+                id="email"
+                type="email"
+                value={user?.email || ""}
+                disabled
+                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4]"
+              />
             </div>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle>Runner Details</CardTitle>
-            <CardDescription>
-              Additional information for event registration
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="dob">Date of Birth</Label>
-              <Input
+        {/* Runner Details */}
+        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
+          <div className="p-5 border-b border-[#353437]/60">
+            <h2 className="text-[16px] font-bold text-[#e5e1e4]">Runner Details</h2>
+            <p className="text-[12px] text-[#958ea0]">Information for event registration</p>
+          </div>
+          <div className="p-5 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="dob" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Date of Birth</label>
+              <input
                 id="dob"
                 type="date"
                 value={formData.dob}
-                onChange={(e) =>
-                  setFormData({ ...formData, dob: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                style={{ colorScheme: 'dark' }}
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="gender">Gender</Label>
+            <div className="flex flex-col gap-1.5 relative">
+              <label htmlFor="gender" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Gender</label>
               <select
                 id="gender"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={formData.gender}
-                onChange={(e) =>
-                  setFormData({ ...formData, gender: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                className="w-full h-12 px-4 appearance-none rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               >
                 <option value="">Select gender</option>
                 <option value="M">Male</option>
                 <option value="F">Female</option>
               </select>
+              <span className="material-symbols-outlined absolute right-4 top-9 text-[#958ea0] pointer-events-none">expand_more</span>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="t_shirt_size">T-Shirt Size</Label>
+            <div className="flex flex-col gap-1.5 relative">
+              <label htmlFor="t_shirt_size" className="text-[12px] font-bold text-[#cbc3d7] ml-1">T-Shirt Size</label>
               <select
                 id="t_shirt_size"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={formData.t_shirt_size}
-                onChange={(e) =>
-                  setFormData({ ...formData, t_shirt_size: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, t_shirt_size: e.target.value })}
+                className="w-full h-12 px-4 appearance-none rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               >
                 <option value="">Select size</option>
                 <option value="XS">XS</option>
@@ -184,17 +188,16 @@ export default function RunnerProfilePage() {
                 <option value="XL">XL</option>
                 <option value="XXL">XXL</option>
               </select>
+              <span className="material-symbols-outlined absolute right-4 top-9 text-[#958ea0] pointer-events-none">expand_more</span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card className="border-border lg:col-span-2">
-          <CardHeader>
-            <CardTitle>PDPA Consent</CardTitle>
-            <CardDescription>Data privacy consent</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
+        {/* PDPA */}
+        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden p-5">
+          <h2 className="text-[16px] font-bold text-[#e5e1e4] mb-1">PDPA Consent</h2>
+          <div className="flex items-start gap-3 mt-4">
+            <div className="pt-1">
               <input
                 type="checkbox"
                 id="pdpa"
@@ -209,119 +212,120 @@ export default function RunnerProfilePage() {
                       { onConflict: "user_id" },
                     )
                 }}
-                className="h-4 w-4"
+                className="w-5 h-5 rounded border-[#353437] bg-[#23232b] text-[#d0bcff] focus:ring-[#d0bcff]/50"
               />
-              <Label htmlFor="pdpa" className="text-sm font-normal">
-                I consent to the collection and processing of my personal data
-                in accordance with PDPA
-              </Label>
             </div>
-          </CardContent>
-        </Card>
+            <label htmlFor="pdpa" className="text-[13px] text-[#cbc3d7] leading-relaxed">
+              I consent to the collection and processing of my personal data in accordance with PDPA
+            </label>
+          </div>
+        </section>
 
-        <div className="lg:col-span-2">
-          <DocumentCapture
-            userId={user?.id || ""}
-            currentDocument={{
-              path: profile?.ic_document_path || null,
-              mime: profile?.ic_document_mime || null,
-            }}
-          />
-        </div>
+        <DocumentCapture
+          userId={user?.id || ""}
+          currentDocument={{
+            path: profile?.ic_document_path || null,
+            mime: profile?.ic_document_mime || null,
+          }}
+        />
 
-        <div className="lg:col-span-2">
-          <Card className="border-destructive/30">
-            <CardHeader>
-              <CardTitle className="text-destructive">Delete Account</CardTitle>
-              <CardDescription>
-                Permanently delete your account and all personal data.
-                This action cannot be undone.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-md bg-destructive/10 px-4 py-3 text-sm">
-                <p className="font-medium text-destructive">What will be deleted:</p>
-                <ul className="mt-2 list-inside list-disc space-y-1 text-muted-foreground">
-                  <li>Your name, phone number, date of birth, and gender</li>
-                  <li>Your IC/Passport document</li>
-                  <li>Your PDPA consent records</li>
-                  <li>Your authentication account</li>
-                </ul>
-                <p className="mt-2 font-medium text-destructive">What will be preserved:</p>
-                <ul className="mt-2 list-inside list-disc space-y-1 text-muted-foreground">
-                  <li>Your anonymized registration records</li>
-                  <li>Your event leaderboard rankings</li>
-                  <li>Your earned badges</li>
-                </ul>
-              </div>
+        <button 
+          onClick={handleSave} 
+          disabled={saving}
+          className="w-full py-4 mt-2 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 shadow-lg shadow-[#d0bcff]/10"
+        >
+          {saving ? (
+            <>
+              <span className="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+              Saving...
+            </>
+          ) : (
+            'Save Profile'
+          )}
+        </button>
 
-              {deleteStep === 'idle' && (
-                <Button variant="destructive" onClick={() => setDeleteStep('confirm')}>
-                  Delete My Account
-                </Button>
-              )}
+        {/* Danger Zone */}
+        <section className="bg-[#1c1b1d] rounded-2xl border border-[#ffb4ab]/30 overflow-hidden mt-8">
+          <div className="p-5 border-b border-[#ffb4ab]/20 bg-[#ffb4ab]/5">
+            <h2 className="text-[16px] font-bold text-[#ffb4ab] flex items-center gap-2">
+              <span className="material-symbols-outlined text-[20px]">warning</span>
+              Danger Zone
+            </h2>
+          </div>
+          <div className="p-5 flex flex-col gap-4">
+            <p className="text-[12px] text-[#cbc3d7] leading-relaxed">
+              Permanently delete your account and all personal data. This action cannot be undone.
+            </p>
 
-              {deleteStep === 'confirm' && (
-                <div className="space-y-3">
-                  <div className="grid gap-2">
-                    <Label htmlFor="delete-confirm">
-                      Type <span className="font-semibold">DELETE</span> to confirm
-                    </Label>
-                    <Input
-                      id="delete-confirm"
-                      value={deleteConfirm}
-                      onChange={(e) => setDeleteConfirm(e.target.value)}
-                      placeholder="DELETE"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="destructive"
-                      disabled={deleteConfirm !== 'DELETE'}
-                      onClick={async () => {
-                        setDeleteStep('deleting')
-                        setDeleteError(null)
-                        try {
-                          await deleteRunnerAccount()
-                        } catch (err) {
-                          setDeleteError(err instanceof Error ? err.message : 'Deletion failed')
-                          setDeleteStep('idle')
-                        }
-                      }}
-                    >
-                      Yes, Delete My Account Forever
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
+            {deleteStep === 'idle' && (
+              <button 
+                onClick={() => setDeleteStep('confirm')}
+                className="py-3 px-4 rounded-xl bg-[#ffb4ab]/10 text-[#ffb4ab] text-[13px] font-bold border border-[#ffb4ab]/20 active:bg-[#ffb4ab]/20 transition-colors"
+              >
+                Delete My Account
+              </button>
+            )}
+
+            {deleteStep === 'confirm' && (
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="delete-confirm" className="text-[12px] font-bold text-[#ffb4ab] ml-1">
+                    Type <span className="font-extrabold">DELETE</span> to confirm
+                  </label>
+                  <input
+                    id="delete-confirm"
+                    type="text"
+                    value={deleteConfirm}
+                    onChange={(e) => setDeleteConfirm(e.target.value)}
+                    placeholder="DELETE"
+                    className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#ffb4ab]/30 text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#ffb4ab]"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    disabled={deleteConfirm !== 'DELETE'}
+                    onClick={async () => {
+                      setDeleteStep('deleting')
+                      setDeleteError(null)
+                      try {
+                        await deleteRunnerAccount()
+                      } catch (err) {
+                        setDeleteError(err instanceof Error ? err.message : 'Deletion failed')
                         setDeleteStep('idle')
-                        setDeleteConfirm('')
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
+                      }
+                    }}
+                    className="flex-[2] py-3 rounded-xl bg-[#ffb4ab] text-[#690005] text-[13px] font-bold active:scale-95 transition-transform disabled:opacity-50"
+                  >
+                    Confirm Delete
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDeleteStep('idle')
+                      setDeleteConfirm('')
+                    }}
+                    className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold active:scale-95 transition-transform"
+                  >
+                    Cancel
+                  </button>
                 </div>
-              )}
+              </div>
+            )}
 
-              {deleteStep === 'deleting' && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Deleting your account...
-                </div>
-              )}
+            {deleteStep === 'deleting' && (
+              <div className="flex items-center justify-center gap-2 text-[13px] text-[#ffb4ab] font-bold py-3 bg-[#ffb4ab]/10 rounded-xl">
+                <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                Deleting...
+              </div>
+            )}
 
-              {deleteError && (
-                <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {deleteError}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            {deleteError && (
+              <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px]">error</span>
+                {deleteError}
+              </div>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -30,11 +30,3 @@ export async function evaluateBadges(
     body: JSON.stringify(body),
   })
 }
-
-export async function getBadgeDefinitions(): Promise<
-  { badges: AwardedBadge[] }
-> {
-  await requireAuth()
-
-  return fetchDjangoApi("/ai/badges/definitions")
-}

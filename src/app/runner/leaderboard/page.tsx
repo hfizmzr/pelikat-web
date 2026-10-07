@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trophy } from 'lucide-react'
 import { LiveLeaderboard } from '@/components/gamification/live-leaderboard'
 import { LeaderboardFilters } from './filters'
 import { ExportCSV } from './export-csv'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -52,35 +51,47 @@ export default async function RunnerLeaderboardPage({
   ])
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Leaderboard</h1>
-        <p className="text-muted-foreground">Virtual run rankings across all events</p>
-      </div>
+    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+        <div className="flex items-center h-14 px-4 pt-safe">
+          <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
+            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+          </Link>
+          <div className="flex-1 flex flex-col items-center mr-8 truncate">
+            <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
+              Leaderboard
+            </h1>
+          </div>
+        </div>
+      </header>
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <LeaderboardFilters events={events || []} />
-        <ExportCSV
-          eventId={event_id}
-          gender={gender}
+      <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto pb-24">
+        
+        <div className="flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-[#23232b] border border-[#353437] rounded-full flex items-center justify-center mb-3">
+            <span className="material-symbols-outlined text-[32px] text-[#e3c45b]">trophy</span>
+          </div>
+          <h2 className="text-[20px] font-bold text-[#e5e1e4] tracking-tight">Global Rankings</h2>
+          <p className="text-[13px] text-[#958ea0] mt-1">Virtual run rankings by total distance</p>
+        </div>
+
+        <div className="flex flex-col gap-3 p-3 bg-[#1c1b1d] rounded-2xl border border-[#353437]/60">
+          <div className="flex items-center justify-between gap-3">
+            <LeaderboardFilters events={events || []} />
+            <ExportCSV
+              eventId={event_id}
+              gender={gender}
+            />
+          </div>
+        </div>
+
+        <LiveLeaderboard
+          initialData={leaderboard || []}
+          currentRunnerId={profile?.id}
         />
-      </div>
 
-      <Card className="border-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
-            Top Runners
-          </CardTitle>
-          <CardDescription>Global rankings by total distance</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LiveLeaderboard
-            initialData={leaderboard || []}
-            currentRunnerId={profile?.id}
-          />
-        </CardContent>
-      </Card>
+      </div>
     </div>
   )
 }

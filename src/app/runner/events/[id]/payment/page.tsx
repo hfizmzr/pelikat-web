@@ -3,10 +3,6 @@
 import { use, useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, CreditCard, Loader2, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { confirmDummyPayment } from '@/components/events/actions'
 
@@ -65,141 +61,123 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin" />
+      <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center">
+        <span className="material-symbols-outlined text-[32px] text-[#cbc3d7] animate-spin">progress_activity</span>
       </div>
     )
   }
 
   if (!registration) {
     return (
-      <div className="py-12 text-center">
-        <p className="text-muted-foreground">Registration not found</p>
-        <Link href={`/runner/events/${id}`}>
-          <Button variant="outline" className="mt-4">Back to Event</Button>
+      <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center px-5 text-center">
+        <div className="w-16 h-16 bg-[#1c1b1d] rounded-full flex items-center justify-center mb-4 border border-[#353437]/60">
+          <span className="material-symbols-outlined text-[32px] text-[#958ea0]">warning</span>
+        </div>
+        <p className="text-[14px] text-[#e5e1e4] font-bold mb-4">Registration not found</p>
+        <Link 
+          href={`/runner/events/${id}`}
+          className="px-6 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold"
+        >
+          Back to Event
         </Link>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href={`/runner/events/${id}`}>
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Payment</h1>
-          <p className="text-muted-foreground">{registration.events?.name}</p>
+    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+        <div className="flex items-center h-14 px-4 pt-safe">
+          <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
+            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+          </Link>
+          <h1 className="flex-1 text-[16px] font-bold text-[#e5e1e4] text-center mr-8 truncate">
+            Payment
+          </h1>
         </div>
-      </div>
+      </header>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Order Summary
-              </CardTitle>
-              <CardDescription>Review your registration before payment</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Event</span>
-                  <span>{registration.events?.name}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Category</span>
-                  <span>{registration.race_categories?.name}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">BIB</span>
-                  <span className="font-mono">{registration.bib_number}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Status</span>
-                  <Badge variant={registration.payment_status === 'paid' ? 'default' : 'secondary'}>
-                    {registration.payment_status}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span>RM {registration.race_categories?.price ?? 0}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {success ? (
-            <Card className="border-green-500/50 bg-green-500/5">
-              <CardContent className="flex items-center gap-3 py-6">
-                <CheckCircle className="h-6 w-6 text-green-500" />
-                <div>
-                  <p className="font-medium text-green-500">Payment Successful</p>
-                  <p className="text-sm text-muted-foreground">
-                    Your registration is confirmed. View your digital BIB for race day.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle>Dummy Payment Gateway</CardTitle>
-                <CardDescription>
-                  This simulates a payment confirmation. No real transaction occurs.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {error && (
-                  <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    {error}
-                  </p>
-                )}
-
-                <Button className="w-full" onClick={handlePayment} disabled={isPending}>
-                  {isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <CreditCard className="mr-2 h-4 w-4" />
-                  )}
-                  {isPending ? 'Processing...' : 'Confirm Payment'}
-                </Button>
-
-                <p className="text-xs text-muted-foreground text-center">
-                  Clicking this will mark your registration as paid for demonstration purposes.
-                </p>
-              </CardContent>
-            </Card>
-          )}
+      <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto">
+        <div className="flex flex-col text-center">
+          <h2 className="text-[20px] font-bold text-[#e5e1e4] mb-1">Complete Registration</h2>
+          <p className="text-[13px] text-[#958ea0]">{registration.events?.name}</p>
         </div>
 
-        <div className="space-y-6">
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle>Event Info</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Date</span>
-                <span>{new Date(registration.events?.event_date).toLocaleDateString()}</span>
+        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
+          <div className="bg-[#23232b] p-4 flex items-center gap-2 border-b border-[#353437]/60">
+            <span className="material-symbols-outlined text-[18px] text-[#cbc3d7]">receipt_long</span>
+            <span className="text-[14px] font-bold text-[#e5e1e4]">Order Summary</span>
+          </div>
+          <div className="p-4 flex flex-col gap-3">
+            <div className="flex justify-between items-center text-[13px]">
+              <span className="text-[#958ea0]">Category</span>
+              <span className="text-[#e5e1e4] font-medium">{registration.race_categories?.name}</span>
+            </div>
+            <div className="flex justify-between items-center text-[13px]">
+              <span className="text-[#958ea0]">BIB</span>
+              <span className="font-mono text-[#e5e1e4] font-medium">{registration.bib_number}</span>
+            </div>
+            <div className="flex justify-between items-center text-[13px]">
+              <span className="text-[#958ea0]">Status</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#353437] text-[#cbc3d7]">
+                {registration.payment_status}
+              </span>
+            </div>
+            <div className="border-t border-[#353437]/40 pt-3 mt-1 flex justify-between items-center">
+              <span className="text-[14px] font-bold text-[#e5e1e4]">Total to Pay</span>
+              <span className="text-[16px] font-bold text-[#4cd7f6]">RM {registration.race_categories?.price ?? 0}</span>
+            </div>
+          </div>
+        </section>
+
+        {success ? (
+          <div className="bg-[#4edea3]/10 border border-[#4edea3]/30 p-5 rounded-2xl flex flex-col items-center text-center gap-3">
+            <span className="material-symbols-outlined text-[40px] text-[#4edea3]">check_circle</span>
+            <div>
+              <h3 className="text-[16px] font-bold text-[#4edea3] mb-1">Payment Successful!</h3>
+              <p className="text-[13px] text-[#4edea3]/80 mb-4">Your registration is confirmed. See you at the start line.</p>
+              <Link 
+                href={`/runner/events/${id}/bib`}
+                className="inline-flex w-full py-3 rounded-xl bg-[#4edea3] text-[#003926] text-[13px] font-bold justify-center active:scale-95 transition-transform"
+              >
+                View Digital BIB
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-5 flex flex-col gap-4">
+            <div className="flex items-start gap-3">
+              <span className="material-symbols-outlined text-[20px] text-[#d0bcff]">credit_score</span>
+              <div className="flex flex-col">
+                <span className="text-[14px] font-bold text-[#e5e1e4]">Dummy Gateway</span>
+                <span className="text-[12px] text-[#958ea0]">This simulates a successful payment. No real transaction occurs.</span>
               </div>
-              {registration.events?.location && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Location</span>
-                  <span>{registration.events?.location}</span>
-                </div>
+            </div>
+
+            {error && (
+              <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px]">error</span>
+                {error}
+              </div>
+            )}
+
+            <button 
+              onClick={handlePayment} 
+              disabled={isPending}
+              className="w-full py-3.5 mt-2 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+            >
+              {isPending ? (
+                <>
+                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                  Processing...
+                </>
+              ) : (
+                'Confirm Payment'
               )}
-            </CardContent>
-          </Card>
-        </div>
+            </button>
+          </section>
+        )}
       </div>
     </div>
   )

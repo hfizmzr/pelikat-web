@@ -1,8 +1,5 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Download, Printer, Share2 } from 'lucide-react'
-
 export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; eventName: string }) {
   const handleSave = () => {
     const canvas = document.createElement('canvas')
@@ -11,19 +8,19 @@ export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    ctx.fillStyle = '#ffffff'
+    ctx.fillStyle = '#131315'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    ctx.fillStyle = '#888888'
+    ctx.fillStyle = '#cbc3d7'
     ctx.font = '14px system-ui'
     ctx.textAlign = 'center'
     ctx.fillText('BIB NUMBER', canvas.width / 2, 40)
 
-    ctx.fillStyle = '#000000'
+    ctx.fillStyle = '#e5e1e4'
     ctx.font = 'bold 48px monospace'
     ctx.fillText(bibNumber, canvas.width / 2, 110)
 
-    ctx.fillStyle = '#333333'
+    ctx.fillStyle = '#958ea0'
     ctx.font = '18px system-ui'
     ctx.fillText(eventName, canvas.width / 2, 150)
 
@@ -48,24 +45,22 @@ export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; 
     }
   }
 
-  const handlePrint = () => {
-    window.print()
-  }
-
   return (
-    <div className="flex w-full flex-col gap-2 print:hidden sm:flex-row">
-      <Button variant="outline" className="flex-1" onClick={handleSave}>
-        <Download className="mr-2 h-4 w-4" />
-        Save
-      </Button>
-      <Button variant="outline" className="flex-1" onClick={handlePrint}>
-        <Printer className="mr-2 h-4 w-4" />
-        Print/PDF
-      </Button>
-      <Button variant="outline" className="flex-1" onClick={handleShare}>
-        <Share2 className="mr-2 h-4 w-4" />
+    <div className="flex w-full gap-2 mt-4">
+      <button 
+        onClick={handleSave}
+        className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+      >
+        <span className="material-symbols-outlined text-[18px]">download</span>
+        Save Image
+      </button>
+      <button 
+        onClick={handleShare}
+        className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+      >
+        <span className="material-symbols-outlined text-[18px]">share</span>
         Share
-      </Button>
+      </button>
     </div>
   )
 }
