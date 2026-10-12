@@ -13,14 +13,28 @@ export interface BadgeCertificate {
 export function BadgeCertificateButton({ badge }: { badge: BadgeCertificate }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [fallbackUrl, setFallbackUrl] = useState<string | null>(null)
 
   const handleDownload = () => {
     setError(null)
+    setFallbackUrl(null)
+    // Popup must open synchronously in the click handler — an async
+    // window.open after a server action is blocked by browsers.
+    const win = window.open('', '_blank', 'noopener,noreferrer')
+    if (win) {
+      win.document.write('<p style="font-family:sans-serif">Generating certificate…</p>')
+    }
     startTransition(async () => {
       try {
         const url = await generateBadgeCertificate(badge)
-        window.open(url, '_blank', 'noopener,noreferrer')
+        if (win) {
+          win.location.href = url
+        } else {
+          // Popup blocked: expose the URL as a link instead.
+          setFallbackUrl(url)
+        }
       } catch (e) {
+        if (win) win.close()
         setError(e instanceof Error ? e.message : 'Certificate failed')
       }
     })
@@ -38,6 +52,11 @@ export function BadgeCertificateButton({ badge }: { badge: BadgeCertificate }) {
         </span>
         {isPending ? 'Generating…' : 'Download Certificate'}
       </button>
+      {fallbackUrl && (
+        <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#d0bcff] mt-1 text-center underline">
+          Open certificate
+        </a>
+      )}
       {error && (
         <p className="text-[9px] text-[#ffb4ab] mt-1 text-center">{error}</p>
       )}

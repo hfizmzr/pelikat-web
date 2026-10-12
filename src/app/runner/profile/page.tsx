@@ -21,6 +21,7 @@ export default function RunnerProfilePage() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -71,6 +72,7 @@ export default function RunnerProfilePage() {
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveError(null);
 
     const { error } = await supabase.from("runner_profiles").upsert({
       user_id: user?.id,
@@ -86,9 +88,13 @@ export default function RunnerProfilePage() {
 
     setSaving(false);
 
-    if (!error) {
-      router.refresh();
+    if (error) {
+      setSaveError(error.message);
+      return;
     }
+    // Navigate so the proxy profile gate re-evaluates — router.refresh()
+    // doesn't re-run the middleware/proxy on the client.
+    router.push("/runner");
   };
 
   const handleSaveIc = async () => {
@@ -382,6 +388,10 @@ export default function RunnerProfilePage() {
             'Save Profile'
           )}
         </button>
+
+        {saveError && (
+          <p className="text-[12px] text-[#ffb4ab] mt-2 text-center">{saveError}</p>
+        )}
 
         {/* Danger Zone */}
         <section className="bg-[#1c1b1d] rounded-2xl border border-[#ffb4ab]/30 overflow-hidden mt-8">

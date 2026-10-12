@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
+import { PWAInstallPrompt } from '@/components/pwa/install-prompt'
 import Link from 'next/link'
 
 function BottomNavLink({
@@ -56,11 +57,16 @@ export default function RunnerLayout({
   const pathname = usePathname()
   const supabase = createClient()
 
+  // Standalone-PWA gate. Release default: DISABLED (env flag must be set
+  // explicitly to 'true' to activate); flip in the deploy env when shipping.
+  const pwaGateEnabled = process.env.NEXT_PUBLIC_PWA_GATE === 'true'
+  const [isStandalone, setIsStandalone] = useState<boolean | null>(null)
+
   useEffect(() => {
     async function checkRole() {
       const { data: { user } } = await supabase.auth.getUser()
       const role = getUserRole(user)
-      
+
       if (role !== 'runner') {
         router.push('/')
       }
@@ -68,20 +74,23 @@ export default function RunnerLayout({
     checkRole()
   }, [router, supabase])
 
-  // TEMP: bypassed standalone-PWA gate for desktop verification — restore before release
-  // useEffect(() => {
-  //   // Detect standalone PWA mode
-  //   const checkIsStandalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in navigator && (navigator as any).standalone)
-  //   setIsStandalone(checkIsStandalone)
-  // }, [])
+  useEffect(() => {
+    if (!pwaGateEnabled) return
+    // Detect standalone PWA mode
+    const navWithStandalone = navigator as Navigator & { standalone?: boolean }
+    setIsStandalone(
+      window.matchMedia('(display-mode: standalone)').matches ||
+      ('standalone' in navigator && !!navWithStandalone.standalone)
+    )
+  }, [pwaGateEnabled])
 
-  // // Show nothing while checking display mode to avoid flicker
-  // if (isStandalone === null) return null
+  // Show nothing while checking display mode to avoid flicker
+  if (pwaGateEnabled && isStandalone === null) return null
 
-  // // If not standalone, force the installation prompt
-  // if (!isStandalone) {
-  //   return <PWAInstallPrompt />
-  // }
+  // If not standalone, force the installation prompt
+  if (pwaGateEnabled && !isStandalone) {
+    return <PWAInstallPrompt />
+  }
 
   return (
     <div className="min-h-screen bg-[#0e0e10] flex justify-center overflow-hidden font-sans">

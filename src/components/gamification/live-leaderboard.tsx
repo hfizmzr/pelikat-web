@@ -46,7 +46,12 @@ export function LiveLeaderboard({
   const [entries, setEntries] = useState<LeaderboardEntry[]>(() => initialData)
   const [isLive, setIsLive] = useState(true)
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
-  const prevDataKey = useRef(initialData.length)
+  // pendingRef: request sequence — only the latest refresh may commit its data.
+  const refreshSeq = useRef(0)
+  // filterKey: identity of initialData + active filters, so a data/filters
+  // change always re-seeds entries (row count alone can't detect content swaps).
+  const dataKey = `${filters?.event_id ?? ''}|${filters?.gender ?? ''}|${filters?.category_id ?? ''}|${initialData.length}|${initialData[0]?.runner_id ?? ''}|${initialData[0]?.total_km ?? ''}`
+  const prevDataKey = useRef(dataKey)
   const filtersRef = useRef(filters)
 
   useEffect(() => {
@@ -54,7 +59,10 @@ export function LiveLeaderboard({
   }, [filters])
 
   const refreshData = useCallback(async () => {
-    // Re-apply the active filters so realtime refreshes don't reset them
+    // Re-apply the active filters so realtime refreshes don't reset them,
+    // and discard the response if filters changed or a newer refresh
+    // superseded it (stale results must not overwrite the leaderboard).
+    const seq = ++refreshSeq.current
     const f = filtersRef.current ?? {}
     let query = supabase
       .from("leaderboard_virtual")
@@ -69,7 +77,15 @@ export function LiveLeaderboard({
     const { data } = await query
 
     if (data) {
-      setEntries(data as LeaderboardEntry[])
+      const current = filtersRef.current ?? {}
+      if (
+        refreshSeq.current === seq &&
+        current.event_id === (f.event_id ?? undefined) &&
+        current.gender === (f.gender ?? undefined) &&
+        current.category_id === (f.category_id ?? undefined)
+      ) {
+        setEntries(data as LeaderboardEntry[])
+      }
     }
   }, [supabase])
 
@@ -97,11 +113,11 @@ export function LiveLeaderboard({
   }, [isLive, refreshData, supabase])
 
   useEffect(() => {
-    if (initialData.length !== prevDataKey.current) {
+    if (dataKey !== prevDataKey.current) {
       setEntries(initialData)
-      prevDataKey.current = initialData.length
+      prevDataKey.current = dataKey
     }
-  }, [initialData])
+  }, [dataKey, initialData])
 
   const myStats = entries?.find((e) => e.runner_id === currentRunnerId)
 

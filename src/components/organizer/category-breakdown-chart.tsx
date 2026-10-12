@@ -66,7 +66,7 @@ export default function CategoryBreakdownChart({ data }: { data: CategoryStat[] 
           <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} formatter={(value) => <span className="text-[#cbc3d7] font-medium">{value}</span>} />
           <Bar dataKey="male" name="Male" stackId="gender" fill={MALE_COLOR} radius={[0, 0, 0, 0]} />
           <Bar dataKey="female" name="Female" stackId="gender" fill={FEMALE_COLOR} />
-          <Bar dataKey="checkedIn" name="Checked In" stackId="gender" fill={CHECKED_IN_COLOR} />
+          <Bar dataKey="checkedIn" name="Checked In" stackId="checkin" fill={CHECKED_IN_COLOR} radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

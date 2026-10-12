@@ -30,17 +30,42 @@ export default async function OrganizerEventAnalyticsPage({
     createClient(),
   ])
 
-  const { data: event } = await supabase
-    .from('events')
-    .select('id, name, event_date, location, status, race_categories(id, name, price), registrations(*, runner_profiles(gender), race_categories(id, name))')
-    .eq('id', id)
-    .single()
+  // 048-review: fetch registrations paginated (PostgREST caps a single
+  // request at db.max_rows, default 1000, and silently truncates).
+  const PAGE = 1000
+  const fetchRegistrations = async () => {
+    let all: unknown[] = []
+    let from = 0
+    while (true) {
+      const { data, error } = await supabase
+        .from('registrations')
+        .select('id, checked_in, payment_status, runner_profiles(gender), race_categories(id)')
+        .eq('event_id', id)
+        .range(from, from + PAGE - 1)
+      if (error) throw new Error(error.message)
+      all = all.concat(data ?? [])
+      if (!data || data.length < PAGE) break
+      from += PAGE
+    }
+    return all
+  }
+
+  const [regsData, eventResponse] = await Promise.all([
+    fetchRegistrations(),
+    supabase
+      .from('events')
+      .select('id, name, event_date, location, status, race_categories(id, name, price)')
+      .eq('id', id)
+      .single()
+  ])
+
+  const event = eventResponse.data
 
   if (!event) {
     notFound()
   }
 
-  const registrations = ((event.registrations ?? []) as Registration[])
+  const registrations = regsData as unknown as Registration[]
   const raceCategories = (event.race_categories ?? []) as { id: string; name: string | null; price: number | null }[]
 
   // FR-33: registration counts by race category and gender
@@ -68,10 +93,14 @@ export default async function OrganizerEventAnalyticsPage({
   const checkInRate = total > 0 ? Math.round((checkedIn / total) * 100) : 0
   const paid = registrations.filter((r) => r.payment_status === 'paid').length
   const priceById = new Map(raceCategories.map((c) => [c.id, Number(c.price ?? 0)]))
-  const revenue = registrations.reduce(
-    (sum, r) => sum + (priceById.get(r.race_categories?.id ?? '') ?? 0),
-    0
-  )
+  // Revenue counts only paid registrations (registrations has no recorded
+  // payment-amount column, so category price is used for paid rows).
+  const revenue = registrations
+    .filter((r) => r.payment_status === 'paid')
+    .reduce(
+      (sum, r) => sum + (priceById.get(r.race_categories?.id ?? '') ?? 0),
+      0
+    )
 
   return (
     <div className="space-y-6">

@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { readFileSync, existsSync } from 'fs'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 
+// Resolve paths relative to this test file, not process.cwd() — CI and
+// watchers run vitest from different working directories. Calls use
+// project-root-relative paths ('src', ...) or repo-relative ('..', 'pelikat-api').
+const here = dirname(fileURLToPath(import.meta.url))
 const read = (...parts: string[]) =>
-  readFileSync(join(process.cwd(), ...parts), 'utf-8')
+  readFileSync(join(here, '..', '..', ...parts), 'utf-8')
+const pelikatApiAvailable = existsSync(join(here, '..', '..', '..', 'pelikat-api'))
 
 describe('Reliability: Runner Core Loop (Phase 1)', () => {
   it('proxy gates runner routes on complete profile fields', () => {
@@ -72,7 +78,7 @@ describe('Reliability: Runner Core Loop (Phase 1)', () => {
     expect(actions).toContain('/ai/documents/encrypt-ic')
   })
 
-  it('django exposes the encrypt-ic endpoint behind the internal key', () => {
+  it.skipIf(!pelikatApiAvailable)('django exposes the encrypt-ic endpoint behind the internal key', () => {
     const urls = read('..', 'pelikat-api', 'apps', 'documents', 'urls.py')
     expect(urls).toContain('encrypt-ic')
 
@@ -261,7 +267,7 @@ describe('Polish: Payment-First BIB Lifecycle', () => {
 })
 
 describe('Polish: E-Certificates & Re-Registration (Phase 5)', () => {
-  it('django badges service generates certs at award time with isolation', () => {
+  it.skipIf(!pelikatApiAvailable)('django badges service generates certs at award time with isolation', () => {
     const services = read('..', 'pelikat-api', 'apps', 'badges', 'services.py')
     expect(services).toContain('from apps.ecert.services import generate_cert')
     expect(services).toContain('_generate_milestone_cert')
@@ -282,7 +288,9 @@ describe('Polish: E-Certificates & Re-Registration (Phase 5)', () => {
 
     const button = read('src', 'components', 'gamification', 'certificate-download.tsx')
     expect(button).toContain('Download Certificate')
-    expect(button).toContain('window.open(url')
+    // popup opens synchronously in the click handler, not after the await
+    expect(button).toContain("window.open('', '_blank'")
+    expect(button).toContain('setFallbackUrl')
   })
 
   it('run-log badge toast links fresh certs after award (UC14)', () => {

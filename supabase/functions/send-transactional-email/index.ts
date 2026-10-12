@@ -1,5 +1,6 @@
 // supabase/functions/send-transactional-email/index.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API = "https://api.resend.com/emails";
 const DEFAULT_CORS_ORIGINS = "*";
@@ -102,6 +103,45 @@ serve(async (req: Request) => {
     return new Response(null, { status: 204, headers: getCorsHeaders(req) });
   }
 
+  // ponytail: minimal auth — JWT verified, recipient pinned to caller's own
+  // email for registration_confirmation and admin role for organizer_welcome.
+  // Full fix (authorize against registration/event rows in DB, derive event
+  // URL + email server-side) needs registration/event IDs added to the callers.
+  const authHeader = req.headers.get("Authorization") ?? "";
+  if (!authHeader) {
+    return new Response(JSON.stringify({ success: false, error: "Missing Authorization header" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
+    });
+  }
+
+  let callerEmail: string | null = null;
+  let isAdmin = false;
+
+  try {
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ success: false, error: "Invalid token" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
+      });
+    }
+
+    callerEmail = user.email ?? null;
+    isAdmin = user.app_metadata?.role === "admin";
+  } catch (err) {
+    console.error("send-transactional-email error:", err);
+    return new Response(JSON.stringify({ success: false, error: "Internal error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
+    });
+  }
+
   // Stub guard: skip silently when Resend is not configured (local dev)
   // or emails are explicitly disabled.
   const resendKey = Deno.env.get("RESEND_API_KEY");
@@ -128,11 +168,27 @@ serve(async (req: Request) => {
     let html: string;
 
     if (body.type === "registration_confirmation") {
+      // Recipient must be the caller's own account email — never a
+      // client-supplied address.
       const p = body as RegistrationConfirmationPayload;
+      if (!callerEmail || p.runnerEmail.toLowerCase() !== callerEmail.toLowerCase()) {
+        return new Response(JSON.stringify({ success: false, error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
+        });
+      }
+      // Recipient is the caller's account email.
+      p.runnerEmail = callerEmail;
       to = p.runnerEmail;
       subject = `Registration confirmed: ${p.eventName} — BIB ${p.bibNumber}`;
       html = renderRegistrationConfirmation(p);
     } else {
+      if (!isAdmin) {
+        return new Response(JSON.stringify({ success: false, error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json", ...getCorsHeaders(req) },
+        });
+      }
       const p = body as OrganizerWelcomePayload;
       to = p.organizerEmail;
       subject = `Welcome to Pelikat, ${p.organizerName}!`;

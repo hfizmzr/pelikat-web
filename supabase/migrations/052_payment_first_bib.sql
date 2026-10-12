@@ -181,7 +181,8 @@ begin
   select * into v_reg
   from public.registrations
   where id = p_registration_id
-    and runner_id = v_runner_id;
+    and runner_id = v_runner_id
+  for update;
 
   if not found then
     raise exception 'Registration not found or not yours';

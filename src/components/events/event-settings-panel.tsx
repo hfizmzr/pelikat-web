@@ -68,6 +68,7 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
   const [regCloseValue, setRegCloseValue] = useState(regClose ?? '')
   const [resultsPublishedValue, setResultsPublishedValue] = useState(resultsPublished)
   const [savingResults, setSavingResults] = useState(false)
+  const [resultsError, setResultsError] = useState<string | null>(null)
   const [savingDates, setSavingDates] = useState(false)
 
   const handleStatusChange = (newStatus: EventStatus) => {
@@ -93,11 +94,16 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
   }
 
   const handleResultsToggle = (checked: boolean) => {
+    const previous = resultsPublishedValue
     setResultsPublishedValue(checked)
     setSavingResults(true)
+    setResultsError(null)
     startTransition(async () => {
       try {
         await setResultsPublished(eventId, checked)
+      } catch {
+        setResultsPublishedValue(previous)
+        setResultsError('Failed to update results visibility. Please try again.')
       } finally {
         setSavingResults(false)
       }
@@ -230,6 +236,9 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
                     : 'Runner leaderboard is hidden until you publish.'}
                 </p>
               </div>
+              {resultsError && (
+                <p className="text-xs text-destructive w-full">{resultsError}</p>
+              )}
               {savingResults ? (
                 <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
               ) : (

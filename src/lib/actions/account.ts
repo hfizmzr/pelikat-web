@@ -35,11 +35,18 @@ export async function storeEncryptedDocument(result: {
 export async function storeEncryptedIc(icNumber: string) {
   const { supabase, user } = await requireAuth()
 
+  const trimmed = icNumber.trim()
+  const isNric = /^\d{6}-\d{2}-\d{4}$/.test(trimmed)
+  const isPassport = /^[A-Za-z0-9]{5,15}$/.test(trimmed)
+  if (!isNric && !isPassport) {
+    throw new Error('Enter your IC as 000000-00-0000 or a passport number (letters and digits only).')
+  }
+
   const result: { ic_encrypted: string } = await fetchDjangoApi(
     '/ai/documents/encrypt-ic',
     {
       method: 'POST',
-      body: JSON.stringify({ ic_number: icNumber, user_id: user.id }),
+      body: JSON.stringify({ ic_number: trimmed, user_id: user.id }),
     }
   )
 
