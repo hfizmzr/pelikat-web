@@ -1,3 +1,4 @@
+import { Banknote, ClipboardCheck, Flag, LoaderCircle, TrendingUp, Users } from "lucide-react"
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import OrganizerAnalyticsCharts, { type AnalyticsData } from '@/components/organizer/analytics-charts'
@@ -35,7 +36,7 @@ export default async function OrganizerAnalyticsPage() {
   if (!organizerId) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-[#958ea0]">
-        <span className="material-symbols-outlined text-[64px] mb-4">insights</span>
+        <span className="size-[64px] mb-4"><TrendingUp className="size-[64px] mb-4" /></span>
         <h2 className="text-[18px] font-semibold text-[#e5e1e4] mb-2">No organizer profile</h2>
         <p className="text-[14px]">No analytics data available without an organizer account.</p>
       </div>
@@ -105,10 +106,10 @@ export default async function OrganizerAnalyticsPage() {
   }
 
   const kpis = [
-    { label: 'Total Events', value: totalEvents, icon: 'flag', color: 'text-[#d0bcff]', suffix: '' },
-    { label: 'Total Runners', value: totalRegistrations, icon: 'group', color: 'text-[#4cd7f6]', suffix: '' },
-    { label: 'Gross Revenue', value: `RM ${totalRevenue.toLocaleString('en-MY', { maximumFractionDigits: 0 })}`, icon: 'payments', color: 'text-[#4edea3]', suffix: '' },
-    { label: 'Check-in Rate', value: checkInRate, icon: 'fact_check', color: 'text-[#d0bcff]', suffix: '%' },
+    { label: 'Total Events', value: totalEvents, icon: Flag, color: 'text-[#d0bcff]', suffix: '' },
+    { label: 'Total Runners', value: totalRegistrations, icon: Users, color: 'text-[#4cd7f6]', suffix: '' },
+    { label: 'Gross Revenue', value: `RM ${totalRevenue.toLocaleString('en-MY', { maximumFractionDigits: 0 })}`, icon: Banknote, color: 'text-[#4edea3]', suffix: '' },
+    { label: 'Check-in Rate', value: checkInRate, icon: ClipboardCheck, color: 'text-[#d0bcff]', suffix: '%' },
   ]
 
   return (
@@ -132,7 +133,7 @@ export default async function OrganizerAnalyticsPage() {
             <div key={k.label} className="bg-[#1c1b1d] rounded-xl p-5 border border-[#23232b]">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[12px] leading-[16px] tracking-[0.02em] text-[#cbc3d7] uppercase font-medium">{k.label}</span>
-                <span className={`material-symbols-outlined text-[20px] ${k.color}`}>{k.icon}</span>
+                <span className={`size-[20px] ${k.color}`}><k.icon className="size-[20px]" /></span>
               </div>
               <div className="text-[24px] leading-[28px] tracking-[-0.01em] font-semibold text-[#e5e1e4]">
                 {typeof k.value === 'number' ? k.value.toLocaleString() : k.value}{k.suffix}
@@ -145,7 +146,7 @@ export default async function OrganizerAnalyticsPage() {
         <Suspense
           fallback={
             <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] p-12 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[32px] text-[#d0bcff] animate-spin">progress_activity</span>
+              <span className="size-[32px] text-[#d0bcff] animate-spin"><LoaderCircle className="size-[32px] text-[#d0bcff] animate-spin" /></span>
             </div>
           }
         >

@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown, CircleCheck, Inbox, Trash2, UserSearch, X } from "lucide-react"
 import type { Organizer } from './types'
 
 interface ApplicantTableProps {
@@ -135,9 +135,7 @@ export function ApplicantTable({
   if (loading) {
     return (
       <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 p-8 text-center text-[#958ea0] font-inter text-[13px]">
-        <span className="material-symbols-outlined text-[#4cd7f6] text-[32px] animate-pulse block mb-2">
-          person_search
-        </span>
+        <span className="text-[#4cd7f6] size-[32px] animate-pulse block mb-2"><UserSearch className="text-[#4cd7f6] size-[32px] animate-pulse block mb-2" /></span>
         Loading applicants...
       </div>
     )
@@ -150,7 +148,7 @@ export function ApplicantTable({
         <DialogContent className="bg-[#201f22] border border-[#494454]/40 text-[#e5e1e4] rounded-xl shadow-2xl">
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-[#e5e1e4] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">cancel</span>
+              <span className="size-[20px] text-[#ffb4ab]"><X className="size-[20px] text-[#ffb4ab]" /></span>
               Reject Application
             </DialogTitle>
             <DialogDescription className="text-[#cbc3d7] font-inter text-[13px]">
@@ -170,7 +168,7 @@ export function ApplicantTable({
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#93000a]/20 hover:bg-[#93000a]/40 text-[#ffb4ab] text-[13px] font-semibold font-inter transition-colors border border-[#ffb4ab]/20"
               onClick={confirmReject}
             >
-              <span className="material-symbols-outlined text-[18px]">cancel</span>
+              <span className="size-[18px]"><X className="size-[18px]" /></span>
               Reject
             </button>
           </div>
@@ -182,7 +180,7 @@ export function ApplicantTable({
         <DialogContent className="bg-[#201f22] border border-[#494454]/40 text-[#e5e1e4] rounded-xl shadow-2xl">
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-[#e5e1e4] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">delete_forever</span>
+              <span className="size-[20px] text-[#ffb4ab]"><Trash2 className="size-[20px] text-[#ffb4ab]" /></span>
               Delete Application
             </DialogTitle>
             <DialogDescription className="text-[#cbc3d7] font-inter text-[13px]">
@@ -202,7 +200,7 @@ export function ApplicantTable({
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#93000a]/20 hover:bg-[#93000a]/40 text-[#ffb4ab] text-[13px] font-semibold font-inter transition-colors border border-[#ffb4ab]/20"
               onClick={confirmDelete}
             >
-              <span className="material-symbols-outlined text-[18px]">delete</span>
+              <span className="size-[18px]"><Trash2 className="size-[18px]" /></span>
               Delete
             </button>
           </div>
@@ -226,9 +224,7 @@ export function ApplicantTable({
             {paginatedApplicants.length === 0 ? (
               <tr>
                 <td colSpan={4} className="py-12 text-center text-[#958ea0]">
-                  <span className="material-symbols-outlined text-[32px] block mb-2 text-[#494454]">
-                    inbox
-                  </span>
+                  <span className="size-[32px] block mb-2 text-[#494454]"><Inbox className="size-[32px] block mb-2 text-[#494454]" /></span>
                   No pending applications.
                 </td>
               </tr>
@@ -266,7 +262,7 @@ export function ApplicantTable({
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#4edea3]/10 hover:bg-[#4edea3]/20 text-[#4edea3] text-[12px] font-semibold transition-colors border border-[#4edea3]/20 font-inter"
                           onClick={() => onApprove(applicant)}
                         >
-                          <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                          <span className="size-[16px]"><CircleCheck className="size-[16px]" /></span>
                           Approve
                         </button>
                         {/* Reject */}
@@ -274,7 +270,7 @@ export function ApplicantTable({
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#ffb4ab]/10 hover:bg-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] font-semibold transition-colors border border-[#ffb4ab]/20 font-inter"
                           onClick={() => handleRejectClick(applicant)}
                         >
-                          <span className="material-symbols-outlined text-[16px]">cancel</span>
+                          <span className="size-[16px]"><X className="size-[16px]" /></span>
                           Reject
                         </button>
                         {/* Delete */}
@@ -283,7 +279,7 @@ export function ApplicantTable({
                           onClick={() => handleDeleteClick(applicant)}
                           title="Delete application"
                         >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
+                          <span className="size-[18px]"><Trash2 className="size-[18px]" /></span>
                         </button>
                       </div>
                     </td>

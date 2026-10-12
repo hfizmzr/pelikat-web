@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowLeft, CircleAlert, CircleCheck, CreditCard, LoaderCircle, ReceiptText, TriangleAlert } from "lucide-react"
 import { use, useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -75,7 +76,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
   if (loading) {
     return (
       <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center">
-        <span className="material-symbols-outlined text-[32px] text-[#cbc3d7] animate-spin">progress_activity</span>
+        <span className="size-[32px] text-[#cbc3d7] animate-spin"><LoaderCircle className="size-[32px] text-[#cbc3d7] animate-spin" /></span>
       </div>
     )
   }
@@ -84,7 +85,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
     return (
       <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center px-5 text-center">
         <div className="w-16 h-16 bg-[#1c1b1d] rounded-full flex items-center justify-center mb-4 border border-[#353437]/60">
-          <span className="material-symbols-outlined text-[32px] text-[#958ea0]">warning</span>
+          <span className="size-[32px] text-[#958ea0]"><TriangleAlert className="size-[32px] text-[#958ea0]" /></span>
         </div>
         <p className="text-[14px] text-[#e5e1e4] font-bold mb-4">Registration not found</p>
         <Link 
@@ -103,7 +104,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
       <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
-            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
           </Link>
           <h1 className="flex-1 text-[16px] font-bold text-[#e5e1e4] text-center mr-8 truncate">
             Payment
@@ -119,7 +120,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
 
         <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
           <div className="bg-[#23232b] p-4 flex items-center gap-2 border-b border-[#353437]/60">
-            <span className="material-symbols-outlined text-[18px] text-[#cbc3d7]">receipt_long</span>
+            <span className="size-[18px] text-[#cbc3d7]"><ReceiptText className="size-[18px] text-[#cbc3d7]" /></span>
             <span className="text-[14px] font-bold text-[#e5e1e4]">Order Summary</span>
           </div>
           <div className="p-4 flex flex-col gap-3">
@@ -146,7 +147,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
 
         {success ? (
           <div className="bg-[#4edea3]/10 border border-[#4edea3]/30 p-5 rounded-2xl flex flex-col items-center text-center gap-3">
-            <span className="material-symbols-outlined text-[40px] text-[#4edea3]">check_circle</span>
+            <span className="size-[40px] text-[#4edea3]"><CircleCheck className="size-[40px] text-[#4edea3]" /></span>
             <div>
               <h3 className="text-[16px] font-bold text-[#4edea3] mb-1">Payment Successful!</h3>
               <p className="text-[13px] text-[#4edea3]/80 mb-4">Your registration is confirmed. See you at the start line.</p>
@@ -161,7 +162,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
         ) : (
           <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-5 flex flex-col gap-4">
             <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-[20px] text-[#d0bcff]">credit_score</span>
+              <span className="size-[20px] text-[#d0bcff]"><CreditCard className="size-[20px] text-[#d0bcff]" /></span>
               <div className="flex flex-col">
                 <span className="text-[14px] font-bold text-[#e5e1e4]">Mock Gateway</span>
                 <span className="text-[12px] text-[#958ea0]">This simulates a successful payment (PAYMENT_PROVIDER=mock). No real transaction occurs.</span>
@@ -170,7 +171,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
 
             {error && (
               <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px]">error</span>
+                <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
                 {error}
               </div>
             )}
@@ -182,7 +183,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
             >
               {isPending ? (
                 <>
-                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                  <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
                   Processing...
                 </>
               ) : (

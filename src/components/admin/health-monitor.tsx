@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
+import { HeartPulse, Loader2, RefreshCw } from "lucide-react"
 
 interface HealthCheck {
   status: 'healthy' | 'degraded' | 'unhealthy'
@@ -57,14 +57,14 @@ export function HealthMonitor() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#4cd7f6] text-[20px]">vital_signs</span>
+          <span className="text-[#4cd7f6] size-[20px]"><HeartPulse className="text-[#4cd7f6] size-[20px]" /></span>
           <h3 className="font-semibold text-[#e5e1e4] text-[15px] font-jakarta">System Health</h3>
         </div>
         <button
           onClick={fetchHealth}
           className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] text-[12px] transition-colors border border-[#494454]/30"
         >
-          <span className="material-symbols-outlined text-[16px]">refresh</span>
+          <span className="size-[16px]"><RefreshCw className="size-[16px]" /></span>
           Refresh
         </button>
       </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Activity, ChartLine, Cpu, Gauge, Loader2, RefreshCw } from "lucide-react"
 import { toast } from 'sonner'
 
 interface ServiceNode {
@@ -64,7 +64,7 @@ export default function AdminNodesPage() {
       label: 'Total Registered Nodes',
       value: metrics ? String(metrics.totalNodes) : '6',
       unit: 'Services',
-      icon: 'hub',
+      icon: Activity,
       color: 'text-[#d0bcff]',
       bg: 'bg-[#d0bcff]/20',
     },
@@ -72,7 +72,7 @@ export default function AdminNodesPage() {
       label: 'Avg Query Latency',
       value: metrics ? String(metrics.avgLatency) : '—',
       unit: 'ms',
-      icon: 'speed',
+      icon: Gauge,
       color: 'text-[#4cd7f6]',
       bg: 'bg-[#4cd7f6]/20',
     },
@@ -80,7 +80,7 @@ export default function AdminNodesPage() {
       label: 'Fleet Health Uptime',
       value: metrics?.uptime || '99.95%',
       unit: '',
-      icon: 'monitoring',
+      icon: ChartLine,
       color: 'text-[#4edea3]',
       bg: 'bg-[#4edea3]/20',
     },
@@ -100,7 +100,7 @@ export default function AdminNodesPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#4edea3]">monitoring</span>
+            <span className="size-[16px] text-[#4edea3]"><ChartLine className="size-[16px] text-[#4edea3]" /></span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#4edea3]">Fleet Telemetry</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-[#e5e1e4] tracking-tight">Nodes & Telemetry</h1>
@@ -118,9 +118,7 @@ export default function AdminNodesPage() {
             disabled={refreshing}
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-medium hover:bg-[#353437] hover:text-[#d0bcff] transition-all border border-[#494454]/30"
           >
-            <span className={`material-symbols-outlined text-[16px] ${refreshing ? 'animate-spin' : ''}`}>
-              refresh
-            </span>
+            <span className="size-[16px] ${refreshing ? 'animate-spin' : ''}"><RefreshCw className="size-[16px] ${refreshing ? 'animate-spin' : ''}" /></span>
             <span>{refreshing ? 'Probing...' : 'Probe System Now'}</span>
           </button>
         </div>
@@ -133,7 +131,7 @@ export default function AdminNodesPage() {
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#958ea0]">{m.label}</span>
               <div className={`p-1.5 rounded-lg ${m.bg} ${m.color}`}>
-                <span className="material-symbols-outlined text-[18px]">{m.icon}</span>
+                <m.icon className="size-[18px]" />
               </div>
             </div>
             <div className="flex items-baseline gap-1.5">
@@ -148,7 +146,7 @@ export default function AdminNodesPage() {
       <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 overflow-hidden shadow-lg">
         <div className="p-5 border-b border-[#494454]/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#4cd7f6] text-[20px]">hub</span>
+            <span className="text-[#4cd7f6] size-[20px]"><Activity className="text-[#4cd7f6] size-[20px]" /></span>
             <h2 className="font-jakarta font-semibold text-[18px] text-[#e5e1e4]">Service Registry & Health Check</h2>
           </div>
           <span className="text-[11px] text-[#4edea3] font-mono flex items-center gap-1.5">
@@ -180,11 +178,7 @@ export default function AdminNodesPage() {
                     {/* Service */}
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-2.5">
-                        <span className={`material-symbols-outlined text-[18px] ${
-                          svc.status === 'operational' ? 'text-[#4edea3]' : 'text-[#ffb4ab]'
-                        }`}>
-                          memory
-                        </span>
+                        <span className="size-[18px] ${ svc.status === 'operational' ? 'text-[#4edea3]' : 'text-[#ffb4ab]' }"><Cpu className="size-[18px] ${ svc.status === 'operational' ? 'text-[#4edea3]' : 'text-[#ffb4ab]' }" /></span>
                         <span className="text-[13px] font-semibold text-[#e5e1e4] font-jakarta">{svc.name}</span>
                       </div>
                     </td>

@@ -1,3 +1,4 @@
+import { ArrowLeft, CircleCheck, Info, QrCode, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import QRCode from 'qrcode'
 import Link from 'next/link'
@@ -86,7 +87,7 @@ export default async function RunnerBibPage({
       <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
-            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
           </Link>
           <h1 className="flex-1 text-[16px] font-bold text-[#e5e1e4] text-center mr-8 truncate">
             Digital BIB
@@ -111,12 +112,12 @@ export default async function RunnerBibPage({
             <div className="relative z-10 flex flex-col items-center w-full">
               {isCheckedIn ? (
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20 mb-4">
-                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                  <span className="size-[16px]"><CircleCheck className="size-[16px]" /></span>
                   <span className="text-[10px] font-bold tracking-wider uppercase">Checked In</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d0bcff]/10 text-[#d0bcff] border border-[#d0bcff]/20 mb-4">
-                  <span className="material-symbols-outlined text-[16px]">qr_code_scanner</span>
+                  <span className="size-[16px]"><QrCode className="size-[16px]" /></span>
                   <span className="text-[10px] font-bold tracking-wider uppercase">Ready for Scan</span>
                 </div>
               )}
@@ -173,13 +174,13 @@ export default async function RunnerBibPage({
           href={`/runner/events/${id}/bib/consent`}
           className="w-full py-3.5 mt-2 rounded-xl border border-[#353437] text-[#cbc3d7] text-[13px] font-bold flex items-center justify-center gap-2 active:bg-[#1c1b1d] transition-colors"
         >
-          <span className="material-symbols-outlined text-[18px]">group</span>
+          <span className="size-[18px]"><Users className="size-[18px]" /></span>
           Generate Proxy Collection Code
         </Link>
         
         <div className="bg-[#1c1b1d] p-4 rounded-xl border border-[#353437]/40 w-full mt-2">
           <div className="flex items-center gap-2 mb-2">
-            <span className="material-symbols-outlined text-[18px] text-[#4cd7f6]">info</span>
+            <span className="size-[18px] text-[#4cd7f6]"><Info className="size-[18px] text-[#4cd7f6]" /></span>
             <span className="text-[13px] font-bold text-[#e5e1e4]">Instructions</span>
           </div>
           <ol className="text-[12px] text-[#958ea0] space-y-2 list-decimal list-inside marker:text-[#cbc3d7]">

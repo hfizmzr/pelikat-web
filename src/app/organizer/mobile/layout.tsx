@@ -1,5 +1,7 @@
 'use client'
 
+import type { LucideIcon } from "lucide-react"
+import { Badge, Calendar, Gauge, House, ShoppingBag } from "lucide-react"
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -8,12 +10,12 @@ import Link from 'next/link'
 
 function BottomNavLink({
   href,
-  icon,
+  icon: Icon,
   label,
   active,
 }: {
   href: string
-  icon: string
+  icon: LucideIcon
   label: string
   active: boolean
 }) {
@@ -26,12 +28,7 @@ function BottomNavLink({
           : 'text-[#cbc3d7] hover:text-[#e5e1e4]'
       }`}
     >
-      <span
-        className="material-symbols-outlined text-[20px]"
-        style={active ? { fontVariationSettings: "'FILL' 1" } : {}}
-      >
-        {icon}
-      </span>
+      <Icon className="size-[20px]" />
       <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold">
         {label}
       </span>
@@ -40,11 +37,11 @@ function BottomNavLink({
 }
 
 const NAV_ITEMS = [
-  { href: '/organizer/mobile', icon: 'home', label: 'Home' },
-  { href: '/organizer/mobile/events', icon: 'calendar_today', label: 'Events' },
-  { href: '/organizer/mobile/scanner', icon: 'badge', label: 'BIB Pass' },
-  { href: '/organizer/mobile/console', icon: 'speed', label: 'Console' },
-  { href: '/organizer/mobile/merch', icon: 'shopping_bag', label: 'Merch' },
+  { href: '/organizer/mobile', icon: House, label: 'Home' },
+  { href: '/organizer/mobile/events', icon: Calendar, label: 'Events' },
+  { href: '/organizer/mobile/scanner', icon: Badge, label: 'BIB Pass' },
+  { href: '/organizer/mobile/console', icon: Gauge, label: 'Console' },
+  { href: '/organizer/mobile/merch', icon: ShoppingBag, label: 'Merch' },
 ] as const
 
 export default function OrganizerMobileLayout({

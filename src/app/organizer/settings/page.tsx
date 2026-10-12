@@ -1,5 +1,6 @@
 'use client'
 
+import { Bell, Building2, CreditCard, LoaderCircle, Save, Webhook } from "lucide-react"
 import { useState } from 'react'
 
 export default function OrganizerSettingsPage() {
@@ -19,7 +20,7 @@ export default function OrganizerSettingsPage() {
       id: 'profile',
       label: 'Organization Profile',
       description: 'Basic information about your organization',
-      icon: 'corporate_fare',
+      icon: Building2,
       content: (
         <div className="flex flex-col gap-4">
           {[
@@ -46,12 +47,12 @@ export default function OrganizerSettingsPage() {
           >
             {saving ? (
               <>
-                <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
                 Saving...
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-[18px]">save</span>
+                <span className="size-[18px]"><Save className="size-[18px]" /></span>
                 Save Changes
               </>
             )}
@@ -63,7 +64,7 @@ export default function OrganizerSettingsPage() {
       id: 'notifications',
       label: 'Notification Preferences',
       description: 'Configure how you receive alerts and updates',
-      icon: 'notifications',
+      icon: Bell,
       content: (
         <div className="flex flex-col gap-4">
           {[
@@ -90,7 +91,7 @@ export default function OrganizerSettingsPage() {
       id: 'webhooks',
       label: 'Webhooks & API',
       description: 'Configure webhooks for real-time event notifications',
-      icon: 'webhook',
+      icon: Webhook,
       content: (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between p-4 bg-[#201f22] rounded-xl border border-[#353437]">
@@ -130,7 +131,7 @@ export default function OrganizerSettingsPage() {
       id: 'subscription',
       label: 'Subscription & Billing',
       description: 'Manage your organizer subscription plan',
-      icon: 'card_membership',
+      icon: CreditCard,
       content: (
         <div className="flex flex-col gap-4">
           <div className="p-4 bg-[#201f22] rounded-xl border border-[#d0bcff]/20">
@@ -172,7 +173,7 @@ export default function OrganizerSettingsPage() {
           <div key={section.id} className="bg-[#1c1b1d] rounded-xl border border-[#23232b] overflow-hidden">
             <div className="px-6 py-4 border-b border-[#23232b] bg-[#201f22] flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-[#2a2a2c] flex items-center justify-center text-[#d0bcff]">
-                <span className="material-symbols-outlined text-[18px]">{section.icon}</span>
+                <section.icon className="size-[18px]" />
               </div>
               <div>
                 <div className="text-[15px] leading-[20px] font-semibold text-[#e5e1e4]">{section.label}</div>

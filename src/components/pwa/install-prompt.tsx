@@ -1,11 +1,12 @@
 'use client'
+import { Smartphone } from "lucide-react"
 
 export function PWAInstallPrompt() {
   return (
     <div className="min-h-screen bg-[#0e0e10] flex items-center justify-center p-6 font-sans">
       <div className="w-full max-w-md bg-[#131315] rounded-3xl border border-[#23232b] p-8 shadow-2xl flex flex-col items-center text-center">
         <div className="w-20 h-20 bg-[#d0bcff]/10 rounded-2xl flex items-center justify-center mb-6">
-          <span className="material-symbols-outlined text-[40px] text-[#d0bcff]">install_mobile</span>
+          <span className="size-[40px] text-[#d0bcff]"><Smartphone className="size-[40px] text-[#d0bcff]" /></span>
         </div>
         
         <h1 className="text-[24px] font-bold text-[#e5e1e4] mb-3 tracking-tight">
@@ -20,7 +21,7 @@ export function PWAInstallPrompt() {
 
         <div className="w-full bg-[#1c1b1d] rounded-2xl border border-[#353437] p-5 mb-8 text-left">
           <h3 className="text-[12px] font-bold text-[#cbc3d7] uppercase tracking-wider mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#4cd7f6]">phone_iphone</span>
+            <span className="size-[16px] text-[#4cd7f6]"><Smartphone className="size-[16px] text-[#4cd7f6]" /></span>
             iOS (Safari)
           </h3>
           <ol className="text-[13px] text-[#958ea0] space-y-3">
@@ -37,7 +38,7 @@ export function PWAInstallPrompt() {
 
         <div className="w-full bg-[#1c1b1d] rounded-2xl border border-[#353437] p-5 text-left">
           <h3 className="text-[12px] font-bold text-[#cbc3d7] uppercase tracking-wider mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#4edea3]">android</span>
+            <span className="size-[16px] text-[#4edea3]"><Smartphone className="size-[16px] text-[#4edea3]" /></span>
             Android (Chrome)
           </h3>
           <ol className="text-[13px] text-[#958ea0] space-y-3">

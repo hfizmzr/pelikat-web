@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { Building2, Loader2, Plus, Store, Trash2, UserPlus } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -200,7 +200,7 @@ export default function AdminOrganizersPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#d0bcff]">apartment</span>
+            <span className="size-[16px] text-[#d0bcff]"><Building2 className="size-[16px] text-[#d0bcff]" /></span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#d0bcff] font-inter">
               Tenant Directory
             </span>
@@ -222,7 +222,7 @@ export default function AdminOrganizersPage() {
           <button
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#d0bcff] hover:bg-[#6d3bd7] text-[#3c0091] hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter"
           >
-            <span className="material-symbols-outlined text-[18px]">add_business</span>
+            <span className="size-[18px]"><Store className="size-[18px]" /></span>
             Add Organizer
           </button>
         }
@@ -240,7 +240,7 @@ export default function AdminOrganizersPage() {
         <DialogContent className="bg-[#201f22] border border-[#494454]/40 text-[#e5e1e4] rounded-xl shadow-2xl">
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-[#e5e1e4] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">delete_forever</span>
+              <span className="size-[20px] text-[#ffb4ab]"><Trash2 className="size-[20px] text-[#ffb4ab]" /></span>
               Delete Organizer
             </DialogTitle>
             <DialogDescription className="text-[#cbc3d7] font-inter text-[13px]">
@@ -262,7 +262,7 @@ export default function AdminOrganizersPage() {
               onClick={handleConfirmDelete}
             >
               {deleting && <Loader2 className="h-4 w-4 animate-spin" />}
-              <span className="material-symbols-outlined text-[18px]">delete</span>
+              <span className="size-[18px]"><Trash2 className="size-[18px]" /></span>
               Delete Organizer
             </button>
           </div>
@@ -272,7 +272,7 @@ export default function AdminOrganizersPage() {
       {/* ── Active Organizers Section ─────────────────────── */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[20px] text-[#d0bcff]">corporate_fare</span>
+          <span className="size-[20px] text-[#d0bcff]"><Building2 className="size-[20px] text-[#d0bcff]" /></span>
           <h2 className="font-jakarta font-semibold text-[18px] text-[#e5e1e4] tracking-tight">
             Active Organizers
           </h2>
@@ -299,13 +299,13 @@ export default function AdminOrganizersPage() {
 
         {!loading && organizers.length === 0 && (
           <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 flex flex-col items-center justify-center py-12 gap-3">
-            <span className="material-symbols-outlined text-[40px] text-[#494454]">corporate_fare</span>
+            <span className="size-[40px] text-[#494454]"><Building2 className="size-[40px] text-[#494454]" /></span>
             <p className="text-[#958ea0] font-inter text-[13px]">No organizers yet</p>
             <button
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#d0bcff] text-[13px] font-medium font-inter border border-[#494454]/30 transition-colors"
               onClick={() => setCreateOpen(true)}
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
+              <span className="size-[18px]"><Plus className="size-[18px]" /></span>
               Create your first organizer
             </button>
           </div>
@@ -315,7 +315,7 @@ export default function AdminOrganizersPage() {
       {/* ── Pending Applications Section ─────────────────── */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[20px] text-[#4cd7f6]">person_add</span>
+          <span className="size-[20px] text-[#4cd7f6]"><UserPlus className="size-[20px] text-[#4cd7f6]" /></span>
           <h2 className="font-jakarta font-semibold text-[18px] text-[#e5e1e4] tracking-tight">
             Pending Applications
           </h2>

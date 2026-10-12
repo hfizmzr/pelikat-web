@@ -1,4 +1,5 @@
 'use client'
+import { Download, Share2 } from "lucide-react"
 
 export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; eventName: string }) {
   const handleSave = () => {
@@ -51,14 +52,14 @@ export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; 
         onClick={handleSave}
         className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
       >
-        <span className="material-symbols-outlined text-[18px]">download</span>
+        <span className="size-[18px]"><Download className="size-[18px]" /></span>
         Save Image
       </button>
       <button 
         onClick={handleShare}
         className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
       >
-        <span className="material-symbols-outlined text-[18px]">share</span>
+        <span className="size-[18px]"><Share2 className="size-[18px]" /></span>
         Share
       </button>
     </div>

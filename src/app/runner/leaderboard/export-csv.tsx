@@ -1,4 +1,5 @@
 'use client'
+import { Download } from "lucide-react"
 
 export function ExportCSV({
   eventId,
@@ -30,7 +31,7 @@ export function ExportCSV({
       onClick={handleExport}
       className="py-2.5 px-3 rounded-xl bg-[#2a2a2c] border border-[#353437] text-[#e5e1e4] text-[13px] font-bold flex items-center gap-1.5 active:scale-95 transition-transform shrink-0"
     >
-      <span className="material-symbols-outlined text-[18px]">download</span>
+      <span className="size-[18px]"><Download className="size-[18px]" /></span>
       <span className="hidden sm:inline">Export</span>
     </button>
   )

@@ -1,3 +1,4 @@
+import { ArrowLeft, Shirt, ShoppingBag, ShoppingCart } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -30,7 +31,7 @@ export default async function RunnerMerchPage() {
       <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
-            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
             <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
@@ -44,7 +45,7 @@ export default async function RunnerMerchPage() {
         
         <div className="flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-[#d0bcff]/10 border border-[#d0bcff]/30 rounded-full flex items-center justify-center mb-3">
-            <span className="material-symbols-outlined text-[32px] text-[#d0bcff]">shopping_bag</span>
+            <span className="size-[32px] text-[#d0bcff]"><ShoppingBag className="size-[32px] text-[#d0bcff]" /></span>
           </div>
           <h2 className="text-[20px] font-bold text-[#e5e1e4] tracking-tight">Your Orders</h2>
           <p className="text-[13px] text-[#958ea0] mt-1">Track your merchandise purchases</p>
@@ -78,7 +79,7 @@ export default async function RunnerMerchPage() {
                     <div key={item.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-[#23232b] border border-[#353437] flex items-center justify-center text-[#cbc3d7]">
-                          <span className="material-symbols-outlined text-[20px]">checkroom</span>
+                          <span className="size-[20px]"><Shirt className="size-[20px]" /></span>
                         </div>
                         <div className="flex flex-col max-w-[150px]">
                           <span className="text-[13px] font-bold text-[#e5e1e4] truncate">{item.merch_variants?.merch_products?.name}</span>
@@ -104,7 +105,7 @@ export default async function RunnerMerchPage() {
         ) : (
           <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-8 flex flex-col items-center text-center mt-4">
             <div className="w-16 h-16 bg-[#23232b] rounded-full flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined text-[32px] text-[#958ea0]">shopping_cart</span>
+              <span className="size-[32px] text-[#958ea0]"><ShoppingCart className="size-[32px] text-[#958ea0]" /></span>
             </div>
             <p className="text-[16px] font-bold text-[#e5e1e4] mb-2">No orders yet</p>
             <p className="text-[13px] text-[#958ea0]">

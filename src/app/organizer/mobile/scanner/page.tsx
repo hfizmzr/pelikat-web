@@ -1,5 +1,6 @@
 'use client'
 
+import { CircleCheck, CircleStop, Flashlight, FlashlightOff, History, Info, QrCode, Search, X } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
 import { createClient } from '@/lib/supabase/client'
@@ -230,7 +231,7 @@ export default function OrganizerMobileScannerPage() {
           <div className="flex items-center gap-1.5">
             {/* Scan count badge */}
             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-[#4edea3]/10">
-              <span className="material-symbols-outlined text-[14px] text-[#4edea3]">check_circle</span>
+              <span className="size-[14px] text-[#4edea3]"><CircleCheck className="size-[14px] text-[#4edea3]" /></span>
               <span className="text-[11px] font-bold text-[#4edea3]">{scanCount}</span>
             </div>
             {scanning && (
@@ -240,9 +241,11 @@ export default function OrganizerMobileScannerPage() {
                   torchOn ? 'bg-[#4cd7f6]/20 text-[#4cd7f6]' : 'bg-[#2a2a2c] text-[#cbc3d7]'
                 }`}
               >
-                <span className="material-symbols-outlined text-[18px]">
-                  {torchOn ? 'flashlight_on' : 'flashlight_off'}
-                </span>
+                {torchOn ? (
+                  <Flashlight className="size-[18px]" />
+                ) : (
+                  <FlashlightOff className="size-[18px]" />
+                )}
               </button>
             )}
           </div>
@@ -261,7 +264,7 @@ export default function OrganizerMobileScannerPage() {
           {!scanning && (
             <div className="flex flex-col items-center justify-center py-10 gap-3">
               <div className="w-16 h-16 rounded-2xl bg-[#d0bcff]/10 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[32px] text-[#d0bcff]">qr_code_scanner</span>
+                <span className="size-[32px] text-[#d0bcff]"><QrCode className="size-[32px] text-[#d0bcff]" /></span>
               </div>
               <p className="text-[12px] text-[#958ea0] text-center">
                 Tap the button below to activate camera scanner
@@ -305,16 +308,18 @@ export default function OrganizerMobileScannerPage() {
               : 'bg-[#d0bcff] text-[#3c0091]'
           }`}
         >
-          <span className="material-symbols-outlined text-[18px]">
-            {scanning ? 'stop_circle' : 'qr_code_scanner'}
-          </span>
+          {scanning ? (
+            <CircleStop className="size-[18px]" />
+          ) : (
+            <QrCode className="size-[18px]" />
+          )}
           {scanning ? 'Stop Scanner' : 'Start Camera Scanner'}
         </button>
 
         {/* Manual input */}
         <div className="flex items-center gap-2 bg-[#1c1b1d] rounded-xl p-2 border border-[#353437]/40">
           <div className="flex-1 bg-[#2a2a2c] rounded-lg px-3 py-2 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#958ea0]">search</span>
+            <span className="size-[16px] text-[#958ea0]"><Search className="size-[16px] text-[#958ea0]" /></span>
             <input
               className="w-full bg-transparent text-[#e5e1e4] text-[13px] outline-none placeholder:text-[#958ea0]"
               placeholder="NRIC, BIB or Order # …"
@@ -353,13 +358,13 @@ export default function OrganizerMobileScannerPage() {
                     : 'bg-[#ffb4ab]/20 text-[#ffb4ab]'
                 }`}
               >
-                <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  {scanResult.success && !scanResult.alreadyCheckedIn
-                    ? 'check_circle'
-                    : scanResult.alreadyCheckedIn
-                    ? 'info'
-                    : 'cancel'}
-                </span>
+                {scanResult.success && !scanResult.alreadyCheckedIn ? (
+                  <CircleCheck className="size-[20px]" />
+                ) : scanResult.alreadyCheckedIn ? (
+                  <Info className="size-[20px]" />
+                ) : (
+                  <X className="size-[20px]" />
+                )}
               </div>
               <div className="flex-1">
                 <p
@@ -409,7 +414,7 @@ export default function OrganizerMobileScannerPage() {
           <div className="rounded-xl bg-[#1c1b1d] overflow-hidden border border-[#353437]/40">
             <div className="bg-[#4edea3]/10 text-[#4edea3] px-4 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px]">history</span>
+                <span className="size-[16px]"><History className="size-[16px]" /></span>
                 <span className="text-[11px] font-bold tracking-wider uppercase">Recent Scans</span>
               </div>
               <span className="text-[10px] text-[#4edea3]/70">{recentScans.length} scanned</span>

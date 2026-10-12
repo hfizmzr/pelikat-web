@@ -1,5 +1,6 @@
 'use client'
 
+import { X } from "lucide-react"
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { cancelRegistration } from '@/components/events/actions'
@@ -26,7 +27,7 @@ export function CancelRegistrationButton({ eventId }: { eventId: string }) {
         onClick={() => setShowConfirm(true)}
         className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#ffb4ab]/10 text-[#ffb4ab] text-[13px] font-bold active:scale-95 transition-transform"
       >
-        <span className="material-symbols-outlined text-[18px]">cancel</span>
+        <span className="size-[18px]"><X className="size-[18px]" /></span>
         Cancel Registration
       </button>
     )

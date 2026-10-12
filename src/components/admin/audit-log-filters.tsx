@@ -1,5 +1,6 @@
 'use client'
 
+import { Calendar as CalendarIcon, CalendarDays, Search, X } from "lucide-react"
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import {
@@ -68,9 +69,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
     <div className="flex flex-wrap items-center gap-3">
       {/* Search */}
       <div className="relative flex-1 min-w-[200px]">
-        <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#958ea0] text-[18px] pointer-events-none">
-          search
-        </span>
+        <span className="absolute left-3 top-2.5 text-[#958ea0] size-[18px] pointer-events-none"><Search className="absolute left-3 top-2.5 text-[#958ea0] size-[18px] pointer-events-none" /></span>
         <Input
           placeholder="Search by action, actor, or target…"
           value={search}
@@ -113,7 +112,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
                 : 'bg-[#201f22] border-[#494454]/40 text-[#958ea0] hover:text-[#e5e1e4]'
             )}
           >
-            <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+            <CalendarIcon className="size-[16px]" />
             {startDate ? startDate.toLocaleDateString() : 'From'}
           </button>
         </PopoverTrigger>
@@ -138,7 +137,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
                 : 'bg-[#201f22] border-[#494454]/40 text-[#958ea0] hover:text-[#e5e1e4]'
             )}
           >
-            <span className="material-symbols-outlined text-[16px]">event</span>
+            <span className="size-[16px]"><CalendarDays className="size-[16px]" /></span>
             {endDate ? endDate.toLocaleDateString() : 'To'}
           </button>
         </PopoverTrigger>
@@ -158,7 +157,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
           onClick={handleReset}
           className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] text-[#ffb4ab] bg-[#93000a]/10 border border-[#ffb4ab]/20 hover:bg-[#93000a]/20 transition-colors font-inter"
         >
-          <span className="material-symbols-outlined text-[16px]">close</span>
+          <span className="size-[16px]"><X className="size-[16px]" /></span>
           Clear
         </button>
       )}

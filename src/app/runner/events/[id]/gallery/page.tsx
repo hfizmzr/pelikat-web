@@ -1,3 +1,4 @@
+import { ArrowLeft, Bot, Camera, ImageOff, Images } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
@@ -81,7 +82,7 @@ export default async function RunnerGalleryPage({
       <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
-            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
             <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
@@ -99,7 +100,7 @@ export default async function RunnerGalleryPage({
           <>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px] text-[#4edea3]">photo_library</span>
+                <span className="size-[18px] text-[#4edea3]"><Images className="size-[18px] text-[#4edea3]" /></span>
                 <span className="text-[14px] font-bold text-[#e5e1e4]">{photosWithUrls.length} photos</span>
               </div>
               <span className="px-2 py-0.5 bg-[#4edea3]/10 text-[#4edea3] text-[10px] font-bold uppercase tracking-wider rounded border border-[#4edea3]/20">
@@ -121,7 +122,7 @@ export default async function RunnerGalleryPage({
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[32px] text-[#353437]">broken_image</span>
+                        <span className="size-[32px] text-[#353437]"><ImageOff className="size-[32px] text-[#353437]" /></span>
                       </div>
                     )}
                     
@@ -140,7 +141,7 @@ export default async function RunnerGalleryPage({
                     {photo.confidence && (
                       <div className="absolute left-2 top-2 z-10">
                         <span className="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md text-[#4edea3] text-[9px] font-bold flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[10px]">robot_2</span>
+                          <Bot className="size-[10px]" />
                           {(photo.confidence * 100).toFixed(0)}%
                         </span>
                       </div>
@@ -158,7 +159,7 @@ export default async function RunnerGalleryPage({
         ) : (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-[#1c1b1d] border border-[#353437]/40">
             <div className="w-16 h-16 bg-[#201f22] rounded-full flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined text-[32px] text-[#958ea0]">add_a_photo</span>
+              <span className="size-[32px] text-[#958ea0]"><Camera className="size-[32px] text-[#958ea0]" /></span>
             </div>
             <p className="text-[16px] font-bold text-[#e5e1e4] mb-2">No photos found yet</p>
             <p className="text-[13px] text-[#958ea0]">

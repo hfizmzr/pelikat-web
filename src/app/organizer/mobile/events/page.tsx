@@ -1,3 +1,4 @@
+import { Calendar, CalendarDays, CalendarX, MapPin, Plus, QrCode } from "lucide-react"
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import Link from 'next/link'
@@ -87,7 +88,7 @@ export default async function OrganizerMobileEventsPage() {
             href="/organizer/mobile/events/new"
             className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#d0bcff] text-[#3c0091] text-[11px] font-bold active:scale-95 transition-transform"
           >
-            <span className="material-symbols-outlined text-[14px]">add</span>
+            <span className="size-[14px]"><Plus className="size-[14px]" /></span>
             New
           </Link>
         </div>
@@ -113,12 +114,12 @@ export default async function OrganizerMobileEventsPage() {
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#cbc3d7] mb-3">
                       <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px] text-[#d0bcff]">calendar_today</span>
+                        <span className="size-[13px] text-[#d0bcff]"><Calendar className="size-[13px] text-[#d0bcff]" /></span>
                         {new Date(event.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                       {event.location && (
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[13px] text-[#4edea3]">location_on</span>
+                          <span className="size-[13px] text-[#4edea3]"><MapPin className="size-[13px] text-[#4edea3]" /></span>
                           {event.location}
                         </span>
                       )}
@@ -144,7 +145,7 @@ export default async function OrganizerMobileEventsPage() {
                         href={`/organizer/mobile/scanner`}
                         className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-[#d0bcff] text-[#3c0091] text-[11px] font-bold active:scale-95 transition-transform"
                       >
-                        <span className="material-symbols-outlined text-[14px]">qr_code_scanner</span>
+                        <span className="size-[14px]"><QrCode className="size-[14px]" /></span>
                         Check-in
                       </Link>
                     </div>
@@ -168,7 +169,7 @@ export default async function OrganizerMobileEventsPage() {
                   className="flex items-center gap-3 p-3 rounded-xl bg-[#1c1b1d] border border-[#353437]/30"
                 >
                   <div className="w-10 h-10 rounded-lg bg-[#353437] flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[18px] text-[#958ea0]">event</span>
+                    <span className="size-[18px] text-[#958ea0]"><CalendarDays className="size-[18px] text-[#958ea0]" /></span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-medium text-[#cbc3d7] truncate">{event.name}</p>
@@ -185,7 +186,7 @@ export default async function OrganizerMobileEventsPage() {
 
         {events.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-[#958ea0]">
-            <span className="material-symbols-outlined text-[48px] mb-3">event_busy</span>
+            <span className="size-[48px] mb-3"><CalendarX className="size-[48px] mb-3" /></span>
             <p className="text-[14px] font-medium">No events yet</p>
             <p className="text-[12px] mt-1">Create your first running event</p>
             <Link

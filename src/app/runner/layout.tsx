@@ -1,5 +1,7 @@
 'use client'
 
+import type { LucideIcon } from "lucide-react"
+import { Activity, House, Search, Shield, User } from "lucide-react"
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -9,12 +11,12 @@ import Link from 'next/link'
 
 function BottomNavLink({
   href,
-  icon,
+  icon: Icon,
   label,
   active,
 }: {
   href: string
-  icon: string
+  icon: LucideIcon
   label: string
   active: boolean
 }) {
@@ -27,12 +29,7 @@ function BottomNavLink({
           : 'text-[#cbc3d7] hover:text-[#e5e1e4]'
       }`}
     >
-      <span
-        className="material-symbols-outlined text-[20px]"
-        style={active ? { fontVariationSettings: "'FILL' 1" } : {}}
-      >
-        {icon}
-      </span>
+      <Icon className="size-[20px]" />
       <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold">
         {label}
       </span>
@@ -41,11 +38,11 @@ function BottomNavLink({
 }
 
 const NAV_ITEMS = [
-  { href: '/runner', icon: 'home', label: 'Home' },
-  { href: '/runner/events', icon: 'search', label: 'Explore' },
-  { href: '/runner/run-log', icon: 'activity_zone', label: 'Activity' },
-  { href: '/runner/badges', icon: 'local_police', label: 'Badges' },
-  { href: '/runner/profile', icon: 'person', label: 'Profile' },
+  { href: '/runner', icon: House, label: 'Home' },
+  { href: '/runner/events', icon: Search, label: 'Explore' },
+  { href: '/runner/run-log', icon: Activity, label: 'Activity' },
+  { href: '/runner/badges', icon: Shield, label: 'Badges' },
+  { href: '/runner/profile', icon: User, label: 'Profile' },
 ] as const
 
 export default function RunnerLayout({

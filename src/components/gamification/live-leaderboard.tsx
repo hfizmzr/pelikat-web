@@ -1,5 +1,6 @@
 "use client"
 
+import { Crown, RefreshCw } from "lucide-react"
 import { useEffect, useState, useRef, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 
@@ -23,11 +24,11 @@ export interface LeaderboardFilters {
 function getRankIcon(rank: number) {
   switch (rank) {
     case 1:
-      return <span className="material-symbols-outlined text-[#e3c45b] text-[28px] drop-shadow-[0_0_8px_rgba(227,196,91,0.5)]">social_leaderboard</span>
+      return <span className="text-[#e3c45b] size-[28px] drop-shadow-[0_0_8px_rgba(227,196,91,0.5)]"><Crown className="text-[#e3c45b] size-[28px] drop-shadow-[0_0_8px_rgba(227,196,91,0.5)]" /></span>
     case 2:
-      return <span className="material-symbols-outlined text-[#cbc3d7] text-[24px]">social_leaderboard</span>
+      return <span className="text-[#cbc3d7] size-[24px]"><Crown className="text-[#cbc3d7] size-[24px]" /></span>
     case 3:
-      return <span className="material-symbols-outlined text-[#a07455] text-[24px]">social_leaderboard</span>
+      return <span className="text-[#a07455] size-[24px]"><Crown className="text-[#a07455] size-[24px]" /></span>
     default:
       return <span className="text-[#958ea0] font-bold text-[14px]">#{rank}</span>
   }
@@ -151,7 +152,7 @@ export function LiveLeaderboard({
           onClick={() => setIsLive(!isLive)}
           className="flex items-center gap-1.5 text-[12px] font-bold text-[#cbc3d7] bg-[#23232b] px-2.5 py-1 rounded-full border border-[#353437] active:scale-95 transition-transform"
         >
-          <span className={`material-symbols-outlined text-[14px] ${isLive ? 'animate-spin' : ''}`}>sync</span>
+          <span className="size-[14px] ${isLive ? 'animate-spin' : ''}"><RefreshCw className="size-[14px] ${isLive ? 'animate-spin' : ''}" /></span>
           {isLive ? "Pause" : "Resume"}
         </button>
       </div>
@@ -223,7 +224,7 @@ export function LiveLeaderboard({
 
       {entries.length === 0 && (
         <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-8 flex flex-col items-center text-center mt-4">
-          <span className="material-symbols-outlined text-[48px] text-[#353437] mb-3">social_leaderboard</span>
+          <span className="size-[48px] text-[#353437] mb-3"><Crown className="size-[48px] text-[#353437] mb-3" /></span>
           <p className="text-[14px] font-bold text-[#e5e1e4] mb-1">No runners yet</p>
           <p className="text-[12px] text-[#958ea0]">The leaderboard is currently empty</p>
         </div>

@@ -1,3 +1,4 @@
+import { Banknote, CircleCheck, Clock, Download, Flag, Info } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
@@ -79,7 +80,7 @@ export default async function OrganizerFinancialPage() {
             <p className="text-[14px] leading-[20px] text-[#cbc3d7]">Revenue overview and connected payment gateway operations.</p>
           </div>
           <button className="px-4 py-2.5 bg-[#1c1b1d] hover:bg-[#201f22] text-[#e5e1e4] text-[14px] leading-[20px] font-medium rounded-lg flex items-center gap-2 border border-[#23232b] transition-colors">
-            <span className="material-symbols-outlined text-[18px]">file_download</span>
+            <span className="size-[18px]"><Download className="size-[18px]" /></span>
             Export Report
           </button>
         </div>
@@ -90,7 +91,7 @@ export default async function OrganizerFinancialPage() {
             <div className="flex items-center justify-between mb-4">
               <span className="text-[12px] leading-[16px] tracking-[0.02em] text-[#cbc3d7] uppercase font-medium">Gross Revenue</span>
               <div className="w-9 h-9 rounded-lg bg-[#201f22] flex items-center justify-center text-[#4edea3]">
-                <span className="material-symbols-outlined text-[20px]">payments</span>
+                <span className="size-[20px]"><Banknote className="size-[20px]" /></span>
               </div>
             </div>
             <div className="flex items-baseline gap-1.5">
@@ -98,7 +99,7 @@ export default async function OrganizerFinancialPage() {
               <span className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-[#e5e1e4]">{grossRevenue.toLocaleString('en-MY', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
             </div>
             <div className="flex items-center gap-1.5 text-[#4edea3] text-[11px] mt-2">
-              <span className="material-symbols-outlined text-[14px]">check_circle</span>
+              <span className="size-[14px]"><CircleCheck className="size-[14px]" /></span>
               <span>{paidRegs.length} confirmed transactions</span>
             </div>
           </div>
@@ -107,7 +108,7 @@ export default async function OrganizerFinancialPage() {
             <div className="flex items-center justify-between mb-4">
               <span className="text-[12px] leading-[16px] tracking-[0.02em] text-[#cbc3d7] uppercase font-medium">Pending Revenue</span>
               <div className="w-9 h-9 rounded-lg bg-[#201f22] flex items-center justify-center text-[#d0bcff]">
-                <span className="material-symbols-outlined text-[20px]">schedule</span>
+                <span className="size-[20px]"><Clock className="size-[20px]" /></span>
               </div>
             </div>
             <div className="flex items-baseline gap-1.5">
@@ -115,7 +116,7 @@ export default async function OrganizerFinancialPage() {
               <span className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-[#e5e1e4]">{pendingRevenue.toLocaleString('en-MY', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
             </div>
             <div className="flex items-center gap-1.5 text-[#d0bcff] text-[11px] mt-2">
-              <span className="material-symbols-outlined text-[14px]">info</span>
+              <span className="size-[14px]"><Info className="size-[14px]" /></span>
               <span>Awaiting payment confirmation</span>
             </div>
           </div>
@@ -193,7 +194,7 @@ export default async function OrganizerFinancialPage() {
                 <div key={name} className="flex items-center justify-between px-6 py-4 hover:bg-[#201f22] transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-[#201f22] flex items-center justify-center text-[#d0bcff]">
-                      <span className="material-symbols-outlined text-[18px]">flag</span>
+                      <span className="size-[18px]"><Flag className="size-[18px]" /></span>
                     </div>
                     <div>
                       <div className="text-[14px] leading-[20px] font-medium text-[#e5e1e4]">{name}</div>

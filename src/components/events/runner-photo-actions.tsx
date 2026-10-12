@@ -1,5 +1,6 @@
 'use client'
 
+import { Check, CircleAlert, Download, Flag, LoaderCircle, Share2, X } from "lucide-react"
 import { useActionState, useEffect, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useRouter } from 'next/navigation'
@@ -37,12 +38,12 @@ function ReviewSubmitButton({ onCancel }: { onCancel: () => void }) {
       >
         {pending ? (
           <>
-            <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+            <span className="animate-spin size-[16px]"><LoaderCircle className="animate-spin size-[16px]" /></span>
             Sending...
           </>
         ) : (
           <>
-            <span className="material-symbols-outlined text-[16px]">flag</span>
+            <span className="size-[16px]"><Flag className="size-[16px]" /></span>
             Send to Review
           </>
         )}
@@ -147,9 +148,9 @@ export function RunnerPhotoActions({
           className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-[#e5e1e4] active:scale-95 transition-transform disabled:opacity-50"
         >
           {isDownloading ? (
-            <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+            <span className="size-[16px] animate-spin"><LoaderCircle className="size-[16px] animate-spin" /></span>
           ) : (
-            <span className="material-symbols-outlined text-[16px]">download</span>
+            <span className="size-[16px]"><Download className="size-[16px]" /></span>
           )}
         </button>
         <button
@@ -160,13 +161,13 @@ export function RunnerPhotoActions({
           className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-[#e5e1e4] active:scale-95 transition-transform disabled:opacity-50"
         >
           {isSharing ? (
-            <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+            <span className="size-[16px] animate-spin"><LoaderCircle className="size-[16px] animate-spin" /></span>
           ) : feedback === 'success' ? (
-            <span className="material-symbols-outlined text-[16px] text-[#4edea3]">check</span>
+            <span className="size-[16px] text-[#4edea3]"><Check className="size-[16px] text-[#4edea3]" /></span>
           ) : feedback === 'error' ? (
-            <span className="material-symbols-outlined text-[16px] text-[#ffb4ab]">close</span>
+            <span className="size-[16px] text-[#ffb4ab]"><X className="size-[16px] text-[#ffb4ab]" /></span>
           ) : (
-            <span className="material-symbols-outlined text-[16px]">share</span>
+            <span className="size-[16px]"><Share2 className="size-[16px]" /></span>
           )}
         </button>
         {eventId && photoTagId && (
@@ -176,7 +177,7 @@ export function RunnerPhotoActions({
             title="Not me? Send back to organizer review"
             className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-[#ffb4ab] active:scale-95 transition-transform"
           >
-            <span className="material-symbols-outlined text-[16px]">flag</span>
+            <span className="size-[16px]"><Flag className="size-[16px]" /></span>
           </button>
         )}
       </div>
@@ -196,7 +197,7 @@ export function RunnerPhotoActions({
               
               {reviewState.status === 'error' && reviewState.message && (
                 <div className="p-3 mb-2 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[16px]">error</span>
+                  <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
                   {reviewState.message}
                 </div>
               )}

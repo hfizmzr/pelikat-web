@@ -1,3 +1,4 @@
+import { ArrowRight, Badge, Calendar, CalendarClock, CircleCheck, CirclePlus, ExternalLink, Flag, MapPin, Plus, QrCode, Search, SlidersHorizontal, TrendingUp, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -114,7 +115,7 @@ export default async function OrganizerDashboard() {
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative bg-[#1c1b1d] rounded-xl px-4 py-2.5 flex items-center gap-4 shadow-md min-w-[300px] border border-[#23232b]">
                 <div className="w-10 h-10 rounded-lg bg-[#353437] flex items-center justify-center text-[#a078ff] shrink-0">
-                  <span className="material-symbols-outlined text-[24px]">flag</span>
+                  <span className="size-[24px]"><Flag className="size-[24px]" /></span>
                 </div>
                 <div className="flex flex-col min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
@@ -124,13 +125,13 @@ export default async function OrganizerDashboard() {
                     </span>
                   </div>
                   <span className="text-[12px] leading-[16px] text-[#958ea0] flex items-center gap-1 mt-0.5">
-                    <span className="material-symbols-outlined text-[14px]">calendar_clock</span>
+                    <span className="size-[14px]"><CalendarClock className="size-[14px]" /></span>
                     {daysRemaining > 0 ? `${daysRemaining} Days Remaining` : 'Today!'} • {activeEvent.location || 'TBD'}
                   </span>
                 </div>
                 <Link href={`/organizer/events/${activeEvent.id}`}>
                   <button className="text-[#958ea0] hover:text-[#e5e1e4] transition-colors p-1">
-                    <span className="material-symbols-outlined text-[20px]">open_in_new</span>
+                    <span className="size-[20px]"><ExternalLink className="size-[20px]" /></span>
                   </button>
                 </Link>
               </div>
@@ -138,12 +139,12 @@ export default async function OrganizerDashboard() {
               <div className="flex items-center gap-1.5">
                 <Link href="/organizer/runners">
                   <button className="p-2.5 bg-[#1c1b1d] hover:bg-[#201f22] text-[#e5e1e4] rounded-lg transition-colors flex items-center justify-center shadow-sm border border-[#23232b]" title="Runner Directory">
-                    <span className="material-symbols-outlined text-[20px]">badge</span>
+                    <span className="size-[20px]"><Badge className="size-[20px]" /></span>
                   </button>
                 </Link>
                 <Link href={`/organizer/events/${activeEvent?.id}/repc`}>
                   <button className="px-4 py-2.5 bg-[#4edea3]/20 text-[#4edea3] hover:bg-[#4edea3]/30 text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-sm">
-                    <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+                    <span className="size-[18px]"><QrCode className="size-[18px]" /></span>
                     <span>Scanner HUD</span>
                   </button>
                 </Link>
@@ -155,7 +156,7 @@ export default async function OrganizerDashboard() {
         {/* Global search bar */}
         <div className="w-full bg-[#1c1b1d] rounded-xl p-2 border border-[#23232b] flex flex-col md:flex-row items-center justify-between gap-2 shadow-md">
           <div className="relative flex-1 w-full flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#958ea0] text-[20px] pl-2">search</span>
+            <span className="text-[#958ea0] size-[20px] pl-2"><Search className="text-[#958ea0] size-[20px] pl-2" /></span>
             <input
               className="w-full py-1.5 bg-transparent text-[#e5e1e4] text-[12px] leading-[16px] focus:outline-none placeholder:text-[#958ea0]"
               placeholder="Search bibs, runners, SKUs, payment IDs..."
@@ -182,13 +183,13 @@ export default async function OrganizerDashboard() {
             <div className="flex items-center justify-between">
               <span className="text-[12px] leading-[16px] tracking-[0.02em] text-[#cbc3d7] uppercase font-medium">Confirmed Runners</span>
               <div className="w-9 h-9 rounded-lg bg-[#201f22] flex items-center justify-center text-[#d0bcff]">
-                <span className="material-symbols-outlined text-[20px]">group</span>
+                <span className="size-[20px]"><Users className="size-[20px]" /></span>
               </div>
             </div>
             <div className="mt-4">
               <div className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-[#e5e1e4]">{confirmedRunners.toLocaleString()}</div>
               <div className="flex items-center gap-1.5 text-[#4edea3] text-[10px] leading-[14px] font-semibold mt-1">
-                <span className="material-symbols-outlined text-[16px]">trending_up</span>
+                <span className="size-[16px]"><TrendingUp className="size-[16px]" /></span>
                 <span>{totalRunners > 0 ? `${Math.round((confirmedRunners / Math.max(totalRunners, 1)) * 100)}% paid` : 'No registrations'}</span>
                 <span className="text-[#958ea0] ml-1">• {totalRunners} total</span>
               </div>
@@ -200,7 +201,7 @@ export default async function OrganizerDashboard() {
             <div className="flex items-center justify-between">
               <span className="text-[12px] leading-[16px] tracking-[0.02em] text-[#cbc3d7] uppercase font-medium">REPC Collection Rate</span>
               <div className="w-9 h-9 rounded-lg bg-[#201f22] flex items-center justify-center text-[#4cd7f6]">
-                <span className="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+                <span className="size-[20px]"><QrCode className="size-[20px]" /></span>
               </div>
             </div>
             <div className="mt-4">
@@ -217,13 +218,13 @@ export default async function OrganizerDashboard() {
             <div className="flex items-center justify-between">
               <span className="text-[12px] leading-[16px] tracking-[0.02em] text-[#cbc3d7] uppercase font-medium">Total Events</span>
               <div className="w-9 h-9 rounded-lg bg-[#201f22] flex items-center justify-center text-[#4edea3]">
-                <span className="material-symbols-outlined text-[20px]">flag</span>
+                <span className="size-[20px]"><Flag className="size-[20px]" /></span>
               </div>
             </div>
             <div className="mt-4">
               <div className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-[#e5e1e4]">{events?.length || 0}</div>
               <div className="flex items-center gap-1.5 text-[#4edea3] text-[10px] leading-[14px] font-semibold mt-1">
-                <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                <span className="size-[16px]"><CircleCheck className="size-[16px]" /></span>
                 <span>{events?.filter(e => e.status === 'published').length || 0} published</span>
                 <span className="text-[#958ea0] ml-1">• {events?.filter(e => e.status === 'draft').length || 0} drafts</span>
               </div>
@@ -242,13 +243,13 @@ export default async function OrganizerDashboard() {
               <div className="flex items-center gap-2">
                 <Link href={`/organizer/events/${activeEvent?.id}/categories`}>
                   <button className="px-4 py-2 bg-[#1c1b1d] hover:bg-[#201f22] text-[#e5e1e4] text-[14px] leading-[20px] tracking-[0.01em] font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-[#23232b]">
-                    <span className="material-symbols-outlined text-[18px]">tune</span>
+                    <span className="size-[18px]"><SlidersHorizontal className="size-[18px]" /></span>
                     Category Rules
                   </button>
                 </Link>
                 <Link href={`/organizer/events/${activeEvent?.id}/categories`}>
                   <button className="px-4 py-2 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-[#a078ff] transition-all">
-                    <span className="material-symbols-outlined text-[18px]">add</span>
+                    <span className="size-[18px]"><Plus className="size-[18px]" /></span>
                     Add Wave
                   </button>
                 </Link>
@@ -300,7 +301,7 @@ export default async function OrganizerDashboard() {
                 })}
                 {activeCategories.length === 0 && (
                   <div className="col-span-4 flex flex-col items-center justify-center py-8 text-[#958ea0]">
-                    <span className="material-symbols-outlined text-[48px] mb-2">flag</span>
+                    <span className="size-[48px] mb-2"><Flag className="size-[48px] mb-2" /></span>
                     <p className="text-[14px]">No categories yet — add your first race wave</p>
                   </div>
                 )}
@@ -319,7 +320,7 @@ export default async function OrganizerDashboard() {
             <Link href="/organizer/runners">
               <button className="px-4 py-2 bg-[#1c1b1d] hover:bg-[#201f22] text-[#e5e1e4] text-[14px] leading-[20px] tracking-[0.01em] font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-[#23232b]">
                 View All
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                <span className="size-[18px]"><ArrowRight className="size-[18px]" /></span>
               </button>
             </Link>
           </div>
@@ -364,7 +365,7 @@ export default async function OrganizerDashboard() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-[#958ea0]">
-                <span className="material-symbols-outlined text-[48px] mb-2">badge</span>
+                <span className="size-[48px] mb-2"><Badge className="size-[48px] mb-2" /></span>
                 <p className="text-[14px]">No registrations yet</p>
                 <p className="text-[12px] mt-1">Create and publish an event to start accepting runners</p>
               </div>
@@ -434,7 +435,7 @@ export default async function OrganizerDashboard() {
             </div>
             <Link href="/organizer/events/new">
               <button className="px-4 py-2 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-[#a078ff] transition-all shadow-[0_0_16px_rgba(208,188,255,0.25)]">
-                <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                <span className="size-[16px]"><CirclePlus className="size-[16px]" /></span>
                 Create Event
               </button>
             </Link>
@@ -456,7 +457,7 @@ export default async function OrganizerDashboard() {
                           <div className="flex flex-col gap-1 min-w-0">
                             <span className="text-[16px] leading-[24px] font-semibold text-[#e5e1e4] group-hover:text-[#d0bcff] transition-colors truncate">{event.name}</span>
                             <span className="text-[12px] leading-[16px] text-[#958ea0] flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                              <span className="size-[14px]"><Calendar className="size-[14px]" /></span>
                               {new Date(event.event_date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </span>
                           </div>
@@ -466,18 +467,18 @@ export default async function OrganizerDashboard() {
                         </div>
                         {event.location && (
                           <p className="text-[12px] leading-[16px] text-[#958ea0] flex items-center gap-1 mb-3">
-                            <span className="material-symbols-outlined text-[14px]">location_on</span>
+                            <span className="size-[14px]"><MapPin className="size-[14px]" /></span>
                             {event.location}
                           </p>
                         )}
                         <div className="flex items-center justify-between text-[12px] leading-[16px]">
                           <div className="flex items-center gap-3">
                             <span className="flex items-center gap-1 text-[#cbc3d7]">
-                              <span className="material-symbols-outlined text-[16px]">badge</span>
+                              <span className="size-[16px]"><Badge className="size-[16px]" /></span>
                               {regs.length} runners
                             </span>
                             <span className="flex items-center gap-1 text-[#cbc3d7]">
-                              <span className="material-symbols-outlined text-[16px]">flag</span>
+                              <span className="size-[16px]"><Flag className="size-[16px]" /></span>
                               {catCount} categories
                             </span>
                           </div>
@@ -493,14 +494,14 @@ export default async function OrganizerDashboard() {
             </div>
           ) : (
             <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] p-12 flex flex-col items-center justify-center text-center">
-              <span className="material-symbols-outlined text-[64px] text-[#494454] mb-4">flag</span>
+              <span className="size-[64px] text-[#494454] mb-4"><Flag className="size-[64px] text-[#494454] mb-4" /></span>
               <h3 className="text-[18px] leading-[24px] font-semibold text-[#e5e1e4] mb-2">No events yet</h3>
               <p className="text-[14px] leading-[20px] text-[#958ea0] mb-6 max-w-sm">
                 Create your first running event to start accepting registrations and managing participants.
               </p>
               <Link href="/organizer/events/new">
                 <button className="px-6 py-2.5 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-[#a078ff] transition-all">
-                  <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                  <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
                   Create your first event
                 </button>
               </Link>

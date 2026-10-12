@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Banknote, ClipboardList, CreditCard, Download, Loader2, PiggyBank, ReceiptText, RefreshCw, Wallet } from "lucide-react"
 import { toast } from 'sonner'
 
 interface BillingSummary {
@@ -82,7 +82,7 @@ export default function AdminBillingPage() {
       label: 'Gross Platform Volume',
       value: summary?.grossVolume || 'RM 0.00',
       unit: '',
-      icon: 'payments',
+      icon: Banknote,
       color: 'text-[#d0bcff]',
       bg: 'bg-[#d0bcff]/20',
       sub: 'All-time race registration volume',
@@ -91,7 +91,7 @@ export default function AdminBillingPage() {
       label: 'Monthly Recurring (MRR)',
       value: summary?.mrr || 'RM 0',
       unit: '',
-      icon: 'subscriptions',
+      icon: CreditCard,
       color: 'text-[#4cd7f6]',
       bg: 'bg-[#4cd7f6]/20',
       sub: `${summary?.activeSubscriptions ?? 0} active tenant accounts`,
@@ -100,7 +100,7 @@ export default function AdminBillingPage() {
       label: 'Escrow Reserve Held',
       value: summary?.escrowHeld || 'RM 0.00',
       unit: '',
-      icon: 'savings',
+      icon: PiggyBank,
       color: 'text-[#4edea3]',
       bg: 'bg-[#4edea3]/20',
       sub: 'Pending race payout releases',
@@ -109,7 +109,7 @@ export default function AdminBillingPage() {
       label: 'Pending Invoiced',
       value: String(summary?.pendingCount ?? 0),
       unit: 'Orders',
-      icon: 'pending_actions',
+      icon: ClipboardList,
       color: 'text-[#ffb4ab]',
       bg: 'bg-[#ffb4ab]/20',
       sub: `${summary?.overdueCount ?? 0} tenant accounts inactive`,
@@ -122,7 +122,7 @@ export default function AdminBillingPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#d0bcff]">account_balance_wallet</span>
+            <span className="size-[16px] text-[#d0bcff]"><Wallet className="size-[16px] text-[#d0bcff]" /></span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#d0bcff]">Finance & Escrow</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-[#e5e1e4] tracking-tight">Billing & Platform Revenue</h1>
@@ -135,9 +135,7 @@ export default function AdminBillingPage() {
             disabled={refreshing}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-medium hover:bg-[#353437] hover:text-[#d0bcff] transition-all border border-[#494454]/30"
           >
-            <span className={`material-symbols-outlined text-[16px] ${refreshing ? 'animate-spin' : ''}`}>
-              refresh
-            </span>
+            <span className="size-[16px] ${refreshing ? 'animate-spin' : ''}"><RefreshCw className="size-[16px] ${refreshing ? 'animate-spin' : ''}" /></span>
             <span>Refresh</span>
           </button>
           <button
@@ -148,7 +146,7 @@ export default function AdminBillingPage() {
             disabled={invoices.length === 0}
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#a078ff] text-[#340080] text-[13px] font-semibold hover:bg-[#d0bcff] transition-all shadow-[0_0_20px_rgba(160,120,255,0.35)]"
           >
-            <span className="material-symbols-outlined text-[18px]">download</span>
+            <span className="size-[18px]"><Download className="size-[18px]" /></span>
             <span>Export Ledger</span>
           </button>
         </div>
@@ -161,7 +159,7 @@ export default function AdminBillingPage() {
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#958ea0]">{m.label}</span>
               <div className={`p-1.5 rounded-lg ${m.bg} ${m.color}`}>
-                <span className="material-symbols-outlined text-[18px]">{m.icon}</span>
+                <m.icon className="size-[18px]" />
               </div>
             </div>
             <span className="text-[32px] font-bold leading-none text-[#e5e1e4] font-tabular">{m.value}</span>
@@ -174,7 +172,7 @@ export default function AdminBillingPage() {
       <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 overflow-hidden shadow-lg">
         <div className="p-5 border-b border-[#494454]/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#4cd7f6] text-[20px]">receipt_long</span>
+            <span className="text-[#4cd7f6] size-[20px]"><ReceiptText className="text-[#4cd7f6] size-[20px]" /></span>
             <h2 className="font-jakarta font-semibold text-[18px] text-[#e5e1e4]">Revenue & Settlement Ledger</h2>
           </div>
           <span className="text-[11px] text-[#958ea0] font-mono">

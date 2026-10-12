@@ -1,3 +1,4 @@
+import { Badge, CircleCheck, Clock, Download, MoreHorizontal, Search, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
@@ -51,11 +52,11 @@ export default async function OrganizerRunnersPage() {
           </div>
           <div className="flex gap-2">
             <button className="px-4 py-2.5 bg-[#1c1b1d] hover:bg-[#201f22] text-[#e5e1e4] text-[14px] leading-[20px] tracking-[0.01em] font-medium rounded-lg flex items-center gap-2 transition-colors border border-[#23232b]">
-              <span className="material-symbols-outlined text-[18px]">file_download</span>
+              <span className="size-[18px]"><Download className="size-[18px]" /></span>
               Export CSV
             </button>
             <button className="px-4 py-2.5 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-[#a078ff] transition-all shadow-[0_0_16px_rgba(208,188,255,0.25)]">
-              <span className="material-symbols-outlined text-[18px]">badge</span>
+              <span className="size-[18px]"><Badge className="size-[18px]" /></span>
               Assign BIBs
             </button>
           </div>
@@ -64,13 +65,13 @@ export default async function OrganizerRunnersPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Total Runners', value: total, icon: 'group', color: 'text-[#d0bcff]' },
-            { label: 'Confirmed Paid', value: paid, icon: 'check_circle', color: 'text-[#4edea3]' },
-            { label: 'Pending Payment', value: pending, icon: 'schedule', color: 'text-[#d0bcff]' },
-            { label: 'BIBs Assigned', value: withBib, icon: 'badge', color: 'text-[#4cd7f6]' },
+            { label: 'Total Runners', value: total, icon: Users, color: 'text-[#d0bcff]' },
+            { label: 'Confirmed Paid', value: paid, icon: CircleCheck, color: 'text-[#4edea3]' },
+            { label: 'Pending Payment', value: pending, icon: Clock, color: 'text-[#d0bcff]' },
+            { label: 'BIBs Assigned', value: withBib, icon: Badge, color: 'text-[#4cd7f6]' },
           ].map(s => (
             <div key={s.label} className="bg-[#1c1b1d] rounded-xl p-4 border border-[#23232b] flex items-center gap-3">
-              <span className={`material-symbols-outlined text-[24px] ${s.color}`}>{s.icon}</span>
+              <span className={`size-[24px] ${s.color}`}><s.icon className="size-[24px]" /></span>
               <div>
                 <div className="text-[24px] leading-[28px] tracking-[-0.01em] font-semibold text-[#e5e1e4]">{s.value.toLocaleString()}</div>
                 <div className="text-[11px] text-[#958ea0]">{s.label}</div>
@@ -81,7 +82,7 @@ export default async function OrganizerRunnersPage() {
 
         {/* Search + filter */}
         <div className="bg-[#1c1b1d] rounded-xl p-3 border border-[#23232b] flex items-center gap-3">
-          <span className="material-symbols-outlined text-[#958ea0] text-[20px] ml-1">search</span>
+          <span className="text-[#958ea0] size-[20px] ml-1"><Search className="text-[#958ea0] size-[20px] ml-1" /></span>
           <input
             className="flex-1 bg-transparent text-[#e5e1e4] text-[14px] leading-[20px] focus:outline-none placeholder:text-[#958ea0]"
             placeholder="Search by name, BIB number, email..."
@@ -147,7 +148,7 @@ export default async function OrganizerRunnersPage() {
                   </div>
                   <div className="text-right">
                     <button className="p-1.5 text-[#958ea0] hover:text-[#e5e1e4] hover:bg-[#2a2a2c] rounded-lg transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">more_horiz</span>
+                      <span className="size-[18px]"><MoreHorizontal className="size-[18px]" /></span>
                     </button>
                   </div>
                 </div>
@@ -155,7 +156,7 @@ export default async function OrganizerRunnersPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-[#958ea0]">
-              <span className="material-symbols-outlined text-[48px] mb-3">badge</span>
+              <span className="size-[48px] mb-3"><Badge className="size-[48px] mb-3" /></span>
               <p className="text-[14px] font-medium">No runners registered yet</p>
               <p className="text-[12px] mt-1">Create and publish an event to accept registrations</p>
             </div>

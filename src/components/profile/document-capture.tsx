@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge, Camera, CircleAlert, CloudUpload, FolderOpen, LoaderCircle, ShieldCheck, Trash2, TriangleAlert } from "lucide-react"
 import { useState, useRef, useCallback } from 'react'
 import { storeEncryptedDocument, deleteDocument } from '@/lib/actions/account'
 
@@ -131,7 +132,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
     <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
       <div className="p-5 border-b border-[#353437]/60">
         <h3 className="text-[16px] font-bold text-[#e5e1e4] flex items-center gap-2">
-          <span className="material-symbols-outlined text-[20px] text-[#4cd7f6]">badge</span>
+          <span className="size-[20px] text-[#4cd7f6]"><Badge className="size-[20px] text-[#4cd7f6]" /></span>
           Identification Document
         </h3>
         <p className="text-[12px] text-[#958ea0] mt-1 leading-relaxed">
@@ -144,13 +145,13 @@ export default function DocumentCapture({ currentDocument }: Props) {
         {hasDocument ? (
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 rounded-xl bg-[#4edea3]/10 border border-[#4edea3]/20 px-4 py-3 text-[13px] text-[#4edea3] font-medium">
-              <span className="material-symbols-outlined text-[18px]">verified_user</span>
+              <span className="size-[18px]"><ShieldCheck className="size-[18px]" /></span>
               Document securely stored
             </div>
             
             {warning && (
               <div className="flex items-center gap-2 rounded-xl bg-[#e3c45b]/10 border border-[#e3c45b]/20 px-4 py-3 text-[13px] text-[#e3c45b]">
-                <span className="material-symbols-outlined text-[18px]">warning</span>
+                <span className="size-[18px]"><TriangleAlert className="size-[18px]" /></span>
                 {warning}
               </div>
             )}
@@ -162,12 +163,12 @@ export default function DocumentCapture({ currentDocument }: Props) {
             >
               {deleting ? (
                 <>
-                  <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                  <span className="animate-spin size-[16px]"><LoaderCircle className="animate-spin size-[16px]" /></span>
                   Removing...
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                  <span className="size-[16px]"><Trash2 className="size-[16px]" /></span>
                   Remove Document
                 </>
               )}
@@ -193,12 +194,12 @@ export default function DocumentCapture({ currentDocument }: Props) {
               >
                 {encrypting ? (
                   <>
-                    <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                    <span className="animate-spin size-[16px]"><LoaderCircle className="animate-spin size-[16px]" /></span>
                     Validating...
                   </>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-[16px]">cloud_upload</span>
+                    <span className="size-[16px]"><CloudUpload className="size-[16px]" /></span>
                     Save Document
                   </>
                 )}
@@ -223,7 +224,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
                 onClick={() => fileInputRef.current?.click()}
                 className="py-3.5 px-2 rounded-xl border border-[#353437] text-[#cbc3d7] bg-[#23232b] text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
               >
-                <span className="material-symbols-outlined text-[24px]">folder_open</span>
+                <span className="size-[24px]"><FolderOpen className="size-[24px]" /></span>
                 Upload File
               </button>
               
@@ -231,7 +232,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
                 onClick={() => cameraInputRef.current?.click()}
                 className="py-3.5 px-2 rounded-xl border border-[#353437] text-[#cbc3d7] bg-[#23232b] text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
               >
-                <span className="material-symbols-outlined text-[24px]">photo_camera</span>
+                <span className="size-[24px]"><Camera className="size-[24px]" /></span>
                 Take Photo
               </button>
             </div>
@@ -270,7 +271,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
 
         {error && (
           <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px]">error</span>
+            <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
             {error}
           </div>
         )}

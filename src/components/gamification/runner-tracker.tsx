@@ -1,5 +1,6 @@
 "use client"
 
+import { Gauge, MapPin, Pause, Play, Ruler, Satellite, Square, X } from "lucide-react"
 import { useState, useRef, useCallback, useEffect } from "react"
 import Link from "next/link"
 
@@ -147,7 +148,7 @@ export default function RunnerTracker() {
           href="/runner/run-log"
           className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1c1b1d] text-[#cbc3d7] active:scale-95 transition-transform"
         >
-          <span className="material-symbols-outlined text-[24px]">close</span>
+          <span className="size-[24px]"><X className="size-[24px]" /></span>
         </Link>
         <div className="flex items-center gap-2">
           {gpsAccuracy !== null && (
@@ -172,7 +173,7 @@ export default function RunnerTracker() {
           <div className="flex flex-col items-center gap-8 w-full max-w-sm">
             <div className="w-32 h-32 rounded-full bg-[#1c1b1d] border border-[#353437]/60 flex items-center justify-center shadow-[0_0_40px_rgba(76,215,246,0.1)] relative">
               <div className="absolute inset-0 rounded-full border border-[#4cd7f6]/20 animate-ping opacity-20" />
-              <span className="material-symbols-outlined text-[48px] text-[#4cd7f6]">satellite_alt</span>
+              <span className="size-[48px] text-[#4cd7f6]"><Satellite className="size-[48px] text-[#4cd7f6]" /></span>
             </div>
             <div className="text-center flex flex-col gap-2">
               <h2 className="text-[24px] font-bold text-[#e5e1e4]">Ready to Run</h2>
@@ -182,7 +183,7 @@ export default function RunnerTracker() {
               onClick={startTracking}
               className="mt-4 w-full py-4 rounded-xl bg-[#4edea3] text-[#003926] text-[16px] font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(78,222,163,0.3)] active:scale-95 transition-transform"
             >
-              <span className="material-symbols-outlined text-[24px]">play_arrow</span>
+              <span className="size-[24px]"><Play className="size-[24px]" /></span>
               Start Run
             </button>
           </div>
@@ -198,7 +199,7 @@ export default function RunnerTracker() {
 
             <div className="grid grid-cols-3 gap-4 w-full">
               <div className="rounded-2xl bg-[#1c1b1d] border border-[#353437]/60 p-4 flex flex-col items-center justify-center">
-                <span className="material-symbols-outlined text-[24px] text-[#4cd7f6] mb-2">straighten</span>
+                <span className="size-[24px] text-[#4cd7f6] mb-2"><Ruler className="size-[24px] text-[#4cd7f6] mb-2" /></span>
                 <p className="text-[28px] font-mono font-bold text-[#e5e1e4] leading-none">
                   {gpsDistance.toFixed(2)}
                 </p>
@@ -207,7 +208,7 @@ export default function RunnerTracker() {
                 </p>
               </div>
               <div className="rounded-2xl bg-[#1c1b1d] border border-[#353437]/60 p-4 flex flex-col items-center justify-center">
-                <span className="material-symbols-outlined text-[24px] text-[#d0bcff] mb-2">speed</span>
+                <span className="size-[24px] text-[#d0bcff] mb-2"><Gauge className="size-[24px] text-[#d0bcff] mb-2" /></span>
                 <p className="text-[28px] font-mono font-bold text-[#e5e1e4] leading-none">
                   {pace}
                 </p>
@@ -216,7 +217,7 @@ export default function RunnerTracker() {
                 </p>
               </div>
               <div className="rounded-2xl bg-[#1c1b1d] border border-[#353437]/60 p-4 flex flex-col items-center justify-center">
-                <span className="material-symbols-outlined text-[24px] text-[#4edea3] mb-2">location_on</span>
+                <span className="size-[24px] text-[#4edea3] mb-2"><MapPin className="size-[24px] text-[#4edea3] mb-2" /></span>
                 <p className="text-[28px] font-mono font-bold text-[#e5e1e4] leading-none">
                   {gpsPointCount}
                 </p>
@@ -238,14 +239,14 @@ export default function RunnerTracker() {
                   onClick={pauseTracking}
                   className="flex-1 py-4 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                 >
-                  <span className="material-symbols-outlined text-[24px]">pause</span>
+                  <span className="size-[24px]"><Pause className="size-[24px]" /></span>
                   Pause
                 </button>
                 <button
                   onClick={finishTracking}
                   className="flex-[2] py-4 rounded-xl bg-[#ffb4ab] text-[#690005] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_0_20px_rgba(255,180,171,0.2)]"
                 >
-                  <span className="material-symbols-outlined text-[24px]">stop</span>
+                  <span className="size-[24px]"><Square className="size-[24px]" /></span>
                   Finish
                 </button>
               </>
@@ -255,14 +256,14 @@ export default function RunnerTracker() {
                   onClick={resumeTracking}
                   className="flex-1 py-4 rounded-xl bg-[#4edea3] text-[#003926] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_0_20px_rgba(78,222,163,0.2)]"
                 >
-                  <span className="material-symbols-outlined text-[24px]">play_arrow</span>
+                  <span className="size-[24px]"><Play className="size-[24px]" /></span>
                   Resume
                 </button>
                 <button
                   onClick={finishTracking}
                   className="flex-[2] py-4 rounded-xl bg-[#ffb4ab] text-[#690005] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_0_20px_rgba(255,180,171,0.2)]"
                 >
-                  <span className="material-symbols-outlined text-[24px]">stop</span>
+                  <span className="size-[24px]"><Square className="size-[24px]" /></span>
                   Finish
                 </button>
               </>

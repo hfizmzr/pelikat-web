@@ -1,5 +1,7 @@
 'use client'
 
+import type { LucideIcon } from "lucide-react"
+import { Badge, Building2, ChevronsUpDown, CirclePlus, ClipboardCheck, Flag, Images, Landmark, LayoutDashboard, LogOut, Menu, QrCode, Settings2, Shirt, TrendingUp, Trophy } from "lucide-react"
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -17,19 +19,19 @@ const navSections = [
   {
     label: 'Event Console',
     items: [
-      { title: 'Overview', href: '/organizer', icon: 'dashboard', exact: true },
-      { title: 'Race Events & Waves', href: '/organizer/events', icon: 'flag' },
-      { title: 'Runner Directory & BIBs', href: '/organizer/runners', icon: 'badge' },
-      { title: 'REPC Station', href: '/organizer/repc', icon: 'qr_code_scanner', badge: 'Live' },
-      { title: 'Merch & Kit Inventory', href: '/organizer/merch', icon: 'apparel' },
+      { title: 'Overview', href: '/organizer', icon: LayoutDashboard, exact: true },
+      { title: 'Race Events & Waves', href: '/organizer/events', icon: Flag },
+      { title: 'Runner Directory & BIBs', href: '/organizer/runners', icon: Badge },
+      { title: 'REPC Station', href: '/organizer/repc', icon: QrCode, badge: 'Live' },
+      { title: 'Merch & Kit Inventory', href: '/organizer/merch', icon: Shirt },
     ],
   },
   {
     label: 'Operations & Config',
     items: [
-      { title: 'Telemetry & Analytics', href: '/organizer/analytics', icon: 'insights' },
-      { title: 'Financial Rails', href: '/organizer/financial', icon: 'account_balance' },
-      { title: 'Settings & Webhooks', href: '/organizer/settings', icon: 'settings_suggest' },
+      { title: 'Telemetry & Analytics', href: '/organizer/analytics', icon: TrendingUp },
+      { title: 'Financial Rails', href: '/organizer/financial', icon: Landmark },
+      { title: 'Settings & Webhooks', href: '/organizer/settings', icon: Settings2 },
     ],
   },
 ]
@@ -38,7 +40,7 @@ function NavItem({
   item,
   pathname,
 }: {
-  item: { title: string; href: string; icon: string; badge?: string; exact?: boolean }
+  item: { title: string; href: string; icon: LucideIcon; badge?: string; exact?: boolean }
   pathname: string
 }) {
   const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
@@ -56,11 +58,11 @@ function NavItem({
       <div className="flex items-center gap-2">
         <span
           className={cn(
-            'material-symbols-outlined text-[20px]',
+            'flex shrink-0',
             isActive ? 'text-[#340080]' : 'text-[#958ea0]'
           )}
         >
-          {item.icon}
+          <item.icon className="size-[20px]" />
         </span>
         <span>{item.title}</span>
       </div>
@@ -121,7 +123,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
       <div className="h-16 px-4 flex items-center justify-between border-b border-[#23232b] bg-[#0f0f13] shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-[#d0bcff]/10 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[#d0bcff] text-[16px]">flag</span>
+            <span className="text-[#d0bcff] size-[16px]"><Flag className="text-[#d0bcff] size-[16px]" /></span>
           </div>
           <div className="flex flex-col">
             <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-[#e5e1e4]">
@@ -142,16 +144,14 @@ function SidebarContent({ pathname }: { pathname: string }) {
         <button className="w-full flex items-center justify-between p-2 rounded-lg bg-[#1c1b1d] hover:bg-[#201f22] transition-colors text-left group">
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-[#2a2a2c] flex items-center justify-center text-[#d0bcff] shrink-0">
-              <span className="material-symbols-outlined text-[18px]">corporate_fare</span>
+              <span className="size-[18px]"><Building2 className="size-[18px]" /></span>
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-[12px] leading-[16px] font-semibold text-[#e5e1e4] truncate">{orgName}</span>
               <span className="text-[11px] text-[#4cd7f6] font-medium">Organizer Portal</span>
             </div>
           </div>
-          <span className="material-symbols-outlined text-[#958ea0] group-hover:text-[#e5e1e4] transition-colors text-[18px]">
-            unfold_more
-          </span>
+          <span className="text-[#958ea0] group-hover:text-[#e5e1e4] transition-colors size-[18px]"><ChevronsUpDown className="text-[#958ea0] group-hover:text-[#e5e1e4] transition-colors size-[18px]" /></span>
         </button>
       </div>
 
@@ -175,7 +175,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
           onClick={() => router.push('/organizer/events/new')}
           className="w-full py-2 px-3 bg-[#4edea3]/20 text-[#4edea3] hover:bg-[#4edea3]/30 text-[12px] leading-[16px] font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-[#4edea3]/20 shadow-sm"
         >
-          <span className="material-symbols-outlined text-[18px]">add_circle</span>
+          <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
           <span>Create Event</span>
         </button>
         <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-[#1c1b1d] text-[11px]">
@@ -203,7 +203,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
             className="p-1.5 text-[#958ea0] hover:text-[#e5e1e4] hover:bg-[#2a2a2c] rounded transition-colors"
             title="Sign out"
           >
-            <span className="material-symbols-outlined text-[18px]">logout</span>
+            <span className="size-[18px]"><LogOut className="size-[18px]" /></span>
           </button>
         </div>
       </div>
@@ -223,7 +223,7 @@ export function OrganizerMobileNav() {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="lg:hidden text-[#e5e1e4]">
-          <span className="material-symbols-outlined text-[20px]">menu</span>
+          <span className="size-[20px]"><Menu className="size-[20px]" /></span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0 bg-[#0e0e10] border-r border-[#23232b]">
@@ -235,12 +235,12 @@ export function OrganizerMobileNav() {
 
 export function getOrganizerEventNavItems(eventId: string) {
   return [
-    { title: 'Overview', href: `/organizer/events/${eventId}`, icon: 'dashboard', exact: true },
-    { title: 'Categories & Waves', href: `/organizer/events/${eventId}/categories`, icon: 'flag' },
-    { title: 'Registrations', href: `/organizer/events/${eventId}/registrations`, icon: 'badge' },
-    { title: 'REPC Station', href: `/organizer/events/${eventId}/repc`, icon: 'qr_code_scanner' },
-    { title: 'Check-in', href: `/organizer/events/${eventId}/checkin`, icon: 'fact_check' },
-    { title: 'Photos', href: `/organizer/events/${eventId}/photos`, icon: 'photo_library' },
-    { title: 'Leaderboard', href: `/organizer/events/${eventId}/leaderboard`, icon: 'emoji_events' },
+    { title: 'Overview', href: `/organizer/events/${eventId}`, icon: LayoutDashboard, exact: true },
+    { title: 'Categories & Waves', href: `/organizer/events/${eventId}/categories`, icon: Flag },
+    { title: 'Registrations', href: `/organizer/events/${eventId}/registrations`, icon: Badge },
+    { title: 'REPC Station', href: `/organizer/events/${eventId}/repc`, icon: QrCode },
+    { title: 'Check-in', href: `/organizer/events/${eventId}/checkin`, icon: ClipboardCheck },
+    { title: 'Photos', href: `/organizer/events/${eventId}/photos`, icon: Images },
+    { title: 'Leaderboard', href: `/organizer/events/${eventId}/leaderboard`, icon: Trophy },
   ]
 }

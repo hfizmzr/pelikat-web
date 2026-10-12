@@ -1,5 +1,6 @@
 'use client'
 
+import { BarChart3, Users, Wallet } from "lucide-react"
 import { useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell,
@@ -262,9 +263,9 @@ function EmptyState({ icon, message }: { icon: 'chart' | 'money' | 'users'; mess
   return (
     <div className="h-[200px] flex items-center justify-center text-[#494454]">
       <div className="text-center">
-        {icon === 'chart' && <span className="material-symbols-outlined text-[48px] mb-2 opacity-50">bar_chart</span>}
-        {icon === 'money' && <span className="material-symbols-outlined text-[48px] mb-2 opacity-50">account_balance_wallet</span>}
-        {icon === 'users' && <span className="material-symbols-outlined text-[48px] mb-2 opacity-50">group</span>}
+        {icon === 'chart' && <BarChart3 className="size-[48px] mb-2 opacity-50" />}
+        {icon === 'money' && <Wallet className="size-[48px] mb-2 opacity-50" />}
+        {icon === 'users' && <Users className="size-[48px] mb-2 opacity-50" />}
         <p className="text-[12px] font-medium">{message}</p>
       </div>
     </div>

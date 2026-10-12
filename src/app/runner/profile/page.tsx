@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft, ChevronDown, CircleAlert, CircleCheck, Keyboard, LoaderCircle, Lock, ShieldCheck, TriangleAlert } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import DocumentCapture from "@/components/profile/document-capture";
@@ -139,7 +140,7 @@ export default function RunnerProfilePage() {
   if (loading) {
     return (
       <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center">
-        <span className="material-symbols-outlined text-[32px] text-[#cbc3d7] animate-spin">progress_activity</span>
+        <span className="size-[32px] text-[#cbc3d7] animate-spin"><LoaderCircle className="size-[32px] text-[#cbc3d7] animate-spin" /></span>
       </div>
     );
   }
@@ -150,7 +151,7 @@ export default function RunnerProfilePage() {
       <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
-            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
             <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
@@ -232,7 +233,7 @@ export default function RunnerProfilePage() {
                 <option value="M">Male</option>
                 <option value="F">Female</option>
               </select>
-              <span className="material-symbols-outlined absolute right-4 top-9 text-[#958ea0] pointer-events-none">expand_more</span>
+              <span className="absolute right-4 top-9 text-[#958ea0] pointer-events-none"><ChevronDown className="absolute right-4 top-9 text-[#958ea0] pointer-events-none" /></span>
             </div>
             <div className="flex flex-col gap-1.5 relative">
               <label htmlFor="t_shirt_size" className="text-[12px] font-bold text-[#cbc3d7] ml-1">T-Shirt Size</label>
@@ -250,7 +251,7 @@ export default function RunnerProfilePage() {
                 <option value="XL">XL</option>
                 <option value="XXL">XXL</option>
               </select>
-              <span className="material-symbols-outlined absolute right-4 top-9 text-[#958ea0] pointer-events-none">expand_more</span>
+              <span className="absolute right-4 top-9 text-[#958ea0] pointer-events-none"><ChevronDown className="absolute right-4 top-9 text-[#958ea0] pointer-events-none" /></span>
             </div>
           </div>
         </section>
@@ -319,7 +320,7 @@ export default function RunnerProfilePage() {
         <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
           <div className="p-5 border-b border-[#353437]/60">
             <h3 className="text-[16px] font-bold text-[#e5e1e4] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px] text-[#4cd7f6]">keyboard</span>
+              <span className="size-[20px] text-[#4cd7f6]"><Keyboard className="size-[20px] text-[#4cd7f6]" /></span>
               Enter IC/Passport Manually
             </h3>
             <p className="text-[12px] text-[#958ea0] mt-1 leading-relaxed">
@@ -330,7 +331,7 @@ export default function RunnerProfilePage() {
           <div className="p-5 flex flex-col gap-4">
             {profile?.ic_encrypted ? (
               <div className="flex items-center gap-2 rounded-xl bg-[#4edea3]/10 border border-[#4edea3]/20 px-4 py-3 text-[13px] text-[#4edea3] font-medium">
-                <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                <span className="size-[18px]"><ShieldCheck className="size-[18px]" /></span>
                 IC/Passport number securely stored
               </div>
             ) : (
@@ -358,12 +359,12 @@ export default function RunnerProfilePage() {
                 >
                   {icSaving ? (
                     <>
-                      <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                      <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
                       Saving...
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-[18px]">lock</span>
+                      <span className="size-[18px]"><Lock className="size-[18px]" /></span>
                       Save Encrypted
                     </>
                   )}
@@ -371,14 +372,14 @@ export default function RunnerProfilePage() {
 
                 {icSaved && (
                   <div className="flex items-center gap-2 rounded-xl bg-[#4edea3]/10 border border-[#4edea3]/20 px-4 py-3 text-[13px] text-[#4edea3] font-medium">
-                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                    <span className="size-[18px]"><CircleCheck className="size-[18px]" /></span>
                     IC number saved securely
                   </div>
                 )}
 
                 {icError && (
                   <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">error</span>
+                    <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
                     {icError}
                   </div>
                 )}
@@ -394,7 +395,7 @@ export default function RunnerProfilePage() {
         >
           {saving ? (
             <>
-              <span className="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+              <span className="size-[20px] animate-spin"><LoaderCircle className="size-[20px] animate-spin" /></span>
               Saving...
             </>
           ) : (
@@ -410,7 +411,7 @@ export default function RunnerProfilePage() {
         <section className="bg-[#1c1b1d] rounded-2xl border border-[#ffb4ab]/30 overflow-hidden mt-8">
           <div className="p-5 border-b border-[#ffb4ab]/20 bg-[#ffb4ab]/5">
             <h2 className="text-[16px] font-bold text-[#ffb4ab] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px]">warning</span>
+              <span className="size-[20px]"><TriangleAlert className="size-[20px]" /></span>
               Danger Zone
             </h2>
           </div>
@@ -475,14 +476,14 @@ export default function RunnerProfilePage() {
 
             {deleteStep === 'deleting' && (
               <div className="flex items-center justify-center gap-2 text-[13px] text-[#ffb4ab] font-bold py-3 bg-[#ffb4ab]/10 rounded-xl">
-                <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
                 Deleting...
               </div>
             )}
 
             {deleteError && (
               <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px]">error</span>
+                <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
                 {deleteError}
               </div>
             )}

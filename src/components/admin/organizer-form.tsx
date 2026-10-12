@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Pencil, Store } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -145,9 +145,11 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
         <DialogContent className="bg-[#201f22] border border-[#494454]/40 text-[#e5e1e4] rounded-xl shadow-2xl">
         <DialogHeader>
           <DialogTitle className="font-jakarta text-[18px] text-[#e5e1e4] flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-[#d0bcff]">
-              {isEdit ? 'edit' : 'add_business'}
-            </span>
+            {isEdit ? (
+              <Pencil className="size-[20px] text-[#d0bcff]" />
+            ) : (
+              <Store className="size-[20px] text-[#d0bcff]" />
+            )}
             {isEdit ? 'Edit Organizer' : 'Add New Organizer'}
           </DialogTitle>
           <DialogDescription className="text-[#cbc3d7] font-inter text-[13px]">

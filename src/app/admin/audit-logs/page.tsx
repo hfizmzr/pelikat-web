@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Fragment } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { BadgeCheck, ChevronDown, Download, Loader2, ReceiptText, SearchX } from "lucide-react"
 import { AuditLogFilters, type AuditLogFilters as Filters } from '@/components/admin/audit-log-filters'
 
 const ITEMS_PER_PAGE = 20
@@ -145,7 +145,7 @@ export default function AdminAuditLogsPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#4edea3]">verified</span>
+            <span className="size-[16px] text-[#4edea3]"><BadgeCheck className="size-[16px] text-[#4edea3]" /></span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#4edea3] font-inter">Compliance</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-[#e5e1e4] tracking-tight">Audit Logs</h1>
@@ -160,7 +160,7 @@ export default function AdminAuditLogsPage() {
         >
           {exporting
             ? <Loader2 className="h-4 w-4 animate-spin text-[#d0bcff]" />
-            : <span className="material-symbols-outlined text-[18px] text-[#d0bcff]">download</span>
+            : <span className="size-[18px] text-[#d0bcff]"><Download className="size-[18px] text-[#d0bcff]" /></span>
           }
           Export CSV
         </button>
@@ -174,7 +174,7 @@ export default function AdminAuditLogsPage() {
       {/* ── Log Table ───────────────────────────────────────────────── */}
       <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 overflow-hidden">
         <div className="p-5 border-b border-[#494454]/30 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#4edea3] text-[20px]">receipt_long</span>
+          <span className="text-[#4edea3] size-[20px]"><ReceiptText className="text-[#4edea3] size-[20px]" /></span>
           <h2 className="font-jakarta font-semibold text-[18px] text-[#e5e1e4]">Activity Ledger</h2>
           <span className="ml-auto text-[11px] text-[#494454] font-mono">
             Page {currentPage} of {totalPages || 1}
@@ -199,7 +199,7 @@ export default function AdminAuditLogsPage() {
                 {auditLogs.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-12 text-center text-[#958ea0]">
-                      <span className="material-symbols-outlined text-[32px] block mb-2 text-[#494454]">search_off</span>
+                      <span className="size-[32px] block mb-2 text-[#494454]"><SearchX className="size-[32px] block mb-2 text-[#494454]" /></span>
                       No audit logs found.
                     </td>
                   </tr>
@@ -255,9 +255,7 @@ export default function AdminAuditLogsPage() {
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-center">
-                            <span className={`material-symbols-outlined text-[18px] text-[#494454] transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                              expand_more
-                            </span>
+                            <span className="size-[18px] text-[#494454] transition-transform ${isExpanded ? 'rotate-180' : ''}"><ChevronDown className="size-[18px] text-[#494454] transition-transform ${isExpanded ? 'rotate-180' : ''}" /></span>
                           </td>
                         </tr>
                         {isExpanded && (

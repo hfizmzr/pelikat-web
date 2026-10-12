@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowLeft, Check, CheckCheck, CircleAlert, CircleCheck, Clock, Copy, Info, LoaderCircle, Share2, X } from "lucide-react"
 import { use, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -122,7 +123,7 @@ export default function BibConsentPage({
   if (loading) {
     return (
       <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center">
-        <span className="material-symbols-outlined text-[32px] text-[#cbc3d7] animate-spin">progress_activity</span>
+        <span className="size-[32px] text-[#cbc3d7] animate-spin"><LoaderCircle className="size-[32px] text-[#cbc3d7] animate-spin" /></span>
       </div>
     )
   }
@@ -136,7 +137,7 @@ export default function BibConsentPage({
       <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href={`/runner/events/${id}/bib`} className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
-            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
             <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
@@ -156,7 +157,7 @@ export default function BibConsentPage({
 
         {error && (
           <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px]">error</span>
+            <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
             {error}
           </div>
         )}
@@ -183,9 +184,13 @@ export default function BibConsentPage({
                       ? 'bg-[#d0bcff]/10 text-[#d0bcff] border border-[#d0bcff]/20'
                       : 'bg-[#ffb4ab]/10 text-[#ffb4ab] border border-[#ffb4ab]/20'
                 }`}>
-                  <span className="material-symbols-outlined text-[14px]">
-                    {canUseCurrentCode ? 'check_circle' : consentStatus === 'used' ? 'done_all' : 'cancel'}
-                  </span>
+                  {canUseCurrentCode ? (
+                    <CircleCheck className="size-[14px]" />
+                  ) : consentStatus === 'used' ? (
+                    <CheckCheck className="size-[14px]" />
+                  ) : (
+                    <X className="size-[14px]" />
+                  )}
                   {consentStatus === 'active' ? 'Active' : consentStatus === 'used' ? 'Used' : 'Expired'}
                 </div>
                 
@@ -196,7 +201,7 @@ export default function BibConsentPage({
                 
                 {consentCode.expires_at && (
                   <p className="text-[11px] text-[#958ea0] flex items-center justify-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">schedule</span>
+                    <span className="size-[14px]"><Clock className="size-[14px]" /></span>
                     Expires: {new Date(consentCode.expires_at).toLocaleString('en-MY', { 
                       month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
                     })}
@@ -211,9 +216,11 @@ export default function BibConsentPage({
                     disabled={!canUseCurrentCode}
                     className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[18px]">
-                      {copied ? 'check' : 'content_copy'}
-                    </span>
+                    {copied ? (
+                      <Check className="size-[18px]" />
+                    ) : (
+                      <Copy className="size-[18px]" />
+                    )}
                     {copied ? 'Copied' : 'Copy'}
                   </button>
                   <button 
@@ -221,7 +228,7 @@ export default function BibConsentPage({
                     disabled={!canUseCurrentCode}
                     className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[18px]">share</span>
+                    <span className="size-[18px]"><Share2 className="size-[18px]" /></span>
                     Share
                   </button>
                 </div>
@@ -232,7 +239,7 @@ export default function BibConsentPage({
                 >
                   {generating ? (
                     <>
-                      <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                      <span className="animate-spin size-[18px]"><LoaderCircle className="animate-spin size-[18px]" /></span>
                       Generating...
                     </>
                   ) : (
@@ -242,7 +249,7 @@ export default function BibConsentPage({
               </div>
               
               <div className="mt-2 p-4 bg-[#23232b] rounded-xl flex items-start gap-3 border border-[#353437]/40">
-                <span className="material-symbols-outlined text-[20px] text-[#4cd7f6] shrink-0">info</span>
+                <span className="size-[20px] text-[#4cd7f6] shrink-0"><Info className="size-[20px] text-[#4cd7f6] shrink-0" /></span>
                 <p className="text-[12px] text-[#cbc3d7] leading-relaxed">
                   {canUseCurrentCode
                     ? 'Give this active code to your proxy collector. They must show their own QR pass at the collection point.'
@@ -274,7 +281,7 @@ export default function BibConsentPage({
               >
                 {generating ? (
                   <>
-                    <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                    <span className="animate-spin size-[18px]"><LoaderCircle className="animate-spin size-[18px]" /></span>
                     Generating...
                   </>
                 ) : (

@@ -1,3 +1,5 @@
+import type { LucideIcon } from "lucide-react"
+import { Award, Bell, CalendarX, CheckCheck, Flame, Footprints, QrCode, Tag, Tags } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -7,7 +9,7 @@ export const metadata: Metadata = {
   description: 'Your runner dashboard with events, badges, and stats',
 }
 
-function StatCard({ icon, label, value, sub, color }: { icon: string, label: string, value: string | number, sub?: string, color: 'primary' | 'secondary' | 'tertiary' | 'error' }) {
+function StatCard({ icon: Icon, label, value, sub, color }: { icon: LucideIcon, label: string, value: string | number, sub?: string, color: 'primary' | 'secondary' | 'tertiary' | 'error' }) {
   const colorMap = {
     primary: { bg: 'bg-[#d0bcff]/10', text: 'text-[#d0bcff]' },
     secondary: { bg: 'bg-[#4cd7f6]/10', text: 'text-[#4cd7f6]' },
@@ -20,7 +22,7 @@ function StatCard({ icon, label, value, sub, color }: { icon: string, label: str
     <div className="flex flex-col justify-between p-4 rounded-xl bg-[#1c1b1d] shadow-sm border border-[#353437]/40">
       <div className="flex items-center justify-between">
         <span className={`p-1.5 rounded-lg ${c.bg} ${c.text}`}>
-          <span className="material-symbols-outlined text-[20px]">{icon}</span>
+          <Icon className="size-[20px]" />
         </span>
       </div>
       <div className="mt-4">
@@ -102,7 +104,7 @@ export default async function RunnerDashboard() {
             <p className="text-[11px] text-[#958ea0]">Ready for your next run?</p>
           </div>
           <button className="relative w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] hover:text-[#e5e1e4] transition-colors">
-            <span className="material-symbols-outlined text-[22px]">notifications</span>
+            <span className="size-[22px]"><Bell className="size-[22px]" /></span>
             <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#ffb4ab] ring-2 ring-[#131315]" />
           </button>
         </div>
@@ -129,11 +131,11 @@ export default async function RunnerDashboard() {
                 </h1>
                 <div className="flex items-center gap-4 text-[#cbc3d7] text-[11px]">
                   <span className="inline-flex items-center gap-1.5 bg-[#201f22] px-2 py-1 rounded-md border border-[#353437]">
-                    <span className="material-symbols-outlined text-[14px] text-[#d0bcff]">tag</span>
+                    <span className="size-[14px] text-[#d0bcff]"><Tag className="size-[14px] text-[#d0bcff]" /></span>
                     <span className="font-mono">{nextEvent.bib_number || 'TBA'}</span>
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px] text-[#4edea3]">category</span>
+                    <span className="size-[14px] text-[#4edea3]"><Tags className="size-[14px] text-[#4edea3]" /></span>
                     {nextEvent.race_categories?.name}
                   </span>
                 </div>
@@ -143,7 +145,7 @@ export default async function RunnerDashboard() {
                   href={`/runner/events/${nextEvent.events?.id}/bib`}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold active:scale-95 transition-transform"
                 >
-                  <span className="material-symbols-outlined text-[16px]">qr_code_2</span>
+                  <QrCode className="size-[16px]" />
                   Digital BIB Pass
                 </Link>
               </div>
@@ -152,7 +154,7 @@ export default async function RunnerDashboard() {
         ) : (
           <section className="rounded-xl bg-[#1c1b1d] p-6 border border-[#353437]/40 text-center flex flex-col items-center">
             <div className="w-12 h-12 bg-[#201f22] rounded-full flex items-center justify-center mb-3">
-              <span className="material-symbols-outlined text-[24px] text-[#958ea0]">event_busy</span>
+              <span className="size-[24px] text-[#958ea0]"><CalendarX className="size-[24px] text-[#958ea0]" /></span>
             </div>
             <h3 className="text-[14px] font-bold text-[#e5e1e4] mb-1">No Upcoming Events</h3>
             <p className="text-[12px] text-[#958ea0] mb-4">Discover your next race and start training.</p>
@@ -168,10 +170,10 @@ export default async function RunnerDashboard() {
             <h2 className="text-[15px] font-bold text-[#e5e1e4] tracking-tight">Your Stats</h2>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <StatCard icon="directions_run" label="Total Distance" value={`${totalRunDistance.toFixed(1)} km`} color="secondary" />
-            <StatCard icon="local_fire_department" label="Current Streak" value={`${currentStreak} days`} sub={`Best: ${longestStreak}`} color="error" />
-            <StatCard icon="workspace_premium" label="Badges Earned" value={badges?.length || 0} color="primary" />
-            <StatCard icon="done_all" label="Races Done" value={registrations?.filter(r => r.events?.status === 'closed').length || 0} color="tertiary" />
+            <StatCard icon={Footprints} label="Total Distance" value={`${totalRunDistance.toFixed(1)} km`} color="secondary" />
+            <StatCard icon={Flame} label="Current Streak" value={`${currentStreak} days`} sub={`Best: ${longestStreak}`} color="error" />
+            <StatCard icon={Award} label="Badges Earned" value={badges?.length || 0} color="primary" />
+            <StatCard icon={CheckCheck} label="Races Done" value={registrations?.filter(r => r.events?.status === 'closed').length || 0} color="tertiary" />
           </div>
         </section>
 
@@ -186,7 +188,7 @@ export default async function RunnerDashboard() {
               {badges.map(badge => (
                 <div key={badge.id} className="snap-start shrink-0 w-[120px] p-4 bg-[#1c1b1d] rounded-xl border border-[#353437]/40 flex flex-col items-center text-center">
                   <div className="w-12 h-12 bg-[#4cd7f6]/10 text-[#4cd7f6] rounded-full flex items-center justify-center mb-2">
-                    <span className="material-symbols-outlined text-[24px]">workspace_premium</span>
+                    <span className="size-[24px]"><Award className="size-[24px]" /></span>
                   </div>
                   <span className="text-[11px] font-bold text-[#e5e1e4] leading-tight capitalize">
                     {badge.badge_key.replace(/_/g, ' ')}

@@ -1,5 +1,7 @@
 'use client'
 
+import { ArrowLeft, CircleAlert, Clock, Download, Footprints, History, LoaderCircle, Map, Plus, Satellite, Trash2, Trophy } from "lucide-react"
+
 import { useAuth } from '@/hooks/use-auth'
 import { createClient } from '@/lib/supabase/client'
 import { evaluateBadges } from '@/lib/badges'
@@ -188,7 +190,7 @@ export default function RunnerRunLogPage() {
   if (loading) {
     return (
       <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center">
-        <span className="material-symbols-outlined text-[32px] text-[#cbc3d7] animate-spin">progress_activity</span>
+        <span className="size-[32px] text-[#cbc3d7] animate-spin"><LoaderCircle className="size-[32px] text-[#cbc3d7] animate-spin" /></span>
       </div>
     )
   }
@@ -198,7 +200,7 @@ export default function RunnerRunLogPage() {
       <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
-            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
             <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
@@ -213,18 +215,18 @@ export default function RunnerRunLogPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
-            <span className="material-symbols-outlined text-[20px] text-[#4cd7f6] mb-1">map</span>
+            <span className="size-[20px] text-[#4cd7f6] mb-1"><Map className="size-[20px] text-[#4cd7f6] mb-1" /></span>
             <span className="text-[12px] text-[#958ea0] font-medium uppercase tracking-wider">Total Distance</span>
             <span className="text-[20px] font-extrabold text-[#e5e1e4] font-mono leading-none">{totalDistance.toFixed(1)} <span className="text-[14px]">KM</span></span>
           </div>
           <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
-            <span className="material-symbols-outlined text-[20px] text-[#d0bcff] mb-1">schedule</span>
+            <span className="size-[20px] text-[#d0bcff] mb-1"><Clock className="size-[20px] text-[#d0bcff] mb-1" /></span>
             <span className="text-[12px] text-[#958ea0] font-medium uppercase tracking-wider">Total Time</span>
             <span className="text-[16px] font-bold text-[#e5e1e4] mt-1 leading-none">{formatTime(totalTime)}</span>
           </div>
           <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-1 col-span-2 active:scale-[0.98] transition-transform">
             <div className="flex justify-between items-center">
-              <span className="material-symbols-outlined text-[20px] text-[#4edea3]">directions_run</span>
+              <span className="size-[20px] text-[#4edea3]"><Footprints className="size-[20px] text-[#4edea3]" /></span>
               <span className="text-[20px] font-extrabold text-[#e5e1e4] font-mono leading-none">{runLogs.length}</span>
             </div>
             <span className="text-[12px] text-[#958ea0] font-medium uppercase tracking-wider mt-2">Total Runs Logged</span>
@@ -255,7 +257,7 @@ export default function RunnerRunLogPage() {
               href="/runner/run-log/track"
               className="w-full py-3.5 rounded-xl border border-[#4edea3]/40 bg-[#4edea3]/5 text-[#4edea3] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
-              <span className="material-symbols-outlined text-[18px]">satellite_alt</span>
+              <span className="size-[18px]"><Satellite className="size-[18px]" /></span>
               Start GPS Tracking
             </Link>
 
@@ -314,7 +316,7 @@ export default function RunnerRunLogPage() {
 
             {logError && (
               <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px]">error</span>
+                <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
                 {logError}
               </div>
             )}
@@ -326,12 +328,12 @@ export default function RunnerRunLogPage() {
             >
               {submitting ? (
                 <>
-                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                  <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
                   Logging...
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[18px]">add</span>
+                  <span className="size-[18px]"><Plus className="size-[18px]" /></span>
                   Log Run
                 </>
               )}
@@ -343,7 +345,7 @@ export default function RunnerRunLogPage() {
           <section className="bg-[#4edea3]/10 border border-[#4edea3]/30 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#4edea3]/20 blur-2xl rounded-full -mt-10 -mr-10 pointer-events-none" />
             <div className="flex items-center gap-2 text-[#4edea3]">
-              <span className="material-symbols-outlined text-[24px]">emoji_events</span>
+              <span className="size-[24px]"><Trophy className="size-[24px]" /></span>
               <h2 className="text-[16px] font-bold">Badges Earned!</h2>
             </div>
             <div className="grid grid-cols-2 gap-3 relative z-10">
@@ -358,7 +360,7 @@ export default function RunnerRunLogPage() {
                       rel="noopener noreferrer"
                       className="mt-2 w-full py-1.5 rounded-md bg-[#4edea3] text-[#003926] text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform"
                     >
-                      <span className="material-symbols-outlined text-[12px]">download</span>
+                      <span className="size-[12px]"><Download className="size-[12px]" /></span>
                       Download Certificate
                     </a>
                   )}
@@ -385,9 +387,11 @@ export default function RunnerRunLogPage() {
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                       log.gps_data ? 'bg-[#4cd7f6]/10 text-[#4cd7f6]' : 'bg-[#d0bcff]/10 text-[#d0bcff]'
                     }`}>
-                      <span className="material-symbols-outlined text-[20px]">
-                        {log.gps_data ? 'satellite_alt' : 'directions_run'}
-                      </span>
+                      {log.gps_data ? (
+                        <Satellite className="size-[20px]" />
+                      ) : (
+                        <Footprints className="size-[20px]" />
+                      )}
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[15px] font-bold text-[#e5e1e4]">{log.distance_km} KM</span>
@@ -407,7 +411,7 @@ export default function RunnerRunLogPage() {
                       onClick={() => handleDelete(log.id)}
                       className="w-8 h-8 rounded-full bg-[#ffb4ab]/10 text-[#ffb4ab] flex items-center justify-center active:scale-95 transition-transform"
                     >
-                      <span className="material-symbols-outlined text-[16px]">delete</span>
+                      <span className="size-[16px]"><Trash2 className="size-[16px]" /></span>
                     </button>
                   </div>
                 </div>
@@ -415,7 +419,7 @@ export default function RunnerRunLogPage() {
             </div>
           ) : (
             <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-8 flex flex-col items-center text-center">
-              <span className="material-symbols-outlined text-[32px] text-[#353437] mb-2">history</span>
+              <span className="size-[32px] text-[#353437] mb-2"><History className="size-[32px] text-[#353437] mb-2" /></span>
               <p className="text-[13px] text-[#958ea0]">No runs logged yet</p>
             </div>
           )}

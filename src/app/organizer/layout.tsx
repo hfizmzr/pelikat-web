@@ -1,5 +1,6 @@
 'use client'
 
+import { Bell, CirclePlus } from "lucide-react"
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
@@ -100,14 +101,14 @@ export default function OrganizerLayout({
                 className="relative p-2 rounded-lg text-[#cbc3d7] hover:text-[#e5e1e4] hover:bg-[#2a2a2c] transition-colors"
                 title="Notifications"
               >
-                <span className="material-symbols-outlined text-[20px]">notifications</span>
+                <span className="size-[20px]"><Bell className="size-[20px]" /></span>
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#d0bcff] ring-2 ring-[#0f0f13]" />
               </button>
               <Link
                 href="/organizer/events/new"
                 className="px-4 py-1.5 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-[#a078ff] transition-all shadow-[0_0_16px_rgba(208,188,255,0.25)]"
               >
-                <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                <span className="size-[16px]"><CirclePlus className="size-[16px]" /></span>
                 <span>Create Event</span>
               </Link>
             </div>

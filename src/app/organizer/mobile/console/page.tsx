@@ -1,3 +1,4 @@
+import { Banknote, Calendar, ChevronRight, ClipboardList, Gauge, MapPin, QrCode, Tags, Trophy, UserPlus, Users } from "lucide-react"
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import Link from 'next/link'
@@ -104,7 +105,7 @@ export default async function OrganizerMobileConsolePage() {
           </div>
         </header>
         <div className="flex flex-col items-center justify-center flex-1 py-16 text-[#958ea0]">
-          <span className="material-symbols-outlined text-[48px] mb-3">speed</span>
+          <span className="size-[48px] mb-3"><Gauge className="size-[48px] mb-3" /></span>
           <p className="text-[14px] font-medium">No active event</p>
           <p className="text-[12px] mt-1">Activate an event to see the race console</p>
           <Link
@@ -142,7 +143,7 @@ export default async function OrganizerMobileConsolePage() {
             href={`/organizer/mobile/scanner`}
             className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#d0bcff] text-[#3c0091] text-[11px] font-bold"
           >
-            <span className="material-symbols-outlined text-[13px]">qr_code_scanner</span>
+            <span className="size-[13px]"><QrCode className="size-[13px]" /></span>
             Scan
           </Link>
         </div>
@@ -160,12 +161,12 @@ export default async function OrganizerMobileConsolePage() {
             <h1 className="text-[20px] font-extrabold text-[#e5e1e4] leading-tight mt-0.5">{event.name}</h1>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#cbc3d7] mt-1.5">
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[13px] text-[#d0bcff]">calendar_today</span>
+                <span className="size-[13px] text-[#d0bcff]"><Calendar className="size-[13px] text-[#d0bcff]" /></span>
                 {new Date(event.date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short' })}
               </span>
               {event.location && (
                 <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[13px] text-[#4edea3]">location_on</span>
+                  <span className="size-[13px] text-[#4edea3]"><MapPin className="size-[13px] text-[#4edea3]" /></span>
                   {event.location}
                 </span>
               )}
@@ -181,7 +182,7 @@ export default async function OrganizerMobileConsolePage() {
           <div className="grid grid-cols-2 gap-3">
             {[
               {
-                icon: 'how_to_reg',
+                icon: UserPlus,
                 label: 'Check-in Velocity',
                 value: checkedIn.toLocaleString(),
                 badge: `${checkInRate}%`,
@@ -190,7 +191,7 @@ export default async function OrganizerMobileConsolePage() {
                 sub: `${totalRegs} total runner kits`,
               },
               {
-                icon: 'payments',
+                icon: Banknote,
                 label: 'Confirmed Paid',
                 value: paid.toLocaleString(),
                 badge: totalRegs > 0 ? `${Math.round((paid / totalRegs) * 100)}%` : '0%',
@@ -199,7 +200,7 @@ export default async function OrganizerMobileConsolePage() {
                 sub: `${pending} pending payment`,
               },
               {
-                icon: 'group',
+                icon: Users,
                 label: 'Total Registered',
                 value: totalRegs.toLocaleString(),
                 badge: 'All',
@@ -208,7 +209,7 @@ export default async function OrganizerMobileConsolePage() {
                 sub: `${catBreakdown.length} categories`,
               },
               {
-                icon: 'pending_actions',
+                icon: ClipboardList,
                 label: 'Not Checked In',
                 value: (totalRegs - checkedIn).toLocaleString(),
                 badge: `${100 - checkInRate}%`,
@@ -220,7 +221,7 @@ export default async function OrganizerMobileConsolePage() {
               <div key={i} className="flex flex-col justify-between p-4 rounded-xl bg-[#1c1b1d] border border-[#353437]/40 shadow-sm">
                 <div className="flex items-center justify-between">
                   <span className={`p-1.5 rounded-lg ${kpi.color.bg} ${kpi.color.text}`}>
-                    <span className="material-symbols-outlined text-[18px]">{kpi.icon}</span>
+                    <kpi.icon className="size-[18px]" />
                   </span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${kpi.color.badge}`}>
                     {kpi.badge}
@@ -280,19 +281,19 @@ export default async function OrganizerMobileConsolePage() {
           </h2>
           <div className="flex flex-col gap-2">
             {[
-              { href: `/organizer/events/${event.id}/checkin`, icon: 'qr_code_scanner', label: 'Full Check-in Scanner', color: 'text-[#d0bcff]' },
-              { href: `/organizer/events/${event.id}/registrations`, icon: 'people', label: 'Registrations List', color: 'text-[#4cd7f6]' },
-              { href: `/organizer/events/${event.id}/leaderboard`, icon: 'emoji_events', label: 'Live Leaderboard', color: 'text-[#4edea3]' },
-              { href: `/organizer/events/${event.id}/categories`, icon: 'category', label: 'Race Categories', color: 'text-[#a078ff]' },
+              { href: `/organizer/events/${event.id}/checkin`, icon: QrCode, label: 'Full Check-in Scanner', color: 'text-[#d0bcff]' },
+              { href: `/organizer/events/${event.id}/registrations`, icon: Users, label: 'Registrations List', color: 'text-[#4cd7f6]' },
+              { href: `/organizer/events/${event.id}/leaderboard`, icon: Trophy, label: 'Live Leaderboard', color: 'text-[#4edea3]' },
+              { href: `/organizer/events/${event.id}/categories`, icon: Tags, label: 'Race Categories', color: 'text-[#a078ff]' },
             ].map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className="flex items-center gap-3 p-4 rounded-xl bg-[#1c1b1d] border border-[#353437]/40 active:scale-95 transition-transform"
               >
-                <span className={`material-symbols-outlined text-[20px] ${link.color}`}>{link.icon}</span>
+                <span className={`size-[20px] ${link.color}`}><link.icon className="size-[20px]" /></span>
                 <span className="text-[13px] font-medium text-[#e5e1e4] flex-1">{link.label}</span>
-                <span className="material-symbols-outlined text-[16px] text-[#958ea0]">chevron_right</span>
+                <span className="size-[16px] text-[#958ea0]"><ChevronRight className="size-[16px] text-[#958ea0]" /></span>
               </Link>
             ))}
           </div>

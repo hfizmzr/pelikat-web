@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Loader2 } from 'lucide-react'
+import { Banknote, Clock, Download, Loader2, Pencil, ReceiptText, RefreshCw, Search, SearchX, Tag, UserPlus, Users, X } from "lucide-react"
 import { toast } from 'sonner'
 
 interface Registration {
@@ -202,10 +202,10 @@ export default function AdminRegistrationsPage() {
   const checkInRate = metrics.total > 0 ? Math.round((metrics.checkedIn / metrics.total) * 100) : 0
 
   const metricCards = [
-    { label: 'Total Registrations', value: metrics.total.toLocaleString(), icon: 'groups', color: 'text-[#d0bcff]', bg: 'bg-[#d0bcff]/20' },
-    { label: 'Paid Athletes', value: metrics.paid.toLocaleString(), icon: 'payments', color: 'text-[#4edea3]', bg: 'bg-[#4edea3]/20' },
-    { label: 'Checked In', value: `${metrics.checkedIn.toLocaleString()} (${checkInRate}%)`, icon: 'how_to_reg', color: 'text-[#4cd7f6]', bg: 'bg-[#4cd7f6]/20' },
-    { label: 'Pending Payment', value: metrics.pending.toLocaleString(), icon: 'pending', color: 'text-[#ffb4ab]', bg: 'bg-[#ffb4ab]/20' },
+    { label: 'Total Registrations', value: metrics.total.toLocaleString(), icon: Users, color: 'text-[#d0bcff]', bg: 'bg-[#d0bcff]/20' },
+    { label: 'Paid Athletes', value: metrics.paid.toLocaleString(), icon: Banknote, color: 'text-[#4edea3]', bg: 'bg-[#4edea3]/20' },
+    { label: 'Checked In', value: `${metrics.checkedIn.toLocaleString()} (${checkInRate}%)`, icon: UserPlus, color: 'text-[#4cd7f6]', bg: 'bg-[#4cd7f6]/20' },
+    { label: 'Pending Payment', value: metrics.pending.toLocaleString(), icon: Clock, color: 'text-[#ffb4ab]', bg: 'bg-[#ffb4ab]/20' },
   ]
 
   return (
@@ -214,7 +214,7 @@ export default function AdminRegistrationsPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#d0bcff]">groups</span>
+            <span className="size-[16px] text-[#d0bcff]"><Users className="size-[16px] text-[#d0bcff]" /></span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#d0bcff]">Global Fleet</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-[#e5e1e4] tracking-tight">Participant & BIB Management</h1>
@@ -227,7 +227,7 @@ export default function AdminRegistrationsPage() {
             disabled={loading}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-medium hover:bg-[#353437] hover:text-[#d0bcff] transition-all border border-[#494454]/30"
           >
-            <span className={`material-symbols-outlined text-[16px] ${loading ? 'animate-spin' : ''}`}>refresh</span>
+            <span className="size-[16px] ${loading ? 'animate-spin' : ''}"><RefreshCw className="size-[16px] ${loading ? 'animate-spin' : ''}" /></span>
             <span>Refresh</span>
           </button>
           <button
@@ -235,7 +235,7 @@ export default function AdminRegistrationsPage() {
             disabled={exporting || registrations.length === 0}
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#a078ff] text-[#340080] text-[13px] font-semibold hover:bg-[#d0bcff] transition-all shadow-[0_0_20px_rgba(160,120,255,0.35)]"
           >
-            <span className="material-symbols-outlined text-[18px]">download</span>
+            <span className="size-[18px]"><Download className="size-[18px]" /></span>
             <span>Export CSV</span>
           </button>
         </div>
@@ -248,7 +248,7 @@ export default function AdminRegistrationsPage() {
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#958ea0]">{m.label}</span>
               <div className={`p-1.5 rounded-lg ${m.bg} ${m.color}`}>
-                <span className="material-symbols-outlined text-[18px]">{m.icon}</span>
+                <m.icon className="size-[18px]" />
               </div>
             </div>
             <span className="text-[32px] font-bold leading-none text-[#e5e1e4] font-tabular">{m.value}</span>
@@ -260,9 +260,7 @@ export default function AdminRegistrationsPage() {
       <div className="bg-[#1c1b1d] rounded-xl p-4 border border-[#494454]/30 flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
-          <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#958ea0] text-[18px] pointer-events-none">
-            search
-          </span>
+          <span className="absolute left-3 top-2.5 text-[#958ea0] size-[18px] pointer-events-none"><Search className="absolute left-3 top-2.5 text-[#958ea0] size-[18px] pointer-events-none" /></span>
           <Input
             placeholder="Search BIB number or athlete..."
             value={search}
@@ -342,7 +340,7 @@ export default function AdminRegistrationsPage() {
             }}
             className="flex items-center gap-1 text-[12px] text-[#ffb4ab] hover:underline px-2"
           >
-            <span className="material-symbols-outlined text-[14px]">close</span>
+            <span className="size-[14px]"><X className="size-[14px]" /></span>
             Clear
           </button>
         )}
@@ -352,7 +350,7 @@ export default function AdminRegistrationsPage() {
       <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 overflow-hidden shadow-lg">
         <div className="p-5 border-b border-[#494454]/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#d0bcff] text-[20px]">receipt_long</span>
+            <span className="text-[#d0bcff] size-[20px]"><ReceiptText className="text-[#d0bcff] size-[20px]" /></span>
             <h2 className="font-jakarta font-semibold text-[18px] text-[#e5e1e4]">Live Registrations Ledger</h2>
           </div>
           <span className="text-[12px] text-[#958ea0] font-mono">
@@ -380,7 +378,7 @@ export default function AdminRegistrationsPage() {
               ) : registrations.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-16 text-center text-[#958ea0]">
-                    <span className="material-symbols-outlined text-[36px] text-[#494454] block mb-2">search_off</span>
+                    <span className="size-[36px] text-[#494454] block mb-2"><SearchX className="size-[36px] text-[#494454] block mb-2" /></span>
                     No registrations matching the active criteria
                   </td>
                 </tr>
@@ -402,7 +400,7 @@ export default function AdminRegistrationsPage() {
                           title="Reassign BIB"
                           className="p-1 rounded text-[#958ea0] hover:text-[#e5e1e4] hover:bg-[#2a2a2c] transition-colors"
                         >
-                          <span className="material-symbols-outlined text-[14px]">edit</span>
+                          <span className="size-[14px]"><Pencil className="size-[14px]" /></span>
                         </button>
                       </div>
                     </td>
@@ -519,7 +517,7 @@ export default function AdminRegistrationsPage() {
         <DialogContent className="bg-[#201f22] border-[#494454] text-[#e5e1e4] max-w-md">
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-[#e5e1e4] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#d0bcff]">tag</span>
+              <span className="text-[#d0bcff]"><Tag className="text-[#d0bcff]" /></span>
               Reassign Race BIB
             </DialogTitle>
             <DialogDescription className="text-[#958ea0] text-[13px]">

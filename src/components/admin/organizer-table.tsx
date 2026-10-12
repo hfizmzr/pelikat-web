@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown, Download, MoreHorizontal, Pencil, RefreshCw, Search, Store, Trash2, UserCog, X } from "lucide-react"
 import type { Organizer } from './types'
 
 // ─── CSV export helper ────────────────────────────────────────────────────────
@@ -220,9 +220,7 @@ export function OrganizerTable({
   if (loading) {
     return (
       <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 p-8 text-center text-[#958ea0] font-inter text-[13px]">
-        <span className="material-symbols-outlined text-[#d0bcff] text-[32px] animate-pulse block mb-2">
-          sync
-        </span>
+        <span className="text-[#d0bcff] size-[32px] animate-pulse block mb-2"><RefreshCw className="text-[#d0bcff] size-[32px] animate-pulse block mb-2" /></span>
         Loading organizers...
       </div>
     )
@@ -234,9 +232,7 @@ export function OrganizerTable({
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 max-w-sm">
-          <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#958ea0] text-[18px]">
-            search
-          </span>
+          <span className="absolute left-3 top-2.5 text-[#958ea0] size-[18px]"><Search className="absolute left-3 top-2.5 text-[#958ea0] size-[18px]" /></span>
           <Input
             placeholder="Search by name, slug or email…"
             value={search}
@@ -274,14 +270,14 @@ export function OrganizerTable({
             onClick={() => exportOrganizersCSV(filteredOrganizers)}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] text-[13px] font-medium font-inter border border-[#494454]/30 transition-colors"
           >
-            <span className="material-symbols-outlined text-[18px] text-[#d0bcff]">download</span>
+            <span className="size-[18px] text-[#d0bcff]"><Download className="size-[18px] text-[#d0bcff]" /></span>
             Export CSV
           </button>
           <button
             onClick={onAdd}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#d0bcff] hover:bg-[#6d3bd7] text-[#3c0091] hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter"
           >
-            <span className="material-symbols-outlined text-[18px]">add_business</span>
+            <span className="size-[18px]"><Store className="size-[18px]" /></span>
             Add Organizer
           </button>
         </div>
@@ -392,7 +388,7 @@ export function OrganizerTable({
                             className="h-7 w-7 text-[#958ea0] hover:text-[#ffb4ab]"
                             onClick={() => setEditingExpiry(null)}
                           >
-                            <span className="material-symbols-outlined text-[16px]">close</span>
+                            <span className="size-[16px]"><X className="size-[16px]" /></span>
                           </Button>
                         </div>
                       ) : (
@@ -431,13 +427,13 @@ export function OrganizerTable({
                           className="p-1.5 rounded-lg bg-[#4cd7f6]/10 hover:bg-[#4cd7f6]/20 text-[#4cd7f6] transition-all border border-[#4cd7f6]/20"
                           title={`Open ${organizer.name} organizer portal`}
                         >
-                          <span className="material-symbols-outlined text-[18px]">switch_account</span>
+                          <span className="size-[18px]"><UserCog className="size-[18px]" /></span>
                         </a>
 
                         <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button className="p-1.5 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] hover:text-[#e5e1e4] transition-all border border-[#494454]/30">
-                            <span className="material-symbols-outlined text-[18px]">more_horiz</span>
+                            <span className="size-[18px]"><MoreHorizontal className="size-[18px]" /></span>
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
@@ -448,14 +444,14 @@ export function OrganizerTable({
                             className="hover:bg-[#2a2a2c] cursor-pointer text-[13px] focus:bg-[#2a2a2c] focus:text-[#d0bcff]"
                             onClick={() => onEdit(organizer)}
                           >
-                            <span className="material-symbols-outlined text-[16px] mr-2 text-[#d0bcff]">edit</span>
+                            <span className="size-[16px] mr-2 text-[#d0bcff]"><Pencil className="size-[16px] mr-2 text-[#d0bcff]" /></span>
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-[#ffb4ab] hover:bg-[#93000a]/20 cursor-pointer text-[13px] focus:bg-[#93000a]/20 focus:text-[#ffb4ab]"
                             onClick={() => onDelete(organizer)}
                           >
-                            <span className="material-symbols-outlined text-[16px] mr-2">delete</span>
+                            <span className="size-[16px] mr-2"><Trash2 className="size-[16px] mr-2" /></span>
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>

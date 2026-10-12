@@ -1,5 +1,6 @@
 'use client'
 
+import { Server, Store } from "lucide-react"
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -70,7 +71,7 @@ export default function AdminLayout({
 
             {/* Fleet info */}
             <div className="hidden lg:flex items-center gap-2 text-[#cbc3d7] text-[12px] font-inter">
-              <span className="material-symbols-outlined text-[15px] text-[#958ea0]">dns</span>
+              <span className="size-[15px] text-[#958ea0]"><Server className="size-[15px] text-[#958ea0]" /></span>
               <span>Fleet AWS ap-southeast-1</span>
               <span className="text-[#494454]">•</span>
               <span className="text-[#4edea3] font-semibold flex items-center gap-1">
@@ -92,7 +93,7 @@ export default function AdminLayout({
               href="/admin/organizers"
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#d0bcff] hover:bg-[#6d3bd7] text-[#3c0091] hover:text-white text-[13px] font-semibold font-inter transition-all shadow-md glow-primary"
             >
-              <span className="material-symbols-outlined text-[18px]">add_business</span>
+              <span className="size-[18px]"><Store className="size-[18px]" /></span>
               <span className="hidden sm:inline">+ Add Tenant Organizer</span>
             </Link>
           </div>

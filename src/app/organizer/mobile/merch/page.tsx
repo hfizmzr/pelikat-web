@@ -1,3 +1,4 @@
+import { Maximize2, Package, ShoppingBag, TriangleAlert } from "lucide-react"
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import Link from 'next/link'
@@ -94,7 +95,7 @@ export default async function OrganizerMobileMerchPage() {
           </div>
         </header>
         <div className="flex flex-col items-center justify-center flex-1 py-16 text-[#958ea0]">
-          <span className="material-symbols-outlined text-[48px] mb-3">inventory</span>
+          <span className="size-[48px] mb-3"><Package className="size-[48px] mb-3" /></span>
           <p className="text-[14px] font-medium">No access</p>
         </div>
       </div>
@@ -110,7 +111,7 @@ export default async function OrganizerMobileMerchPage() {
           </div>
         </header>
         <div className="flex flex-col items-center justify-center flex-1 py-16 text-[#958ea0]">
-          <span className="material-symbols-outlined text-[48px] mb-3">shopping_bag</span>
+          <span className="size-[48px] mb-3"><ShoppingBag className="size-[48px] mb-3" /></span>
           <p className="text-[14px] font-medium">No active event</p>
           <p className="text-[12px] mt-1">Activate an event to manage inventory</p>
           <Link href="/organizer/mobile/events" className="mt-4 px-5 py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold">
@@ -148,7 +149,7 @@ export default async function OrganizerMobileMerchPage() {
             href="/organizer/merch"
             className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#2a2a2c] text-[#cbc3d7] text-[11px] font-medium border border-[#353437]/60"
           >
-            <span className="material-symbols-outlined text-[14px]">open_in_full</span>
+            <span className="size-[14px]"><Maximize2 className="size-[14px]" /></span>
             Full View
           </Link>
         </div>
@@ -182,9 +183,7 @@ export default async function OrganizerMobileMerchPage() {
           {/* Critical alert */}
           {criticalItems > 0 && (
             <div className="mt-3 p-3 rounded-lg bg-[#93000a]/30 flex items-start gap-2 border border-[#ffb4ab]/20">
-              <span className="material-symbols-outlined text-[16px] text-[#ffb4ab] shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>
-                warning
-              </span>
+              <TriangleAlert className="size-[16px] text-[#ffb4ab] shrink-0" />
               <p className="text-[11px] text-[#ffb4ab]">
                 {criticalItems} variant(s) at critical stock level. Restock required.
               </p>
@@ -246,7 +245,7 @@ export default async function OrganizerMobileMerchPage() {
           </section>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-[#958ea0]">
-            <span className="material-symbols-outlined text-[48px] mb-3">inventory_2</span>
+            <Package className="size-[48px] mb-3" />
             <p className="text-[14px] font-medium">No merchandise yet</p>
             <p className="text-[12px] mt-1">Add items from the full organizer view</p>
             <Link

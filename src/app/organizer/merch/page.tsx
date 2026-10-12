@@ -1,3 +1,4 @@
+import { CircleCheck, CirclePlus, Package, Palette, Pencil, Shirt, Trash2, TriangleAlert } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
@@ -36,7 +37,7 @@ export default async function OrganizerMerchPage() {
             <p className="text-[14px] leading-[20px] text-[#cbc3d7]">Manage your race kit products, variants, and stock levels.</p>
           </div>
           <button className="px-5 py-2.5 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-[#a078ff] transition-all shadow-[0_0_16px_rgba(208,188,255,0.25)] whitespace-nowrap self-start md:self-auto">
-            <span className="material-symbols-outlined text-[18px]">add_circle</span>
+            <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
             Add Product
           </button>
         </div>
@@ -44,13 +45,13 @@ export default async function OrganizerMerchPage() {
         {/* Summary stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Total Products', value: products?.length || 0, icon: 'inventory_2', color: 'text-[#4cd7f6]' },
-            { label: 'Active', value: activeProducts, icon: 'check_circle', color: 'text-[#4edea3]' },
-            { label: 'SKU Variants', value: totalVariants, icon: 'style', color: 'text-[#d0bcff]' },
-            { label: 'Low Stock', value: 0, icon: 'warning', color: 'text-[#ffb4ab]' },
+            { label: 'Total Products', value: products?.length || 0, icon: Package, color: 'text-[#4cd7f6]' },
+            { label: 'Active', value: activeProducts, icon: CircleCheck, color: 'text-[#4edea3]' },
+            { label: 'SKU Variants', value: totalVariants, icon: Palette, color: 'text-[#d0bcff]' },
+            { label: 'Low Stock', value: 0, icon: TriangleAlert, color: 'text-[#ffb4ab]' },
           ].map(s => (
             <div key={s.label} className="bg-[#1c1b1d] rounded-xl p-4 border border-[#23232b] flex items-center gap-3">
-              <span className={`material-symbols-outlined text-[24px] ${s.color}`}>{s.icon}</span>
+              <span className={`size-[24px] ${s.color}`}><s.icon className="size-[24px]" /></span>
               <div>
                 <div className="text-[24px] leading-[28px] tracking-[-0.01em] font-semibold text-[#e5e1e4]">{s.value}</div>
                 <div className="text-[11px] text-[#958ea0]">{s.label}</div>
@@ -75,7 +76,7 @@ export default async function OrganizerMerchPage() {
                       <div className="flex flex-col gap-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-lg bg-[#201f22] flex items-center justify-center text-[#4cd7f6] shrink-0">
-                            <span className="material-symbols-outlined text-[18px]">apparel</span>
+                            <span className="size-[18px]"><Shirt className="size-[18px]" /></span>
                           </div>
                           <h3 className="text-[15px] leading-[20px] font-semibold text-[#e5e1e4] group-hover:text-[#4cd7f6] transition-colors truncate">{product.name}</h3>
                         </div>
@@ -119,11 +120,11 @@ export default async function OrganizerMerchPage() {
 
                     <div className="flex items-center gap-2 pt-3 border-t border-[#23232b]">
                       <button className="flex-1 py-2 bg-[#201f22] hover:bg-[#2a2a2c] text-[#e5e1e4] text-[12px] leading-[16px] font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors border border-[#353437]">
-                        <span className="material-symbols-outlined text-[16px]">edit</span>
+                        <span className="size-[16px]"><Pencil className="size-[16px]" /></span>
                         Edit
                       </button>
                       <button className="p-2 text-[#958ea0] hover:text-[#ffb4ab] hover:bg-[#ffb4ab]/10 rounded-lg transition-colors">
-                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                        <span className="size-[18px]"><Trash2 className="size-[18px]" /></span>
                       </button>
                     </div>
                   </div>
@@ -134,14 +135,14 @@ export default async function OrganizerMerchPage() {
         ) : (
           <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] p-16 flex flex-col items-center justify-center text-center">
             <div className="w-20 h-20 rounded-full bg-[#4cd7f6]/10 flex items-center justify-center mb-6">
-              <span className="material-symbols-outlined text-[48px] text-[#4cd7f6]">inventory_2</span>
+              <Package className="size-[48px] text-[#4cd7f6]" />
             </div>
             <h3 className="text-[22px] leading-[28px] font-semibold text-[#e5e1e4] mb-2">No merchandise yet</h3>
             <p className="text-[14px] leading-[20px] text-[#958ea0] mb-8 max-w-sm">
               Add race kits, jerseys, and accessories to include in your event packages.
             </p>
             <button className="px-6 py-3 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-[#a078ff] transition-all shadow-[0_0_20px_rgba(208,188,255,0.3)]">
-              <span className="material-symbols-outlined text-[18px]">add_circle</span>
+              <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
               Add your first product
             </button>
           </div>

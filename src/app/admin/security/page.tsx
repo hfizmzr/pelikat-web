@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Loader2 } from 'lucide-react'
+import type { LucideIcon } from "lucide-react"
+import { History, Loader2, Lock, RefreshCw, Shield, ShieldCheck, UserCog } from "lucide-react"
 import { toast } from 'sonner'
 
 interface IAMRole {
@@ -16,7 +17,7 @@ interface SecurityPolicy {
   name: string
   scope: string
   status: string
-  icon: string
+  icon: LucideIcon
   color: string
   detail: string
 }
@@ -66,7 +67,7 @@ export default function AdminSecurityPage() {
       label: 'Identities Guarded',
       value: stats ? stats.totalIdentities.toLocaleString() : '—',
       unit: 'Accounts',
-      icon: 'manage_accounts',
+      icon: UserCog,
       color: 'text-[#d0bcff]',
       bg: 'bg-[#d0bcff]/20',
       sub: `${stats?.organizersCount ?? 0} tenants · ${stats?.runnersCount ?? 0} athletes`,
@@ -75,7 +76,7 @@ export default function AdminSecurityPage() {
       label: 'PDPA Consent Compliance',
       value: stats?.pdpaConsentRate || '100%',
       unit: '',
-      icon: 'policy',
+      icon: Shield,
       color: 'text-[#4edea3]',
       bg: 'bg-[#4edea3]/20',
       sub: 'Verified athlete privacy agreements',
@@ -84,7 +85,7 @@ export default function AdminSecurityPage() {
       label: 'RLS Tenant Isolation',
       value: '100%',
       unit: 'Enforced',
-      icon: 'lock',
+      icon: Lock,
       color: 'text-[#4cd7f6]',
       bg: 'bg-[#4cd7f6]/20',
       sub: 'Multi-tenant database policies active',
@@ -93,7 +94,7 @@ export default function AdminSecurityPage() {
       label: 'Security Audit Events',
       value: stats ? stats.auditLogsCount.toLocaleString() : '0',
       unit: 'Events',
-      icon: 'history',
+      icon: History,
       color: 'text-[#d0bcff]',
       bg: 'bg-[#d0bcff]/20',
       sub: 'Immutable audit trail records',
@@ -106,7 +107,7 @@ export default function AdminSecurityPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#d0bcff]">lock</span>
+            <span className="size-[16px] text-[#d0bcff]"><Lock className="size-[16px] text-[#d0bcff]" /></span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#d0bcff]">IAM & Compliance</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-[#e5e1e4] tracking-tight">Security & Access Control</h1>
@@ -118,9 +119,7 @@ export default function AdminSecurityPage() {
           disabled={refreshing}
           className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-medium hover:bg-[#353437] hover:text-[#d0bcff] transition-all border border-[#494454]/30"
         >
-          <span className={`material-symbols-outlined text-[16px] ${refreshing ? 'animate-spin' : ''}`}>
-            refresh
-          </span>
+          <span className="size-[16px] ${refreshing ? 'animate-spin' : ''}"><RefreshCw className="size-[16px] ${refreshing ? 'animate-spin' : ''}" /></span>
           <span>Re-audit Access Controls</span>
         </button>
       </div>
@@ -132,7 +131,7 @@ export default function AdminSecurityPage() {
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#958ea0]">{m.label}</span>
               <div className={`p-1.5 rounded-lg ${m.bg} ${m.color}`}>
-                <span className="material-symbols-outlined text-[18px]">{m.icon}</span>
+                <m.icon className="size-[18px]" />
               </div>
             </div>
             <div className="flex items-baseline gap-1.5">
@@ -148,7 +147,7 @@ export default function AdminSecurityPage() {
       <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 overflow-hidden shadow-lg">
         <div className="p-5 border-b border-[#494454]/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#d0bcff] text-[20px]">manage_accounts</span>
+            <span className="text-[#d0bcff] size-[20px]"><UserCog className="text-[#d0bcff] size-[20px]" /></span>
             <h2 className="font-jakarta font-semibold text-[18px] text-[#e5e1e4]">IAM Role Access Matrix</h2>
           </div>
           <span className="text-[11px] text-[#958ea0] font-mono">Live Identity Counts</span>
@@ -207,7 +206,7 @@ export default function AdminSecurityPage() {
       <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 overflow-hidden shadow-lg">
         <div className="p-5 border-b border-[#494454]/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#4edea3] text-[20px]">verified_user</span>
+            <span className="text-[#4edea3] size-[20px]"><ShieldCheck className="text-[#4edea3] size-[20px]" /></span>
             <h2 className="font-jakarta font-semibold text-[18px] text-[#e5e1e4]">Security Posture & Enforcement Checklist</h2>
           </div>
           <span className="text-[11px] text-[#4edea3] font-mono flex items-center gap-1.5">
@@ -226,7 +225,7 @@ export default function AdminSecurityPage() {
             policies.map((p, i) => (
               <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 hover:bg-[#201f22]/50 transition-colors">
                 <div className="flex items-start gap-3">
-                  <span className={`material-symbols-outlined text-[22px] ${p.color} mt-0.5`}>{p.icon}</span>
+                  <span className={`size-[22px] ${p.color} mt-0.5`}><p.icon className="size-[22px]" /></span>
                   <div>
                     <p className="text-[14px] font-semibold text-[#e5e1e4] font-jakarta">{p.name}</p>
                     <p className="text-[12px] text-[#cbc3d7] font-inter">{p.detail}</p>

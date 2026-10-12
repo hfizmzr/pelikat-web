@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowLeft, LoaderCircle, Shirt } from "lucide-react"
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -111,7 +112,7 @@ export default function NewEventPage() {
             onClick={() => router.push('/organizer/events')}
             className="w-10 h-10 rounded-xl bg-[#1c1b1d] border border-[#23232b] flex items-center justify-center text-[#cbc3d7] hover:bg-[#201f22] hover:text-[#e5e1e4] transition-colors"
           >
-            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+            <span className="size-[20px]"><ArrowLeft className="size-[20px]" /></span>
           </button>
           <div>
             <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-[#d0bcff]/10 text-[#e9ddff] uppercase w-fit mb-1 block">New Campaign</span>
@@ -207,7 +208,7 @@ export default function NewEventPage() {
             {/* Inventory Section */}
             <div className="bg-[#201f22] rounded-xl border border-[#23232b] p-5 w-full">
               <div className="flex items-center gap-3 mb-5">
-                <span className="material-symbols-outlined text-[20px] text-[#a078ff]">apparel</span>
+                <span className="size-[20px] text-[#a078ff]"><Shirt className="size-[20px] text-[#a078ff]" /></span>
                 <div>
                   <h2 className="text-[14px] font-bold text-[#e5e1e4]">REPC Shirt Inventory</h2>
                   <p className="text-[12px] text-[#958ea0]">Initial race kit stock by size</p>
@@ -246,7 +247,7 @@ export default function NewEventPage() {
               >
                 {loading ? (
                   <>
-                    <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                    <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
                     Creating...
                   </>
                 ) : (

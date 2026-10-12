@@ -1,3 +1,4 @@
+import { Activity, ArrowRight, BadgeCheck, Building2, Download, ExternalLink, Footprints, Megaphone, Settings, SlidersHorizontal, ToggleRight, TriangleAlert, Zap } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { StorageUsage } from '@/components/admin/storage-usage'
@@ -71,7 +72,7 @@ export default async function AdminDashboard() {
       label: 'Active Platform Tenants',
       value: activeOrganizersCount ?? 0,
       unit: 'Tenants',
-      icon: 'corporate_fare',
+      icon: Building2,
       iconColor: 'text-[#d0bcff]',
       iconBg: 'bg-[#a078ff]/20',
       glowColor: 'bg-[#d0bcff]/5',
@@ -83,7 +84,7 @@ export default async function AdminDashboard() {
       label: 'Aggregate Registrations',
       value: (registrationsCount ?? 0).toLocaleString(),
       unit: 'Athletes',
-      icon: 'directions_run',
+      icon: Footprints,
       iconColor: 'text-[#4cd7f6]',
       iconBg: 'bg-[#4cd7f6]/20',
       glowColor: 'bg-[#4cd7f6]/5',
@@ -96,7 +97,7 @@ export default async function AdminDashboard() {
       label: 'Platform Events',
       value: eventsCount ?? 0,
       unit: 'Events',
-      icon: 'sprint',
+      icon: Zap,
       iconColor: 'text-[#4edea3]',
       iconBg: 'bg-[#4edea3]/20',
       glowColor: 'bg-[#4edea3]/5',
@@ -108,7 +109,7 @@ export default async function AdminDashboard() {
       label: 'System SLA & Latency',
       value: '99.99%',
       unit: '',
-      icon: 'hub',
+      icon: Activity,
       iconColor: 'text-[#4edea3]',
       iconBg: 'bg-[#4edea3]/20',
       glowColor: 'bg-[#4edea3]/10',
@@ -157,14 +158,14 @@ export default async function AdminDashboard() {
             href="/admin/audit-logs"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-medium hover:bg-[#353437] hover:text-[#d0bcff] transition-all border border-[#494454]/30"
           >
-            <span className="material-symbols-outlined text-[16px]">download</span>
+            <span className="size-[16px]"><Download className="size-[16px]" /></span>
             <span>Export Fleet Telemetry</span>
           </a>
           <Link
             href="/admin/organizers"
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#a078ff] text-[#340080] text-[13px] font-semibold hover:bg-[#d0bcff] transition-all shadow-[0_0_20px_rgba(160,120,255,0.35)]"
           >
-            <span className="material-symbols-outlined text-[18px]">campaign</span>
+            <span className="size-[18px]"><Megaphone className="size-[18px]" /></span>
             <span>Manage Organizers</span>
           </Link>
         </div>
@@ -198,7 +199,7 @@ export default async function AdminDashboard() {
                 </div>
               </div>
               <div className={`p-1.5 rounded-lg ${card.iconBg} ${card.iconColor} shrink-0`}>
-                <span className="material-symbols-outlined text-[22px]">{card.icon}</span>
+                <card.icon className="size-[22px]" />
               </div>
             </div>
 
@@ -282,7 +283,7 @@ export default async function AdminDashboard() {
       {(expiringSoonCount ?? 0) > 0 && (
         <div className="w-full bg-[#93000a]/10 rounded-xl p-5 border border-[#ffb4ab]/20 flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">warning</span>
+            <span className="size-[20px] text-[#ffb4ab]"><TriangleAlert className="size-[20px] text-[#ffb4ab]" /></span>
             <h3 className="font-semibold text-[#ffb4ab] text-[15px] font-jakarta">
               {expiringSoonCount} Subscription(s) Expiring Within 7 Days
             </h3>
@@ -319,7 +320,7 @@ export default async function AdminDashboard() {
               href="/admin/organizers"
               className="flex-1 lg:flex-none px-4 py-2 rounded-lg bg-[#d0bcff] hover:bg-[#6d3bd7] text-[#3c0091] hover:text-white text-[13px] font-semibold transition-all flex items-center justify-center gap-1.5 shadow-md glow-primary font-inter"
             >
-              <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+              <span className="size-[18px]"><ExternalLink className="size-[18px]" /></span>
               Manage All Organizers
             </Link>
           </div>
@@ -404,7 +405,7 @@ export default async function AdminDashboard() {
                             className="p-1.5 rounded-lg bg-[#201f22] hover:bg-[#d0bcff] hover:text-[#3c0091] text-[#d0bcff] transition-all border border-[#494454]/30"
                             title="Manage"
                           >
-                            <span className="material-symbols-outlined text-[18px]">settings</span>
+                            <span className="size-[18px]"><Settings className="size-[18px]" /></span>
                           </Link>
                         </div>
                       </td>
@@ -426,7 +427,7 @@ export default async function AdminDashboard() {
             className="text-[#d0bcff] hover:text-[#e5e1e4] transition-colors flex items-center gap-1 font-medium"
           >
             View All Organizers
-            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+            <span className="size-[14px]"><ArrowRight className="size-[14px]" /></span>
           </Link>
         </div>
       </div>
@@ -438,7 +439,7 @@ export default async function AdminDashboard() {
         <div className="xl:col-span-7 bg-[#1c1b1d] rounded-xl p-5 shadow-md border border-[#494454]/30 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#4edea3] text-[20px]">verified</span>
+              <span className="text-[#4edea3] size-[20px]"><BadgeCheck className="text-[#4edea3] size-[20px]" /></span>
               <h3 className="font-semibold text-[#e5e1e4] text-[16px] font-jakarta">Recent Audit Log</h3>
             </div>
             <Link
@@ -446,7 +447,7 @@ export default async function AdminDashboard() {
               className="text-[11px] text-[#d0bcff] hover:text-[#e5e1e4] transition-colors flex items-center gap-1 font-medium font-inter"
             >
               View Ledger
-              <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              <span className="size-[14px]"><ArrowRight className="size-[14px]" /></span>
             </Link>
           </div>
 
@@ -485,7 +486,7 @@ export default async function AdminDashboard() {
           <div className="bg-[#1c1b1d] rounded-xl p-5 shadow-md border border-[#494454]/30 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#d0bcff] text-[20px]">toggle_on</span>
+                <span className="text-[#d0bcff] size-[20px]"><ToggleRight className="text-[#d0bcff] size-[20px]" /></span>
                 <h3 className="font-semibold text-[#e5e1e4] text-[16px] font-jakarta">Feature Flags & Circuit</h3>
               </div>
               <span className="text-[11px] text-[#958ea0] font-mono">STRICT MODE</span>
@@ -540,7 +541,7 @@ export default async function AdminDashboard() {
                 className="px-3 py-1 rounded-lg bg-[#201f22] hover:bg-[#a078ff]/20 hover:text-[#d0bcff] text-[#958ea0] transition-colors text-[11px] font-medium font-inter border border-[#494454]/30 flex items-center gap-1"
               >
                 <span>Configure</span>
-                <span className="material-symbols-outlined text-[13px]">tune</span>
+                <span className="size-[13px]"><SlidersHorizontal className="size-[13px]" /></span>
               </Link>
             </div>
           </div>

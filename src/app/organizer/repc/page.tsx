@@ -1,3 +1,4 @@
+import { CircleCheck, Clock, MapPin, QrCode } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -52,7 +53,7 @@ export default async function OrganizerRepcPage() {
           </div>
           <Link href="/organizer/events">
             <button className="px-4 py-2.5 bg-[#4edea3]/20 text-[#4edea3] hover:bg-[#4edea3]/30 text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 transition-colors border border-[#4edea3]/20 shadow-sm">
-              <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+              <span className="size-[18px]"><QrCode className="size-[18px]" /></span>
               Launch Scanner HUD
             </button>
           </Link>
@@ -83,12 +84,12 @@ export default async function OrganizerRepcPage() {
           </div>
 
           {[
-            { label: 'Awaiting Collection', value: totalPaid - totalCheckedIn, icon: 'schedule', color: 'text-[#d0bcff]' },
-            { label: 'Total Confirmed', value: totalPaid, icon: 'check_circle', color: 'text-[#4edea3]' },
+            { label: 'Awaiting Collection', value: totalPaid - totalCheckedIn, icon: Clock, color: 'text-[#d0bcff]' },
+            { label: 'Total Confirmed', value: totalPaid, icon: CircleCheck, color: 'text-[#4edea3]' },
           ].map(s => (
             <div key={s.label} className="bg-[#1c1b1d] rounded-xl p-6 border border-[#23232b] flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-[#201f22] flex items-center justify-center">
-                <span className={`material-symbols-outlined text-[28px] ${s.color}`}>{s.icon}</span>
+                <span className={`size-[28px] ${s.color}`}><s.icon className="size-[28px]" /></span>
               </div>
               <div>
                 <div className="text-[12px] leading-[16px] tracking-[0.02em] text-[#cbc3d7] uppercase font-medium mb-1">{s.label}</div>
@@ -116,7 +117,7 @@ export default async function OrganizerRepcPage() {
                         <div>
                           <div className="text-[15px] leading-[20px] font-semibold text-[#e5e1e4]">{event.name}</div>
                           <div className="text-[12px] text-[#958ea0] flex items-center gap-1 mt-0.5">
-                            <span className="material-symbols-outlined text-[14px]">location_on</span>
+                            <span className="size-[14px]"><MapPin className="size-[14px]" /></span>
                             {event.location || 'TBD'} • {new Date(event.event_date).toLocaleDateString('en-MY')}
                           </div>
                         </div>
@@ -139,7 +140,7 @@ export default async function OrganizerRepcPage() {
                     </div>
                     <Link href={`/organizer/events/${event.id}/checkin`}>
                       <button className="shrink-0 px-4 py-2 bg-[#201f22] hover:bg-[#2a2a2c] text-[#e5e1e4] text-[12px] font-medium rounded-lg flex items-center gap-1.5 border border-[#353437] transition-colors">
-                        <span className="material-symbols-outlined text-[16px]">qr_code_scanner</span>
+                        <span className="size-[16px]"><QrCode className="size-[16px]" /></span>
                         Check-in
                       </button>
                     </Link>
@@ -152,7 +153,7 @@ export default async function OrganizerRepcPage() {
 
         {activeEvents.length === 0 && (
           <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] p-12 flex flex-col items-center justify-center text-center">
-            <span className="material-symbols-outlined text-[64px] text-[#494454] mb-4">qr_code_scanner</span>
+            <span className="size-[64px] text-[#494454] mb-4"><QrCode className="size-[64px] text-[#494454] mb-4" /></span>
             <h3 className="text-[18px] font-semibold text-[#e5e1e4] mb-2">No active events</h3>
             <p className="text-[14px] text-[#958ea0]">Publish an event to enable REPC collection tracking</p>
           </div>

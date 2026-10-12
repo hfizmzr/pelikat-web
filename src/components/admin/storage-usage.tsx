@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
+import { HardDrive, Loader2 } from "lucide-react"
 
 interface BucketUsage {
   name: string
@@ -57,7 +57,7 @@ export function StorageUsage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#d0bcff] text-[20px]">hard_drive</span>
+          <span className="text-[#d0bcff] size-[20px]"><HardDrive className="text-[#d0bcff] size-[20px]" /></span>
           <h3 className="font-semibold text-[#e5e1e4] text-[15px] font-jakarta">Storage Usage</h3>
         </div>
         <span className="text-[11px] text-[#958ea0] font-mono">

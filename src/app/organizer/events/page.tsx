@@ -1,3 +1,4 @@
+import { ArrowRight, Badge, Banknote, Calendar, CalendarClock, CircleCheck, CirclePlus, ClipboardCheck, Flag, MapPin, QrCode, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -15,7 +16,7 @@ export default async function OrganizerEventsPage() {
   if (!organizerId) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-[#958ea0]">
-        <span className="material-symbols-outlined text-[64px] mb-4">flag</span>
+        <span className="size-[64px] mb-4"><Flag className="size-[64px] mb-4" /></span>
         <h2 className="text-[18px] leading-[24px] font-semibold text-[#e5e1e4] mb-2">No organizer profile</h2>
         <p className="text-[14px]">No organizer account is linked to this user.</p>
       </div>
@@ -63,7 +64,7 @@ export default async function OrganizerEventsPage() {
               <h3 className="text-[16px] leading-[24px] font-semibold text-[#e5e1e4] group-hover:text-[#d0bcff] transition-colors">{event.name}</h3>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[12px] leading-[16px] text-[#958ea0] flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                  <span className="size-[14px]"><Calendar className="size-[14px]" /></span>
                   {new Date(event.event_date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                 </span>
                 {daysLeft > 0 && daysLeft < 60 && (
@@ -80,7 +81,7 @@ export default async function OrganizerEventsPage() {
 
           {event.location && (
             <p className="text-[12px] leading-[16px] text-[#958ea0] flex items-center gap-1 mb-4">
-              <span className="material-symbols-outlined text-[14px]">location_on</span>
+              <span className="size-[14px]"><MapPin className="size-[14px]" /></span>
               {event.location}
             </p>
           )}
@@ -88,9 +89,9 @@ export default async function OrganizerEventsPage() {
           {/* Stats row */}
           <div className="grid grid-cols-3 gap-2 mb-4">
             {[
-              { icon: 'badge', label: 'Registered', value: regs.length },
-              { icon: 'payments', label: 'Paid', value: paid },
-              { icon: 'fact_check', label: 'Checked In', value: checkedIn },
+              { icon: Badge, label: 'Registered', value: regs.length },
+              { icon: Banknote, label: 'Paid', value: paid },
+              { icon: ClipboardCheck, label: 'Checked In', value: checkedIn },
             ].map(stat => (
               <div key={stat.label} className="bg-[#201f22] rounded-lg p-2.5 flex flex-col gap-0.5">
                 <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-[#e5e1e4]">{stat.value}</span>
@@ -136,19 +137,19 @@ export default async function OrganizerEventsPage() {
             <div className="flex gap-1.5">
               <Link href={`/organizer/events/${event.id}/registrations`}>
                 <button className="p-2 rounded-lg text-[#958ea0] hover:text-[#e5e1e4] hover:bg-[#2a2a2c] transition-colors" title="Registrations">
-                  <span className="material-symbols-outlined text-[18px]">badge</span>
+                  <span className="size-[18px]"><Badge className="size-[18px]" /></span>
                 </button>
               </Link>
               <Link href={`/organizer/events/${event.id}/checkin`}>
                 <button className="p-2 rounded-lg text-[#958ea0] hover:text-[#4edea3] hover:bg-[#2a2a2c] transition-colors" title="Check-in">
-                  <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+                  <span className="size-[18px]"><QrCode className="size-[18px]" /></span>
                 </button>
               </Link>
             </div>
             <Link href={`/organizer/events/${event.id}`}>
               <button className="px-4 py-2 bg-[#201f22] hover:bg-[#2a2a2c] text-[#e5e1e4] text-[12px] leading-[16px] tracking-[0.02em] font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-[#353437]">
                 Manage
-                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                <span className="size-[16px]"><ArrowRight className="size-[16px]" /></span>
               </button>
             </Link>
           </div>
@@ -176,7 +177,7 @@ export default async function OrganizerEventsPage() {
           </div>
           <Link href="/organizer/events/new">
             <button className="px-5 py-2.5 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-[#a078ff] transition-all shadow-[0_0_16px_rgba(208,188,255,0.25)] whitespace-nowrap">
-              <span className="material-symbols-outlined text-[18px]">add_circle</span>
+              <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
               Create Event
             </button>
           </Link>
@@ -186,13 +187,13 @@ export default async function OrganizerEventsPage() {
         {events && events.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: 'Total Events', value: events.length, icon: 'flag', color: 'text-[#d0bcff]' },
-              { label: 'Published', value: events.filter(e => e.status === 'published').length, icon: 'check_circle', color: 'text-[#4edea3]' },
-              { label: 'Upcoming', value: upcoming.length, icon: 'calendar_clock', color: 'text-[#4cd7f6]' },
-              { label: 'Total Runners', value: events.reduce((a, e) => a + (e.registrations?.length || 0), 0), icon: 'group', color: 'text-[#d0bcff]' },
+              { label: 'Total Events', value: events.length, icon: Flag, color: 'text-[#d0bcff]' },
+              { label: 'Published', value: events.filter(e => e.status === 'published').length, icon: CircleCheck, color: 'text-[#4edea3]' },
+              { label: 'Upcoming', value: upcoming.length, icon: CalendarClock, color: 'text-[#4cd7f6]' },
+              { label: 'Total Runners', value: events.reduce((a, e) => a + (e.registrations?.length || 0), 0), icon: Users, color: 'text-[#d0bcff]' },
             ].map(s => (
               <div key={s.label} className="bg-[#1c1b1d] rounded-xl p-4 border border-[#23232b] flex items-center gap-3">
-                <span className={`material-symbols-outlined text-[24px] ${s.color}`}>{s.icon}</span>
+                <span className={`size-[24px] ${s.color}`}><s.icon className="size-[24px]" /></span>
                 <div>
                   <div className="text-[24px] leading-[28px] tracking-[-0.01em] font-semibold text-[#e5e1e4]">{s.value.toLocaleString()}</div>
                   <div className="text-[11px] text-[#958ea0]">{s.label}</div>
@@ -233,7 +234,7 @@ export default async function OrganizerEventsPage() {
         {(!events || events.length === 0) && (
           <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] p-16 flex flex-col items-center justify-center text-center">
             <div className="w-20 h-20 rounded-full bg-[#d0bcff]/10 flex items-center justify-center mb-6">
-              <span className="material-symbols-outlined text-[48px] text-[#d0bcff]">flag</span>
+              <span className="size-[48px] text-[#d0bcff]"><Flag className="size-[48px] text-[#d0bcff]" /></span>
             </div>
             <h3 className="text-[22px] leading-[28px] font-semibold text-[#e5e1e4] mb-2">No events yet</h3>
             <p className="text-[14px] leading-[20px] text-[#958ea0] mb-8 max-w-sm">
@@ -241,7 +242,7 @@ export default async function OrganizerEventsPage() {
             </p>
             <Link href="/organizer/events/new">
               <button className="px-6 py-3 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-[#a078ff] transition-all shadow-[0_0_20px_rgba(208,188,255,0.3)]">
-                <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
                 Create your first event
               </button>
             </Link>

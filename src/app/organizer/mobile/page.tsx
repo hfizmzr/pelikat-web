@@ -1,3 +1,5 @@
+import type { LucideIcon } from "lucide-react"
+import { Bell, Calendar, CalendarCheck, Gauge, Lock, MapPin, QrCode, ShieldCheck, ShoppingBag, Terminal, UserPlus, Users } from "lucide-react"
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import Link from 'next/link'
@@ -72,13 +74,13 @@ async function getOrganizerDashboardData() {
 }
 
 function StatCard({
-  icon,
+  icon: Icon,
   label,
   value,
   sub,
   color,
 }: {
-  icon: string
+  icon: LucideIcon
   label: string
   value: string | number
   sub?: string
@@ -108,7 +110,7 @@ function StatCard({
     <div className="flex flex-col justify-between p-4 rounded-xl bg-[#1c1b1d] shadow-sm border border-[#353437]/40">
       <div className="flex items-center justify-between">
         <span className={`p-1.5 rounded-lg ${c.bg} ${c.text}`}>
-          <span className="material-symbols-outlined text-[20px]">{icon}</span>
+          <Icon className="size-[20px]" />
         </span>
       </div>
       <div className="mt-4">
@@ -133,7 +135,7 @@ export default async function OrganizerMobileHome() {
     return (
       <div className="flex items-center justify-center min-h-screen text-[#958ea0]">
         <div className="text-center">
-          <span className="material-symbols-outlined text-[48px] mb-3 block">lock</span>
+          <span className="size-[48px] mb-3 block"><Lock className="size-[48px] mb-3 block" /></span>
           <p className="text-[14px]">Session expired. Please log in.</p>
         </div>
       </div>
@@ -168,7 +170,7 @@ export default async function OrganizerMobileHome() {
           </div>
           <div className="flex items-center gap-2">
             <button className="relative w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] hover:text-[#e5e1e4] transition-colors">
-              <span className="material-symbols-outlined text-[22px]">notifications</span>
+              <span className="size-[22px]"><Bell className="size-[22px]" /></span>
               <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#4cd7f6] ring-2 ring-[#131315]" />
             </button>
           </div>
@@ -184,9 +186,7 @@ export default async function OrganizerMobileHome() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#d0bcff]/20 text-[#d0bcff]">
-                  <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                    terminal
-                  </span>
+                  <Terminal className="size-[15px]" />
                 </span>
                 <span className="text-[10px] leading-[14px] tracking-wider uppercase text-[#cbc3d7] font-bold">
                   Race Director Command
@@ -214,13 +214,13 @@ export default async function OrganizerMobileHome() {
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[#cbc3d7] mt-1 text-[11px]">
                   {data.nextEvent.location && (
                     <span className="inline-flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[13px] text-[#d0bcff]">location_on</span>
+                      <span className="size-[13px] text-[#d0bcff]"><MapPin className="size-[13px] text-[#d0bcff]" /></span>
                       {data.nextEvent.location}
                     </span>
                   )}
                   <span className="w-1 h-1 rounded-full bg-[#353437]" />
                   <span className="inline-flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[13px] text-[#4edea3]">group</span>
+                    <span className="size-[13px] text-[#4edea3]"><Users className="size-[13px] text-[#4edea3]" /></span>
                     {data.nextEvent.registered} Registered
                   </span>
                 </div>
@@ -236,10 +236,10 @@ export default async function OrganizerMobileHome() {
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { href: '/organizer/mobile/scanner', icon: 'qr_code_scanner', label: 'BIB Scanner', color: 'text-[#d0bcff]', bg: 'bg-[#d0bcff]/10' },
-              { href: '/organizer/mobile/events', icon: 'calendar_today', label: 'My Events', color: 'text-[#4cd7f6]', bg: 'bg-[#4cd7f6]/10' },
-              { href: '/organizer/mobile/console', icon: 'speed', label: 'Race Console', color: 'text-[#4edea3]', bg: 'bg-[#4edea3]/10' },
-              { href: '/organizer/mobile/merch', icon: 'shopping_bag', label: 'Kit Inventory', color: 'text-[#a078ff]', bg: 'bg-[#a078ff]/10' },
+              { href: '/organizer/mobile/scanner', icon: QrCode, label: 'BIB Scanner', color: 'text-[#d0bcff]', bg: 'bg-[#d0bcff]/10' },
+              { href: '/organizer/mobile/events', icon: Calendar, label: 'My Events', color: 'text-[#4cd7f6]', bg: 'bg-[#4cd7f6]/10' },
+              { href: '/organizer/mobile/console', icon: Gauge, label: 'Race Console', color: 'text-[#4edea3]', bg: 'bg-[#4edea3]/10' },
+              { href: '/organizer/mobile/merch', icon: ShoppingBag, label: 'Kit Inventory', color: 'text-[#a078ff]', bg: 'bg-[#a078ff]/10' },
             ].map((item) => (
               <Link
                 key={item.href}
@@ -247,7 +247,7 @@ export default async function OrganizerMobileHome() {
                 className="flex flex-col items-center justify-center p-4 rounded-xl bg-[#1c1b1d] border border-[#353437]/40 gap-2 active:scale-95 transition-transform shadow-sm"
               >
                 <span className={`p-2.5 rounded-xl ${item.bg} ${item.color}`}>
-                  <span className="material-symbols-outlined text-[24px]">{item.icon}</span>
+                  <item.icon className="size-[24px]" />
                 </span>
                 <span className="text-[12px] leading-[16px] font-semibold text-[#e5e1e4] text-center">
                   {item.label}
@@ -269,28 +269,28 @@ export default async function OrganizerMobileHome() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <StatCard
-              icon="how_to_reg"
+              icon={UserPlus}
               label="Check-in Velocity"
               value={`${data.checkedIn}`}
               sub={`${checkInPercent}% rate`}
               color="primary"
             />
             <StatCard
-              icon="group"
+              icon={Users}
               label="Total Registered"
               value={data.totalRunners}
               sub={`${data.confirmedRunners} confirmed`}
               color="secondary"
             />
             <StatCard
-              icon="event_available"
+              icon={CalendarCheck}
               label="Upcoming Events"
               value={data.upcomingCount}
               sub="Active pipeline"
               color="tertiary"
             />
             <StatCard
-              icon="verified_user"
+              icon={ShieldCheck}
               label="Safety Status"
               value="Green"
               sub="All systems go"
@@ -327,7 +327,7 @@ export default async function OrganizerMobileHome() {
                 href={`/organizer/mobile/scanner`}
                 className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold active:scale-95 transition-transform"
               >
-                <span className="material-symbols-outlined text-[16px]">qr_code_scanner</span>
+                <span className="size-[16px]"><QrCode className="size-[16px]" /></span>
                 Open Full Scanner
               </Link>
             </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { Download, LoaderCircle } from 'lucide-react'
 import { generateBadgeCertificate } from '@/lib/actions/cert'
 
 export interface BadgeCertificate {
@@ -49,9 +50,11 @@ export function BadgeCertificateButton({ badge }: { badge: BadgeCertificate }) {
         disabled={isPending}
         className="py-1.5 rounded-md bg-[#d0bcff]/15 text-[#d0bcff] text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform disabled:opacity-50"
       >
-        <span className="material-symbols-outlined text-[12px]">
-          {isPending ? 'progress_activity' : 'download'}
-        </span>
+        {isPending ? (
+          <LoaderCircle className="size-[12px] animate-spin" />
+        ) : (
+          <Download className="size-[12px]" />
+        )}
         {isPending ? 'Generating…' : 'Download Certificate'}
       </button>
       {fallbackUrl && (

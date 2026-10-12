@@ -1,3 +1,4 @@
+import { Calendar, ListFilter, MapPin, Search, SearchX, Tag, UserPlus, X } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -68,14 +69,14 @@ export default async function RunnerEventsPage({
         <div className="h-14 flex items-center justify-between">
           <h1 className="text-[20px] font-bold text-[#e5e1e4] tracking-tight">Explore Events</h1>
           <button className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1c1b1d] border border-[#353437]/60 text-[#cbc3d7] active:scale-95 transition-transform">
-            <span className="material-symbols-outlined text-[20px]">filter_list</span>
+            <span className="size-[20px]"><ListFilter className="size-[20px]" /></span>
           </button>
         </div>
 
         {/* Search Bar */}
         <form action="/runner/events" method="GET" className="mt-2 relative">
           <input type="hidden" name="period" value={period} />
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[20px] text-[#958ea0]">search</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 size-[20px] text-[#958ea0]"><Search className="absolute left-3 top-1/2 -translate-y-1/2 size-[20px] text-[#958ea0]" /></span>
           <input
             type="search"
             name="search"
@@ -88,7 +89,7 @@ export default async function RunnerEventsPage({
               href={`/runner/events?period=${period}`}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-[#353437] text-[#e5e1e4]"
             >
-              <span className="material-symbols-outlined text-[14px]">close</span>
+              <span className="size-[14px]"><X className="size-[14px]" /></span>
             </Link>
           )}
         </form>
@@ -119,7 +120,7 @@ export default async function RunnerEventsPage({
         {joinedEvents.length > 0 && !search && (
           <section className="flex flex-col gap-3">
             <h2 className="text-[15px] font-bold text-[#e5e1e4] tracking-tight flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-[#4edea3]">how_to_reg</span>
+              <span className="size-[18px] text-[#4edea3]"><UserPlus className="size-[18px] text-[#4edea3]" /></span>
               Your Registered Events
             </h2>
             <div className="flex overflow-x-auto gap-3 pb-2 -mx-5 px-5 snap-x hide-scrollbar">
@@ -143,7 +144,7 @@ export default async function RunnerEventsPage({
                       {event.name}
                     </h3>
                     <div className="mt-auto flex items-center gap-1.5 text-[11px] text-[#958ea0]">
-                      <span className="material-symbols-outlined text-[14px]">sell</span>
+                      <span className="size-[14px]"><Tag className="size-[14px]" /></span>
                       <span className="truncate">{reg?.race_categories?.name}</span>
                       <span className="mx-1">•</span>
                       <span className="font-mono text-[#cbc3d7]">BIB {reg?.bib_number || 'TBA'}</span>
@@ -173,7 +174,7 @@ export default async function RunnerEventsPage({
                     {/* Placeholder for event banner image */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1c1b1d] to-transparent opacity-80" />
                     <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-[#131315]/80 backdrop-blur-md border border-[#353437] flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[14px] text-[#d0bcff]">calendar_today</span>
+                      <span className="size-[14px] text-[#d0bcff]"><Calendar className="size-[14px] text-[#d0bcff]" /></span>
                       <span className="text-[11px] font-bold text-[#e5e1e4]">
                         {new Date(event.event_date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
@@ -185,7 +186,7 @@ export default async function RunnerEventsPage({
                     </h3>
                     {event.location && (
                       <p className="flex items-center gap-1.5 text-[12px] text-[#958ea0] mb-3">
-                        <span className="material-symbols-outlined text-[14px]">location_on</span>
+                        <span className="size-[14px]"><MapPin className="size-[14px]" /></span>
                         <span className="truncate">{event.location}</span>
                       </p>
                     )}
@@ -205,7 +206,7 @@ export default async function RunnerEventsPage({
             ) : (
               <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-2xl bg-[#1c1b1d] border border-[#353437]/40">
                 <div className="w-12 h-12 bg-[#201f22] rounded-full flex items-center justify-center mb-3">
-                  <span className="material-symbols-outlined text-[24px] text-[#958ea0]">search_off</span>
+                  <span className="size-[24px] text-[#958ea0]"><SearchX className="size-[24px] text-[#958ea0]" /></span>
                 </div>
                 <p className="text-[14px] font-bold text-[#e5e1e4] mb-1">
                   {search ? 'No events found' : 'No events available'}

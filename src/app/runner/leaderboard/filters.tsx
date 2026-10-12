@@ -1,5 +1,6 @@
 'use client'
 
+import { ChevronDown } from "lucide-react"
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 
 interface Event {
@@ -56,7 +57,7 @@ export function LeaderboardFilters({
             <option key={e.id} value={e.id}>{e.name}</option>
           ))}
         </select>
-        <span className="material-symbols-outlined absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none text-[20px]">expand_more</span>
+        <span className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]" /></span>
       </div>
 
       {showCategories && categories && categories.length > 0 && (
@@ -71,7 +72,7 @@ export function LeaderboardFilters({
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <span className="material-symbols-outlined absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none text-[20px]">expand_more</span>
+          <span className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]" /></span>
         </div>
       )}
 
@@ -85,7 +86,7 @@ export function LeaderboardFilters({
           <option value="M">Male</option>
           <option value="F">Female</option>
         </select>
-        <span className="material-symbols-outlined absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none text-[20px]">expand_more</span>
+        <span className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]" /></span>
       </div>
     </div>
   )

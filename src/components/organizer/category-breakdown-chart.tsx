@@ -1,5 +1,6 @@
 'use client'
 
+import { BarChart3 } from "lucide-react"
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
@@ -49,7 +50,7 @@ export default function CategoryBreakdownChart({ data }: { data: CategoryStat[] 
   if (data.length === 0) {
     return (
       <div className="p-8 flex flex-col items-center text-center">
-        <span className="material-symbols-outlined text-[32px] text-[#353437] mb-2">bar_chart</span>
+        <span className="size-[32px] text-[#353437] mb-2"><BarChart3 className="size-[32px] text-[#353437] mb-2" /></span>
         <p className="text-[13px] text-[#958ea0]">No categories defined yet</p>
       </div>
     )

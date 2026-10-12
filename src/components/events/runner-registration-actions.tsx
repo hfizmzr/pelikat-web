@@ -1,5 +1,6 @@
 'use client'
 
+import { CircleAlert, LoaderCircle, User } from "lucide-react"
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -159,7 +160,7 @@ export function RunnerRegistrationActions({
         } flex flex-col gap-3`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-[#4edea3]">person</span>
+              <span className="size-[18px] text-[#4edea3]"><User className="size-[18px] text-[#4edea3]" /></span>
               <span className="text-[12px] font-bold text-[#e5e1e4] uppercase tracking-wider">Using Your Saved Profile</span>
             </div>
             <a href="/runner/profile" className="text-[11px] font-bold text-[#d0bcff] hover:underline shrink-0">
@@ -223,7 +224,7 @@ export function RunnerRegistrationActions({
 
       {error && (
         <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
-          <span className="material-symbols-outlined text-[16px]">error</span>
+          <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
           {error}
         </div>
       )}
@@ -235,7 +236,7 @@ export function RunnerRegistrationActions({
       >
         {isPending ? (
           <>
-            <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+            <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
             Processing...
           </>
         ) : (

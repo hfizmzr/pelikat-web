@@ -1,5 +1,7 @@
 'use client'
 
+import type { LucideIcon } from "lucide-react"
+import { Building2, ChartLine, LayoutGrid, Lock, Menu, ShieldCheck, ToggleRight, TriangleAlert, Users, Wallet, Zap } from "lucide-react"
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -17,23 +19,23 @@ import type { User } from '@supabase/supabase-js'
 interface NavItem {
   title: string
   href: string
-  icon: string // Material Symbol name
+  icon: LucideIcon
   badge?: string
   pulse?: boolean
 }
 
 const coreFleetNav: NavItem[] = [
-  { title: 'Platform Overview', href: '/admin', icon: 'grid_view' },
-  { title: 'Tenant Organizers', href: '/admin/organizers', icon: 'apartment' },
-  { title: 'Nodes & Telemetry', href: '/admin/nodes', icon: 'monitoring', pulse: true },
-  { title: 'Global Registrations', href: '/admin/registrations', icon: 'groups' },
+  { title: 'Platform Overview', href: '/admin', icon: LayoutGrid },
+  { title: 'Tenant Organizers', href: '/admin/organizers', icon: Building2 },
+  { title: 'Nodes & Telemetry', href: '/admin/nodes', icon: ChartLine, pulse: true },
+  { title: 'Global Registrations', href: '/admin/registrations', icon: Users },
 ]
 
 const governanceNav: NavItem[] = [
-  { title: 'Audit & Compliance', href: '/admin/audit-logs', icon: 'verified_user' },
-  { title: 'Billing & Escrow', href: '/admin/billing', icon: 'account_balance_wallet' },
-  { title: 'Feature Flags', href: '/admin/settings', icon: 'toggle_on' },
-  { title: 'Security & IAM', href: '/admin/security', icon: 'lock' },
+  { title: 'Audit & Compliance', href: '/admin/audit-logs', icon: ShieldCheck },
+  { title: 'Billing & Escrow', href: '/admin/billing', icon: Wallet },
+  { title: 'Feature Flags', href: '/admin/settings', icon: ToggleRight },
+  { title: 'Security & IAM', href: '/admin/security', icon: Lock },
 ]
 
 // ─── Sidebar content (shared between desktop & mobile Sheet) ─────────────────
@@ -57,7 +59,7 @@ function SidebarContent({
       <div className="h-16 px-4 border-b border-[#23232b] flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-[#a078ff]/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[18px] text-[#d0bcff]">sprint</span>
+            <span className="size-[18px] text-[#d0bcff]"><Zap className="size-[18px] text-[#d0bcff]" /></span>
           </div>
           <span className="font-jakarta font-bold text-[17px] tracking-tight text-[#e5e1e4]">Pelikat</span>
         </div>
@@ -88,11 +90,11 @@ function SidebarContent({
               <div className="flex items-center gap-2.5">
                 <span
                   className={cn(
-                    'material-symbols-outlined text-[20px]',
+                    'flex shrink-0',
                     active ? 'text-[#340080]' : item.pulse ? 'text-[#4edea3]' : 'text-[#958ea0]'
                   )}
                 >
-                  {item.icon}
+                  <item.icon className="size-[20px]" />
                 </span>
                 <span>{item.title}</span>
               </div>
@@ -129,11 +131,11 @@ function SidebarContent({
               <div className="flex items-center gap-2.5">
                 <span
                   className={cn(
-                    'material-symbols-outlined text-[20px]',
+                    'flex shrink-0',
                     active ? 'text-[#340080]' : 'text-[#958ea0]'
                   )}
                 >
-                  {item.icon}
+                  <item.icon className="size-[20px]" />
                 </span>
                 <span>{item.title}</span>
               </div>
@@ -147,7 +149,7 @@ function SidebarContent({
         {/* Failsafe Armed indicator */}
         <div className="p-2 rounded-lg bg-[#93000a]/10 border border-[#ffb4ab]/20 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-[#ffb4ab]">
-            <span className="material-symbols-outlined text-[16px]">warning</span>
+            <span className="size-[16px]"><TriangleAlert className="size-[16px]" /></span>
             <span className="text-[10px] font-mono font-bold uppercase font-inter">Failsafe Armed</span>
           </div>
           <span className="w-1.5 h-1.5 rounded-full bg-[#ffb4ab] animate-pulse" />
@@ -176,7 +178,7 @@ function SidebarContent({
             title="Log out"
             onClick={onLogout}
           >
-            <span className="material-symbols-outlined text-[18px]">lock</span>
+            <span className="size-[18px]"><Lock className="size-[18px]" /></span>
           </button>
         </div>
       </div>
@@ -239,7 +241,7 @@ export function AdminMobileNav() {
     <Sheet>
       <SheetTrigger asChild>
         <button className="p-2 rounded-lg text-[#cbc3d7] hover:text-[#e5e1e4] hover:bg-[#201f22] transition-colors lg:hidden">
-          <span className="material-symbols-outlined text-[22px]">menu</span>
+          <span className="size-[22px]"><Menu className="size-[22px]" /></span>
         </button>
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0 border-r border-[#23232b] bg-[#0e0e10]">
