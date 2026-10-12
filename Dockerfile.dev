@@ -18,9 +18,9 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --no-frozen-lockfile
 
-# ── Install Playwright browsers and dependencies for the container ──
-# This ensures the browser binaries are baked right into the image layer
-RUN npx playwright install
+# ── Playwright browsers: NOT installed here.
+#    E2E runs on the host (see playwright.config.ts → localhost:3000);
+#    browsers in this image would add ~1.3GB of dead weight. ──────────
 
 EXPOSE 3000
 

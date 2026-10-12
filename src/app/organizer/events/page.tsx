@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default async function OrganizerEventsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  let organizerId = user?.app_metadata?.organizer_id as string | undefined
+  const organizerId = user?.app_metadata?.organizer_id as string | undefined
 
   if (!organizerId) {
     return (

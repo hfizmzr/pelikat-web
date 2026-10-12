@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 import {
   Dialog,
@@ -12,7 +11,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import type { Organizer } from './types'
 
 const supabase = createClient()
@@ -53,14 +51,19 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
     if (open) {
       resetForm()
     }
+    // Purposely re-runs only on dialog open; resetForm is stable at call time
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
+    // Normalize once on submit — regenerating on every keystroke fights
+    // manual slug entry (dashes get eaten mid-typing).
+    const finalSlug = generateSlug(slug)
 
     if (isEdit) {
-      const updates: Partial<Organizer> = { name, slug }
+      const updates: Partial<Organizer> = { name, slug: finalSlug }
       if (subExpiresAt) {
         updates.sub_expires_at = new Date(subExpiresAt).toISOString()
       }
@@ -86,7 +89,7 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
         .from('organizers')
         .insert({
           name,
-          slug,
+          slug: finalSlug,
           contact_email: contactEmail || null,
           is_active: true,
         })
@@ -99,9 +102,30 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
         const { data: created } = await supabase
           .from('organizers')
           .select('*')
-          .eq('slug', slug)
+          .eq('slug', finalSlug)
           .single()
         if (created) {
+          // Fire-and-forget welcome email (UC01 step 5). The edge
+          // function is a no-op stub when RESEND_API_KEY is absent.
+          if (contactEmail) {
+            void supabase.functions
+              .invoke('send-transactional-email', {
+                body: {
+                  type: 'organizer_welcome',
+                  organizerName: created.name,
+                  organizerEmail: contactEmail,
+                  loginUrl: `${window.location.origin}/login`,
+                },
+              })
+              .then((res) => {
+                if (res.error || !res.data?.success) {
+                  console.error('send-transactional-email failed:', res.error || res.data)
+                }
+              })
+              .catch((err) => {
+                console.error('send-transactional-email error:', err)
+              })
+          }
           onSuccess(created)
           onOpenChange(false)
         }
@@ -140,7 +164,7 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
               placeholder="e.g., Jakarta Marathon"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onBlur={(e) => !isEdit && setSlug(generateSlug(e.target.value))}
+              onBlur={(e) => !isEdit && !slug && setSlug(generateSlug(e.target.value))}
               required
               className="bg-[#131315] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#494454] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
             />
@@ -151,7 +175,7 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
               id={isEdit ? 'edit-slug' : 'slug'}
               placeholder="jakarta-marathon"
               value={slug}
-              onChange={(e) => setSlug(generateSlug(e.target.value))}
+              onChange={(e) => setSlug(e.target.value)}
               required
               className="bg-[#131315] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#494454] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
             />

@@ -11,7 +11,7 @@ interface Props {
   }
 }
 
-export default function DocumentCapture({ userId, currentDocument }: Props) {
+export default function DocumentCapture({ currentDocument }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -176,6 +176,8 @@ export default function DocumentCapture({ userId, currentDocument }: Props) {
         ) : previewUrl ? (
           <div className="flex flex-col gap-4">
             <div className="relative overflow-hidden rounded-xl border border-[#353437]/60 bg-[#131315]">
+              {/* Local blob preview — next/image adds no benefit for object URLs */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
                 alt="IC/Passport preview"

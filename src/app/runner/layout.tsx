@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
-import Link from 'next/link'
 import { PWAInstallPrompt } from '@/components/pwa/install-prompt'
+import Link from 'next/link'
 
 function BottomNavLink({
   href,
@@ -56,13 +56,17 @@ export default function RunnerLayout({
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
+
+  // Standalone-PWA gate. Release default: DISABLED (env flag must be set
+  // explicitly to 'true' to activate); flip in the deploy env when shipping.
+  const pwaGateEnabled = process.env.NEXT_PUBLIC_PWA_GATE === 'true'
   const [isStandalone, setIsStandalone] = useState<boolean | null>(null)
 
   useEffect(() => {
     async function checkRole() {
       const { data: { user } } = await supabase.auth.getUser()
       const role = getUserRole(user)
-      
+
       if (role !== 'runner') {
         router.push('/')
       }
@@ -71,16 +75,20 @@ export default function RunnerLayout({
   }, [router, supabase])
 
   useEffect(() => {
+    if (!pwaGateEnabled) return
     // Detect standalone PWA mode
-    const checkIsStandalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in navigator && (navigator as any).standalone)
-    setIsStandalone(checkIsStandalone)
-  }, [])
+    const navWithStandalone = navigator as Navigator & { standalone?: boolean }
+    setIsStandalone(
+      window.matchMedia('(display-mode: standalone)').matches ||
+      ('standalone' in navigator && !!navWithStandalone.standalone)
+    )
+  }, [pwaGateEnabled])
 
   // Show nothing while checking display mode to avoid flicker
-  if (isStandalone === null) return null
+  if (pwaGateEnabled && isStandalone === null) return null
 
   // If not standalone, force the installation prompt
-  if (!isStandalone) {
+  if (pwaGateEnabled && !isStandalone) {
     return <PWAInstallPrompt />
   }
 

@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ArrowUpDown, Loader2 } from 'lucide-react'
+import { ArrowUpDown } from 'lucide-react'
 import type { Organizer } from './types'
 
 // ─── CSV export helper ────────────────────────────────────────────────────────

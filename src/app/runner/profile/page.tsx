@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import DocumentCapture from "@/components/profile/document-capture";
-import { deleteRunnerAccount } from "@/lib/actions/account";
+import { deleteRunnerAccount, storeEncryptedIc } from "@/lib/actions/account";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -13,9 +13,15 @@ export default function RunnerProfilePage() {
   const supabase = createClient();
   const router = useRouter();
 
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<{
+    pdpa_agreed?: boolean
+    ic_encrypted?: string | null
+    ic_document_path?: string | null
+    ic_document_mime?: string | null
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -23,7 +29,14 @@ export default function RunnerProfilePage() {
     dob: "",
     gender: "",
     t_shirt_size: "",
+    emergency_contact_name: "",
+    emergency_contact_phone: "",
   });
+
+  const [icInput, setIcInput] = useState("");
+  const [icSaving, setIcSaving] = useState(false);
+  const [icError, setIcError] = useState<string | null>(null);
+  const [icSaved, setIcSaved] = useState(false);
 
   const [deleteStep, setDeleteStep] = useState<'idle' | 'confirm' | 'deleting'>('idle')
   const [deleteConfirm, setDeleteConfirm] = useState('')
@@ -31,7 +44,7 @@ export default function RunnerProfilePage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("runner_profiles")
         .select("*")
         .eq("user_id", user?.id)
@@ -45,6 +58,8 @@ export default function RunnerProfilePage() {
           dob: data.dob || "",
           gender: data.gender || "",
           t_shirt_size: data.t_shirt_size || "",
+          emergency_contact_name: data.emergency_contact_name || "",
+          emergency_contact_phone: data.emergency_contact_phone || "",
         });
       }
       setLoading(false);
@@ -55,22 +70,69 @@ export default function RunnerProfilePage() {
     }
   }, [user, supabase]);
 
+  const updateField = (
+    key: keyof typeof formData,
+    value: string
+  ) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (saveError) setSaveError(null);
+  };
+
   const handleSave = async () => {
+    if (saving) return;
     setSaving(true);
+    setSaveError(null);
 
-    const { error } = await supabase.from("runner_profiles").upsert({
-      user_id: user?.id,
-      full_name: formData.full_name,
-      phone: formData.phone,
-      dob: formData.dob,
-      gender: formData.gender,
-      t_shirt_size: formData.t_shirt_size,
-    }, { onConflict: "user_id" });
+    try {
+      const { error } = await supabase.from("runner_profiles").upsert({
+        user_id: user?.id,
+        full_name: formData.full_name,
+        phone: formData.phone,
+        dob: formData.dob,
+        gender: formData.gender,
+        t_shirt_size: formData.t_shirt_size,
+        emergency_contact_name: formData.emergency_contact_name,
+        emergency_contact_phone: formData.emergency_contact_phone,
+        pdpa_agreed: profile?.pdpa_agreed || false,
+      }, { onConflict: "user_id" });
 
-    setSaving(false);
+      if (error) {
+        setSaveError(error.message);
+        return;
+      }
+      // Navigate so the proxy profile gate re-evaluates — router.refresh()
+      // doesn't re-run the middleware/proxy on the client.
+      router.push("/runner");
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Failed to save profile");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-    if (!error) {
-      router.refresh();
+  const handleSaveIc = async () => {
+    const ic = icInput.trim();
+    const isNric = /^\d{6}-\d{2}-\d{4}$/.test(ic);
+    const isPassport = /^[A-Za-z0-9]{5,15}$/.test(ic);
+
+    if (!isNric && !isPassport) {
+      setIcError("Enter your IC as 000000-00-0000 or a passport number (letters and digits only).");
+      return;
+    }
+
+    setIcSaving(true);
+    setIcError(null);
+    setIcSaved(false);
+
+    try {
+      await storeEncryptedIc(ic);
+      setProfile({ ...profile, ic_encrypted: "stored" });
+      setIcInput("");
+      setIcSaved(true);
+    } catch (err) {
+      setIcError(err instanceof Error ? err.message : "Failed to save IC number");
+    } finally {
+      setIcSaving(false);
     }
   };
 
@@ -113,7 +175,7 @@ export default function RunnerProfilePage() {
                 id="full_name"
                 type="text"
                 value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                onChange={(e) => updateField("full_name", e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               />
             </div>
@@ -123,7 +185,7 @@ export default function RunnerProfilePage() {
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => updateField("phone", e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               />
             </div>
@@ -153,7 +215,7 @@ export default function RunnerProfilePage() {
                 id="dob"
                 type="date"
                 value={formData.dob}
-                onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                onChange={(e) => updateField("dob", e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
                 style={{ colorScheme: 'dark' }}
               />
@@ -163,7 +225,7 @@ export default function RunnerProfilePage() {
               <select
                 id="gender"
                 value={formData.gender}
-                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                onChange={(e) => updateField("gender", e.target.value)}
                 className="w-full h-12 px-4 appearance-none rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               >
                 <option value="">Select gender</option>
@@ -177,7 +239,7 @@ export default function RunnerProfilePage() {
               <select
                 id="t_shirt_size"
                 value={formData.t_shirt_size}
-                onChange={(e) => setFormData({ ...formData, t_shirt_size: e.target.value })}
+                onChange={(e) => updateField("t_shirt_size", e.target.value)}
                 className="w-full h-12 px-4 appearance-none rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               >
                 <option value="">Select size</option>
@@ -189,6 +251,36 @@ export default function RunnerProfilePage() {
                 <option value="XXL">XXL</option>
               </select>
               <span className="material-symbols-outlined absolute right-4 top-9 text-[#958ea0] pointer-events-none">expand_more</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Emergency Contact */}
+        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
+          <div className="p-5 border-b border-[#353437]/60">
+            <h2 className="text-[16px] font-bold text-[#e5e1e4]">Emergency Contact</h2>
+            <p className="text-[12px] text-[#958ea0]">Contacted in case of an emergency on race day</p>
+          </div>
+          <div className="p-5 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="emergency_contact_name" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Contact Name</label>
+              <input
+                id="emergency_contact_name"
+                type="text"
+                value={formData.emergency_contact_name}
+                onChange={(e) => updateField("emergency_contact_name", e.target.value)}
+                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="emergency_contact_phone" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Contact Phone</label>
+              <input
+                id="emergency_contact_phone"
+                type="tel"
+                value={formData.emergency_contact_phone}
+                onChange={(e) => updateField("emergency_contact_phone", e.target.value)}
+                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+              />
             </div>
           </div>
         </section>
@@ -205,12 +297,6 @@ export default function RunnerProfilePage() {
                 onChange={(e) => {
                   const checked = e.target.checked
                   setProfile({ ...profile, pdpa_agreed: checked })
-                  supabase
-                    .from("runner_profiles")
-                    .upsert(
-                      { user_id: user?.id, pdpa_agreed: checked },
-                      { onConflict: "user_id" },
-                    )
                 }}
                 className="w-5 h-5 rounded border-[#353437] bg-[#23232b] text-[#d0bcff] focus:ring-[#d0bcff]/50"
               />
@@ -229,7 +315,79 @@ export default function RunnerProfilePage() {
           }}
         />
 
-        <button 
+        {/* Manual IC/Passport fallback */}
+        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
+          <div className="p-5 border-b border-[#353437]/60">
+            <h3 className="text-[16px] font-bold text-[#e5e1e4] flex items-center gap-2">
+              <span className="material-symbols-outlined text-[20px] text-[#4cd7f6]">keyboard</span>
+              Enter IC/Passport Manually
+            </h3>
+            <p className="text-[12px] text-[#958ea0] mt-1 leading-relaxed">
+              No photo handy? Type your IC or passport number instead. It is encrypted before storage and never shown again.
+            </p>
+          </div>
+
+          <div className="p-5 flex flex-col gap-4">
+            {profile?.ic_encrypted ? (
+              <div className="flex items-center gap-2 rounded-xl bg-[#4edea3]/10 border border-[#4edea3]/20 px-4 py-3 text-[13px] text-[#4edea3] font-medium">
+                <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                IC/Passport number securely stored
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="ic_number" className="text-[12px] font-bold text-[#cbc3d7] ml-1">IC / Passport Number</label>
+                  <input
+                    id="ic_number"
+                    type="text"
+                    value={icInput}
+                    onChange={(e) => {
+                      setIcInput(e.target.value)
+                      setIcError(null)
+                      setIcSaved(false)
+                    }}
+                    placeholder="000000-00-0000"
+                    className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                  />
+                </div>
+
+                <button
+                  onClick={handleSaveIc}
+                  disabled={icSaving || !icInput.trim()}
+                  className="w-full py-3 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                >
+                  {icSaving ? (
+                    <>
+                      <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[18px]">lock</span>
+                      Save Encrypted
+                    </>
+                  )}
+                </button>
+
+                {icSaved && (
+                  <div className="flex items-center gap-2 rounded-xl bg-[#4edea3]/10 border border-[#4edea3]/20 px-4 py-3 text-[13px] text-[#4edea3] font-medium">
+                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                    IC number saved securely
+                  </div>
+                )}
+
+                {icError && (
+                  <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px]">error</span>
+                    {icError}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+
+        <button
           onClick={handleSave} 
           disabled={saving}
           className="w-full py-4 mt-2 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 shadow-lg shadow-[#d0bcff]/10"
@@ -243,6 +401,10 @@ export default function RunnerProfilePage() {
             'Save Profile'
           )}
         </button>
+
+        {saveError && (
+          <p className="text-[12px] text-[#ffb4ab] mt-2 text-center">{saveError}</p>
+        )}
 
         {/* Danger Zone */}
         <section className="bg-[#1c1b1d] rounded-2xl border border-[#ffb4ab]/30 overflow-hidden mt-8">

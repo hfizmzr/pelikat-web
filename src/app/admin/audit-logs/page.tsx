@@ -51,7 +51,7 @@ function exportToCSV(logs: AuditLog[]) {
 
 export default function AdminAuditLogsPage() {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
-  const [allLogs, setAllLogs] = useState<AuditLog[]>([]) // for export
+
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
   const [totalCount, setTotalCount] = useState(0)

@@ -73,8 +73,8 @@ export function CategoryCardActions({ category, eventId }: CategoryCardActionsPr
         await updateCategory(category.id, eventId, formData)
         setEditOpen(false)
         toast.success('Category updated successfully')
-      } catch (err: any) {
-        setEditError(err.message || 'Failed to update category')
+      } catch (err: unknown) {
+        setEditError((err instanceof Error ? err.message : null) || 'Failed to update category')
       }
     })
   }
@@ -85,9 +85,9 @@ export function CategoryCardActions({ category, eventId }: CategoryCardActionsPr
         await deleteCategory(category.id, eventId)
         setDeleteOpen(false)
         toast.success(`"${category.name}" deleted`)
-      } catch (err: any) {
+      } catch (err: unknown) {
         setDeleteOpen(false)
-        toast.error(err.message || 'Failed to delete category')
+        toast.error((err instanceof Error ? err.message : null) || 'Failed to delete category')
       }
     })
   }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
@@ -23,7 +24,8 @@ export default function OrganizerLayout({
 
   useEffect(() => {
     // Detect standalone PWA mode
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in navigator && (navigator as any).standalone)
+    const navWithStandalone = navigator as Navigator & { standalone?: boolean }
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in navigator && !!navWithStandalone.standalone)
     if (isStandalone && !pathname.startsWith('/organizer/mobile')) {
       router.replace('/organizer/mobile')
     }
@@ -101,13 +103,13 @@ export default function OrganizerLayout({
                 <span className="material-symbols-outlined text-[20px]">notifications</span>
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#d0bcff] ring-2 ring-[#0f0f13]" />
               </button>
-              <a
+              <Link
                 href="/organizer/events/new"
                 className="px-4 py-1.5 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-[#a078ff] transition-all shadow-[0_0_16px_rgba(208,188,255,0.25)]"
               >
                 <span className="material-symbols-outlined text-[16px]">add_circle</span>
                 <span>Create Event</span>
-              </a>
+              </Link>
             </div>
           </header>
         )}

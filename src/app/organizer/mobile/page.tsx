@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import Link from 'next/link'

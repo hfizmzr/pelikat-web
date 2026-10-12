@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
+      args:
+        - NEXT_PUBLIC_PWA_GATE=${NEXT_PUBLIC_PWA_GATE:-false}
     ports:
       - "3000:3000"
     env_file:

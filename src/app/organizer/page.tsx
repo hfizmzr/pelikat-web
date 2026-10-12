@@ -13,7 +13,7 @@ export default async function OrganizerDashboard() {
   const organizerId = user?.app_metadata?.organizer_id
 
   // Fetch events with registrations and categories
-  const [{ data: events }, { data: recentRegistrations }, { data: orgData }] = await Promise.all([
+  const [{ data: events }, { data: recentRegistrations }] = await Promise.all([
     supabase
       .from('events')
       .select(`
@@ -60,7 +60,7 @@ export default async function OrganizerDashboard() {
   const activeCategories = activeEvent?.race_categories || []
 
   // Registration velocity (last 30 days)
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
   const { data: velocityData } = await supabase
     .from('registrations')
     .select('created_at')

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { fetchDjangoApi } from '@/lib/django'
 import { createClient } from '@/lib/supabase/server'
+import { getUserRole } from '@/lib/auth/requireRole'
 import {
   normalizeRepcCheckInResult,
   type RepcCheckInResult,
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, valid: false, message: 'Unauthorized' }, { status: 401 })
   }
 
-  const role = user.app_metadata?.role || user.user_metadata?.role || 'runner'
+  const role = getUserRole(user)
   if (role !== 'organizer' && role !== 'admin') {
     return NextResponse.json({ success: false, valid: false, message: 'Forbidden' }, { status: 403 })
   }

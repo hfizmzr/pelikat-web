@@ -18,12 +18,30 @@ interface RunnerRegistrationActionsProps {
   eventId: string
   categories: RaceCategory[]
   hasRunnerProfile: boolean
+  runner: {
+    name: string | null
+    email: string | null
+    tShirtSize: string | null
+    emergencyContactName: string | null
+    emergencyContactPhone: string | null
+    dob: string | null
+    gender: string | null
+    phone: string | null
+    icOnFile: boolean
+  }
+  eventSummary: {
+    name: string
+    date: string
+    location: string | null
+  }
 }
 
 export function RunnerRegistrationActions({
   eventId,
   categories,
   hasRunnerProfile,
+  runner,
+  eventSummary,
 }: RunnerRegistrationActionsProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -44,14 +62,48 @@ export function RunnerRegistrationActions({
     }
 
     startTransition(async () => {
-      const { error } = await supabase.rpc('register_for_event', {
+      const { data, error } = await supabase.rpc('register_for_event', {
         p_event_id: eventId,
         p_category_id: selectedCategoryId,
       })
       if (error) {
-        setError(error.message)
+        // Unique violation on (event_id, runner_id) → HTTP 409 from PostgREST
+        setError(
+          error.code === '23505' &&
+            error.message.includes('registrations_event_runner_unique')
+            ? 'You are already registered for this event.'
+            : error.message
+        )
         return
       }
+
+      // Fire-and-forget confirmation email (UC11 step 8). The edge
+      // function is a no-op stub when RESEND_API_KEY is absent.
+      const category = categories.find((c) => c.id === selectedCategoryId)
+      void supabase.functions
+        .invoke('send-transactional-email', {
+          body: {
+            type: 'registration_confirmation',
+            runnerEmail: runner.email,
+            runnerName: runner.name || 'Runner',
+            eventName: eventSummary.name,
+            eventDate: eventSummary.date,
+            location: eventSummary.location,
+            categoryName: category?.name ?? '',
+            // Payment-first BIB: number unassigned until payment, so 'TBA'.
+            bibNumber: data?.bib_number || 'TBA',
+            eventUrl: `${window.location.origin}/runner/events/${eventId}/bib`,
+          },
+        })
+        .then((res) => {
+          if (res.error || !res.data?.success) {
+            console.error('send-transactional-email failed:', res.error || res.data)
+          }
+        })
+        .catch((err) => {
+          console.error('send-transactional-email error:', err)
+        })
+
       router.refresh()
     })
   }
@@ -95,6 +147,77 @@ export function RunnerRegistrationActions({
               </button>
             )
           })}
+        </div>
+      )}
+
+      {/* Re-registration prefill (FR-46): one-glance saved profile data */}
+      {hasRunnerProfile && (
+        <div className={`p-4 rounded-xl border ${
+          runner.tShirtSize
+            ? 'bg-[#1c1b1d] border-[#353437]/60'
+            : 'bg-[#e3c45b]/5 border-[#e3c45b]/30'
+        } flex flex-col gap-3`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px] text-[#4edea3]">person</span>
+              <span className="text-[12px] font-bold text-[#e5e1e4] uppercase tracking-wider">Using Your Saved Profile</span>
+            </div>
+            <a href="/runner/profile" className="text-[11px] font-bold text-[#d0bcff] hover:underline shrink-0">
+              Edit
+            </a>
+          </div>
+
+          <div className="grid gap-2 text-[12px]">
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Name</span>
+              <span className="text-[#e5e1e4] font-medium text-right truncate">{runner.name || 'Not set'}</span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Email</span>
+              <span className="text-[#e5e1e4] font-medium text-right truncate">{runner.email || 'Not set'}</span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Date of Birth</span>
+              <span className="text-[#e5e1e4] font-medium text-right truncate">
+                {runner.dob ? new Date(runner.dob).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not set'}
+              </span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Gender</span>
+              <span className="text-[#e5e1e4] font-medium text-right truncate">
+                {!!runner.gender && (runner.gender === 'M' ? 'Male' : runner.gender === 'F' ? 'Female' : runner.gender)}
+              </span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">IC / Passport</span>
+              <span className={runner.icOnFile ? 'text-[#4edea3] font-medium' : 'text-[#e3c45b] font-medium'}>
+                {/* IC count never leaves the database encrypted; display matches the profile page's own policy. */}
+                {runner.icOnFile ? 'Securely on file (encrypted)' : 'Not set'}
+              </span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Phone</span>
+              <span className="text-[#e5e1e4] font-medium text-right truncate">{runner.phone || 'Not set'}</span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">T-Shirt Size</span>
+              <span className={`font-medium text-right ${runner.tShirtSize ? 'text-[#e5e1e4]' : 'text-[#e3c45b]'}`}>
+                {runner.tShirtSize || 'Not set'}
+              </span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#958ea0]">Emergency Contact</span>
+              <span className={`font-medium text-right truncate ${runner.emergencyContactName ? 'text-[#e5e1e4]' : 'text-[#e3c45b]'}`}>
+                {runner.emergencyContactName
+                  ? `${runner.emergencyContactName}${runner.emergencyContactPhone ? ` · ${runner.emergencyContactPhone}` : ''}`
+                  : 'Not set'}
+              </span>
+            </div>
+          </div>
+
+          {!runner.tShirtSize && (
+            <p className="text-[11px] text-[#e3c45b]">Set a t-shirt size in your profile so the right shirt is reserved at REPC.</p>
+          )}
         </div>
       )}
 

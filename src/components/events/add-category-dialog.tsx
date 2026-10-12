@@ -48,8 +48,8 @@ export function AddCategoryDialog({ eventId }: AddCategoryDialogProps) {
         setGender('')
         formRef.current?.reset()
         toast.success('Category created successfully')
-      } catch (err: any) {
-        setError(err.message || 'Failed to create category')
+      } catch (err: unknown) {
+        setError((err instanceof Error ? err.message : null) || 'Failed to create category')
       }
     })
   }

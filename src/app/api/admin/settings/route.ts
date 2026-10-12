@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getUserRole } from '@/lib/auth/requireRole'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -9,8 +10,7 @@ export async function GET() {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   }
 
-  const role =
-    user.user?.app_metadata?.role || user.user?.user_metadata?.role || 'runner'
+  const role = getUserRole(user.user)
   if (role !== 'admin') {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
   }
@@ -43,8 +43,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   }
 
-  const role =
-    user.user?.app_metadata?.role || user.user?.user_metadata?.role || 'runner'
+  const role = getUserRole(user.user)
   if (role !== 'admin') {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
   }
