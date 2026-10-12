@@ -37,10 +37,12 @@ export function LiveLeaderboard({
   initialData,
   currentRunnerId,
   filters,
+  publishedIds,
 }: {
   initialData: LeaderboardEntry[]
   currentRunnerId: string | undefined
   filters?: LeaderboardFilters
+  publishedIds?: string[]
 }) {
   const supabase = createClient()
   const [entries, setEntries] = useState<LeaderboardEntry[]>(() => initialData)
@@ -53,10 +55,15 @@ export function LiveLeaderboard({
   const dataKey = `${filters?.event_id ?? ''}|${filters?.gender ?? ''}|${filters?.category_id ?? ''}|${initialData.length}|${initialData[0]?.runner_id ?? ''}|${initialData[0]?.total_km ?? ''}`
   const prevDataKey = useRef(dataKey)
   const filtersRef = useRef(filters)
+  const publishedIdsRef = useRef(publishedIds ?? [])
 
   useEffect(() => {
     filtersRef.current = filters
   }, [filters])
+
+  useEffect(() => {
+    publishedIdsRef.current = publishedIds ?? []
+  }, [publishedIds])
 
   const refreshData = useCallback(async () => {
     // Re-apply the active filters so realtime refreshes don't reset them,
@@ -70,7 +77,12 @@ export function LiveLeaderboard({
       .order("rank", { ascending: true })
       .limit(50)
 
-    if (f.event_id) query = query.eq("event_id", f.event_id)
+    if (f.event_id) {
+      query = query.eq("event_id", f.event_id)
+    } else if (publishedIdsRef.current.length > 0) {
+      // All-events view stays limited to published events (FR-69)
+      query = query.in("event_id", publishedIdsRef.current)
+    }
     if (f.gender) query = query.eq("gender", f.gender)
     if (f.category_id) query = query.eq("category_id", f.category_id)
 

@@ -54,7 +54,8 @@ begin
   join public.race_categories c on c.event_id = e.id
   where e.id = p_event_id
     and c.id = p_category_id
-    and e.status = 'published';
+    and e.status = 'published'
+  for update of c;
 
   if v_organizer_id is null then
     raise exception 'Event/category not available';

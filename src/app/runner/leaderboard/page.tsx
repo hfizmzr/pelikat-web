@@ -135,6 +135,7 @@ export default async function RunnerLeaderboardPage({
               gender: gender && gender !== 'all' ? (gender === 'male' ? 'M' : gender === 'female' ? 'F' : gender) : undefined,
               category_id: category_id && category_id !== 'all' ? category_id : undefined,
             }}
+            publishedIds={publishedIds}
           />
         )}
 
