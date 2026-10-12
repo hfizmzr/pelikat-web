@@ -51,7 +51,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.12 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.68 0.13 190);
+  --primary: oklch(0.75 0.13 190);
   --primary-foreground: oklch(0.15 0.04 190);
   --secondary: oklch(0.16 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -63,8 +63,8 @@
   --destructive-foreground: oklch(0.577 0.245 27.325);
   --border: oklch(0.22 0 0);
   --input: oklch(0.22 0 0);
-  --ring: oklch(0.68 0.13 190);
-  --chart-1: oklch(0.68 0.13 190);
+  --ring: oklch(0.75 0.13 190);
+  --chart-1: oklch(0.75 0.13 190);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.65 0.12 250);
@@ -72,12 +72,12 @@
   --radius: 0.75rem;
   --sidebar: oklch(0.1 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.68 0.13 190);
+  --sidebar-primary: oklch(0.75 0.13 190);
   --sidebar-primary-foreground: oklch(0.15 0.04 190);
   --sidebar-accent: oklch(0.16 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.22 0 0);
-  --sidebar-ring: oklch(0.68 0.13 190);
+  --sidebar-ring: oklch(0.75 0.13 190);
 
   /* Custom Obsidian tokens */
   --success: oklch(0.7 0.2 145);

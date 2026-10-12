@@ -210,7 +210,7 @@ export default function OrganizerMobileScannerPage() {
     : 'border-[#353437]/40 bg-[#1c1b1d]'
 
   return (
-    <div className="flex flex-col w-full bg-[#131315] min-h-screen">
+    <div className="flex flex-col w-full bg-[#131315] min-h-dvh">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#353437]/40 px-5 pt-safe">
         <div className="h-14 flex items-center justify-between">

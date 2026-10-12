@@ -36,7 +36,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="mt-8 border-t border-border pt-6 text-center">
           <p className="text-sm text-muted-foreground">
-            &copy; 2024 Pelikat Batik. Precision in Darkness.
+            &copy; 2024 Pelikat Batik. All rights reserved.
           </p>
         </div>
       </div>

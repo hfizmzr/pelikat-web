@@ -90,7 +90,7 @@ export default function RunnerLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0e10] flex justify-center overflow-hidden font-sans">
+    <div className="min-h-dvh bg-[#0e0e10] flex justify-center overflow-hidden font-sans">
       <div className="flex flex-col w-full max-w-md h-[100dvh] bg-[#131315] overscroll-none select-none relative shadow-2xl border-x border-[#23232b]/30">
         {/* Main scrollable content area - padded for bottom nav */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 pt-0">{children}</main>

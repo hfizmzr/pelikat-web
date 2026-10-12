@@ -21,13 +21,13 @@ export default function OrganizerApplyPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-dvh">
       {/* Hero */}
       <section className="w-full py-20 sm:py-24 lg:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             Become a{" "}
-            <span className="text-gradient-purple">Pelikat Batik</span>{" "}
+            <span className="text-primary">Pelikat Batik</span>{" "}
             Organizer
           </h1>
           <p className="mt-6 mx-auto max-w-2xl text-lg text-muted-foreground">

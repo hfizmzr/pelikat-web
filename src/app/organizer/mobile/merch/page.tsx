@@ -88,7 +88,7 @@ export default async function OrganizerMobileMerchPage() {
 
   if (!data) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#131315]">
+      <div className="flex flex-col min-h-dvh bg-[#131315]">
         <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#353437]/40 px-5 pt-safe">
           <div className="h-14 flex items-center">
             <span className="text-[16px] font-bold text-[#e5e1e4]">Kit Inventory</span>
@@ -104,7 +104,7 @@ export default async function OrganizerMobileMerchPage() {
 
   if (!data.event) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#131315]">
+      <div className="flex flex-col min-h-dvh bg-[#131315]">
         <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#353437]/40 px-5 pt-safe">
           <div className="h-14 flex items-center">
             <span className="text-[16px] font-bold text-[#e5e1e4]">Kit Inventory</span>
@@ -125,7 +125,7 @@ export default async function OrganizerMobileMerchPage() {
   const { event, items, totalItems = 0, criticalItems = 0 } = data
 
   return (
-    <div className="flex flex-col w-full bg-[#131315] min-h-screen">
+    <div className="flex flex-col w-full bg-[#131315] min-h-dvh">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#353437]/40 px-5 pt-safe">
         <div className="h-14 flex items-center justify-between">

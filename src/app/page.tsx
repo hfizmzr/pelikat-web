@@ -9,7 +9,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Pelikat',
-  description: "Malaysia's premier race management platform for runners and organizers",
+  description: "Race management platform for Malaysian runners and event organizers",
 }
 
 export default function Home() {

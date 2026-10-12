@@ -46,9 +46,9 @@ export default function AdminLayout({
   }, [])
 
   return (
-    <div className="flex min-h-screen bg-[#131315] dark">
+    <div className="flex min-h-dvh bg-[#131315] dark">
       {/* ── Sticky Desktop Sidebar ─────────────────────────────── */}
-      <div className="hidden lg:sticky lg:top-0 lg:h-screen lg:flex lg:flex-col shrink-0">
+      <div className="hidden lg:sticky lg:top-0 lg:h-dvh lg:flex lg:flex-col shrink-0">
         <AdminSidebar />
       </div>
 

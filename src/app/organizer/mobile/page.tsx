@@ -133,7 +133,7 @@ export default async function OrganizerMobileHome() {
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-[#958ea0]">
+      <div className="flex items-center justify-center min-h-dvh text-[#958ea0]">
         <div className="text-center">
           <span className="size-[48px] mb-3 block"><Lock className="size-[48px] mb-3 block" /></span>
           <p className="text-[14px]">Session expired. Please log in.</p>
@@ -146,7 +146,7 @@ export default async function OrganizerMobileHome() {
   const isLive = data.nextEvent?.status === 'active'
 
   return (
-    <div className="flex flex-col w-full min-h-screen bg-[#131315]">
+    <div className="flex flex-col w-full min-h-dvh bg-[#131315]">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl px-5 pt-safe">
         <div className="h-16 flex items-center justify-between">

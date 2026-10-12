@@ -3,7 +3,7 @@ import { Smartphone } from "lucide-react"
 
 export function PWAInstallPrompt() {
   return (
-    <div className="min-h-screen bg-[#0e0e10] flex items-center justify-center p-6 font-sans">
+    <div className="min-h-dvh bg-[#0e0e10] flex items-center justify-center p-6 font-sans">
       <div className="w-full max-w-md bg-[#131315] rounded-3xl border border-[#23232b] p-8 shadow-2xl flex flex-col items-center text-center">
         <div className="w-20 h-20 bg-[#d0bcff]/10 rounded-2xl flex items-center justify-center mb-6">
           <span className="size-[40px] text-[#d0bcff]"><Smartphone className="size-[40px] text-[#d0bcff]" /></span>
