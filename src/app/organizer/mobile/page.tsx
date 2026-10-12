@@ -88,40 +88,40 @@ function StatCard({
 }) {
   const colorMap = {
     primary: {
-      bg: 'bg-[#d0bcff]/10',
-      text: 'text-[#d0bcff]',
-      bar: 'bg-[#d0bcff]',
+      bg: 'bg-primary/10',
+      text: 'text-primary',
+      bar: 'bg-primary',
     },
     secondary: {
-      bg: 'bg-[#4cd7f6]/10',
-      text: 'text-[#4cd7f6]',
-      bar: 'bg-[#4cd7f6]',
+      bg: 'bg-primary/10',
+      text: 'text-primary',
+      bar: 'bg-primary',
     },
     tertiary: {
-      bg: 'bg-[#4edea3]/10',
-      text: 'text-[#4edea3]',
-      bar: 'bg-[#4edea3]',
+      bg: 'bg-success/10',
+      text: 'text-success',
+      bar: 'bg-success',
     },
-    error: { bg: 'bg-[#ffb4ab]/10', text: 'text-[#ffb4ab]', bar: 'bg-[#ffb4ab]' },
+    error: { bg: 'bg-red-300/10', text: 'text-red-300', bar: 'bg-red-300' },
   }
   const c = colorMap[color]
 
   return (
-    <div className="flex flex-col justify-between p-4 rounded-xl bg-[#1c1b1d] shadow-sm border border-[#353437]/40">
+    <div className="flex flex-col justify-between p-4 rounded-xl bg-card shadow-sm border border-border/40">
       <div className="flex items-center justify-between">
         <span className={`p-1.5 rounded-lg ${c.bg} ${c.text}`}>
           <Icon className="size-[20px]" />
         </span>
       </div>
       <div className="mt-4">
-        <span className="block text-[10px] leading-[14px] tracking-[0.05em] text-[#cbc3d7] font-medium uppercase">
+        <span className="block text-[10px] leading-[14px] tracking-[0.05em] text-muted-foreground font-medium uppercase">
           {label}
         </span>
-        <p className="text-[24px] leading-[28px] tracking-[-0.01em] font-bold text-[#e5e1e4] mt-0.5">
+        <p className="text-[24px] leading-[28px] tracking-[-0.01em] font-bold text-foreground mt-0.5">
           {value}
         </p>
         {sub && (
-          <span className="block text-[11px] text-[#958ea0] mt-1">{sub}</span>
+          <span className="block text-[11px] text-muted-foreground mt-1">{sub}</span>
         )}
       </div>
     </div>
@@ -133,7 +133,7 @@ export default async function OrganizerMobileHome() {
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center min-h-dvh text-[#958ea0]">
+      <div className="flex items-center justify-center min-h-dvh text-muted-foreground">
         <div className="text-center">
           <span className="size-[48px] mb-3 block"><Lock className="size-[48px] mb-3 block" /></span>
           <p className="text-[14px]">Session expired. Please log in.</p>
@@ -146,32 +146,32 @@ export default async function OrganizerMobileHome() {
   const isLive = data.nextEvent?.status === 'active'
 
   return (
-    <div className="flex flex-col w-full min-h-dvh bg-[#131315]">
+    <div className="flex flex-col w-full min-h-dvh bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl px-5 pt-safe">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl px-5 pt-safe">
         <div className="h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-bold text-[#e5e1e4]">
+                <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-bold text-foreground">
                   PELIKAT
                 </span>
-                <span className="px-1.5 py-0.5 rounded-full bg-[#d0bcff]/10 text-[#d0bcff] text-[10px] leading-[14px] font-semibold tracking-wider uppercase">
+                <span className="px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] leading-[14px] font-semibold tracking-wider uppercase">
                   HUB
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#4edea3] animate-pulse shrink-0" />
-                <span className="text-[10px] leading-[14px] text-[#958ea0]">
+                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shrink-0" />
+                <span className="text-[10px] leading-[14px] text-muted-foreground">
                   {data.orgName}
                 </span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="relative w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] hover:text-[#e5e1e4] transition-colors">
+            <button className="relative w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
               <span className="size-[22px]"><Bell className="size-[22px]" /></span>
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#4cd7f6] ring-2 ring-[#131315]" />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary ring-2 ring-background" />
             </button>
           </div>
         </div>
@@ -185,16 +185,16 @@ export default async function OrganizerMobileHome() {
           <section className="flex flex-col gap-2 mt-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#d0bcff]/20 text-[#d0bcff]">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary">
                   <Terminal className="size-[15px]" />
                 </span>
-                <span className="text-[10px] leading-[14px] tracking-wider uppercase text-[#cbc3d7] font-bold">
+                <span className="text-[10px] leading-[14px] tracking-wider uppercase text-muted-foreground font-bold">
                   Race Director Command
                 </span>
               </div>
               {isLive && (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#4edea3]/10 text-[#4edea3]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4edea3] animate-ping" />
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 text-success">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-ping" />
                   <span className="text-[10px] leading-[14px] font-bold tracking-wider uppercase">
                     LIVE
                   </span>
@@ -202,25 +202,25 @@ export default async function OrganizerMobileHome() {
               )}
             </div>
 
-            <div className="relative overflow-hidden rounded-xl bg-[#201f22] p-4 shadow-md border border-[#353437]/40">
-              <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-[#d0bcff]/10 blur-2xl pointer-events-none" />
+            <div className="relative overflow-hidden rounded-xl bg-card p-4 shadow-md border border-border/40">
+              <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
               <div className="relative z-10 flex flex-col gap-1">
-                <span className="text-[10px] leading-[14px] uppercase tracking-wider text-[#4cd7f6] font-semibold">
+                <span className="text-[10px] leading-[14px] uppercase tracking-wider text-primary font-semibold">
                   {isLive ? 'Active Production Pipeline' : 'Next Upcoming Event'}
                 </span>
-                <h1 className="text-[22px] leading-[28px] tracking-[-0.015em] text-[#e5e1e4] font-extrabold">
+                <h1 className="text-[22px] leading-[28px] tracking-[-0.015em] text-foreground font-extrabold">
                   {data.nextEvent.name}
                 </h1>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[#cbc3d7] mt-1 text-[11px]">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground mt-1 text-[11px]">
                   {data.nextEvent.location && (
                     <span className="inline-flex items-center gap-1">
-                      <span className="size-[13px] text-[#d0bcff]"><MapPin className="size-[13px] text-[#d0bcff]" /></span>
+                      <span className="size-[13px] text-primary"><MapPin className="size-[13px] text-primary" /></span>
                       {data.nextEvent.location}
                     </span>
                   )}
-                  <span className="w-1 h-1 rounded-full bg-[#353437]" />
+                  <span className="w-1 h-1 rounded-full bg-accent" />
                   <span className="inline-flex items-center gap-1">
-                    <span className="size-[13px] text-[#4edea3]"><Users className="size-[13px] text-[#4edea3]" /></span>
+                    <span className="size-[13px] text-success"><Users className="size-[13px] text-success" /></span>
                     {data.nextEvent.registered} Registered
                   </span>
                 </div>
@@ -231,25 +231,25 @@ export default async function OrganizerMobileHome() {
 
         {/* Quick Actions */}
         <section>
-          <h2 className="text-[16px] leading-[24px] font-bold text-[#e5e1e4] tracking-tight mb-3">
+          <h2 className="text-[16px] leading-[24px] font-bold text-foreground tracking-tight mb-3">
             Quick Actions
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { href: '/organizer/mobile/scanner', icon: QrCode, label: 'BIB Scanner', color: 'text-[#d0bcff]', bg: 'bg-[#d0bcff]/10' },
-              { href: '/organizer/mobile/events', icon: Calendar, label: 'My Events', color: 'text-[#4cd7f6]', bg: 'bg-[#4cd7f6]/10' },
-              { href: '/organizer/mobile/console', icon: Gauge, label: 'Race Console', color: 'text-[#4edea3]', bg: 'bg-[#4edea3]/10' },
-              { href: '/organizer/mobile/merch', icon: ShoppingBag, label: 'Kit Inventory', color: 'text-[#a078ff]', bg: 'bg-[#a078ff]/10' },
+              { href: '/organizer/mobile/scanner', icon: QrCode, label: 'BIB Scanner', color: 'text-primary', bg: 'bg-primary/10' },
+              { href: '/organizer/mobile/events', icon: Calendar, label: 'My Events', color: 'text-primary', bg: 'bg-primary/10' },
+              { href: '/organizer/mobile/console', icon: Gauge, label: 'Race Console', color: 'text-success', bg: 'bg-success/10' },
+              { href: '/organizer/mobile/merch', icon: ShoppingBag, label: 'Kit Inventory', color: 'text-primary', bg: 'bg-primary/10' },
             ].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex flex-col items-center justify-center p-4 rounded-xl bg-[#1c1b1d] border border-[#353437]/40 gap-2 active:scale-95 transition-transform shadow-sm"
+                className="flex flex-col items-center justify-center p-4 rounded-xl bg-card border border-border/40 gap-2 active:scale-95 transition-transform shadow-sm"
               >
                 <span className={`p-2.5 rounded-xl ${item.bg} ${item.color}`}>
                   <item.icon className="size-[24px]" />
                 </span>
-                <span className="text-[12px] leading-[16px] font-semibold text-[#e5e1e4] text-center">
+                <span className="text-[12px] leading-[16px] font-semibold text-foreground text-center">
                   {item.label}
                 </span>
               </Link>
@@ -260,10 +260,10 @@ export default async function OrganizerMobileHome() {
         {/* KPI Grid */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-[16px] leading-[24px] font-bold text-[#e5e1e4] tracking-tight">
+            <h2 className="text-[16px] leading-[24px] font-bold text-foreground tracking-tight">
               Critical Ops Status
             </h2>
-            <span className="text-[10px] leading-[14px] text-[#958ea0] uppercase tracking-wider">
+            <span className="text-[10px] leading-[14px] text-muted-foreground uppercase tracking-wider">
               Sync: Live
             </span>
           </div>
@@ -302,30 +302,30 @@ export default async function OrganizerMobileHome() {
         {/* Check-in progress */}
         {data.nextEvent && (
           <section className="pb-4">
-            <div className="rounded-xl bg-[#1c1b1d] p-4 border border-[#353437]/40">
+            <div className="rounded-xl bg-card p-4 border border-border/40">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[12px] leading-[16px] font-semibold text-[#cbc3d7]">
+                <span className="text-[12px] leading-[16px] font-semibold text-muted-foreground">
                   Check-in Progress
                 </span>
-                <span className="text-[10px] text-[#4cd7f6] font-bold">{checkInPercent}%</span>
+                <span className="text-[10px] text-primary font-bold">{checkInPercent}%</span>
               </div>
-              <div className="w-full bg-[#353437] rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-accent rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-[#d0bcff] h-full rounded-full transition-all duration-700"
+                  className="bg-primary h-full rounded-full transition-all duration-700"
                   style={{ width: `${checkInPercent}%` }}
                 />
               </div>
               <div className="flex justify-between mt-2">
-                <span className="text-[11px] text-[#958ea0]">
+                <span className="text-[11px] text-muted-foreground">
                   {data.checkedIn} checked in
                 </span>
-                <span className="text-[11px] text-[#958ea0]">
+                <span className="text-[11px] text-muted-foreground">
                   {data.nextEvent.registered} total
                 </span>
               </div>
               <Link
                 href={`/organizer/mobile/scanner`}
-                className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold active:scale-95 transition-transform"
+                className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold active:scale-95 transition-transform"
               >
                 <span className="size-[16px]"><QrCode className="size-[16px]" /></span>
                 Open Full Scanner

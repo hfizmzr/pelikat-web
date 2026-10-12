@@ -67,7 +67,7 @@ export default function OrganizerApplyPage() {
                     </li>
                   ))}
                 </ul>
-                <Button size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setShowForm(true)}>
+                <Button size="lg" className="w-full bg-primary text-primary-foreground hover:brightness-95" onClick={() => setShowForm(true)}>
                   Apply Now
                 </Button>
               </CardContent>

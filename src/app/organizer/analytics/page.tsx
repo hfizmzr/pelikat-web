@@ -35,9 +35,9 @@ export default async function OrganizerAnalyticsPage() {
 
   if (!organizerId) {
     return (
-      <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-[#958ea0]">
+      <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-muted-foreground">
         <span className="size-[64px] mb-4"><TrendingUp className="size-[64px] mb-4" /></span>
-        <h2 className="text-[18px] font-semibold text-[#e5e1e4] mb-2">No organizer profile</h2>
+        <h2 className="text-[18px] font-semibold text-foreground mb-2">No organizer profile</h2>
         <p className="text-[14px]">No analytics data available without an organizer account.</p>
       </div>
     )
@@ -106,36 +106,36 @@ export default async function OrganizerAnalyticsPage() {
   }
 
   const kpis = [
-    { label: 'Total Events', value: totalEvents, icon: Flag, color: 'text-[#d0bcff]', suffix: '' },
-    { label: 'Total Runners', value: totalRegistrations, icon: Users, color: 'text-[#4cd7f6]', suffix: '' },
-    { label: 'Gross Revenue', value: `RM ${totalRevenue.toLocaleString('en-MY', { maximumFractionDigits: 0 })}`, icon: Banknote, color: 'text-[#4edea3]', suffix: '' },
-    { label: 'Check-in Rate', value: checkInRate, icon: ClipboardCheck, color: 'text-[#d0bcff]', suffix: '%' },
+    { label: 'Total Events', value: totalEvents, icon: Flag, color: 'text-primary', suffix: '' },
+    { label: 'Total Runners', value: totalRegistrations, icon: Users, color: 'text-primary', suffix: '' },
+    { label: 'Gross Revenue', value: `RM ${totalRevenue.toLocaleString('en-MY', { maximumFractionDigits: 0 })}`, icon: Banknote, color: 'text-success', suffix: '' },
+    { label: 'Check-in Rate', value: checkInRate, icon: ClipboardCheck, color: 'text-primary', suffix: '%' },
   ]
 
   return (
-    <div className="relative w-full min-h-full px-6 py-8 bg-[#131315]">
-      <div className="absolute -top-20 left-0 w-80 h-80 bg-[#4cd7f6]/8 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/2 right-0 w-[30rem] h-[30rem] bg-[#d0bcff]/5 rounded-full blur-[140px] pointer-events-none" />
+    <div className="relative w-full min-h-full px-6 py-8 bg-background">
+      <div className="absolute -top-20 left-0 w-80 h-80 bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 right-0 w-[30rem] h-[30rem] bg-primary/5 rounded-full blur-[140px] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col gap-6">
         {/* Header */}
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-[#4cd7f6]/10 text-[#acedff] uppercase w-fit">
+          <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary uppercase w-fit">
             Telemetry
           </span>
-          <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-[#e5e1e4]">Telemetry & Analytics</h1>
-          <p className="text-[14px] leading-[20px] text-[#cbc3d7]">Track event performance, runner demographics, and revenue trends.</p>
+          <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-foreground">Telemetry & Analytics</h1>
+          <p className="text-[14px] leading-[20px] text-muted-foreground">Track event performance, runner demographics, and revenue trends.</p>
         </div>
 
         {/* KPI tiles */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {kpis.map(k => (
-            <div key={k.label} className="bg-[#1c1b1d] rounded-xl p-5 border border-[#23232b]">
+            <div key={k.label} className="bg-card rounded-xl p-5 border border-muted">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[12px] leading-[16px] tracking-[0.02em] text-[#cbc3d7] uppercase font-medium">{k.label}</span>
+                <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">{k.label}</span>
                 <span className={`size-[20px] ${k.color}`}><k.icon className="size-[20px]" /></span>
               </div>
-              <div className="text-[24px] leading-[28px] tracking-[-0.01em] font-semibold text-[#e5e1e4]">
+              <div className="text-[24px] leading-[28px] tracking-[-0.01em] font-semibold text-foreground">
                 {typeof k.value === 'number' ? k.value.toLocaleString() : k.value}{k.suffix}
               </div>
             </div>
@@ -145,8 +145,8 @@ export default async function OrganizerAnalyticsPage() {
         {/* Charts */}
         <Suspense
           fallback={
-            <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] p-12 flex items-center justify-center">
-              <span className="size-[32px] text-[#d0bcff] animate-spin"><LoaderCircle className="size-[32px] text-[#d0bcff] animate-spin" /></span>
+            <div className="bg-card rounded-xl border border-muted p-12 flex items-center justify-center">
+              <span className="size-[32px] text-primary animate-spin"><LoaderCircle className="size-[32px] text-primary animate-spin" /></span>
             </div>
           }
         >

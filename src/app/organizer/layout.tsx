@@ -68,7 +68,7 @@ export default function OrganizerLayout({
   }
 
   return (
-    <div className="flex min-h-dvh bg-[#131315]">
+    <div className="flex min-h-dvh bg-background">
       {/* Sidebar */}
       {showSidebar && (
         <div className="hidden lg:sticky lg:top-0 lg:h-dvh lg:flex lg:flex-col shrink-0">
@@ -79,7 +79,7 @@ export default function OrganizerLayout({
       {/* Main content */}
       <div className="flex flex-1 flex-col min-w-0">
         {showSidebar && (
-          <header className="sticky top-0 z-40 bg-[#0f0f13]/90 backdrop-blur-xl border-b border-[#23232b] px-6 h-16 flex items-center justify-between gap-4">
+          <header className="sticky top-0 z-40 bg-border/90 backdrop-blur-xl border-b border-muted px-6 h-16 flex items-center justify-between gap-4">
             {/* Mobile nav trigger */}
             <div className="lg:hidden">
               <OrganizerMobileNav />
@@ -87,9 +87,9 @@ export default function OrganizerLayout({
 
             {/* Left breadcrumb area */}
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#d0bcff]/10 border border-[#d0bcff]/20">
-                <span className="w-2 h-2 rounded-full bg-[#d0bcff] animate-pulse" />
-                <span className="text-[10px] leading-[14px] tracking-[0.05em] text-[#e9ddff] font-semibold">
+              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] leading-[14px] tracking-[0.05em] text-primary font-semibold">
                   Organizer Hub
                 </span>
               </div>
@@ -98,15 +98,15 @@ export default function OrganizerLayout({
             {/* Right actions */}
             <div className="flex items-center gap-2">
               <button
-                className="relative p-2 rounded-lg text-[#cbc3d7] hover:text-[#e5e1e4] hover:bg-[#2a2a2c] transition-colors"
+                className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title="Notifications"
               >
                 <span className="size-[20px]"><Bell className="size-[20px]" /></span>
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#d0bcff] ring-2 ring-[#0f0f13]" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-border" />
               </button>
               <Link
                 href="/organizer/events/new"
-                className="px-4 py-1.5 bg-[#d0bcff] text-[#3c0091] text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-[#a078ff] transition-all shadow-[0_0_16px_rgba(208,188,255,0.25)]"
+                className="px-4 py-1.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-primary transition-all "
               >
                 <span className="size-[16px]"><CirclePlus className="size-[16px]" /></span>
                 <span>Create Event</span>

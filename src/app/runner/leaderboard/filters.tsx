@@ -50,14 +50,14 @@ export function LeaderboardFilters({
         <select
           value={currentEvent}
           onChange={(e) => updateParams('event_id', e.target.value)}
-          className="w-full h-10 px-3 pr-8 appearance-none rounded-xl bg-[#23232b] border border-[#353437] text-[13px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+          className="w-full h-10 px-3 pr-8 appearance-none rounded-xl bg-muted border border-border text-[13px] text-foreground focus:outline-none focus:border-primary/50"
         >
           <option value="all">{showCategories ? 'All events' : 'All events'}</option>
           {events.map((e) => (
             <option key={e.id} value={e.id}>{e.name}</option>
           ))}
         </select>
-        <span className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]" /></span>
+        <span className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]" /></span>
       </div>
 
       {showCategories && categories && categories.length > 0 && (
@@ -65,14 +65,14 @@ export function LeaderboardFilters({
           <select
             value={currentCategory}
             onChange={(e) => updateParams('category_id', e.target.value)}
-            className="w-full h-10 px-3 pr-8 appearance-none rounded-xl bg-[#23232b] border border-[#353437] text-[13px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+            className="w-full h-10 px-3 pr-8 appearance-none rounded-xl bg-muted border border-border text-[13px] text-foreground focus:outline-none focus:border-primary/50"
           >
             <option value="all">All categories</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <span className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]" /></span>
+          <span className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]" /></span>
         </div>
       )}
 
@@ -80,13 +80,13 @@ export function LeaderboardFilters({
         <select
           value={currentGender}
           onChange={(e) => updateParams('gender', e.target.value)}
-          className="w-full h-10 px-3 pr-8 appearance-none rounded-xl bg-[#23232b] border border-[#353437] text-[13px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+          className="w-full h-10 px-3 pr-8 appearance-none rounded-xl bg-muted border border-border text-[13px] text-foreground focus:outline-none focus:border-primary/50"
         >
           <option value="all">All</option>
           <option value="M">Male</option>
           <option value="F">Female</option>
         </select>
-        <span className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-[#958ea0] pointer-events-none size-[20px]" /></span>
+        <span className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]" /></span>
       </div>
     </div>
   )

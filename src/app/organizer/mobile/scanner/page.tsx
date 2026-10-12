@@ -203,42 +203,42 @@ export default function OrganizerMobileScannerPage() {
 
   const resultBg = scanResult
     ? scanResult.success && !scanResult.alreadyCheckedIn
-      ? 'border-[#4edea3]/40 bg-[#4edea3]/5'
+      ? 'border-success/40 bg-success/5'
       : scanResult.alreadyCheckedIn
-      ? 'border-[#d0bcff]/40 bg-[#d0bcff]/5'
-      : 'border-[#ffb4ab]/40 bg-[#ffb4ab]/5'
-    : 'border-[#353437]/40 bg-[#1c1b1d]'
+      ? 'border-primary/40 bg-primary/5'
+      : 'border-red-300/40 bg-red-300/5'
+    : 'border-border/40 bg-card'
 
   return (
-    <div className="flex flex-col w-full bg-[#131315] min-h-dvh">
+    <div className="flex flex-col w-full bg-background min-h-dvh">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#353437]/40 px-5 pt-safe">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/40 px-5 pt-safe">
         <div className="h-14 flex items-center justify-between">
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="text-[16px] font-bold text-[#e5e1e4]">BIB Pass</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-[#d0bcff]/10 text-[#d0bcff] text-[9px] font-bold tracking-wider uppercase">
+              <span className="text-[16px] font-bold text-foreground">BIB Pass</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] font-bold tracking-wider uppercase">
                 Scanner
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4cd7f6] animate-pulse" />
-              <span className="text-[10px] text-[#958ea0] truncate max-w-[180px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="text-[10px] text-muted-foreground truncate max-w-[180px]">
                 {eventName || 'No active event'}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
             {/* Scan count badge */}
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-[#4edea3]/10">
-              <span className="size-[14px] text-[#4edea3]"><CircleCheck className="size-[14px] text-[#4edea3]" /></span>
-              <span className="text-[11px] font-bold text-[#4edea3]">{scanCount}</span>
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-success/10">
+              <span className="size-[14px] text-success"><CircleCheck className="size-[14px] text-success" /></span>
+              <span className="text-[11px] font-bold text-success">{scanCount}</span>
             </div>
             {scanning && (
               <button
                 onClick={toggleTorch}
                 className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-                  torchOn ? 'bg-[#4cd7f6]/20 text-[#4cd7f6]' : 'bg-[#2a2a2c] text-[#cbc3d7]'
+                  torchOn ? 'bg-primary/20 text-primary' : 'bg-accent text-muted-foreground'
                 }`}
               >
                 {torchOn ? (
@@ -254,7 +254,7 @@ export default function OrganizerMobileScannerPage() {
 
       <div className="flex flex-col px-4 py-4 space-y-4">
         {/* Scanner viewport */}
-        <div className="relative w-full rounded-xl bg-[#0e0e10] overflow-hidden shadow-xl border border-[#353437]/40">
+        <div className="relative w-full rounded-xl bg-background overflow-hidden shadow-xl border border-border/40">
           <div
             id={scannerContainerId}
             className="w-full"
@@ -263,10 +263,10 @@ export default function OrganizerMobileScannerPage() {
 
           {!scanning && (
             <div className="flex flex-col items-center justify-center py-10 gap-3">
-              <div className="w-16 h-16 rounded-2xl bg-[#d0bcff]/10 flex items-center justify-center">
-                <span className="size-[32px] text-[#d0bcff]"><QrCode className="size-[32px] text-[#d0bcff]" /></span>
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <span className="size-[32px] text-primary"><QrCode className="size-[32px] text-primary" /></span>
               </div>
-              <p className="text-[12px] text-[#958ea0] text-center">
+              <p className="text-[12px] text-muted-foreground text-center">
                 Tap the button below to activate camera scanner
               </p>
             </div>
@@ -276,12 +276,12 @@ export default function OrganizerMobileScannerPage() {
           {scanning && (
             <div className="absolute inset-0 pointer-events-none">
               {/* Scan line */}
-              <div className="absolute left-[15%] right-[15%] top-1/2 h-0.5 bg-gradient-to-r from-transparent via-[#4cd7f6] to-transparent shadow-[0_0_12px_#4cd7f6] animate-pulse" />
+              <div className="absolute left-[15%] right-[15%] top-1/2 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_12px_var(--primary)] animate-pulse" />
               {/* Corner markers */}
               {['top-4 left-4', 'top-4 right-4', 'bottom-4 left-4', 'bottom-4 right-4'].map((pos, i) => (
                 <div
                   key={i}
-                  className={`absolute ${pos} w-6 h-6 border-[#d0bcff] border-2 ${
+                  className={`absolute ${pos} w-6 h-6 border-primary border-2 ${
                     i === 0 ? 'border-r-0 border-b-0 rounded-tl' :
                     i === 1 ? 'border-l-0 border-b-0 rounded-tr' :
                     i === 2 ? 'border-r-0 border-t-0 rounded-bl' :
@@ -290,9 +290,9 @@ export default function OrganizerMobileScannerPage() {
                 />
               ))}
               <div className="absolute bottom-2 inset-x-0 flex justify-center">
-                <div className="bg-[#201f22]/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2 shadow-sm">
-                  <span className="w-2 h-2 rounded-full bg-[#4cd7f6] animate-ping" />
-                  <span className="text-[10px] font-semibold text-[#e5e1e4]">SCANNING</span>
+                <div className="bg-card/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2 shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
+                  <span className="text-[10px] font-semibold text-foreground">SCANNING</span>
                 </div>
               </div>
             </div>
@@ -304,8 +304,8 @@ export default function OrganizerMobileScannerPage() {
           onClick={scanning ? stopScanning : startScanning}
           className={`w-full py-3.5 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md ${
             scanning
-              ? 'bg-[#93000a]/80 text-[#ffb4ab] border border-[#ffb4ab]/30'
-              : 'bg-[#d0bcff] text-[#3c0091]'
+              ? 'bg-red-800/80 text-red-300 border border-red-300/30'
+              : 'bg-primary text-primary-foreground'
           }`}
         >
           {scanning ? (
@@ -317,11 +317,11 @@ export default function OrganizerMobileScannerPage() {
         </button>
 
         {/* Manual input */}
-        <div className="flex items-center gap-2 bg-[#1c1b1d] rounded-xl p-2 border border-[#353437]/40">
-          <div className="flex-1 bg-[#2a2a2c] rounded-lg px-3 py-2 flex items-center gap-2">
-            <span className="size-[16px] text-[#958ea0]"><Search className="size-[16px] text-[#958ea0]" /></span>
+        <div className="flex items-center gap-2 bg-card rounded-xl p-2 border border-border/40">
+          <div className="flex-1 bg-accent rounded-lg px-3 py-2 flex items-center gap-2">
+            <span className="size-[16px] text-muted-foreground"><Search className="size-[16px] text-muted-foreground" /></span>
             <input
-              className="w-full bg-transparent text-[#e5e1e4] text-[13px] outline-none placeholder:text-[#958ea0]"
+              className="w-full bg-transparent text-foreground text-[13px] outline-none placeholder:text-muted-foreground"
               placeholder="NRIC, BIB or Order # …"
               value={manualInput}
               onChange={(e) => setManualInput(e.target.value)}
@@ -339,7 +339,7 @@ export default function OrganizerMobileScannerPage() {
               setManualInput('')
             }}
             disabled={!manualInput.trim() || !!processingBib}
-            className="bg-[#d0bcff] text-[#3c0091] text-[12px] font-bold px-4 py-2.5 rounded-lg active:scale-95 transition-all disabled:opacity-40"
+            className="bg-primary text-primary-foreground text-[12px] font-bold px-4 py-2.5 rounded-lg active:scale-95 transition-all disabled:opacity-40"
           >
             {processingBib ? '...' : 'Check In'}
           </button>
@@ -352,10 +352,10 @@ export default function OrganizerMobileScannerPage() {
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                   scanResult.success && !scanResult.alreadyCheckedIn
-                    ? 'bg-[#4edea3]/20 text-[#4edea3]'
+                    ? 'bg-success/20 text-success'
                     : scanResult.alreadyCheckedIn
-                    ? 'bg-[#d0bcff]/20 text-[#d0bcff]'
-                    : 'bg-[#ffb4ab]/20 text-[#ffb4ab]'
+                    ? 'bg-primary/20 text-primary'
+                    : 'bg-red-300/20 text-red-300'
                 }`}
               >
                 {scanResult.success && !scanResult.alreadyCheckedIn ? (
@@ -370,10 +370,10 @@ export default function OrganizerMobileScannerPage() {
                 <p
                   className={`text-[13px] font-bold ${
                     scanResult.success && !scanResult.alreadyCheckedIn
-                      ? 'text-[#4edea3]'
+                      ? 'text-success'
                       : scanResult.alreadyCheckedIn
-                      ? 'text-[#d0bcff]'
-                      : 'text-[#ffb4ab]'
+                      ? 'text-primary'
+                      : 'text-red-300'
                   }`}
                 >
                   {scanResult.success && !scanResult.alreadyCheckedIn
@@ -382,23 +382,23 @@ export default function OrganizerMobileScannerPage() {
                     ? 'Already Checked In'
                     : '✗ Not Found'}
                 </p>
-                <p className="text-[11px] text-[#cbc3d7] mt-0.5">{scanResult.message}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{scanResult.message}</p>
               </div>
             </div>
 
             {scanResult.runner && (
-              <div className="bg-[#131315]/60 rounded-lg p-3 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#d0bcff]/20 flex items-center justify-center text-[#d0bcff] text-[14px] font-bold shrink-0">
+              <div className="bg-background/60 rounded-lg p-3 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[14px] font-bold shrink-0">
                   {scanResult.runner.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-[#e5e1e4] truncate">{scanResult.runner.name}</p>
+                  <p className="text-[13px] font-bold text-foreground truncate">{scanResult.runner.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[11px] font-mono bg-[#2a2a2c] px-1.5 py-0.5 rounded text-[#cbc3d7]">
+                    <span className="text-[11px] font-mono bg-accent px-1.5 py-0.5 rounded text-muted-foreground">
                       {scanResult.runner.bib}
                     </span>
                     {scanResult.runner.shirtSize && (
-                      <span className="text-[11px] text-[#958ea0]">
+                      <span className="text-[11px] text-muted-foreground">
                         Size: {scanResult.runner.shirtSize}
                       </span>
                     )}
@@ -411,31 +411,31 @@ export default function OrganizerMobileScannerPage() {
 
         {/* Recent scans */}
         {recentScans.length > 0 && (
-          <div className="rounded-xl bg-[#1c1b1d] overflow-hidden border border-[#353437]/40">
-            <div className="bg-[#4edea3]/10 text-[#4edea3] px-4 py-2.5 flex items-center justify-between">
+          <div className="rounded-xl bg-card overflow-hidden border border-border/40">
+            <div className="bg-success/10 text-success px-4 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="size-[16px]"><History className="size-[16px]" /></span>
                 <span className="text-[11px] font-bold tracking-wider uppercase">Recent Scans</span>
               </div>
-              <span className="text-[10px] text-[#4edea3]/70">{recentScans.length} scanned</span>
+              <span className="text-[10px] text-success/70">{recentScans.length} scanned</span>
             </div>
-            <div className="divide-y divide-[#353437]/40">
+            <div className="divide-y divide-accent/40">
               {recentScans.map((scan, i) => (
                 <div key={i} className="flex items-center gap-3 px-4 py-2.5">
                   <span
                     className={`w-2 h-2 rounded-full shrink-0 ${
                       scan.success && !scan.alreadyCheckedIn
-                        ? 'bg-[#4edea3]'
+                        ? 'bg-success'
                         : scan.alreadyCheckedIn
-                        ? 'bg-[#d0bcff]'
-                        : 'bg-[#ffb4ab]'
+                        ? 'bg-primary'
+                        : 'bg-red-300'
                     }`}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-medium text-[#e5e1e4] truncate">{scan.name}</p>
-                    <p className="text-[10px] text-[#958ea0] font-mono">{scan.bib}</p>
+                    <p className="text-[12px] font-medium text-foreground truncate">{scan.name}</p>
+                    <p className="text-[10px] text-muted-foreground font-mono">{scan.bib}</p>
                   </div>
-                  <span className="text-[10px] text-[#958ea0] shrink-0">
+                  <span className="text-[10px] text-muted-foreground shrink-0">
                     {scan.time.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 </div>

@@ -77,18 +77,18 @@ export default async function RunnerGalleryPage({
   )
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+    <div className="flex flex-col w-full min-h-full bg-background">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
-          <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
+          <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
             <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
-            <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
+            <h1 className="text-[16px] font-bold text-foreground leading-tight">
               My Photos
             </h1>
-            <p className="text-[11px] text-[#958ea0] truncate max-w-full">
+            <p className="text-[11px] text-muted-foreground truncate max-w-full">
               {event.name}
             </p>
           </div>
@@ -100,18 +100,18 @@ export default async function RunnerGalleryPage({
           <>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className="size-[18px] text-[#4edea3]"><Images className="size-[18px] text-[#4edea3]" /></span>
-                <span className="text-[14px] font-bold text-[#e5e1e4]">{photosWithUrls.length} photos</span>
+                <span className="size-[18px] text-success"><Images className="size-[18px] text-success" /></span>
+                <span className="text-[14px] font-bold text-foreground">{photosWithUrls.length} photos</span>
               </div>
-              <span className="px-2 py-0.5 bg-[#4edea3]/10 text-[#4edea3] text-[10px] font-bold uppercase tracking-wider rounded border border-[#4edea3]/20">
+              <span className="px-2 py-0.5 bg-success/10 text-success text-[10px] font-bold uppercase tracking-wider rounded border border-success/20">
                 BIB {registration.bib_number}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               {photosWithUrls.map((photo) => (
-                <div key={photo.id} className="relative flex flex-col bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden active:scale-[0.98] transition-transform">
-                  <div className="aspect-[4/5] relative bg-[#23232b] w-full">
+                <div key={photo.id} className="relative flex flex-col bg-card rounded-2xl border border-border/60 overflow-hidden active:scale-[0.98] transition-transform">
+                  <div className="aspect-[4/5] relative bg-muted w-full">
                     {photo.url ? (
                       <Image
                         src={photo.url}
@@ -122,7 +122,7 @@ export default async function RunnerGalleryPage({
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="size-[32px] text-[#353437]"><ImageOff className="size-[32px] text-[#353437]" /></span>
+                        <span className="size-[32px] text-muted-foreground/50"><ImageOff className="size-[32px] text-muted-foreground/50" /></span>
                       </div>
                     )}
                     
@@ -140,7 +140,7 @@ export default async function RunnerGalleryPage({
 
                     {photo.confidence && (
                       <div className="absolute left-2 top-2 z-10">
-                        <span className="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md text-[#4edea3] text-[9px] font-bold flex items-center gap-1">
+                        <span className="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md text-success text-[9px] font-bold flex items-center gap-1">
                           <Bot className="size-[10px]" />
                           {(photo.confidence * 100).toFixed(0)}%
                         </span>
@@ -148,7 +148,7 @@ export default async function RunnerGalleryPage({
                     )}
                     {!photo.url && photo.urlError && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-3 text-center">
-                        <span className="text-[10px] text-[#ffb4ab]">{photo.urlError}</span>
+                        <span className="text-[10px] text-red-300">{photo.urlError}</span>
                       </div>
                     )}
                   </div>
@@ -157,12 +157,12 @@ export default async function RunnerGalleryPage({
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-[#1c1b1d] border border-[#353437]/40">
-            <div className="w-16 h-16 bg-[#201f22] rounded-full flex items-center justify-center mb-4">
-              <span className="size-[32px] text-[#958ea0]"><Camera className="size-[32px] text-[#958ea0]" /></span>
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-card border border-border/40">
+            <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4">
+              <span className="size-[32px] text-muted-foreground"><Camera className="size-[32px] text-muted-foreground" /></span>
             </div>
-            <p className="text-[16px] font-bold text-[#e5e1e4] mb-2">No photos found yet</p>
-            <p className="text-[13px] text-[#958ea0]">
+            <p className="text-[16px] font-bold text-foreground mb-2">No photos found yet</p>
+            <p className="text-[13px] text-muted-foreground">
               Our AI is still processing the event photos. Once we find you, they will appear here!
             </p>
           </div>

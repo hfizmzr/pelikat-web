@@ -62,7 +62,7 @@ export function Header() {
               </Link>
               <Button
                 asChild
-                className="mt-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                className="mt-2 bg-primary text-primary-foreground hover:brightness-95"
               >
                 <Link href="/organizer/apply">Get Started</Link>
           </Button>
@@ -111,7 +111,7 @@ export function Header() {
               </Link>
               <Button
                 asChild
-                className="mt-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                className="mt-2 bg-primary text-primary-foreground hover:brightness-95"
               >
                 <Link href="/organizer/apply">Get Started</Link>
               </Button>

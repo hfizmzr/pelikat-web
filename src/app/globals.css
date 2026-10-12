@@ -13,7 +13,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(0.985 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.53 0.16 190);
+  --primary: oklch(0.51 0.16 190);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.92 0 0);
   --secondary-foreground: oklch(0.145 0 0);
@@ -25,7 +25,7 @@
   --destructive-foreground: oklch(0.577 0.245 27.325);
   --border: oklch(0.868 0 0);
   --input: oklch(0.868 0 0);
-  --ring: oklch(0.53 0.16 190);
+  --ring: oklch(0.51 0.16 190);
   --chart-1: oklch(0.58 0.14 190);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -34,12 +34,12 @@
   --radius: 0.75rem;
   --sidebar: oklch(0.968 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.53 0.16 190);
+  --sidebar-primary: oklch(0.51 0.16 190);
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.92 0 0);
   --sidebar-accent-foreground: oklch(0.145 0 0);
   --sidebar-border: oklch(0.868 0 0);
-  --sidebar-ring: oklch(0.53 0.16 190);
+  --sidebar-ring: oklch(0.51 0.16 190);
   --success: oklch(0.7 0.2 145);
 }
 
@@ -82,38 +82,6 @@
   /* Custom Obsidian tokens */
   --success: oklch(0.7 0.2 145);
 
-  /* ── Obsidian Velocity Admin Design System ── */
-  /* Material-You Dark Surface Hierarchy */
-  --ov-surface:               #131315;
-  --ov-surface-dim:           #131315;
-  --ov-surface-bright:        #39393b;
-  --ov-surface-lowest:        #0e0e10;
-  --ov-surface-low:           #1c1b1d;
-  --ov-surface-container:     #201f22;
-  --ov-surface-high:          #2a2a2c;
-  --ov-surface-highest:       #353437;
-  --ov-on-surface:            #e5e1e4;
-  --ov-on-surface-variant:    #cbc3d7;
-  --ov-outline:               #958ea0;
-  --ov-outline-variant:       #494454;
-  /* Primary (Electric Violet) */
-  --ov-primary:               #d0bcff;
-  --ov-on-primary:            #3c0091;
-  --ov-primary-container:     #a078ff;
-  --ov-on-primary-container:  #340080;
-  --ov-inverse-primary:       #6d3bd7;
-  /* Secondary (Cyber Cyan) */
-  --ov-secondary:             #4cd7f6;
-  --ov-on-secondary:          #003640;
-  --ov-secondary-container:   #03b5d3;
-  /* Tertiary (Cyber Emerald) */
-  --ov-tertiary:              #4edea3;
-  --ov-on-tertiary:           #003824;
-  --ov-tertiary-container:    #00a572;
-  /* Error */
-  --ov-error:                 #ffb4ab;
-  --ov-error-container:       #93000a;
-  --ov-on-error-container:    #ffdad6;
 }
 
 @theme inline {
@@ -175,16 +143,13 @@
 }
 
 @layer utilities {
-  /* Obsidian Velocity Admin Utilities */
+  /* App utilities */
   /* Legacy admin utility names now resolve to the single brand stack (Geist) —
      ponytail: rename call sites to font-sans if these drift further. */
   .font-inter, .font-jakarta { font-family: var(--font-sans); }
   .font-tabular { font-variant-numeric: tabular-nums; }
 
   /* Glow utilities */
-  .glow-primary  { box-shadow: 0 0 20px rgba(208, 188, 255, 0.3); }
-  .glow-tertiary { box-shadow: 0 0 12px rgba(78, 222, 163, 0.5); }
-  .glow-error    { box-shadow: 0 0 12px rgba(255, 180, 171, 0.4); }
 
   /* Admin scrollbar hide */
   .scrollbar-none { scrollbar-width: none; }

@@ -139,22 +139,22 @@ export default function RunnerProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center">
-        <span className="size-[32px] text-[#cbc3d7] animate-spin"><LoaderCircle className="size-[32px] text-[#cbc3d7] animate-spin" /></span>
+      <div className="flex flex-col w-full min-h-full bg-background items-center justify-center">
+        <span className="size-[32px] text-muted-foreground animate-spin"><LoaderCircle className="size-[32px] text-muted-foreground animate-spin" /></span>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+    <div className="flex flex-col w-full min-h-full bg-background">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
-          <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
+          <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
             <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
-            <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
+            <h1 className="text-[16px] font-bold text-foreground leading-tight">
               Profile
             </h1>
           </div>
@@ -164,84 +164,84 @@ export default function RunnerProfilePage() {
       <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto pb-24">
         
         {/* Personal Info */}
-        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
-          <div className="p-5 border-b border-[#353437]/60">
-            <h2 className="text-[16px] font-bold text-[#e5e1e4]">Personal Information</h2>
-            <p className="text-[12px] text-[#958ea0]">Your basic details</p>
+        <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+          <div className="p-5 border-b border-border/60">
+            <h2 className="text-[16px] font-bold text-foreground">Personal Information</h2>
+            <p className="text-[12px] text-muted-foreground">Your basic details</p>
           </div>
           <div className="p-5 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="full_name" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Full Name</label>
+              <label htmlFor="full_name" className="text-[12px] font-bold text-muted-foreground ml-1">Full Name</label>
               <input
                 id="full_name"
                 type="text"
                 value={formData.full_name}
                 onChange={(e) => updateField("full_name", e.target.value)}
-                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="phone" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Phone Number</label>
+              <label htmlFor="phone" className="text-[12px] font-bold text-muted-foreground ml-1">Phone Number</label>
               <input
                 id="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => updateField("phone", e.target.value)}
-                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
               />
             </div>
             <div className="flex flex-col gap-1.5 opacity-60">
-              <label htmlFor="email" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Email</label>
+              <label htmlFor="email" className="text-[12px] font-bold text-muted-foreground ml-1">Email</label>
               <input
                 id="email"
                 type="email"
                 value={user?.email || ""}
                 disabled
-                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4]"
+                className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground"
               />
             </div>
           </div>
         </section>
 
         {/* Runner Details */}
-        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
-          <div className="p-5 border-b border-[#353437]/60">
-            <h2 className="text-[16px] font-bold text-[#e5e1e4]">Runner Details</h2>
-            <p className="text-[12px] text-[#958ea0]">Information for event registration</p>
+        <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+          <div className="p-5 border-b border-border/60">
+            <h2 className="text-[16px] font-bold text-foreground">Runner Details</h2>
+            <p className="text-[12px] text-muted-foreground">Information for event registration</p>
           </div>
           <div className="p-5 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="dob" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Date of Birth</label>
+              <label htmlFor="dob" className="text-[12px] font-bold text-muted-foreground ml-1">Date of Birth</label>
               <input
                 id="dob"
                 type="date"
                 value={formData.dob}
                 onChange={(e) => updateField("dob", e.target.value)}
-                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
                 style={{ colorScheme: 'dark' }}
               />
             </div>
             <div className="flex flex-col gap-1.5 relative">
-              <label htmlFor="gender" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Gender</label>
+              <label htmlFor="gender" className="text-[12px] font-bold text-muted-foreground ml-1">Gender</label>
               <select
                 id="gender"
                 value={formData.gender}
                 onChange={(e) => updateField("gender", e.target.value)}
-                className="w-full h-12 px-4 appearance-none rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                className="w-full h-12 px-4 appearance-none rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
               >
                 <option value="">Select gender</option>
                 <option value="M">Male</option>
                 <option value="F">Female</option>
               </select>
-              <span className="absolute right-4 top-9 text-[#958ea0] pointer-events-none"><ChevronDown className="absolute right-4 top-9 text-[#958ea0] pointer-events-none" /></span>
+              <span className="absolute right-4 top-9 text-muted-foreground pointer-events-none"><ChevronDown className="absolute right-4 top-9 text-muted-foreground pointer-events-none" /></span>
             </div>
             <div className="flex flex-col gap-1.5 relative">
-              <label htmlFor="t_shirt_size" className="text-[12px] font-bold text-[#cbc3d7] ml-1">T-Shirt Size</label>
+              <label htmlFor="t_shirt_size" className="text-[12px] font-bold text-muted-foreground ml-1">T-Shirt Size</label>
               <select
                 id="t_shirt_size"
                 value={formData.t_shirt_size}
                 onChange={(e) => updateField("t_shirt_size", e.target.value)}
-                className="w-full h-12 px-4 appearance-none rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                className="w-full h-12 px-4 appearance-none rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
               >
                 <option value="">Select size</option>
                 <option value="XS">XS</option>
@@ -251,44 +251,44 @@ export default function RunnerProfilePage() {
                 <option value="XL">XL</option>
                 <option value="XXL">XXL</option>
               </select>
-              <span className="absolute right-4 top-9 text-[#958ea0] pointer-events-none"><ChevronDown className="absolute right-4 top-9 text-[#958ea0] pointer-events-none" /></span>
+              <span className="absolute right-4 top-9 text-muted-foreground pointer-events-none"><ChevronDown className="absolute right-4 top-9 text-muted-foreground pointer-events-none" /></span>
             </div>
           </div>
         </section>
 
         {/* Emergency Contact */}
-        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
-          <div className="p-5 border-b border-[#353437]/60">
-            <h2 className="text-[16px] font-bold text-[#e5e1e4]">Emergency Contact</h2>
-            <p className="text-[12px] text-[#958ea0]">Contacted in case of an emergency on race day</p>
+        <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+          <div className="p-5 border-b border-border/60">
+            <h2 className="text-[16px] font-bold text-foreground">Emergency Contact</h2>
+            <p className="text-[12px] text-muted-foreground">Contacted in case of an emergency on race day</p>
           </div>
           <div className="p-5 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="emergency_contact_name" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Contact Name</label>
+              <label htmlFor="emergency_contact_name" className="text-[12px] font-bold text-muted-foreground ml-1">Contact Name</label>
               <input
                 id="emergency_contact_name"
                 type="text"
                 value={formData.emergency_contact_name}
                 onChange={(e) => updateField("emergency_contact_name", e.target.value)}
-                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="emergency_contact_phone" className="text-[12px] font-bold text-[#cbc3d7] ml-1">Contact Phone</label>
+              <label htmlFor="emergency_contact_phone" className="text-[12px] font-bold text-muted-foreground ml-1">Contact Phone</label>
               <input
                 id="emergency_contact_phone"
                 type="tel"
                 value={formData.emergency_contact_phone}
                 onChange={(e) => updateField("emergency_contact_phone", e.target.value)}
-                className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
               />
             </div>
           </div>
         </section>
 
         {/* PDPA */}
-        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden p-5">
-          <h2 className="text-[16px] font-bold text-[#e5e1e4] mb-1">PDPA Consent</h2>
+        <section className="bg-card rounded-2xl border border-border/60 overflow-hidden p-5">
+          <h2 className="text-[16px] font-bold text-foreground mb-1">PDPA Consent</h2>
           <div className="flex items-start gap-3 mt-4">
             <div className="pt-1">
               <input
@@ -299,10 +299,10 @@ export default function RunnerProfilePage() {
                   const checked = e.target.checked
                   setProfile({ ...profile, pdpa_agreed: checked })
                 }}
-                className="w-5 h-5 rounded border-[#353437] bg-[#23232b] text-[#d0bcff] focus:ring-[#d0bcff]/50"
+                className="w-5 h-5 rounded border-border bg-muted text-primary focus:ring-primary/50"
               />
             </div>
-            <label htmlFor="pdpa" className="text-[13px] text-[#cbc3d7] leading-relaxed">
+            <label htmlFor="pdpa" className="text-[13px] text-muted-foreground leading-relaxed">
               I consent to the collection and processing of my personal data in accordance with PDPA
             </label>
           </div>
@@ -317,27 +317,27 @@ export default function RunnerProfilePage() {
         />
 
         {/* Manual IC/Passport fallback */}
-        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
-          <div className="p-5 border-b border-[#353437]/60">
-            <h3 className="text-[16px] font-bold text-[#e5e1e4] flex items-center gap-2">
-              <span className="size-[20px] text-[#4cd7f6]"><Keyboard className="size-[20px] text-[#4cd7f6]" /></span>
+        <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+          <div className="p-5 border-b border-border/60">
+            <h3 className="text-[16px] font-bold text-foreground flex items-center gap-2">
+              <span className="size-[20px] text-primary"><Keyboard className="size-[20px] text-primary" /></span>
               Enter IC/Passport Manually
             </h3>
-            <p className="text-[12px] text-[#958ea0] mt-1 leading-relaxed">
+            <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">
               No photo handy? Type your IC or passport number instead. It is encrypted before storage and never shown again.
             </p>
           </div>
 
           <div className="p-5 flex flex-col gap-4">
             {profile?.ic_encrypted ? (
-              <div className="flex items-center gap-2 rounded-xl bg-[#4edea3]/10 border border-[#4edea3]/20 px-4 py-3 text-[13px] text-[#4edea3] font-medium">
+              <div className="flex items-center gap-2 rounded-xl bg-success/10 border border-success/20 px-4 py-3 text-[13px] text-success font-medium">
                 <span className="size-[18px]"><ShieldCheck className="size-[18px]" /></span>
                 IC/Passport number securely stored
               </div>
             ) : (
               <>
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="ic_number" className="text-[12px] font-bold text-[#cbc3d7] ml-1">IC / Passport Number</label>
+                  <label htmlFor="ic_number" className="text-[12px] font-bold text-muted-foreground ml-1">IC / Passport Number</label>
                   <input
                     id="ic_number"
                     type="text"
@@ -348,14 +348,14 @@ export default function RunnerProfilePage() {
                       setIcSaved(false)
                     }}
                     placeholder="000000-00-0000"
-                    className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                    className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
                   />
                 </div>
 
                 <button
                   onClick={handleSaveIc}
                   disabled={icSaving || !icInput.trim()}
-                  className="w-full py-3 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                  className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
                 >
                   {icSaving ? (
                     <>
@@ -371,14 +371,14 @@ export default function RunnerProfilePage() {
                 </button>
 
                 {icSaved && (
-                  <div className="flex items-center gap-2 rounded-xl bg-[#4edea3]/10 border border-[#4edea3]/20 px-4 py-3 text-[13px] text-[#4edea3] font-medium">
+                  <div className="flex items-center gap-2 rounded-xl bg-success/10 border border-success/20 px-4 py-3 text-[13px] text-success font-medium">
                     <span className="size-[18px]"><CircleCheck className="size-[18px]" /></span>
                     IC number saved securely
                   </div>
                 )}
 
                 {icError && (
-                  <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
+                  <div className="p-3 rounded-lg bg-red-300/10 border border-red-300/20 text-red-300 text-[12px] flex items-center gap-2">
                     <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
                     {icError}
                   </div>
@@ -391,7 +391,7 @@ export default function RunnerProfilePage() {
         <button
           onClick={handleSave} 
           disabled={saving}
-          className="w-full py-4 mt-2 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 shadow-lg shadow-[#d0bcff]/10"
+          className="w-full py-4 mt-2 rounded-xl bg-primary text-primary-foreground text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 shadow-lg shadow-primary/10"
         >
           {saving ? (
             <>
@@ -404,26 +404,26 @@ export default function RunnerProfilePage() {
         </button>
 
         {saveError && (
-          <p className="text-[12px] text-[#ffb4ab] mt-2 text-center">{saveError}</p>
+          <p className="text-[12px] text-red-300 mt-2 text-center">{saveError}</p>
         )}
 
         {/* Danger Zone */}
-        <section className="bg-[#1c1b1d] rounded-2xl border border-[#ffb4ab]/30 overflow-hidden mt-8">
-          <div className="p-5 border-b border-[#ffb4ab]/20 bg-[#ffb4ab]/5">
-            <h2 className="text-[16px] font-bold text-[#ffb4ab] flex items-center gap-2">
+        <section className="bg-card rounded-2xl border border-red-300/30 overflow-hidden mt-8">
+          <div className="p-5 border-b border-red-300/20 bg-red-300/5">
+            <h2 className="text-[16px] font-bold text-red-300 flex items-center gap-2">
               <span className="size-[20px]"><TriangleAlert className="size-[20px]" /></span>
               Danger Zone
             </h2>
           </div>
           <div className="p-5 flex flex-col gap-4">
-            <p className="text-[12px] text-[#cbc3d7] leading-relaxed">
+            <p className="text-[12px] text-muted-foreground leading-relaxed">
               Permanently delete your account and all personal data. This action cannot be undone.
             </p>
 
             {deleteStep === 'idle' && (
               <button 
                 onClick={() => setDeleteStep('confirm')}
-                className="py-3 px-4 rounded-xl bg-[#ffb4ab]/10 text-[#ffb4ab] text-[13px] font-bold border border-[#ffb4ab]/20 active:bg-[#ffb4ab]/20 transition-colors"
+                className="py-3 px-4 rounded-xl bg-red-300/10 text-red-300 text-[13px] font-bold border border-red-300/20 active:bg-red-300/20 transition-colors"
               >
                 Delete My Account
               </button>
@@ -432,7 +432,7 @@ export default function RunnerProfilePage() {
             {deleteStep === 'confirm' && (
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="delete-confirm" className="text-[12px] font-bold text-[#ffb4ab] ml-1">
+                  <label htmlFor="delete-confirm" className="text-[12px] font-bold text-red-300 ml-1">
                     Type <span className="font-extrabold">DELETE</span> to confirm
                   </label>
                   <input
@@ -441,7 +441,7 @@ export default function RunnerProfilePage() {
                     value={deleteConfirm}
                     onChange={(e) => setDeleteConfirm(e.target.value)}
                     placeholder="DELETE"
-                    className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#ffb4ab]/30 text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#ffb4ab]"
+                    className="w-full h-12 px-4 rounded-xl bg-muted border border-red-300/30 text-[14px] text-foreground focus:outline-none focus:border-red-300"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -457,7 +457,7 @@ export default function RunnerProfilePage() {
                         setDeleteStep('idle')
                       }
                     }}
-                    className="flex-[2] py-3 rounded-xl bg-[#ffb4ab] text-[#690005] text-[13px] font-bold active:scale-95 transition-transform disabled:opacity-50"
+                    className="flex-[2] py-3 rounded-xl bg-red-300 text-red-900 text-[13px] font-bold active:scale-95 transition-transform disabled:opacity-50"
                   >
                     Confirm Delete
                   </button>
@@ -466,7 +466,7 @@ export default function RunnerProfilePage() {
                       setDeleteStep('idle')
                       setDeleteConfirm('')
                     }}
-                    className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold active:scale-95 transition-transform"
+                    className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold active:scale-95 transition-transform"
                   >
                     Cancel
                   </button>
@@ -475,14 +475,14 @@ export default function RunnerProfilePage() {
             )}
 
             {deleteStep === 'deleting' && (
-              <div className="flex items-center justify-center gap-2 text-[13px] text-[#ffb4ab] font-bold py-3 bg-[#ffb4ab]/10 rounded-xl">
+              <div className="flex items-center justify-center gap-2 text-[13px] text-red-300 font-bold py-3 bg-red-300/10 rounded-xl">
                 <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
                 Deleting...
               </div>
             )}
 
             {deleteError && (
-              <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
+              <div className="p-3 rounded-lg bg-red-300/10 border border-red-300/20 text-red-300 text-[12px] flex items-center gap-2">
                 <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
                 {deleteError}
               </div>

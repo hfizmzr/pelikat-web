@@ -41,7 +41,7 @@ export function HeroSection() {
           <Button
             asChild
             size="lg"
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:brightness-95"
           >
             <Link href="/organizer/apply" className="inline-flex items-center gap-2">
               Get Started

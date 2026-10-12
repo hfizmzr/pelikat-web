@@ -37,28 +37,28 @@ export async function GET() {
       role: 'Super Admin',
       scope: 'Platform-wide full access & system configuration',
       count: 1,
-      color: 'text-[#ffb4ab] bg-[#ffb4ab]/10 border-[#ffb4ab]/20',
+      color: 'text-red-300 bg-red-300/10 border-red-300/20',
       description: 'Break-glass operator account with global service-role overrides',
     },
     {
       role: 'Tenant Organizer',
       scope: 'Scoped to own event tenant and participant roster',
       count: organizersCount ?? 0,
-      color: 'text-[#d0bcff] bg-[#d0bcff]/10 border-[#d0bcff]/20',
+      color: 'text-primary bg-primary/10 border-primary/20',
       description: 'Tenants managing race logistics, categories, and bib check-in',
     },
     {
       role: 'Runner / Athlete',
       scope: 'Read-own profile & race registration write access',
       count: runnersCount ?? 0,
-      color: 'text-[#4edea3] bg-[#4edea3]/10 border-[#4edea3]/20',
+      color: 'text-success bg-success/10 border-success/20',
       description: 'End-users registered for marathons and virtual running events',
     },
     {
       role: 'Anonymous / Guest',
       scope: 'Public race discovery and landing pages only',
       count: 'Unmetered',
-      color: 'text-[#958ea0] bg-[#958ea0]/10 border-[#958ea0]/20',
+      color: 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20',
       description: 'Public visitors browsing event calendars without active sessions',
     },
   ]
@@ -69,7 +69,7 @@ export async function GET() {
       scope: 'PostgreSQL Database Engine',
       status: 'enforced',
       icon: 'lock',
-      color: 'text-[#4edea3]',
+      color: 'text-success',
       detail: 'Mandatory tenant isolation on all tables via get_my_organizer_id()',
     },
     {
@@ -77,7 +77,7 @@ export async function GET() {
       scope: 'Edge Middleware & Next.js App Router',
       status: 'enforced',
       icon: 'verified_user',
-      color: 'text-[#4edea3]',
+      color: 'text-success',
       detail: 'Cryptographic token validation verifying role=admin claim',
     },
     {
@@ -85,7 +85,7 @@ export async function GET() {
       scope: 'Runner Profile Service',
       status: 'enforced',
       icon: 'policy',
-      color: 'text-[#4edea3]',
+      color: 'text-success',
       detail: `${pdpaConsentedCount ?? 0} of ${runnersCount ?? 0} athletes consented (${consentRate}%)`,
     },
     {
@@ -93,7 +93,7 @@ export async function GET() {
       scope: 'Supabase Storage Private Buckets',
       status: 'enforced',
       icon: 'encrypted',
-      color: 'text-[#4edea3]',
+      color: 'text-success',
       detail: 'AES-256 encrypted server-side storage with signed expiring URLs',
     },
     {
@@ -101,7 +101,7 @@ export async function GET() {
       scope: 'Audit Log Trigger Layer',
       status: 'enforced',
       icon: 'history',
-      color: 'text-[#4edea3]',
+      color: 'text-success',
       detail: `${auditLogsCount ?? 0} administrative and security audit events recorded`,
     },
     {
@@ -109,7 +109,7 @@ export async function GET() {
       scope: 'Organizer Tenant Portals',
       status: 'planned',
       icon: 'login',
-      color: 'text-[#ffb4ab]',
+      color: 'text-red-300',
       detail: 'SAML 2.0 and Google Workspace tenant federation roadmap',
     },
   ]

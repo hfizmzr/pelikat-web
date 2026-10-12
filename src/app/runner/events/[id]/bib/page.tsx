@@ -74,7 +74,7 @@ export default async function RunnerBibPage({
         type: 'svg',
         width: 220,
         margin: 1,
-        color: { dark: isCheckedIn ? '#4edea3' : '#e5e1e4', light: '#00000000' },
+        color: { dark: isCheckedIn ? '#22c55e' : '#f8fafc', light: '#00000000' },
       })
     }
   } catch {
@@ -82,14 +82,14 @@ export default async function RunnerBibPage({
   }
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+    <div className="flex flex-col w-full min-h-full bg-background">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
-          <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
+          <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
             <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
           </Link>
-          <h1 className="flex-1 text-[16px] font-bold text-[#e5e1e4] text-center mr-8 truncate">
+          <h1 className="flex-1 text-[16px] font-bold text-foreground text-center mr-8 truncate">
             Digital BIB
           </h1>
         </div>
@@ -100,41 +100,41 @@ export default async function RunnerBibPage({
         {/* Ticket Wallet Container */}
         <div className="w-full relative">
           {/* Main Ticket */}
-          <div className={`relative overflow-hidden rounded-[2rem] p-6 pt-8 flex flex-col items-center bg-[#1c1b1d] border shadow-2xl ${
-            isCheckedIn ? 'border-[#4edea3]/40' : 'border-[#353437]/60'
+          <div className={`relative overflow-hidden rounded-[2rem] p-6 pt-8 flex flex-col items-center bg-card border shadow-2xl ${
+            isCheckedIn ? 'border-success/40' : 'border-border/60'
           }`}>
             
             {/* Blurry glow */}
             <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl pointer-events-none ${
-              isCheckedIn ? 'bg-[#4edea3]/10' : 'bg-[#d0bcff]/10'
+              isCheckedIn ? 'bg-success/10' : 'bg-primary/10'
             }`} />
 
             <div className="relative z-10 flex flex-col items-center w-full">
               {isCheckedIn ? (
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20 mb-4">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success border border-success/20 mb-4">
                   <span className="size-[16px]"><CircleCheck className="size-[16px]" /></span>
                   <span className="text-[10px] font-bold tracking-wider uppercase">Checked In</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d0bcff]/10 text-[#d0bcff] border border-[#d0bcff]/20 mb-4">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 mb-4">
                   <span className="size-[16px]"><QrCode className="size-[16px]" /></span>
                   <span className="text-[10px] font-bold tracking-wider uppercase">Ready for Scan</span>
                 </div>
               )}
 
-              <h2 className="text-[12px] font-bold text-[#958ea0] tracking-widest uppercase mb-1">BIB NUMBER</h2>
-              <div className="text-[54px] font-mono font-bold text-[#e5e1e4] leading-none mb-6 drop-shadow-md">
+              <h2 className="text-[12px] font-bold text-muted-foreground tracking-widest uppercase mb-1">BIB NUMBER</h2>
+              <div className="text-[54px] font-mono font-bold text-foreground leading-none mb-6 drop-shadow-md">
                 {registration.bib_number}
               </div>
 
-              <div className="w-full h-px bg-gradient-to-r from-transparent via-[#353437] to-transparent mb-6" />
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-accent to-transparent mb-6" />
 
               <div className="w-full flex justify-center mb-6">
-                <div className={`p-3 rounded-2xl ${isCheckedIn ? 'bg-[#4edea3]/5' : 'bg-[#e5e1e4]/5'} backdrop-blur-sm border border-[#353437]/40`}>
+                <div className={`p-3 rounded-2xl ${isCheckedIn ? 'bg-success/5' : 'bg-foreground/5'} backdrop-blur-sm border border-border/40`}>
                   {qrSvg ? (
                     <div dangerouslySetInnerHTML={{ __html: qrSvg }} />
                   ) : (
-                    <div className="w-[220px] h-[220px] flex items-center justify-center text-center text-[#ffb4ab] text-[12px] px-4 border border-dashed border-[#ffb4ab]/30 rounded-xl">
+                    <div className="w-[220px] h-[220px] flex items-center justify-center text-center text-red-300 text-[12px] px-4 border border-dashed border-red-300/30 rounded-xl">
                       {qrError}
                     </div>
                   )}
@@ -143,25 +143,25 @@ export default async function RunnerBibPage({
 
               <div className="w-full flex flex-col gap-3 text-center mb-2">
                 <div>
-                  <h3 className="text-[16px] font-bold text-[#e5e1e4] leading-tight mb-0.5">{profile?.full_name}</h3>
-                  <p className="text-[12px] text-[#cbc3d7]">{registration.race_categories?.name}</p>
+                  <h3 className="text-[16px] font-bold text-foreground leading-tight mb-0.5">{profile?.full_name}</h3>
+                  <p className="text-[12px] text-muted-foreground">{registration.race_categories?.name}</p>
                 </div>
-                <div className="w-full h-px bg-[#353437]/40 my-1" />
+                <div className="w-full h-px bg-accent/40 my-1" />
                 <div className="flex flex-col gap-1">
-                  <span className="text-[13px] font-bold text-[#e5e1e4] truncate">{event.name}</span>
-                  <span className="text-[11px] text-[#958ea0]">
+                  <span className="text-[13px] font-bold text-foreground truncate">{event.name}</span>
+                  <span className="text-[11px] text-muted-foreground">
                     {new Date(event.event_date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                   {checkedInAt && (
-                    <span className="text-[10px] text-[#4edea3] mt-1">Scanned at {checkedInAt}</span>
+                    <span className="text-[10px] text-success mt-1">Scanned at {checkedInAt}</span>
                   )}
                 </div>
               </div>
             </div>
             
             {/* Cutouts for ticket effect */}
-            <div className="absolute top-[65%] -left-3 w-6 h-6 rounded-full bg-[#131315] border-r border-[#353437]/60" />
-            <div className="absolute top-[65%] -right-3 w-6 h-6 rounded-full bg-[#131315] border-l border-[#353437]/60" />
+            <div className="absolute top-[65%] -left-3 w-6 h-6 rounded-full bg-background border-r border-border/60" />
+            <div className="absolute top-[65%] -right-3 w-6 h-6 rounded-full bg-background border-l border-border/60" />
           </div>
         </div>
 
@@ -172,18 +172,18 @@ export default async function RunnerBibPage({
 
         <Link
           href={`/runner/events/${id}/bib/consent`}
-          className="w-full py-3.5 mt-2 rounded-xl border border-[#353437] text-[#cbc3d7] text-[13px] font-bold flex items-center justify-center gap-2 active:bg-[#1c1b1d] transition-colors"
+          className="w-full py-3.5 mt-2 rounded-xl border border-border text-muted-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:bg-card transition-colors"
         >
           <span className="size-[18px]"><Users className="size-[18px]" /></span>
           Generate Proxy Collection Code
         </Link>
         
-        <div className="bg-[#1c1b1d] p-4 rounded-xl border border-[#353437]/40 w-full mt-2">
+        <div className="bg-card p-4 rounded-xl border border-border/40 w-full mt-2">
           <div className="flex items-center gap-2 mb-2">
-            <span className="size-[18px] text-[#4cd7f6]"><Info className="size-[18px] text-[#4cd7f6]" /></span>
-            <span className="text-[13px] font-bold text-[#e5e1e4]">Instructions</span>
+            <span className="size-[18px] text-primary"><Info className="size-[18px] text-primary" /></span>
+            <span className="text-[13px] font-bold text-foreground">Instructions</span>
           </div>
-          <ol className="text-[12px] text-[#958ea0] space-y-2 list-decimal list-inside marker:text-[#cbc3d7]">
+          <ol className="text-[12px] text-muted-foreground space-y-2 list-decimal list-inside marker:text-muted-foreground">
             <li>Show this QR code at the check-in counter on race day.</li>
             <li>Ensure your screen brightness is turned up.</li>
             <li>Take a screenshot as a backup.</li>

@@ -23,9 +23,9 @@ export function CommandControl() {
                   <Database className="size-5" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground">
+                  <h3 className="text-[15px] font-semibold text-foreground">
                     One race data feed
-                  </h4>
+                  </h3>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Timing chips, manual entries, and sponsor leads land in the
                     same feed as runners check in.
@@ -37,9 +37,9 @@ export function CommandControl() {
                   <ShieldCheck className="size-5" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground">
+                  <h3 className="text-[15px] font-semibold text-foreground">
                     Duplicate and bib-swap detection
-                  </h4>
+                  </h3>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Duplicate registrations and bib swaps are flagged
                     automatically before check-in keys go out.

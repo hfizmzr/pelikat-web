@@ -25,8 +25,8 @@ function BottomNavLink({
       href={href}
       className={`flex flex-col items-center justify-center min-w-[54px] min-h-[44px] gap-0.5 transition-all active:scale-95 ${
         active
-          ? 'text-[#d0bcff] font-semibold'
-          : 'text-[#cbc3d7] hover:text-[#e5e1e4]'
+          ? 'text-primary font-semibold'
+          : 'text-muted-foreground hover:text-foreground'
       }`}
     >
       <Icon className="size-[20px]" />
@@ -90,14 +90,14 @@ export default function RunnerLayout({
   }
 
   return (
-    <div className="min-h-dvh bg-[#0e0e10] flex justify-center overflow-hidden font-sans">
-      <div className="flex flex-col w-full max-w-md h-[100dvh] bg-[#131315] overscroll-none select-none relative shadow-2xl border-x border-[#23232b]/30">
+    <div className="min-h-dvh bg-background flex justify-center overflow-hidden font-sans">
+      <div className="flex flex-col w-full max-w-md h-[100dvh] bg-background overscroll-none select-none relative shadow-2xl border-x border-muted/30">
         {/* Main scrollable content area - padded for bottom nav */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 pt-0">{children}</main>
 
         {/* Floating pill bottom nav */}
         <nav className="absolute bottom-0 inset-x-0 z-50 pb-safe pointer-events-none flex justify-center pb-3 px-4">
-          <div className="pointer-events-auto w-full bg-[#1c1b1d]/90 backdrop-blur-2xl rounded-full px-2 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-around border border-[#353437]/60">
+          <div className="pointer-events-auto w-full bg-card/90 backdrop-blur-2xl rounded-full px-2 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-around border border-border/60">
             {NAV_ITEMS.map((item) => {
               const active =
                 pathname === item.href ||

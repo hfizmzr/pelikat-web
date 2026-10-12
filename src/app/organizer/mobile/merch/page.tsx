@@ -78,9 +78,9 @@ async function getMerchInventoryData() {
 }
 
 function StockBadge({ stock }: { stock: number }) {
-  if (stock <= 2) return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ffb4ab]/20 text-[#ffb4ab]">Critical</span>
-  if (stock <= 10) return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#d0bcff]/20 text-[#d0bcff]">Low</span>
-  return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#4edea3]/15 text-[#4edea3]">Healthy</span>
+  if (stock <= 2) return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-300/20 text-red-300">Critical</span>
+  if (stock <= 10) return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/20 text-primary">Low</span>
+  return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success/15 text-success">Healthy</span>
 }
 
 export default async function OrganizerMobileMerchPage() {
@@ -88,13 +88,13 @@ export default async function OrganizerMobileMerchPage() {
 
   if (!data) {
     return (
-      <div className="flex flex-col min-h-dvh bg-[#131315]">
-        <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#353437]/40 px-5 pt-safe">
+      <div className="flex flex-col min-h-dvh bg-background">
+        <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/40 px-5 pt-safe">
           <div className="h-14 flex items-center">
-            <span className="text-[16px] font-bold text-[#e5e1e4]">Kit Inventory</span>
+            <span className="text-[16px] font-bold text-foreground">Kit Inventory</span>
           </div>
         </header>
-        <div className="flex flex-col items-center justify-center flex-1 py-16 text-[#958ea0]">
+        <div className="flex flex-col items-center justify-center flex-1 py-16 text-muted-foreground">
           <span className="size-[48px] mb-3"><Package className="size-[48px] mb-3" /></span>
           <p className="text-[14px] font-medium">No access</p>
         </div>
@@ -104,17 +104,17 @@ export default async function OrganizerMobileMerchPage() {
 
   if (!data.event) {
     return (
-      <div className="flex flex-col min-h-dvh bg-[#131315]">
-        <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#353437]/40 px-5 pt-safe">
+      <div className="flex flex-col min-h-dvh bg-background">
+        <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/40 px-5 pt-safe">
           <div className="h-14 flex items-center">
-            <span className="text-[16px] font-bold text-[#e5e1e4]">Kit Inventory</span>
+            <span className="text-[16px] font-bold text-foreground">Kit Inventory</span>
           </div>
         </header>
-        <div className="flex flex-col items-center justify-center flex-1 py-16 text-[#958ea0]">
+        <div className="flex flex-col items-center justify-center flex-1 py-16 text-muted-foreground">
           <span className="size-[48px] mb-3"><ShoppingBag className="size-[48px] mb-3" /></span>
           <p className="text-[14px] font-medium">No active event</p>
           <p className="text-[12px] mt-1">Activate an event to manage inventory</p>
-          <Link href="/organizer/mobile/events" className="mt-4 px-5 py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold">
+          <Link href="/organizer/mobile/events" className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold">
             View Events
           </Link>
         </div>
@@ -125,29 +125,29 @@ export default async function OrganizerMobileMerchPage() {
   const { event, items, totalItems = 0, criticalItems = 0 } = data
 
   return (
-    <div className="flex flex-col w-full bg-[#131315] min-h-dvh">
+    <div className="flex flex-col w-full bg-background min-h-dvh">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#353437]/40 px-5 pt-safe">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/40 px-5 pt-safe">
         <div className="h-14 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[16px] font-bold text-[#e5e1e4]">Kit Inventory</span>
+              <span className="text-[16px] font-bold text-foreground">Kit Inventory</span>
               {criticalItems > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#ffb4ab]/20 text-[#ffb4ab]">
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-300/20 text-red-300">
                   {criticalItems} critical
                 </span>
               )}
             </div>
             <div className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4edea3] animate-pulse" />
-              <span className="text-[10px] text-[#958ea0] truncate max-w-[200px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              <span className="text-[10px] text-muted-foreground truncate max-w-[200px]">
                 {event.name}
               </span>
             </div>
           </div>
           <Link
             href="/organizer/merch"
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#2a2a2c] text-[#cbc3d7] text-[11px] font-medium border border-[#353437]/60"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-accent text-muted-foreground text-[11px] font-medium border border-border/60"
           >
             <span className="size-[14px]"><Maximize2 className="size-[14px]" /></span>
             Full View
@@ -158,33 +158,33 @@ export default async function OrganizerMobileMerchPage() {
       <div className="flex flex-col px-4 py-4 space-y-5">
 
         {/* Summary banner */}
-        <div className="relative overflow-hidden rounded-xl bg-[#201f22] p-4 border border-[#353437]/40 shadow-md">
-          <div className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-[#d0bcff]/10 blur-2xl pointer-events-none" />
+        <div className="relative overflow-hidden rounded-xl bg-card p-4 border border-border/40 shadow-md">
+          <div className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] uppercase tracking-wider text-[#cbc3d7] font-semibold">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
                 Total Floor Inventory
               </span>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-[28px] font-extrabold text-[#e5e1e4] tracking-tight">
+                <span className="text-[28px] font-extrabold text-foreground tracking-tight">
                   {totalItems}
                 </span>
-                <span className="text-[12px] text-[#cbc3d7]">Units Remaining</span>
+                <span className="text-[12px] text-muted-foreground">Units Remaining</span>
               </div>
             </div>
             <div className="flex flex-col items-end">
-              <span className="text-[11px] text-[#4cd7f6] font-bold">{items.length} SKUs</span>
+              <span className="text-[11px] text-primary font-bold">{items.length} SKUs</span>
               {criticalItems > 0 && (
-                <span className="text-[11px] text-[#ffb4ab] mt-0.5">{criticalItems} low stock</span>
+                <span className="text-[11px] text-red-300 mt-0.5">{criticalItems} low stock</span>
               )}
             </div>
           </div>
 
           {/* Critical alert */}
           {criticalItems > 0 && (
-            <div className="mt-3 p-3 rounded-lg bg-[#93000a]/30 flex items-start gap-2 border border-[#ffb4ab]/20">
-              <TriangleAlert className="size-[16px] text-[#ffb4ab] shrink-0" />
-              <p className="text-[11px] text-[#ffb4ab]">
+            <div className="mt-3 p-3 rounded-lg bg-red-800/30 flex items-start gap-2 border border-red-300/20">
+              <TriangleAlert className="size-[16px] text-red-300 shrink-0" />
+              <p className="text-[11px] text-red-300">
                 {criticalItems} variant(s) at critical stock level. Restock required.
               </p>
             </div>
@@ -194,15 +194,15 @@ export default async function OrganizerMobileMerchPage() {
         {/* Merch items */}
         {items.length > 0 ? (
           <section>
-            <h2 className="text-[12px] font-bold text-[#cbc3d7] uppercase tracking-wider mb-3">
+            <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
               Kit Matrix
             </h2>
             <div className="flex flex-col gap-3">
               {items.map((item) => (
-                <div key={item.id} className="rounded-xl bg-[#1c1b1d] border border-[#353437]/40 overflow-hidden">
+                <div key={item.id} className="rounded-xl bg-card border border-border/40 overflow-hidden">
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-[14px] font-bold text-[#e5e1e4]">{item.name}</h3>
+                      <h3 className="text-[14px] font-bold text-foreground">{item.name}</h3>
                       <StockBadge stock={item.totalStock} />
                     </div>
 
@@ -212,30 +212,30 @@ export default async function OrganizerMobileMerchPage() {
                           <div
                             key={v.id}
                             className={`flex items-center justify-between p-2.5 rounded-lg ${
-                              v.isCritical ? 'bg-[#ffb4ab]/5 border border-[#ffb4ab]/20' :
-                              v.isLow ? 'bg-[#d0bcff]/5 border border-[#d0bcff]/15' :
-                              'bg-[#2a2a2c]'
+                              v.isCritical ? 'bg-red-300/5 border border-red-300/20' :
+                              v.isLow ? 'bg-primary/5 border border-primary/15' :
+                              'bg-accent'
                             }`}
                           >
                             <div className="flex flex-col min-w-0">
-                              <span className="text-[12px] font-semibold text-[#e5e1e4]">{v.name}</span>
-                              <span className="text-[10px] font-mono text-[#958ea0]">{v.sku}</span>
+                              <span className="text-[12px] font-semibold text-foreground">{v.name}</span>
+                              <span className="text-[10px] font-mono text-muted-foreground">{v.sku}</span>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               <span className={`text-[16px] font-bold ${
-                                v.isCritical ? 'text-[#ffb4ab]' : v.isLow ? 'text-[#d0bcff]' : 'text-[#e5e1e4]'
+                                v.isCritical ? 'text-red-300' : v.isLow ? 'text-primary' : 'text-foreground'
                               }`}>
                                 {v.stock}
                               </span>
-                              <span className="text-[10px] text-[#958ea0]">units</span>
+                              <span className="text-[10px] text-muted-foreground">units</span>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
                       <div className="flex items-center justify-between">
-                        <span className="text-[13px] text-[#cbc3d7]">Total stock</span>
-                        <span className="text-[18px] font-bold text-[#e5e1e4]">{item.totalStock}</span>
+                        <span className="text-[13px] text-muted-foreground">Total stock</span>
+                        <span className="text-[18px] font-bold text-foreground">{item.totalStock}</span>
                       </div>
                     )}
                   </div>
@@ -244,13 +244,13 @@ export default async function OrganizerMobileMerchPage() {
             </div>
           </section>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-[#958ea0]">
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <Package className="size-[48px] mb-3" />
             <p className="text-[14px] font-medium">No merchandise yet</p>
             <p className="text-[12px] mt-1">Add items from the full organizer view</p>
             <Link
               href="/organizer/merch"
-              className="mt-4 px-5 py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold"
+              className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold"
             >
               Manage Merch
             </Link>

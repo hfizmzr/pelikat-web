@@ -54,16 +54,16 @@ function SidebarContent({
     href === '/admin' ? pathname === '/admin' : pathname.startsWith(href)
 
   return (
-    <div className="flex flex-col h-full bg-[#0e0e10] border-r border-[#23232b] select-none scrollbar-none overflow-y-auto">
+    <div className="flex flex-col h-full bg-background border-r border-muted select-none scrollbar-none overflow-y-auto">
       {/* ── Logo / Brand ───────────────────────────────────── */}
-      <div className="h-16 px-4 border-b border-[#23232b] flex items-center justify-between gap-2 shrink-0">
+      <div className="h-16 px-4 border-b border-muted flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#a078ff]/20 flex items-center justify-center">
-            <span className="size-[18px] text-[#d0bcff]"><Zap className="size-[18px] text-[#d0bcff]" /></span>
+          <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
+            <span className="size-[18px] text-primary"><Zap className="size-[18px] text-primary" /></span>
           </div>
-          <span className="font-jakarta font-bold text-[17px] tracking-tight text-[#e5e1e4]">Pelikat</span>
+          <span className="font-jakarta font-bold text-[17px] tracking-tight text-foreground">Pelikat</span>
         </div>
-        <span className="px-2 py-0.5 rounded-full bg-[#93000a]/20 text-[#ffb4ab] border border-[#ffb4ab]/20 text-[10px] font-bold tracking-wider uppercase font-inter">
+        <span className="px-2 py-0.5 rounded-full bg-red-800/20 text-red-300 border border-red-300/20 text-[10px] font-bold tracking-wider uppercase font-inter">
           ROOT
         </span>
       </div>
@@ -71,7 +71,7 @@ function SidebarContent({
       {/* ── Navigation ─────────────────────────────────────── */}
       <nav className="flex-1 p-2 flex flex-col gap-1 pt-3">
         {/* Core Fleet section */}
-        <span className="px-2 pt-1 pb-1 text-[10px] uppercase font-bold tracking-widest text-[#958ea0] font-inter">
+        <span className="px-2 pt-1 pb-1 text-[10px] uppercase font-bold tracking-widest text-muted-foreground font-inter">
           Core Fleet
         </span>
         {coreFleetNav.map((item) => {
@@ -83,15 +83,15 @@ function SidebarContent({
               className={cn(
                 'flex items-center justify-between px-3 py-2 rounded-lg font-inter transition-all text-[13px] font-medium',
                 active
-                  ? 'bg-[#a078ff] text-[#340080] shadow-[0_0_16px_rgba(160,120,255,0.3)]'
-                  : 'text-[#cbc3d7] hover:text-[#e5e1e4] hover:bg-[#201f22]'
+                  ? 'bg-primary text-primary-foreground '
+                  : 'text-muted-foreground hover:text-foreground hover:bg-card'
               )}
             >
               <div className="flex items-center gap-2.5">
                 <span
                   className={cn(
                     'flex shrink-0',
-                    active ? 'text-[#340080]' : item.pulse ? 'text-[#4edea3]' : 'text-[#958ea0]'
+                    active ? 'text-primary-foreground' : item.pulse ? 'text-success' : 'text-muted-foreground'
                   )}
                 >
                   <item.icon className="size-[20px]" />
@@ -100,19 +100,19 @@ function SidebarContent({
               </div>
               {/* Live count badge for Tenant Organizers */}
               {item.href === '/admin/organizers' && !active && activeOrgCount > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full bg-[#d0bcff]/20 text-[#d0bcff] text-[10px] font-bold border border-[#d0bcff]/20 font-mono">
+                <span className="px-1.5 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold border border-primary/20 font-mono">
                   {activeOrgCount}
                 </span>
               )}
               {item.pulse && !active && (
-                <span className="w-2 h-2 rounded-full bg-[#4edea3] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
               )}
             </Link>
           )
         })}
 
         {/* Governance section */}
-        <span className="px-2 pt-3 pb-1 text-[10px] uppercase font-bold tracking-widest text-[#958ea0] font-inter">
+        <span className="px-2 pt-3 pb-1 text-[10px] uppercase font-bold tracking-widest text-muted-foreground font-inter">
           Governance
         </span>
         {governanceNav.map((item) => {
@@ -124,15 +124,15 @@ function SidebarContent({
               className={cn(
                 'flex items-center justify-between px-3 py-2 rounded-lg font-inter transition-all text-[13px] font-medium',
                 active
-                  ? 'bg-[#a078ff] text-[#340080] shadow-[0_0_16px_rgba(160,120,255,0.3)]'
-                  : 'text-[#cbc3d7] hover:text-[#e5e1e4] hover:bg-[#201f22]'
+                  ? 'bg-primary text-primary-foreground '
+                  : 'text-muted-foreground hover:text-foreground hover:bg-card'
               )}
             >
               <div className="flex items-center gap-2.5">
                 <span
                   className={cn(
                     'flex shrink-0',
-                    active ? 'text-[#340080]' : 'text-[#958ea0]'
+                    active ? 'text-primary-foreground' : 'text-muted-foreground'
                   )}
                 >
                   <item.icon className="size-[20px]" />
@@ -145,36 +145,36 @@ function SidebarContent({
       </nav>
 
       {/* ── Footer / User Profile ────────────────────────────── */}
-      <div className="p-2 border-t border-[#23232b] flex flex-col gap-2 mt-auto shrink-0">
+      <div className="p-2 border-t border-muted flex flex-col gap-2 mt-auto shrink-0">
         {/* Failsafe Armed indicator */}
-        <div className="p-2 rounded-lg bg-[#93000a]/10 border border-[#ffb4ab]/20 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-[#ffb4ab]">
+        <div className="p-2 rounded-lg bg-red-800/10 border border-red-300/20 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-red-300">
             <span className="size-[16px]"><TriangleAlert className="size-[16px]" /></span>
             <span className="text-[10px] font-mono font-bold uppercase font-inter">Failsafe Armed</span>
           </div>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#ffb4ab] animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-red-300 animate-pulse" />
         </div>
 
         {/* User card */}
-        <div className="flex items-center justify-between p-2 rounded-lg bg-[#1c1b1d] border border-[#494454]/30">
+        <div className="flex items-center justify-between p-2 rounded-lg bg-card border border-border/30">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="relative shrink-0">
-              <div className="w-8 h-8 rounded-full bg-[#a078ff]/20 flex items-center justify-center ring-1 ring-[#a078ff]/40 text-[#d0bcff] font-bold text-[13px] font-jakarta">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center ring-1 ring-primary/40 text-primary font-bold text-[13px] font-jakarta">
                 {user?.email?.[0]?.toUpperCase() ?? 'A'}
               </div>
-              <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-[#4edea3] ring-1 ring-[#1c1b1d]" />
+              <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-success ring-1 ring-card" />
             </div>
             <div className="flex flex-col text-left leading-tight min-w-0">
-              <span className="text-[11px] text-[#e5e1e4] font-semibold font-inter truncate max-w-[110px]">
+              <span className="text-[11px] text-foreground font-semibold font-inter truncate max-w-[110px]">
                 {user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'Super Admin'}
               </span>
-              <span className="text-[10px] text-[#d0bcff] font-mono truncate max-w-[110px]">
+              <span className="text-[10px] text-primary font-mono truncate max-w-[110px]">
                 ROOT / Super-Admin
               </span>
             </div>
           </div>
           <button
-            className="p-1 text-[#958ea0] hover:text-[#ffb4ab] hover:bg-[#201f22] rounded transition-colors"
+            className="p-1 text-muted-foreground hover:text-red-300 hover:bg-card rounded transition-colors"
             title="Log out"
             onClick={onLogout}
           >
@@ -240,11 +240,11 @@ export function AdminMobileNav() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="p-2 rounded-lg text-[#cbc3d7] hover:text-[#e5e1e4] hover:bg-[#201f22] transition-colors lg:hidden">
+        <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card transition-colors lg:hidden">
           <span className="size-[22px]"><Menu className="size-[22px]" /></span>
         </button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0 border-r border-[#23232b] bg-[#0e0e10]">
+      <SheetContent side="left" className="w-64 p-0 border-r border-muted bg-background">
         <SidebarContent pathname={pathname} user={user} onLogout={handleLogout} activeOrgCount={activeOrgCount} />
       </SheetContent>
     </Sheet>

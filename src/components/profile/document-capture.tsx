@@ -129,13 +129,13 @@ export default function DocumentCapture({ currentDocument }: Props) {
   }
 
   return (
-    <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
-      <div className="p-5 border-b border-[#353437]/60">
-        <h3 className="text-[16px] font-bold text-[#e5e1e4] flex items-center gap-2">
-          <span className="size-[20px] text-[#4cd7f6]"><Badge className="size-[20px] text-[#4cd7f6]" /></span>
+    <div className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+      <div className="p-5 border-b border-border/60">
+        <h3 className="text-[16px] font-bold text-foreground flex items-center gap-2">
+          <span className="size-[20px] text-primary"><Badge className="size-[20px] text-primary" /></span>
           Identification Document
         </h3>
-        <p className="text-[12px] text-[#958ea0] mt-1 leading-relaxed">
+        <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">
           Upload a photo of your IC or Passport for identity verification.
           Your document is validated, encrypted, and stored securely.
         </p>
@@ -144,13 +144,13 @@ export default function DocumentCapture({ currentDocument }: Props) {
       <div className="p-5 flex flex-col gap-4">
         {hasDocument ? (
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2 rounded-xl bg-[#4edea3]/10 border border-[#4edea3]/20 px-4 py-3 text-[13px] text-[#4edea3] font-medium">
+            <div className="flex items-center gap-2 rounded-xl bg-success/10 border border-success/20 px-4 py-3 text-[13px] text-success font-medium">
               <span className="size-[18px]"><ShieldCheck className="size-[18px]" /></span>
               Document securely stored
             </div>
             
             {warning && (
-              <div className="flex items-center gap-2 rounded-xl bg-[#e3c45b]/10 border border-[#e3c45b]/20 px-4 py-3 text-[13px] text-[#e3c45b]">
+              <div className="flex items-center gap-2 rounded-xl bg-amber-400/10 border border-amber-400/20 px-4 py-3 text-[13px] text-amber-400">
                 <span className="size-[18px]"><TriangleAlert className="size-[18px]" /></span>
                 {warning}
               </div>
@@ -159,7 +159,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="py-3 px-4 w-full rounded-xl border border-[#ffb4ab]/30 text-[#ffb4ab] bg-[#ffb4ab]/5 text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+              className="py-3 px-4 w-full rounded-xl border border-red-300/30 text-red-300 bg-red-300/5 text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
             >
               {deleting ? (
                 <>
@@ -176,7 +176,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
           </div>
         ) : previewUrl ? (
           <div className="flex flex-col gap-4">
-            <div className="relative overflow-hidden rounded-xl border border-[#353437]/60 bg-[#131315]">
+            <div className="relative overflow-hidden rounded-xl border border-border/60 bg-background">
               {/* Local blob preview — next/image adds no benefit for object URLs */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -190,7 +190,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
               <button 
                 onClick={handleUpload} 
                 disabled={encrypting}
-                className="flex-1 py-3 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
               >
                 {encrypting ? (
                   <>
@@ -211,7 +211,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
                   setPreviewUrl(null)
                 }}
                 disabled={encrypting}
-                className="py-3 px-6 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold active:scale-95 transition-transform disabled:opacity-50"
+                className="py-3 px-6 rounded-xl bg-accent text-foreground text-[13px] font-bold active:scale-95 transition-transform disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -222,7 +222,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="py-3.5 px-2 rounded-xl border border-[#353437] text-[#cbc3d7] bg-[#23232b] text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
+                className="py-3.5 px-2 rounded-xl border border-border text-muted-foreground bg-muted text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
               >
                 <span className="size-[24px]"><FolderOpen className="size-[24px]" /></span>
                 Upload File
@@ -230,7 +230,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
               
               <button
                 onClick={() => cameraInputRef.current?.click()}
-                className="py-3.5 px-2 rounded-xl border border-[#353437] text-[#cbc3d7] bg-[#23232b] text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
+                className="py-3.5 px-2 rounded-xl border border-border text-muted-foreground bg-muted text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
               >
                 <span className="size-[24px]"><Camera className="size-[24px]" /></span>
                 Take Photo
@@ -262,7 +262,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
               }}
             />
 
-            <p className="text-[11px] text-[#958ea0] text-center">
+            <p className="text-[11px] text-muted-foreground text-center">
               Accepted formats: JPEG, PNG, WebP. Max 10MB.<br/>
               Image will be resized and validated before storage.
             </p>
@@ -270,7 +270,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
         )}
 
         {error && (
-          <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
+          <div className="p-3 rounded-lg bg-red-300/10 border border-red-300/20 text-red-300 text-[12px] flex items-center gap-2">
             <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
             {error}
           </div>

@@ -151,7 +151,7 @@ export default async function OrganizerEventAnalyticsPage({
             <CardTitle className="text-sm font-medium">Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#4edea3]">RM {revenue.toLocaleString('en-MY', { maximumFractionDigits: 0 })}</div>
+            <div className="text-2xl font-bold text-success">RM {revenue.toLocaleString('en-MY', { maximumFractionDigits: 0 })}</div>
           </CardContent>
         </Card>
       </div>

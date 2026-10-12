@@ -60,11 +60,11 @@ const ITEMS_PER_PAGE = 25
 
 // ─── Color palette for organizer initials ────────────────────────────────────
 const ORG_COLORS = [
-  { bg: 'bg-[#a078ff]/20', text: 'text-[#d0bcff]' },
-  { bg: 'bg-[#4cd7f6]/20', text: 'text-[#4cd7f6]' },
-  { bg: 'bg-[#4edea3]/20', text: 'text-[#4edea3]' },
-  { bg: 'bg-[#ffb4ab]/20', text: 'text-[#ffb4ab]' },
-  { bg: 'bg-[#d0bcff]/20', text: 'text-[#d0bcff]' },
+  { bg: 'bg-primary/20', text: 'text-primary' },
+  { bg: 'bg-primary/20', text: 'text-primary' },
+  { bg: 'bg-success/20', text: 'text-success' },
+  { bg: 'bg-red-300/20', text: 'text-red-300' },
+  { bg: 'bg-primary/20', text: 'text-primary' },
 ]
 
 function getInitials(name: string) {
@@ -78,10 +78,10 @@ function getInitials(name: string) {
 
 function getSubscriptionStatus(organizer: Organizer) {
   if (!organizer.is_active) {
-    return { label: 'Inactive', color: 'text-[#958ea0] bg-[#958ea0]/10 border-[#958ea0]/20', dot: 'bg-[#958ea0]' }
+    return { label: 'Inactive', color: 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20', dot: 'bg-muted-foreground' }
   }
   if (!organizer.sub_expires_at) {
-    return { label: 'Active', color: 'text-[#4edea3] bg-[#4edea3]/10 border-[#4edea3]/20', dot: 'bg-[#4edea3]' }
+    return { label: 'Active', color: 'text-success bg-success/10 border-success/20', dot: 'bg-success' }
   }
 
   const now = new Date()
@@ -89,12 +89,12 @@ function getSubscriptionStatus(organizer: Organizer) {
   const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
   if (expires <= now) {
-    return { label: 'Expired', color: 'text-[#ffb4ab] bg-[#ffb4ab]/10 border-[#ffb4ab]/20', dot: 'bg-[#ffb4ab]' }
+    return { label: 'Expired', color: 'text-red-300 bg-red-300/10 border-red-300/20', dot: 'bg-red-300' }
   }
   if (expires <= sevenDaysFromNow) {
-    return { label: 'Expiring Soon', color: 'text-[#ffb4ab] bg-[#ffb4ab]/10 border-[#ffb4ab]/20', dot: 'bg-[#ffb4ab]' }
+    return { label: 'Expiring Soon', color: 'text-red-300 bg-red-300/10 border-red-300/20', dot: 'bg-red-300' }
   }
-  return { label: 'Active', color: 'text-[#4edea3] bg-[#4edea3]/10 border-[#4edea3]/20', dot: 'bg-[#4edea3]' }
+  return { label: 'Active', color: 'text-success bg-success/10 border-success/20', dot: 'bg-success' }
 }
 
 // ─── Sort column header ───────────────────────────────────────────────────────
@@ -110,7 +110,7 @@ function SortHeader({
   return (
     <th className="py-3 px-4">
       <button
-        className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#958ea0] hover:text-[#cbc3d7] transition-colors font-inter"
+        className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-muted-foreground transition-colors font-inter"
         onClick={() => onSort(sortKeyVal)}
       >
         {label}
@@ -219,8 +219,8 @@ export function OrganizerTable({
 
   if (loading) {
     return (
-      <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 p-8 text-center text-[#958ea0] font-inter text-[13px]">
-        <span className="text-[#d0bcff] size-[32px] animate-pulse block mb-2"><RefreshCw className="text-[#d0bcff] size-[32px] animate-pulse block mb-2" /></span>
+      <div className="rounded-xl bg-card border border-border/30 p-8 text-center text-muted-foreground font-inter text-[13px]">
+        <span className="text-primary size-[32px] animate-pulse block mb-2"><RefreshCw className="text-primary size-[32px] animate-pulse block mb-2" /></span>
         Loading organizers...
       </div>
     )
@@ -232,7 +232,7 @@ export function OrganizerTable({
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 max-w-sm">
-          <span className="absolute left-3 top-2.5 text-[#958ea0] size-[18px]"><Search className="absolute left-3 top-2.5 text-[#958ea0] size-[18px]" /></span>
+          <span className="absolute left-3 top-2.5 text-muted-foreground size-[18px]"><Search className="absolute left-3 top-2.5 text-muted-foreground size-[18px]" /></span>
           <Input
             placeholder="Search by name, slug or email…"
             value={search}
@@ -240,7 +240,7 @@ export function OrganizerTable({
               setSearch(e.target.value)
               setCurrentPage(1)
             }}
-            className="pl-9 bg-[#201f22] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#958ea0] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
+            className="pl-9 bg-card border-border/40 text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
           />
         </div>
 
@@ -252,10 +252,10 @@ export function OrganizerTable({
             setCurrentPage(1)
           }}
         >
-          <SelectTrigger className="w-[160px] bg-[#201f22] border-[#494454]/40 text-[#e5e1e4] text-[13px] rounded-lg focus:ring-1 focus:ring-[#d0bcff]">
+          <SelectTrigger className="w-[160px] bg-card border-border/40 text-foreground text-[13px] rounded-lg focus:ring-1 focus:ring-primary">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-          <SelectContent className="bg-[#201f22] border-[#494454]/40 text-[#e5e1e4]">
+          <SelectContent className="bg-card border-border/40 text-foreground">
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
@@ -268,14 +268,14 @@ export function OrganizerTable({
         <div className="flex items-center gap-2 ml-auto">
           <button
             onClick={() => exportOrganizersCSV(filteredOrganizers)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] text-[13px] font-medium font-inter border border-[#494454]/30 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card hover:bg-accent text-muted-foreground text-[13px] font-medium font-inter border border-border/30 transition-colors"
           >
-            <span className="size-[18px] text-[#d0bcff]"><Download className="size-[18px] text-[#d0bcff]" /></span>
+            <span className="size-[18px] text-primary"><Download className="size-[18px] text-primary" /></span>
             Export CSV
           </button>
           <button
             onClick={onAdd}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#d0bcff] hover:bg-[#6d3bd7] text-[#3c0091] hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter"
           >
             <span className="size-[18px]"><Store className="size-[18px]" /></span>
             Add Organizer
@@ -284,10 +284,10 @@ export function OrganizerTable({
       </div>
 
       {/* ── Table ────────────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 overflow-x-auto">
+      <div className="rounded-xl bg-card border border-border/30 overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[#494454]/30">
+            <tr className="border-b border-border/30">
               <SortHeader label="Organization" sortKeyVal="name" onSort={handleSort} />
               <SortHeader label="Slug" sortKeyVal="slug" onSort={handleSort} />
               <SortHeader label="Email" sortKeyVal="contact_email" onSort={handleSort} />
@@ -295,14 +295,14 @@ export function OrganizerTable({
               <SortHeader label="Sub Expires" sortKeyVal="sub_expires_at" onSort={handleSort} />
               <SortHeader label="Created" sortKeyVal="created_at" onSort={handleSort} />
               <th className="py-3 px-4 text-right">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#958ea0]">Actions</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Actions</span>
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#353437]/30 text-[13px]">
+          <tbody className="divide-y divide-accent/30 text-[13px]">
             {paginatedOrganizers.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-[#958ea0]">
+                <td colSpan={7} className="py-12 text-center text-muted-foreground">
                   No organizers match your search.
                 </td>
               </tr>
@@ -314,7 +314,7 @@ export function OrganizerTable({
                 const initials = getInitials(organizer.name)
 
                 return (
-                  <tr key={organizer.id} className="hover:bg-[#201f22]/60 transition-colors">
+                  <tr key={organizer.id} className="hover:bg-card/60 transition-colors">
                     {/* Organization */}
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
@@ -323,18 +323,18 @@ export function OrganizerTable({
                         >
                           {initials}
                         </div>
-                        <span className="text-[#e5e1e4] font-semibold font-jakarta">{organizer.name}</span>
+                        <span className="text-foreground font-semibold font-jakarta">{organizer.name}</span>
                       </div>
                     </td>
 
                     {/* Slug */}
                     <td className="py-4 px-4">
-                      <span className="text-[#958ea0] font-mono text-[12px]">@{organizer.slug}</span>
+                      <span className="text-muted-foreground font-mono text-[12px]">@{organizer.slug}</span>
                     </td>
 
                     {/* Email */}
                     <td className="py-4 px-4">
-                      <span className="text-[#cbc3d7]">{organizer.contact_email || '—'}</span>
+                      <span className="text-muted-foreground">{organizer.contact_email || '—'}</span>
                     </td>
 
                     {/* Status + Toggle */}
@@ -343,7 +343,7 @@ export function OrganizerTable({
                         <Switch
                           checked={organizer.is_active}
                           onCheckedChange={() => onToggleActive(organizer)}
-                          className="data-[state=checked]:bg-[#a078ff]"
+                          className="data-[state=checked]:bg-primary"
                         />
                         <span
                           className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold inline-flex items-center gap-1.5 border ${subStatus.color}`}
@@ -380,12 +380,12 @@ export function OrganizerTable({
                                 setEditingExpiry(null)
                               }
                             }}
-                            className="w-36 h-8 text-xs bg-[#201f22] border-[#494454]/40 text-[#e5e1e4] focus:ring-1 focus:ring-[#d0bcff]"
+                            className="w-36 h-8 text-xs bg-card border-border/40 text-foreground focus:ring-1 focus:ring-primary"
                           />
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-[#958ea0] hover:text-[#ffb4ab]"
+                            className="h-7 w-7 text-muted-foreground hover:text-red-300"
                             onClick={() => setEditingExpiry(null)}
                           >
                             <span className="size-[16px]"><X className="size-[16px]" /></span>
@@ -393,7 +393,7 @@ export function OrganizerTable({
                         </div>
                       ) : (
                         <button
-                          className="text-left text-[#cbc3d7] hover:text-[#d0bcff] hover:underline transition-colors font-mono text-[12px] cursor-pointer"
+                          className="text-left text-muted-foreground hover:text-primary hover:underline transition-colors font-mono text-[12px] cursor-pointer"
                           onClick={() => {
                             const dateStr = organizer.sub_expires_at
                               ? new Date(organizer.sub_expires_at).toISOString().split('T')[0]
@@ -411,7 +411,7 @@ export function OrganizerTable({
 
                     {/* Created */}
                     <td className="py-4 px-4">
-                      <span className="text-[#958ea0] font-mono text-[12px]">
+                      <span className="text-muted-foreground font-mono text-[12px]">
                         {new Date(organizer.created_at).toLocaleDateString()}
                       </span>
                     </td>
@@ -424,7 +424,7 @@ export function OrganizerTable({
                           href={`/organizer`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 rounded-lg bg-[#4cd7f6]/10 hover:bg-[#4cd7f6]/20 text-[#4cd7f6] transition-all border border-[#4cd7f6]/20"
+                          className="p-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all border border-primary/20"
                           title={`Open ${organizer.name} organizer portal`}
                         >
                           <span className="size-[18px]"><UserCog className="size-[18px]" /></span>
@@ -432,23 +432,23 @@ export function OrganizerTable({
 
                         <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button className="p-1.5 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] hover:text-[#e5e1e4] transition-all border border-[#494454]/30">
+                          <button className="p-1.5 rounded-lg bg-card hover:bg-accent text-muted-foreground hover:text-foreground transition-all border border-border/30">
                             <span className="size-[18px]"><MoreHorizontal className="size-[18px]" /></span>
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           align="end"
-                          className="bg-[#201f22] border border-[#494454]/40 text-[#e5e1e4] rounded-lg shadow-xl"
+                          className="bg-card border border-border/40 text-foreground rounded-lg shadow-xl"
                         >
                           <DropdownMenuItem
-                            className="hover:bg-[#2a2a2c] cursor-pointer text-[13px] focus:bg-[#2a2a2c] focus:text-[#d0bcff]"
+                            className="hover:bg-accent cursor-pointer text-[13px] focus:bg-accent focus:text-primary"
                             onClick={() => onEdit(organizer)}
                           >
-                            <span className="size-[16px] mr-2 text-[#d0bcff]"><Pencil className="size-[16px] mr-2 text-[#d0bcff]" /></span>
+                            <span className="size-[16px] mr-2 text-primary"><Pencil className="size-[16px] mr-2 text-primary" /></span>
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="text-[#ffb4ab] hover:bg-[#93000a]/20 cursor-pointer text-[13px] focus:bg-[#93000a]/20 focus:text-[#ffb4ab]"
+                            className="text-red-300 hover:bg-red-800/20 cursor-pointer text-[13px] focus:bg-red-800/20 focus:text-red-300"
                             onClick={() => onDelete(organizer)}
                           >
                             <span className="size-[16px] mr-2"><Trash2 className="size-[16px] mr-2" /></span>
@@ -469,19 +469,19 @@ export function OrganizerTable({
       {/* ── Pagination ────────────────────────────────────────────────── */}
       {totalPages > 1 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-          <p className="text-[12px] text-[#958ea0] font-inter">
+          <p className="text-[12px] text-muted-foreground font-inter">
             Showing{' '}
-            <span className="text-[#e5e1e4] font-semibold">
+            <span className="text-foreground font-semibold">
               {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
               {Math.min(currentPage * ITEMS_PER_PAGE, filteredOrganizers.length)}
             </span>{' '}
             of{' '}
-            <span className="text-[#e5e1e4] font-semibold">{filteredOrganizers.length}</span>{' '}
+            <span className="text-foreground font-semibold">{filteredOrganizers.length}</span>{' '}
             organizers
           </p>
           <div className="flex items-center gap-1">
             <button
-              className="px-3 py-1.5 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] text-[12px] transition-colors border border-[#494454]/30 disabled:opacity-40 disabled:cursor-not-allowed font-inter"
+              className="px-3 py-1.5 rounded-lg bg-card hover:bg-accent text-muted-foreground text-[12px] transition-colors border border-border/30 disabled:opacity-40 disabled:cursor-not-allowed font-inter"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
             >
@@ -494,8 +494,8 @@ export function OrganizerTable({
                   key={page}
                   className={`px-3 py-1.5 rounded-lg text-[12px] transition-colors font-inter ${
                     currentPage === page
-                      ? 'bg-[#d0bcff] text-[#3c0091] font-bold'
-                      : 'bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] border border-[#494454]/30'
+                      ? 'bg-primary text-primary-foreground font-bold'
+                      : 'bg-card hover:bg-accent text-muted-foreground border border-border/30'
                   }`}
                   onClick={() => setCurrentPage(page)}
                 >
@@ -504,7 +504,7 @@ export function OrganizerTable({
               )
             })}
             <button
-              className="px-3 py-1.5 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#cbc3d7] text-[12px] transition-colors border border-[#494454]/30 disabled:opacity-40 disabled:cursor-not-allowed font-inter"
+              className="px-3 py-1.5 rounded-lg bg-card hover:bg-accent text-muted-foreground text-[12px] transition-colors border border-border/30 disabled:opacity-40 disabled:cursor-not-allowed font-inter"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(currentPage + 1)}
             >

@@ -51,15 +51,15 @@ function NavItem({
       className={cn(
         'flex items-center justify-between px-3 py-2 rounded-lg transition-all text-[12px] leading-[16px] tracking-[0.02em] font-medium',
         isActive
-          ? 'bg-[#a078ff] text-[#340080] font-semibold shadow-[0_0_16px_rgba(160,120,255,0.3)]'
-          : 'text-[#cbc3d7] hover:text-[#e5e1e4] hover:bg-[#1c1b1d]'
+          ? 'bg-primary text-primary-foreground font-semibold '
+          : 'text-muted-foreground hover:text-foreground hover:bg-card'
       )}
     >
       <div className="flex items-center gap-2">
         <span
           className={cn(
             'flex shrink-0',
-            isActive ? 'text-[#340080]' : 'text-[#958ea0]'
+            isActive ? 'text-primary-foreground' : 'text-muted-foreground'
           )}
         >
           <item.icon className="size-[20px]" />
@@ -67,13 +67,13 @@ function NavItem({
         <span>{item.title}</span>
       </div>
       {item.badge && (
-        <span className="px-1.5 py-0.5 rounded-full bg-[#4edea3]/15 text-[#4edea3] text-[10px] font-semibold flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#4edea3] animate-pulse" />
+        <span className="px-1.5 py-0.5 rounded-full bg-success/15 text-success text-[10px] font-semibold flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
           {item.badge}
         </span>
       )}
       {isActive && !item.badge && (
-        <span className="w-2 h-2 rounded-full bg-[#340080]" />
+        <span className="w-2 h-2 rounded-full bg-primary-foreground" />
       )}
     </Link>
   )
@@ -118,40 +118,40 @@ function SidebarContent({ pathname }: { pathname: string }) {
   }
 
   return (
-    <div className="flex flex-col h-full w-64 bg-[#0e0e10] border-r border-[#23232b]">
+    <div className="flex flex-col h-full w-64 bg-background border-r border-muted">
       {/* Logo header */}
-      <div className="h-16 px-4 flex items-center justify-between border-b border-[#23232b] bg-[#0f0f13] shrink-0">
+      <div className="h-16 px-4 flex items-center justify-between border-b border-muted bg-border shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#d0bcff]/10 flex items-center justify-center">
-            <span className="text-[#d0bcff] size-[16px]"><Flag className="text-[#d0bcff] size-[16px]" /></span>
+          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+            <span className="text-primary size-[16px]"><Flag className="text-primary size-[16px]" /></span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-[#e5e1e4]">
+            <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-foreground">
               Pelikat
             </span>
-            <span className="text-[10px] text-[#958ea0] font-semibold tracking-wider uppercase mt-0.5">
+            <span className="text-[10px] text-muted-foreground font-semibold tracking-wider uppercase mt-0.5">
               Organizer Hub
             </span>
           </div>
         </div>
-        <span className="px-1.5 py-0.5 rounded bg-[#4cd7f6]/15 text-[#4cd7f6] text-[10px] font-semibold border border-[#4cd7f6]/20">
+        <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-semibold border border-primary/20">
           B2B
         </span>
       </div>
 
       {/* Org switcher */}
-      <div className="p-2 border-b border-[#23232b] shrink-0">
-        <button className="w-full flex items-center justify-between p-2 rounded-lg bg-[#1c1b1d] hover:bg-[#201f22] transition-colors text-left group">
+      <div className="p-2 border-b border-muted shrink-0">
+        <button className="w-full flex items-center justify-between p-2 rounded-lg bg-card hover:bg-card transition-colors text-left group">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-[#2a2a2c] flex items-center justify-center text-[#d0bcff] shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-primary shrink-0">
               <span className="size-[18px]"><Building2 className="size-[18px]" /></span>
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[12px] leading-[16px] font-semibold text-[#e5e1e4] truncate">{orgName}</span>
-              <span className="text-[11px] text-[#4cd7f6] font-medium">Organizer Portal</span>
+              <span className="text-[12px] leading-[16px] font-semibold text-foreground truncate">{orgName}</span>
+              <span className="text-[11px] text-primary font-medium">Organizer Portal</span>
             </div>
           </div>
-          <span className="text-[#958ea0] group-hover:text-[#e5e1e4] transition-colors size-[18px]"><ChevronsUpDown className="text-[#958ea0] group-hover:text-[#e5e1e4] transition-colors size-[18px]" /></span>
+          <span className="text-muted-foreground group-hover:text-foreground transition-colors size-[18px]"><ChevronsUpDown className="text-muted-foreground group-hover:text-foreground transition-colors size-[18px]" /></span>
         </button>
       </div>
 
@@ -159,7 +159,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
       <nav className="flex-1 overflow-y-auto p-2 flex flex-col gap-1">
         {navSections.map((section) => (
           <div key={section.label}>
-            <div className="px-2 py-1 text-[10px] uppercase font-bold text-[#958ea0] tracking-wider mt-2 first:mt-0">
+            <div className="px-2 py-1 text-[10px] uppercase font-bold text-muted-foreground tracking-wider mt-2 first:mt-0">
               {section.label}
             </div>
             {section.items.map((item) => (
@@ -170,37 +170,37 @@ function SidebarContent({ pathname }: { pathname: string }) {
       </nav>
 
       {/* Bottom user section */}
-      <div className="p-2 border-t border-[#23232b] flex flex-col gap-2 bg-[#0f0f13]/80 shrink-0">
+      <div className="p-2 border-t border-muted flex flex-col gap-2 bg-border/80 shrink-0">
         <button
           onClick={() => router.push('/organizer/events/new')}
-          className="w-full py-2 px-3 bg-[#4edea3]/20 text-[#4edea3] hover:bg-[#4edea3]/30 text-[12px] leading-[16px] font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-[#4edea3]/20 shadow-sm"
+          className="w-full py-2 px-3 bg-success/20 text-success hover:bg-success/30 text-[12px] leading-[16px] font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-success/20 shadow-sm"
         >
           <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
           <span>Create Event</span>
         </button>
-        <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-[#1c1b1d] text-[11px]">
-          <span className="flex items-center gap-1.5 text-[#4edea3] font-medium">
-            <span className="w-2 h-2 rounded-full bg-[#4edea3] animate-pulse" />
+        <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-card text-[11px]">
+          <span className="flex items-center gap-1.5 text-success font-medium">
+            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
             Platform Online
           </span>
-          <span className="text-[#958ea0] font-mono text-[10px]">Hub</span>
+          <span className="text-muted-foreground font-mono text-[10px]">Hub</span>
         </div>
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="relative shrink-0">
-              <div className="w-9 h-9 rounded-full bg-[#d0bcff]/20 flex items-center justify-center text-[#d0bcff] text-[14px] font-bold ring-2 ring-[#d0bcff]/40">
+              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[14px] font-bold ring-2 ring-primary/40">
                 {userName.charAt(0).toUpperCase()}
               </div>
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#4edea3] ring-2 ring-[#0e0e10]" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-success ring-2 ring-background" />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold text-[#e5e1e4] truncate">{userName}</span>
-              <span className="text-[10px] text-[#d0bcff] truncate font-medium">Race Director</span>
+              <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold text-foreground truncate">{userName}</span>
+              <span className="text-[10px] text-primary truncate font-medium">Race Director</span>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="p-1.5 text-[#958ea0] hover:text-[#e5e1e4] hover:bg-[#2a2a2c] rounded transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
             title="Sign out"
           >
             <span className="size-[18px]"><LogOut className="size-[18px]" /></span>
@@ -222,11 +222,11 @@ export function OrganizerMobileNav() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden text-[#e5e1e4]">
+        <Button variant="ghost" size="icon" className="lg:hidden text-foreground">
           <span className="size-[20px]"><Menu className="size-[20px]" /></span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0 bg-[#0e0e10] border-r border-[#23232b]">
+      <SheetContent side="left" className="w-64 p-0 bg-background border-r border-muted">
         <SidebarContent pathname={pathname} />
       </SheetContent>
     </Sheet>

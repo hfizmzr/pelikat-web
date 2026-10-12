@@ -195,20 +195,20 @@ export default function AdminOrganizersPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8 font-inter text-[#e5e1e4]">
+    <div className="flex flex-col gap-8 font-inter text-foreground">
       {/* ── Page Header ─────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="size-[16px] text-[#d0bcff]"><Building2 className="size-[16px] text-[#d0bcff]" /></span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#d0bcff] font-inter">
+            <span className="size-[16px] text-primary"><Building2 className="size-[16px] text-primary" /></span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary font-inter">
               Tenant Directory
             </span>
           </div>
-          <h1 className="font-jakarta font-bold text-[28px] leading-tight tracking-tight text-[#e5e1e4]">
+          <h1 className="font-jakarta font-bold text-[28px] leading-tight tracking-tight text-foreground">
             Organizers
           </h1>
-          <p className="text-[13px] text-[#958ea0] font-inter">
+          <p className="text-[13px] text-muted-foreground font-inter">
             Manage event organizers, tenant accounts, and applications on the platform
           </p>
         </div>
@@ -220,7 +220,7 @@ export default function AdminOrganizersPage() {
         onSuccess={handleCreate}
         trigger={
           <button
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#d0bcff] hover:bg-[#6d3bd7] text-[#3c0091] hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter"
           >
             <span className="size-[18px]"><Store className="size-[18px]" /></span>
             Add Organizer
@@ -237,27 +237,27 @@ export default function AdminOrganizersPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="bg-[#201f22] border border-[#494454]/40 text-[#e5e1e4] rounded-xl shadow-2xl">
+        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="font-jakarta text-[18px] text-[#e5e1e4] flex items-center gap-2">
-              <span className="size-[20px] text-[#ffb4ab]"><Trash2 className="size-[20px] text-[#ffb4ab]" /></span>
+            <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
+              <span className="size-[20px] text-red-300"><Trash2 className="size-[20px] text-red-300" /></span>
               Delete Organizer
             </DialogTitle>
-            <DialogDescription className="text-[#cbc3d7] font-inter text-[13px]">
+            <DialogDescription className="text-muted-foreground font-inter text-[13px]">
               Are you sure you want to delete{' '}
-              <strong className="text-[#e5e1e4]">{selectedOrganizer?.name}</strong>? This will also
+              <strong className="text-foreground">{selectedOrganizer?.name}</strong>? This will also
               delete all their events, registrations, and data. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 mt-2">
             <button
-              className="px-4 py-2 rounded-lg bg-[#2a2a2c] hover:bg-[#353437] text-[#e5e1e4] text-[13px] font-medium font-inter transition-colors border border-[#494454]/30"
+              className="px-4 py-2 rounded-lg bg-accent hover:bg-accent text-foreground text-[13px] font-medium font-inter transition-colors border border-border/30"
               onClick={() => setDeleteOpen(false)}
             >
               Cancel
             </button>
             <button
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#93000a]/20 hover:bg-[#93000a]/40 text-[#ffb4ab] text-[13px] font-semibold font-inter transition-colors border border-[#ffb4ab]/20 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-300/20 disabled:opacity-50"
               disabled={deleting}
               onClick={handleConfirmDelete}
             >
@@ -272,18 +272,18 @@ export default function AdminOrganizersPage() {
       {/* ── Active Organizers Section ─────────────────────── */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
-          <span className="size-[20px] text-[#d0bcff]"><Building2 className="size-[20px] text-[#d0bcff]" /></span>
-          <h2 className="font-jakarta font-semibold text-[18px] text-[#e5e1e4] tracking-tight">
+          <span className="size-[20px] text-primary"><Building2 className="size-[20px] text-primary" /></span>
+          <h2 className="font-jakarta font-semibold text-[18px] text-foreground tracking-tight">
             Active Organizers
           </h2>
-          <span className="px-2 py-0.5 rounded-full bg-[#d0bcff]/10 text-[#d0bcff] text-[11px] font-semibold border border-[#d0bcff]/20 font-inter">
+          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold border border-primary/20 font-inter">
             {organizers.length}
           </span>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12 text-[#958ea0]">
-            <Loader2 className="h-7 w-7 animate-spin text-[#d0bcff]" />
+          <div className="flex items-center justify-center py-12 text-muted-foreground">
+            <Loader2 className="h-7 w-7 animate-spin text-primary" />
           </div>
         ) : (
           <OrganizerTable
@@ -298,11 +298,11 @@ export default function AdminOrganizersPage() {
         )}
 
         {!loading && organizers.length === 0 && (
-          <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 flex flex-col items-center justify-center py-12 gap-3">
-            <span className="size-[40px] text-[#494454]"><Building2 className="size-[40px] text-[#494454]" /></span>
-            <p className="text-[#958ea0] font-inter text-[13px]">No organizers yet</p>
+          <div className="rounded-xl bg-card border border-border/30 flex flex-col items-center justify-center py-12 gap-3">
+            <span className="size-[40px] text-border"><Building2 className="size-[40px] text-border" /></span>
+            <p className="text-muted-foreground font-inter text-[13px]">No organizers yet</p>
             <button
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#201f22] hover:bg-[#2a2a2c] text-[#d0bcff] text-[13px] font-medium font-inter border border-[#494454]/30 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-card hover:bg-accent text-primary text-[13px] font-medium font-inter border border-border/30 transition-colors"
               onClick={() => setCreateOpen(true)}
             >
               <span className="size-[18px]"><Plus className="size-[18px]" /></span>
@@ -315,11 +315,11 @@ export default function AdminOrganizersPage() {
       {/* ── Pending Applications Section ─────────────────── */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
-          <span className="size-[20px] text-[#4cd7f6]"><UserPlus className="size-[20px] text-[#4cd7f6]" /></span>
-          <h2 className="font-jakarta font-semibold text-[18px] text-[#e5e1e4] tracking-tight">
+          <span className="size-[20px] text-primary"><UserPlus className="size-[20px] text-primary" /></span>
+          <h2 className="font-jakarta font-semibold text-[18px] text-foreground tracking-tight">
             Pending Applications
           </h2>
-          <span className="px-2 py-0.5 rounded-full bg-[#4cd7f6]/10 text-[#4cd7f6] text-[11px] font-semibold border border-[#4cd7f6]/20 font-inter">
+          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold border border-primary/20 font-inter">
             {applicants.length}
           </span>
         </div>

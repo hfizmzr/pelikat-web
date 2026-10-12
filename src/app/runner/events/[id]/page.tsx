@@ -62,28 +62,28 @@ export default async function RunnerEventDetailPage({
   const eventDate = new Date(event.event_date)
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+    <div className="flex flex-col w-full min-h-full bg-background">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
-          <Link href="/runner/events" className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
+          <Link href="/runner/events" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
             <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
           </Link>
-          <h1 className="flex-1 text-[16px] font-bold text-[#e5e1e4] text-center mr-8 truncate">
+          <h1 className="flex-1 text-[16px] font-bold text-foreground text-center mr-8 truncate">
             {event.name}
           </h1>
         </div>
       </header>
 
       {/* Hero Banner Placeholder */}
-      <div className="w-full h-48 bg-[#23232b] relative">
-        <div className="absolute inset-0 bg-gradient-to-t from-[#131315] to-transparent opacity-90" />
+      <div className="w-full h-48 bg-muted relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-90" />
         <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
           <div className="flex flex-col">
-            <span className="px-2 py-1 mb-2 w-max rounded text-[10px] font-bold uppercase tracking-wider bg-[#d0bcff]/10 text-[#d0bcff] border border-[#d0bcff]/20">
+            <span className="px-2 py-1 mb-2 w-max rounded text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
               {event.status}
             </span>
-            <h2 className="text-[24px] font-bold text-[#e5e1e4] leading-tight drop-shadow-md">
+            <h2 className="text-[24px] font-bold text-foreground leading-tight drop-shadow-md">
               {event.name}
             </h2>
           </div>
@@ -94,27 +94,27 @@ export default async function RunnerEventDetailPage({
         
         {/* Date & Location */}
         <section className="flex flex-col gap-4">
-          <div className="flex items-center gap-4 bg-[#1c1b1d] p-4 rounded-2xl border border-[#353437]/60">
-            <div className="w-12 h-12 bg-[#353437]/50 rounded-xl flex flex-col items-center justify-center">
-              <span className="text-[10px] font-bold text-[#ffb4ab] uppercase">{eventDate.toLocaleDateString('en-MY', { month: 'short' })}</span>
-              <span className="text-[16px] font-extrabold text-[#e5e1e4] leading-none">{eventDate.getDate()}</span>
+          <div className="flex items-center gap-4 bg-card p-4 rounded-2xl border border-border/60">
+            <div className="w-12 h-12 bg-accent/50 rounded-xl flex flex-col items-center justify-center">
+              <span className="text-[10px] font-bold text-red-300 uppercase">{eventDate.toLocaleDateString('en-MY', { month: 'short' })}</span>
+              <span className="text-[16px] font-extrabold text-foreground leading-none">{eventDate.getDate()}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-[#e5e1e4]">
+              <span className="text-[14px] font-bold text-foreground">
                 {eventDate.toLocaleDateString('en-MY', { weekday: 'long', year: 'numeric' })}
               </span>
-              <span className="text-[12px] text-[#958ea0]">Starts at 6:00 AM</span>
+              <span className="text-[12px] text-muted-foreground">Starts at 6:00 AM</span>
             </div>
           </div>
           
           {event.location && (
-            <div className="flex items-center gap-4 bg-[#1c1b1d] p-4 rounded-2xl border border-[#353437]/60">
-              <div className="w-12 h-12 bg-[#353437]/50 rounded-xl flex items-center justify-center">
-                <span className="size-[20px] text-[#4cd7f6]"><MapPin className="size-[20px] text-[#4cd7f6]" /></span>
+            <div className="flex items-center gap-4 bg-card p-4 rounded-2xl border border-border/60">
+              <div className="w-12 h-12 bg-accent/50 rounded-xl flex items-center justify-center">
+                <span className="size-[20px] text-primary"><MapPin className="size-[20px] text-primary" /></span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[14px] font-bold text-[#e5e1e4]">Event Location</span>
-                <span className="text-[12px] text-[#958ea0]">{event.location}</span>
+                <span className="text-[14px] font-bold text-foreground">Event Location</span>
+                <span className="text-[12px] text-muted-foreground">{event.location}</span>
               </div>
             </div>
           )}
@@ -122,45 +122,45 @@ export default async function RunnerEventDetailPage({
 
         {/* About */}
         <section className="flex flex-col gap-2">
-          <h3 className="text-[16px] font-bold text-[#e5e1e4]">About the Race</h3>
-          <p className="text-[13px] text-[#958ea0] leading-relaxed">
+          <h3 className="text-[16px] font-bold text-foreground">About the Race</h3>
+          <p className="text-[13px] text-muted-foreground leading-relaxed">
             {event.description || 'No description available for this event.'}
           </p>
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-[12px] text-[#cbc3d7]">Organized by:</span>
-            <span className="text-[12px] font-bold text-[#e5e1e4]">{event.organizers?.name || 'Unknown Organizer'}</span>
+            <span className="text-[12px] text-muted-foreground">Organized by:</span>
+            <span className="text-[12px] font-bold text-foreground">{event.organizers?.name || 'Unknown Organizer'}</span>
           </div>
         </section>
 
         {/* Registration Section */}
-        <section className="mt-4 pt-6 border-t border-[#353437]/60 flex flex-col gap-4">
-          <h3 className="text-[16px] font-bold text-[#e5e1e4]">Registration</h3>
+        <section className="mt-4 pt-6 border-t border-border/60 flex flex-col gap-4">
+          <h3 className="text-[16px] font-bold text-foreground">Registration</h3>
           
           {isRegistered ? (
             <div className="flex flex-col gap-4">
-              <div className="p-5 rounded-2xl bg-[#4edea3]/10 border border-[#4edea3]/20 flex flex-col gap-4 relative overflow-hidden">
-                <div className="absolute right-0 top-0 w-32 h-32 bg-[#4edea3]/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+              <div className="p-5 rounded-2xl bg-success/10 border border-success/20 flex flex-col gap-4 relative overflow-hidden">
+                <div className="absolute right-0 top-0 w-32 h-32 bg-success/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
                 <div className="flex items-center gap-3">
-                  <span className="size-[24px] text-[#4edea3]"><CircleCheck className="size-[24px] text-[#4edea3]" /></span>
+                  <span className="size-[24px] text-success"><CircleCheck className="size-[24px] text-success" /></span>
                   <div className="flex flex-col">
-                    <span className="text-[14px] font-bold text-[#4edea3]">You&apos;re Registered!</span>
-                    <span className="text-[11px] text-[#4edea3]/80">See you at the start line.</span>
+                    <span className="text-[14px] font-bold text-success">You&apos;re Registered!</span>
+                    <span className="text-[11px] text-success/80">See you at the start line.</span>
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 mt-2">
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-[#cbc3d7] uppercase font-bold tracking-wider mb-1">BIB Number</span>
-                    <span className="text-[16px] font-mono font-bold text-[#e5e1e4]">{registration.bib_number || 'TBA'}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">BIB Number</span>
+                    <span className="text-[16px] font-mono font-bold text-foreground">{registration.bib_number || 'TBA'}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-[#cbc3d7] uppercase font-bold tracking-wider mb-1">Category</span>
-                    <span className="text-[14px] font-bold text-[#e5e1e4] truncate">{registration.race_categories?.name}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Category</span>
+                    <span className="text-[14px] font-bold text-foreground truncate">{registration.race_categories?.name}</span>
                   </div>
-                  <div className="flex flex-col col-span-2 pt-3 border-t border-[#4edea3]/20">
+                  <div className="flex flex-col col-span-2 pt-3 border-t border-success/20">
                     <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-[#cbc3d7] uppercase font-bold tracking-wider">Payment Status</span>
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#23232b] text-[#e5e1e4]">
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Payment Status</span>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-muted text-foreground">
                         {registration.payment_status?.toUpperCase()}
                       </span>
                     </div>
@@ -171,7 +171,7 @@ export default async function RunnerEventDetailPage({
               <div className="flex flex-col gap-3 mt-2">
                 <Link
                   href={`/runner/events/${event.id}/bib`}
-                  className="w-full py-3.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                  className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                 >
                   <QrCode className="size-[18px]" />
                   View Digital BIB Pass
@@ -180,23 +180,23 @@ export default async function RunnerEventDetailPage({
                 {registration.payment_status !== 'paid' && (
                   <Link
                     href={`/runner/events/${event.id}/payment`}
-                    className="w-full py-3.5 rounded-xl bg-[#4cd7f6] text-[#00363d] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                    className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                   >
-                    <span className="size-[18px]"><CreditCard className="size-[18px]" /></span>
+                    <CreditCard className="size-[18px]" />
                     Complete Payment
                   </Link>
                 )}
                 
                 <Link
                   href={`/runner/events/${event.id}/gallery`}
-                  className="w-full py-3.5 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                  className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                 >
                   <span className="size-[18px]"><Images className="size-[18px]" /></span>
                   Event Photos
                 </Link>
 
                 {!registration.checked_in && (
-                  <div className="mt-4 pt-4 border-t border-[#353437]/40">
+                  <div className="mt-4 pt-4 border-t border-border/40">
                     <CancelRegistrationButton eventId={event.id} />
                   </div>
                 )}

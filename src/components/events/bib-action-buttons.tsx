@@ -9,19 +9,19 @@ export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    ctx.fillStyle = '#131315'
+    ctx.fillStyle = 'var(--background)'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    ctx.fillStyle = '#cbc3d7'
+    ctx.fillStyle = '#94a3b8'
     ctx.font = '14px system-ui'
     ctx.textAlign = 'center'
     ctx.fillText('BIB NUMBER', canvas.width / 2, 40)
 
-    ctx.fillStyle = '#e5e1e4'
+    ctx.fillStyle = '#f8fafc'
     ctx.font = 'bold 48px monospace'
     ctx.fillText(bibNumber, canvas.width / 2, 110)
 
-    ctx.fillStyle = '#958ea0'
+    ctx.fillStyle = 'var(--muted-foreground)'
     ctx.font = '18px system-ui'
     ctx.fillText(eventName, canvas.width / 2, 150)
 
@@ -50,14 +50,14 @@ export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; 
     <div className="flex w-full gap-2 mt-4">
       <button 
         onClick={handleSave}
-        className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+        className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
       >
         <span className="size-[18px]"><Download className="size-[18px]" /></span>
         Save Image
       </button>
       <button 
         onClick={handleShare}
-        className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+        className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
       >
         <span className="size-[18px]"><Share2 className="size-[18px]" /></span>
         Share
