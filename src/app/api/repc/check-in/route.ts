@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { fetchDjangoApi } from '@/lib/django'
 import { createClient } from '@/lib/supabase/server'
 import {
+  collectMerchOnCheckIn,
   normalizeRepcCheckInResult,
   type RepcCheckInResult,
   type RepcCheckInRpcRow,
@@ -28,6 +29,7 @@ function toApiResponse(result: RepcCheckInResult) {
       shirt_size: result.shirtSize,
       remaining_qty: result.remainingQty,
     },
+    merch: result.merch ?? null,
   }
 }
 
@@ -115,6 +117,10 @@ export async function POST(request: Request) {
   }
 
   const result = normalizeRepcCheckInResult((data?.[0] ?? null) as RepcCheckInRpcRow | null)
+
+  if (result.success) {
+    result.merch = await collectMerchOnCheckIn(supabase, eventId, verified.runner_id)
+  }
 
   // Log successful check-in
   if (result.success) {

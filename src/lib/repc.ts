@@ -1,3 +1,5 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+
 export type RepcCheckInResult = {
   success: boolean
   message: string
@@ -7,6 +9,15 @@ export type RepcCheckInResult = {
   shirtSize: string | null
   remainingQty: number | null
   alreadyCheckedIn: boolean
+  merch?: MerchHandover | null
+}
+
+export type MerchHandoverOrder = { orderNumber: string; itemCount: number }
+
+// Merch orders handed over at this scan, and paid orders the organizer hasn't packed yet
+export type MerchHandover = {
+  collected: MerchHandoverOrder[]
+  notPacked: MerchHandoverOrder[]
 }
 
 export type RepcCheckInRpcRow = {
@@ -30,5 +41,38 @@ export function normalizeRepcCheckInResult(row: RepcCheckInRpcRow | null): RepcC
     shirtSize: row?.shirt_size ?? null,
     remainingQty: row?.remaining_qty ?? null,
     alreadyCheckedIn: row?.already_checked_in ?? false,
+  }
+}
+
+type MerchCollectRow = {
+  order_number: string
+  item_count: number
+  collected: boolean
+}
+
+// Marks the runner's `ready` merch orders `collected` after a successful REPC scan.
+// A failure here must not fail the check-in itself, so errors are logged and
+// reported as null (the organizer can still mark orders collected in Merch Hub).
+export async function collectMerchOnCheckIn(
+  supabase: SupabaseClient,
+  eventId: string,
+  runnerId: string
+): Promise<MerchHandover | null> {
+  const { data, error } = await supabase.rpc('merch_collect_for_runner', {
+    p_event_id: eventId,
+    p_runner_id: runnerId,
+  })
+
+  if (error) {
+    console.error('merch_collect_for_runner RPC error:', { message: error.message, eventId, runnerId })
+    return null
+  }
+
+  const rows = (data ?? []) as MerchCollectRow[]
+  const toOrder = (row: MerchCollectRow) => ({ orderNumber: row.order_number, itemCount: row.item_count })
+
+  return {
+    collected: rows.filter((row) => row.collected).map(toOrder),
+    notPacked: rows.filter((row) => !row.collected).map(toOrder),
   }
 }

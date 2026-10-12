@@ -98,3 +98,101 @@ export function merchImageUrl(path: string | null) {
   if (!path) return null
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${MERCH_IMAGE_BUCKET}/${path}`
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Runner store (FR-69 … FR-73)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Stock is held this long for an unpaid order (matches merch_checkout())
+export const MERCH_RESERVATION_MINUTES = 15
+export const MERCH_MAX_QTY_PER_ITEM = 10
+
+export type MerchPaymentMethod = 'fpx' | 'card'
+
+export const MERCH_PAYMENT_METHOD_LABEL: Record<MerchPaymentMethod, string> = {
+  fpx: 'FPX Online Banking',
+  card: 'Credit / Debit Card',
+}
+
+// Runner-facing wording for each status (FR-73)
+export const MERCH_RUNNER_STATUS_META: Record<
+  MerchOrderStatus,
+  { label: string; description: string; icon: string }
+> = {
+  pending: {
+    label: 'Awaiting payment',
+    description: 'Complete payment before your reservation expires.',
+    icon: 'hourglass_top',
+  },
+  confirmed: {
+    label: 'Confirmed',
+    description: 'Payment received. The organizer is packing your order.',
+    icon: 'task_alt',
+  },
+  ready: {
+    label: 'Ready to collect',
+    description: 'Collect it at REPC — show your Digital BIB QR at the counter.',
+    icon: 'storefront',
+  },
+  collected: {
+    label: 'Collected',
+    description: 'Picked up at REPC. Enjoy your gear!',
+    icon: 'check_circle',
+  },
+  cancelled: {
+    label: 'Cancelled',
+    description: 'This order was cancelled.',
+    icon: 'cancel',
+  },
+}
+
+export const MERCH_CANCEL_REASON_LABEL: Record<string, string> = {
+  expired: 'Payment was not completed within the reservation time.',
+  replaced: 'Replaced by a newer checkout for the same event.',
+  cancelled_by_runner: 'You cancelled this checkout.',
+  cancelled_by_organizer: 'Cancelled by the organizer. Contact them about refunds.',
+}
+
+export type MerchCartLine = {
+  variantId: string
+  productId: string
+  name: string
+  variantLabel: string
+  price: number
+  imagePath: string | null
+  quantity: number
+}
+
+export type RunnerMerchOrderItem = {
+  id: string
+  quantity: number
+  unit_price: number
+  product_name: string | null
+  variant_label: string | null
+}
+
+export type RunnerMerchOrder = {
+  id: string
+  order_number: string
+  status: MerchOrderStatus
+  total_amount: number
+  created_at: string
+  expires_at: string | null
+  paid_at: string | null
+  ready_at: string | null
+  collected_at: string | null
+  cancelled_at: string | null
+  cancel_reason: string | null
+  payment_method: MerchPaymentMethod | null
+  payment_ref: string | null
+  event_id: string
+  events: { id: string; name: string; event_date: string; location: string | null } | null
+  merch_order_items: RunnerMerchOrderItem[]
+}
+
+export const RUNNER_MERCH_ORDER_SELECT =
+  'id, order_number, status, total_amount, created_at, expires_at, paid_at, ready_at, collected_at, cancelled_at, cancel_reason, payment_method, payment_ref, event_id, events(id, name, event_date, location), merch_order_items(id, quantity, unit_price, product_name, variant_label)'
+
+export function orderItemCount(order: { merch_order_items: { quantity: number }[] }) {
+  return order.merch_order_items.reduce((sum, item) => sum + item.quantity, 0)
+}

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { fetchDjangoApi } from '@/lib/django'
 import {
+  collectMerchOnCheckIn,
   normalizeRepcCheckInResult,
   type RepcCheckInResult,
   type RepcCheckInRpcRow,
@@ -378,12 +379,18 @@ export async function checkInRegistrationByBib(
     }
   }
 
+  const result = normalizeRepcCheckInResult((data?.[0] ?? null) as RepcCheckInRpcRow | null)
+
+  if (result.success) {
+    result.merch = await collectMerchOnCheckIn(supabase, eventId, registration.runner_id)
+  }
+
   revalidatePath(`/organizer/events/${eventId}`)
   revalidatePath(`/organizer/events/${eventId}/registrations`)
   revalidatePath(`/organizer/events/${eventId}/repc`)
   revalidatePath(`/organizer/events/${eventId}/checkin`)
 
-  return normalizeRepcCheckInResult((data?.[0] ?? null) as RepcCheckInRpcRow | null)
+  return result
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
