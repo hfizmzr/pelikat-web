@@ -79,8 +79,9 @@ export default function RunnerLayout({
   // Show nothing while checking display mode to avoid flicker
   if (isStandalone === null) return null
 
-  // If not standalone, force the installation prompt
-  if (!isStandalone) {
+  // If not standalone, force the installation prompt (skipped in development so the
+  // runner UI can be tested in a normal browser tab)
+  if (!isStandalone && process.env.NODE_ENV !== 'development') {
     return <PWAInstallPrompt />
   }
 

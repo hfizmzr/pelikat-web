@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import DocumentCapture from "@/components/profile/document-capture";
 import { deleteRunnerAccount } from "@/lib/actions/account";
+import { logAudit } from "@/lib/audit";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -242,6 +243,18 @@ export default function RunnerProfilePage() {
           ) : (
             'Save Profile'
           )}
+        </button>
+
+        <button
+          onClick={async () => {
+            await logAudit(supabase, 'user_logout')
+            await supabase.auth.signOut()
+            router.push('/login')
+          }}
+          className="w-full py-3.5 mt-4 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+        >
+          <span className="material-symbols-outlined text-[18px]">logout</span>
+          Log out
         </button>
 
         {/* Danger Zone */}
