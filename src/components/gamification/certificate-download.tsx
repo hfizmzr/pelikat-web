@@ -20,9 +20,11 @@ export function BadgeCertificateButton({ badge }: { badge: BadgeCertificate }) {
     setFallbackUrl(null)
     // Popup must open synchronously in the click handler — an async
     // window.open after a server action is blocked by browsers.
-    const win = window.open('', '_blank', 'noopener,noreferrer')
+    const win = window.open('', '_blank')
     if (win) {
-      win.document.write('<p style="font-family:sans-serif">Generating certificate…</p>')
+      // Defensive: _blank implies noopener, but null it in case the browser
+      // keeps a reference back to this page.
+      win.opener = null
     }
     startTransition(async () => {
       try {

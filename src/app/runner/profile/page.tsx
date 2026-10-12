@@ -70,31 +70,44 @@ export default function RunnerProfilePage() {
     }
   }, [user, supabase]);
 
+  const updateField = (
+    key: keyof typeof formData,
+    value: string
+  ) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (saveError) setSaveError(null);
+  };
+
   const handleSave = async () => {
+    if (saving) return;
     setSaving(true);
     setSaveError(null);
 
-    const { error } = await supabase.from("runner_profiles").upsert({
-      user_id: user?.id,
-      full_name: formData.full_name,
-      phone: formData.phone,
-      dob: formData.dob,
-      gender: formData.gender,
-      t_shirt_size: formData.t_shirt_size,
-      emergency_contact_name: formData.emergency_contact_name,
-      emergency_contact_phone: formData.emergency_contact_phone,
-      pdpa_agreed: profile?.pdpa_agreed || false,
-    }, { onConflict: "user_id" });
+    try {
+      const { error } = await supabase.from("runner_profiles").upsert({
+        user_id: user?.id,
+        full_name: formData.full_name,
+        phone: formData.phone,
+        dob: formData.dob,
+        gender: formData.gender,
+        t_shirt_size: formData.t_shirt_size,
+        emergency_contact_name: formData.emergency_contact_name,
+        emergency_contact_phone: formData.emergency_contact_phone,
+        pdpa_agreed: profile?.pdpa_agreed || false,
+      }, { onConflict: "user_id" });
 
-    setSaving(false);
-
-    if (error) {
-      setSaveError(error.message);
-      return;
+      if (error) {
+        setSaveError(error.message);
+        return;
+      }
+      // Navigate so the proxy profile gate re-evaluates — router.refresh()
+      // doesn't re-run the middleware/proxy on the client.
+      router.push("/runner");
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Failed to save profile");
+    } finally {
+      setSaving(false);
     }
-    // Navigate so the proxy profile gate re-evaluates — router.refresh()
-    // doesn't re-run the middleware/proxy on the client.
-    router.push("/runner");
   };
 
   const handleSaveIc = async () => {
@@ -162,7 +175,7 @@ export default function RunnerProfilePage() {
                 id="full_name"
                 type="text"
                 value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                onChange={(e) => updateField("full_name", e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               />
             </div>
@@ -172,7 +185,7 @@ export default function RunnerProfilePage() {
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => updateField("phone", e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               />
             </div>
@@ -202,7 +215,7 @@ export default function RunnerProfilePage() {
                 id="dob"
                 type="date"
                 value={formData.dob}
-                onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                onChange={(e) => updateField("dob", e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
                 style={{ colorScheme: 'dark' }}
               />
@@ -212,7 +225,7 @@ export default function RunnerProfilePage() {
               <select
                 id="gender"
                 value={formData.gender}
-                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                onChange={(e) => updateField("gender", e.target.value)}
                 className="w-full h-12 px-4 appearance-none rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               >
                 <option value="">Select gender</option>
@@ -226,7 +239,7 @@ export default function RunnerProfilePage() {
               <select
                 id="t_shirt_size"
                 value={formData.t_shirt_size}
-                onChange={(e) => setFormData({ ...formData, t_shirt_size: e.target.value })}
+                onChange={(e) => updateField("t_shirt_size", e.target.value)}
                 className="w-full h-12 px-4 appearance-none rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               >
                 <option value="">Select size</option>
@@ -255,7 +268,7 @@ export default function RunnerProfilePage() {
                 id="emergency_contact_name"
                 type="text"
                 value={formData.emergency_contact_name}
-                onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
+                onChange={(e) => updateField("emergency_contact_name", e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               />
             </div>
@@ -265,7 +278,7 @@ export default function RunnerProfilePage() {
                 id="emergency_contact_phone"
                 type="tel"
                 value={formData.emergency_contact_phone}
-                onChange={(e) => setFormData({ ...formData, emergency_contact_phone: e.target.value })}
+                onChange={(e) => updateField("emergency_contact_phone", e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
               />
             </div>

@@ -24,6 +24,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time,
+# so deploy-specific values must arrive as build args (default: off).
+ARG NEXT_PUBLIC_PWA_GATE=false
+ENV NEXT_PUBLIC_PWA_GATE=$NEXT_PUBLIC_PWA_GATE
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
