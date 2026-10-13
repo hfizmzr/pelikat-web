@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
-import maplibregl from "maplibre-gl"
+import { Map, Marker, LngLatBounds } from "maplibre-gl"
 import type { GeoJSONSource } from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -34,8 +34,8 @@ function createEndElement(): HTMLElement {
 
 export default function RouteMap({ points }: { points: GpsPoint[] }) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<maplibregl.Map | null>(null)
-  const markersRef = useRef<maplibregl.Marker[]>([])
+  const mapRef = useRef<Map | null>(null)
+  const markersRef = useRef<Marker[]>([])
   const sourceAddedRef = useRef(false)
   const [styleLoaded, setStyleLoaded] = useState(false)
 
@@ -61,7 +61,7 @@ export default function RouteMap({ points }: { points: GpsPoint[] }) {
     markersRef.current = []
 
     if (coords.length > 0) {
-      const startMarker = new maplibregl.Marker({
+      const startMarker = new Marker({
         element: createStartElement(),
         anchor: "center",
       })
@@ -70,7 +70,7 @@ export default function RouteMap({ points }: { points: GpsPoint[] }) {
       markersRef.current.push(startMarker)
 
       if (coords.length > 1) {
-        const endMarker = new maplibregl.Marker({
+        const endMarker = new Marker({
           element: createEndElement(),
           anchor: "center",
         })
@@ -85,7 +85,7 @@ export default function RouteMap({ points }: { points: GpsPoint[] }) {
     } else if (coords.length > 1) {
       const lngs = coords.map((c) => c[0])
       const lats = coords.map((c) => c[1])
-      const bounds = new maplibregl.LngLatBounds(
+      const bounds = new LngLatBounds(
         [Math.min(...lngs), Math.min(...lats)],
         [Math.max(...lngs), Math.max(...lats)]
       )
@@ -101,7 +101,7 @@ export default function RouteMap({ points }: { points: GpsPoint[] }) {
         ? [points[0].lon, points[0].lat]
         : [101.6869, 3.139]
 
-    const map = new maplibregl.Map({
+    const map = new Map({
       container: containerRef.current,
       style: "https://tiles.openfreemap.org/styles/liberty",
       center: startCenter,
