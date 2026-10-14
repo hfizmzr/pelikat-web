@@ -148,7 +148,7 @@ export default function RunnerTracker() {
           href="/runner/run-log"
           className="w-10 h-10 flex items-center justify-center rounded-full bg-card text-muted-foreground active:scale-95 transition-transform"
         >
-          <span className="size-[24px]"><X className="size-[24px]" /></span>
+          <X className="size-[24px]" />
         </Link>
         <div className="flex items-center gap-2">
           {gpsAccuracy !== null && (
@@ -157,12 +157,12 @@ export default function RunnerTracker() {
             </span>
           )}
           {state === "tracking" && (
-            <span className="flex items-center gap-1.5 rounded-full bg-red-300/10 border border-red-300/20 px-3 py-1">
+            <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 px-3 py-1">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-300 opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-300" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 dark:bg-red-300 opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500 dark:bg-red-300" />
               </span>
-              <span className="text-[11px] font-bold text-red-300">REC</span>
+              <span className="text-[11px] font-bold text-red-500 dark:text-red-300">REC</span>
             </span>
           )}
         </div>
@@ -173,7 +173,7 @@ export default function RunnerTracker() {
           <div className="flex flex-col items-center gap-8 w-full max-w-sm">
             <div className="w-32 h-32 rounded-full bg-card border border-border/60 flex items-center justify-center shadow-[0_0_40px_rgba(76,215,246,0.1)] relative">
               <div className="absolute inset-0 rounded-full border border-primary/20 animate-ping opacity-20" />
-              <span className="size-[48px] text-primary"><Satellite className="size-[48px] text-primary" /></span>
+              <Satellite className="size-[48px] text-primary" />
             </div>
             <div className="text-center flex flex-col gap-2">
               <h2 className="text-[24px] font-bold text-foreground">Ready to Run</h2>
@@ -183,7 +183,7 @@ export default function RunnerTracker() {
               onClick={startTracking}
               className="mt-4 w-full py-4 rounded-xl bg-success text-emerald-900 text-[16px] font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(78,222,163,0.3)] active:scale-95 transition-transform"
             >
-              <span className="size-[24px]"><Play className="size-[24px]" /></span>
+              <Play className="size-[24px]" />
               Start Run
             </button>
           </div>
@@ -199,7 +199,7 @@ export default function RunnerTracker() {
 
             <div className="grid grid-cols-3 gap-4 w-full">
               <div className="rounded-2xl bg-card border border-border/60 p-4 flex flex-col items-center justify-center">
-                <span className="size-[24px] text-primary mb-2"><Ruler className="size-[24px] text-primary mb-2" /></span>
+                <Ruler className="size-[24px] text-primary mb-2" />
                 <p className="text-[28px] font-mono font-bold text-foreground leading-none">
                   {gpsDistance.toFixed(2)}
                 </p>
@@ -208,7 +208,7 @@ export default function RunnerTracker() {
                 </p>
               </div>
               <div className="rounded-2xl bg-card border border-border/60 p-4 flex flex-col items-center justify-center">
-                <span className="size-[24px] text-primary mb-2"><Gauge className="size-[24px] text-primary mb-2" /></span>
+                <Gauge className="size-[24px] text-primary mb-2" />
                 <p className="text-[28px] font-mono font-bold text-foreground leading-none">
                   {pace}
                 </p>
@@ -217,7 +217,7 @@ export default function RunnerTracker() {
                 </p>
               </div>
               <div className="rounded-2xl bg-card border border-border/60 p-4 flex flex-col items-center justify-center">
-                <span className="size-[24px] text-success mb-2"><MapPin className="size-[24px] text-success mb-2" /></span>
+                <MapPin className="size-[24px] text-success mb-2" />
                 <p className="text-[28px] font-mono font-bold text-foreground leading-none">
                   {gpsPointCount}
                 </p>
@@ -239,14 +239,14 @@ export default function RunnerTracker() {
                   onClick={pauseTracking}
                   className="flex-1 py-4 rounded-xl bg-accent text-foreground text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                 >
-                  <span className="size-[24px]"><Pause className="size-[24px]" /></span>
+                  <Pause className="size-[24px]" />
                   Pause
                 </button>
                 <button
                   onClick={finishTracking}
-                  className="flex-[2] py-4 rounded-xl bg-red-300 text-red-900 text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_0_20px_rgba(255,180,171,0.2)]"
+                  className="flex-[2] py-4 rounded-xl bg-red-500 dark:bg-red-300 text-red-900 text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_0_20px_rgba(255,180,171,0.2)]"
                 >
-                  <span className="size-[24px]"><Square className="size-[24px]" /></span>
+                  <Square className="size-[24px]" />
                   Finish
                 </button>
               </>
@@ -256,14 +256,14 @@ export default function RunnerTracker() {
                   onClick={resumeTracking}
                   className="flex-1 py-4 rounded-xl bg-success text-emerald-900 text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_0_20px_rgba(78,222,163,0.2)]"
                 >
-                  <span className="size-[24px]"><Play className="size-[24px]" /></span>
+                  <Play className="size-[24px]" />
                   Resume
                 </button>
                 <button
                   onClick={finishTracking}
-                  className="flex-[2] py-4 rounded-xl bg-red-300 text-red-900 text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_0_20px_rgba(255,180,171,0.2)]"
+                  className="flex-[2] py-4 rounded-xl bg-red-500 dark:bg-red-300 text-red-900 text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_0_20px_rgba(255,180,171,0.2)]"
                 >
-                  <span className="size-[24px]"><Square className="size-[24px]" /></span>
+                  <Square className="size-[24px]" />
                   Finish
                 </button>
               </>

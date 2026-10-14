@@ -156,11 +156,11 @@ export function RunnerRegistrationActions({
         <div className={`p-4 rounded-xl border ${
           runner.tShirtSize
             ? 'bg-card border-border/60'
-            : 'bg-amber-400/5 border-amber-400/30'
+            : 'bg-amber-500 dark:bg-amber-400/5 border-amber-500 dark:border-amber-400/30'
         } flex flex-col gap-3`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="size-[18px] text-success"><User className="size-[18px] text-success" /></span>
+              <User className="size-[18px] text-success" />
               <span className="text-[12px] font-bold text-foreground uppercase tracking-wider">Using Your Saved Profile</span>
             </div>
             <a href="/runner/profile" className="text-[11px] font-bold text-primary hover:underline shrink-0">
@@ -191,7 +191,7 @@ export function RunnerRegistrationActions({
             </div>
             <div className="flex justify-between gap-3">
               <span className="text-muted-foreground">IC / Passport</span>
-              <span className={runner.icOnFile ? 'text-success font-medium' : 'text-amber-400 font-medium'}>
+              <span className={runner.icOnFile ? 'text-success font-medium' : 'text-amber-500 dark:text-amber-400 font-medium'}>
                 {/* IC count never leaves the database encrypted; display matches the profile page's own policy. */}
                 {runner.icOnFile ? 'Securely on file (encrypted)' : 'Not set'}
               </span>
@@ -202,13 +202,13 @@ export function RunnerRegistrationActions({
             </div>
             <div className="flex justify-between gap-3">
               <span className="text-muted-foreground">T-Shirt Size</span>
-              <span className={`font-medium text-right ${runner.tShirtSize ? 'text-foreground' : 'text-amber-400'}`}>
+              <span className={`font-medium text-right ${runner.tShirtSize ? 'text-foreground' : 'text-amber-500 dark:text-amber-400'}`}>
                 {runner.tShirtSize || 'Not set'}
               </span>
             </div>
             <div className="flex justify-between gap-3">
               <span className="text-muted-foreground">Emergency Contact</span>
-              <span className={`font-medium text-right truncate ${runner.emergencyContactName ? 'text-foreground' : 'text-amber-400'}`}>
+              <span className={`font-medium text-right truncate ${runner.emergencyContactName ? 'text-foreground' : 'text-amber-500 dark:text-amber-400'}`}>
                 {runner.emergencyContactName
                   ? `${runner.emergencyContactName}${runner.emergencyContactPhone ? ` · ${runner.emergencyContactPhone}` : ''}`
                   : 'Not set'}
@@ -217,14 +217,14 @@ export function RunnerRegistrationActions({
           </div>
 
           {!runner.tShirtSize && (
-            <p className="text-[11px] text-amber-400">Set a t-shirt size in your profile so the right shirt is reserved at REPC.</p>
+            <p className="text-[11px] text-amber-500 dark:text-amber-400">Set a t-shirt size in your profile so the right shirt is reserved at REPC.</p>
           )}
         </div>
       )}
 
       {error && (
-        <div className="p-3 rounded-lg bg-red-300/10 border border-red-300/20 text-red-300 text-[12px] flex items-center gap-2">
-          <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
+        <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+          <CircleAlert className="size-[16px]" />
           {error}
         </div>
       )}
@@ -236,7 +236,7 @@ export function RunnerRegistrationActions({
       >
         {isPending ? (
           <>
-            <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
+            <LoaderCircle className="size-[18px] animate-spin" />
             Processing...
           </>
         ) : (

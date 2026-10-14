@@ -63,7 +63,7 @@ const ORG_COLORS = [
   { bg: 'bg-primary/20', text: 'text-primary' },
   { bg: 'bg-primary/20', text: 'text-primary' },
   { bg: 'bg-success/20', text: 'text-success' },
-  { bg: 'bg-red-300/20', text: 'text-red-300' },
+  { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
   { bg: 'bg-primary/20', text: 'text-primary' },
 ]
 
@@ -89,10 +89,10 @@ function getSubscriptionStatus(organizer: Organizer) {
   const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
   if (expires <= now) {
-    return { label: 'Expired', color: 'text-red-300 bg-red-300/10 border-red-300/20', dot: 'bg-red-300' }
+    return { label: 'Expired', color: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300' }
   }
   if (expires <= sevenDaysFromNow) {
-    return { label: 'Expiring Soon', color: 'text-red-300 bg-red-300/10 border-red-300/20', dot: 'bg-red-300' }
+    return { label: 'Expiring Soon', color: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300' }
   }
   return { label: 'Active', color: 'text-success bg-success/10 border-success/20', dot: 'bg-success' }
 }
@@ -220,7 +220,7 @@ export function OrganizerTable({
   if (loading) {
     return (
       <div className="rounded-xl bg-card border border-border/30 p-8 text-center text-muted-foreground font-inter text-[13px]">
-        <span className="text-primary size-[32px] animate-pulse block mb-2"><RefreshCw className="text-primary size-[32px] animate-pulse block mb-2" /></span>
+        <RefreshCw className="text-primary size-[32px] animate-pulse block mb-2" />
         Loading organizers...
       </div>
     )
@@ -232,7 +232,7 @@ export function OrganizerTable({
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 max-w-sm">
-          <span className="absolute left-3 top-2.5 text-muted-foreground size-[18px]"><Search className="absolute left-3 top-2.5 text-muted-foreground size-[18px]" /></span>
+          <Search className="absolute left-3 top-2.5 text-muted-foreground size-[18px]" />
           <Input
             placeholder="Search by name, slug or email…"
             value={search}
@@ -270,14 +270,14 @@ export function OrganizerTable({
             onClick={() => exportOrganizersCSV(filteredOrganizers)}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card hover:bg-accent text-muted-foreground text-[13px] font-medium font-inter border border-border/30 transition-colors"
           >
-            <span className="size-[18px] text-primary"><Download className="size-[18px] text-primary" /></span>
+            <Download className="size-[18px] text-primary" />
             Export CSV
           </button>
           <button
             onClick={onAdd}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all font-inter"
           >
-            <span className="size-[18px]"><Store className="size-[18px]" /></span>
+            <Store className="size-[18px]" />
             Add Organizer
           </button>
         </div>
@@ -385,10 +385,10 @@ export function OrganizerTable({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-red-300"
+                            className="h-7 w-7 text-muted-foreground hover:text-red-500 dark:text-red-300"
                             onClick={() => setEditingExpiry(null)}
                           >
-                            <span className="size-[16px]"><X className="size-[16px]" /></span>
+                            <X className="size-[16px]" />
                           </Button>
                         </div>
                       ) : (
@@ -427,13 +427,13 @@ export function OrganizerTable({
                           className="p-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all border border-primary/20"
                           title={`Open ${organizer.name} organizer portal`}
                         >
-                          <span className="size-[18px]"><UserCog className="size-[18px]" /></span>
+                          <UserCog className="size-[18px]" />
                         </a>
 
                         <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button className="p-1.5 rounded-lg bg-card hover:bg-accent text-muted-foreground hover:text-foreground transition-all border border-border/30">
-                            <span className="size-[18px]"><MoreHorizontal className="size-[18px]" /></span>
+                            <MoreHorizontal className="size-[18px]" />
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
@@ -444,14 +444,14 @@ export function OrganizerTable({
                             className="hover:bg-accent cursor-pointer text-[13px] focus:bg-accent focus:text-primary"
                             onClick={() => onEdit(organizer)}
                           >
-                            <span className="size-[16px] mr-2 text-primary"><Pencil className="size-[16px] mr-2 text-primary" /></span>
+                            <Pencil className="size-[16px] mr-2 text-primary" />
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="text-red-300 hover:bg-red-800/20 cursor-pointer text-[13px] focus:bg-red-800/20 focus:text-red-300"
+                            className="text-red-500 dark:text-red-300 hover:bg-red-800/20 cursor-pointer text-[13px] focus:bg-red-800/20 focus:text-red-500 dark:text-red-300"
                             onClick={() => onDelete(organizer)}
                           >
-                            <span className="size-[16px] mr-2"><Trash2 className="size-[16px] mr-2" /></span>
+                            <Trash2 className="size-[16px] mr-2" />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>

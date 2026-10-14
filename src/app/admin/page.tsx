@@ -109,7 +109,7 @@ export default async function AdminDashboard() {
     { bg: 'bg-primary/20', text: 'text-primary' },
     { bg: 'bg-primary/20', text: 'text-primary' },
     { bg: 'bg-success/20', text: 'text-success' },
-    { bg: 'bg-red-300/20', text: 'text-red-300' },
+    { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
     { bg: 'bg-primary/20', text: 'text-primary' },
   ]
 
@@ -133,14 +133,14 @@ export default async function AdminDashboard() {
             href="/admin/audit-logs"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
           >
-            <span className="size-[16px]"><Download className="size-[16px]" /></span>
+            <Download className="size-[16px]" />
             <span>Audit Logs</span>
           </a>
           <Link
             href="/admin/organizers"
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary transition-all "
           >
-            <span className="size-[18px]"><Megaphone className="size-[18px]" /></span>
+            <Megaphone className="size-[18px]" />
             <span>Manage Organizers</span>
           </Link>
         </div>
@@ -190,10 +190,10 @@ export default async function AdminDashboard() {
 
       {/* ── Expiring Subscriptions Alert ─────────────────────────────────── */}
       {(expiringSoonCount ?? 0) > 0 && (
-        <div className="w-full bg-red-800/10 rounded-xl p-5 border border-red-300/20 flex flex-col gap-3">
+        <div className="w-full bg-red-800/10 rounded-xl p-5 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <span className="size-[20px] text-red-300"><TriangleAlert className="size-[20px] text-red-300" /></span>
-            <h3 className="font-semibold text-red-300 text-[15px] font-jakarta">
+            <TriangleAlert className="size-[20px] text-red-500 dark:text-red-300" />
+            <h3 className="font-semibold text-red-500 dark:text-red-300 text-[15px] font-jakarta">
               {expiringSoonCount} Subscription(s) Expiring Within 7 Days
             </h3>
           </div>
@@ -204,7 +204,7 @@ export default async function AdminDashboard() {
                   <p className="text-[13px] font-semibold text-foreground font-inter">{org.name}</p>
                   <p className="text-[11px] text-muted-foreground font-mono">@{org.slug}</p>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-red-300/10 text-red-300 text-[11px] font-bold border border-red-300/20 font-inter">
+                <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-bold border border-red-500/30 dark:border-red-500 dark:border-red-300/20 font-inter">
                   Expires {new Date(org.sub_expires_at).toLocaleDateString()}
                 </span>
               </div>
@@ -229,7 +229,7 @@ export default async function AdminDashboard() {
               href="/admin/organizers"
               className="flex-1 lg:flex-none px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all flex items-center justify-center gap-1.5 shadow-md font-inter"
             >
-              <span className="size-[18px]"><ExternalLink className="size-[18px]" /></span>
+              <ExternalLink className="size-[18px]" />
               Manage All Organizers
             </Link>
           </div>
@@ -286,13 +286,13 @@ export default async function AdminDashboard() {
                       </td>
                       <td className="py-4 px-4 text-center">
                         {isExpired ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-red-300/10 text-red-300 text-[11px] font-semibold inline-flex items-center gap-1.5 border border-red-300/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-300" />
+                          <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-semibold inline-flex items-center gap-1.5 border border-red-500/30 dark:border-red-500 dark:border-red-300/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-300" />
                             Expired
                           </span>
                         ) : isExpiring ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-red-300/10 text-red-300 text-[11px] font-semibold inline-flex items-center gap-1.5 border border-red-300/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-300" />
+                          <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-semibold inline-flex items-center gap-1.5 border border-red-500/30 dark:border-red-500 dark:border-red-300/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-300" />
                             Expiring
                           </span>
                         ) : org.is_active ? (
@@ -314,7 +314,7 @@ export default async function AdminDashboard() {
                             className="p-1.5 rounded-lg bg-card hover:bg-primary hover:text-primary-foreground text-primary transition-all border border-border/30"
                             title="Manage"
                           >
-                            <span className="size-[18px]"><Settings className="size-[18px]" /></span>
+                            <Settings className="size-[18px]" />
                           </Link>
                         </div>
                       </td>
@@ -336,7 +336,7 @@ export default async function AdminDashboard() {
             className="text-primary hover:text-foreground transition-colors flex items-center gap-1 font-medium"
           >
             View All Organizers
-            <span className="size-[14px]"><ArrowRight className="size-[14px]" /></span>
+            <ArrowRight className="size-[14px]" />
           </Link>
         </div>
       </div>
@@ -348,7 +348,7 @@ export default async function AdminDashboard() {
         <div className="xl:col-span-7 bg-card rounded-xl p-5 shadow-md border border-border/30 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-success size-[20px]"><BadgeCheck className="text-success size-[20px]" /></span>
+              <BadgeCheck className="text-success size-[20px]" />
               <h3 className="font-semibold text-foreground text-[16px] font-jakarta">Recent Audit Log</h3>
             </div>
             <Link
@@ -356,7 +356,7 @@ export default async function AdminDashboard() {
               className="text-[11px] text-primary hover:text-foreground transition-colors flex items-center gap-1 font-medium font-inter"
             >
               View Ledger
-              <span className="size-[14px]"><ArrowRight className="size-[14px]" /></span>
+              <ArrowRight className="size-[14px]" />
             </Link>
           </div>
 
@@ -395,7 +395,7 @@ export default async function AdminDashboard() {
           <div className="bg-card rounded-xl p-5 shadow-md border border-border/30 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-primary size-[20px]"><ToggleRight className="text-primary size-[20px]" /></span>
+                <ToggleRight className="text-primary size-[20px]" />
                 <h3 className="font-semibold text-foreground text-[16px] font-jakarta">Feature Flags & Circuit</h3>
               </div>
               <span className="text-[11px] text-muted-foreground font-mono">STRICT MODE</span>
@@ -440,9 +440,9 @@ export default async function AdminDashboard() {
             </div>
             <div className="pt-2 border-t border-border/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${flagMaintenance ? 'bg-red-300 animate-pulse' : 'bg-success'}`} />
+                <span className={`w-2 h-2 rounded-full ${flagMaintenance ? 'bg-red-500 dark:bg-red-300 animate-pulse' : 'bg-success'}`} />
                 <span className="text-[12px] text-muted-foreground font-inter">
-                  Maintenance: <strong className={flagMaintenance ? 'text-red-300' : 'text-success'}>{flagMaintenance ? 'ON' : 'OFF'}</strong>
+                  Maintenance: <strong className={flagMaintenance ? 'text-red-500 dark:text-red-300' : 'text-success'}>{flagMaintenance ? 'ON' : 'OFF'}</strong>
                 </span>
               </div>
               <Link
@@ -450,7 +450,7 @@ export default async function AdminDashboard() {
                 className="px-3 py-1 rounded-lg bg-card hover:bg-primary/20 hover:text-primary text-muted-foreground transition-colors text-[11px] font-medium font-inter border border-border/30 flex items-center gap-1"
               >
                 <span>Configure</span>
-                <span className="size-[13px]"><SlidersHorizontal className="size-[13px]" /></span>
+                <SlidersHorizontal className="size-[13px]" />
               </Link>
             </div>
           </div>

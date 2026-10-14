@@ -59,11 +59,11 @@ function SidebarContent({
       <div className="h-16 px-4 border-b border-muted flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
-            <span className="size-[18px] text-primary"><Zap className="size-[18px] text-primary" /></span>
+            <Zap className="size-[18px] text-primary" />
           </div>
           <span className="font-jakarta font-bold text-[17px] tracking-tight text-foreground">Pelikat</span>
         </div>
-        <span className="px-2 py-0.5 rounded-full bg-red-800/20 text-red-300 border border-red-300/20 text-[10px] font-bold tracking-wider uppercase font-inter">
+        <span className="px-2 py-0.5 rounded-full bg-red-800/20 text-red-500 dark:text-red-300 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-[10px] font-bold tracking-wider uppercase font-inter">
           ROOT
         </span>
       </div>
@@ -147,12 +147,12 @@ function SidebarContent({
       {/* ── Footer / User Profile ────────────────────────────── */}
       <div className="p-2 border-t border-muted flex flex-col gap-2 mt-auto shrink-0">
         {/* Failsafe Armed indicator */}
-        <div className="p-2 rounded-lg bg-red-800/10 border border-red-300/20 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-red-300">
-            <span className="size-[16px]"><TriangleAlert className="size-[16px]" /></span>
+        <div className="p-2 rounded-lg bg-red-800/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-red-500 dark:text-red-300">
+            <TriangleAlert className="size-[16px]" />
             <span className="text-[10px] font-mono font-bold uppercase font-inter">Failsafe Armed</span>
           </div>
-          <span className="w-1.5 h-1.5 rounded-full bg-red-300 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-300 animate-pulse" />
         </div>
 
         {/* User card */}
@@ -174,11 +174,11 @@ function SidebarContent({
             </div>
           </div>
           <button
-            className="p-1 text-muted-foreground hover:text-red-300 hover:bg-card rounded transition-colors"
+            className="p-1 text-muted-foreground hover:text-red-500 dark:text-red-300 hover:bg-card rounded transition-colors"
             title="Log out"
             onClick={onLogout}
           >
-            <span className="size-[18px]"><Lock className="size-[18px]" /></span>
+            <Lock className="size-[18px]" />
           </button>
         </div>
       </div>
@@ -241,7 +241,7 @@ export function AdminMobileNav() {
     <Sheet>
       <SheetTrigger asChild>
         <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card transition-colors lg:hidden">
-          <span className="size-[22px]"><Menu className="size-[22px]" /></span>
+          <Menu className="size-[22px]" />
         </button>
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0 border-r border-muted bg-background">

@@ -105,7 +105,7 @@ export default async function OrganizerMobileConsolePage() {
           </div>
         </header>
         <div className="flex flex-col items-center justify-center flex-1 py-16 text-muted-foreground">
-          <span className="size-[48px] mb-3"><Gauge className="size-[48px] mb-3" /></span>
+          <Gauge className="size-[48px] mb-3" />
           <p className="text-[14px] font-medium">No active event</p>
           <p className="text-[12px] mt-1">Activate an event to see the race console</p>
           <Link
@@ -143,7 +143,7 @@ export default async function OrganizerMobileConsolePage() {
             href={`/organizer/mobile/scanner`}
             className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold"
           >
-            <span className="size-[13px]"><QrCode className="size-[13px]" /></span>
+            <QrCode className="size-[13px]" />
             Scan
           </Link>
         </div>
@@ -161,12 +161,12 @@ export default async function OrganizerMobileConsolePage() {
             <h1 className="text-[20px] font-extrabold text-foreground leading-tight mt-0.5">{event.name}</h1>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground mt-1.5">
               <span className="flex items-center gap-1">
-                <span className="size-[13px] text-primary"><Calendar className="size-[13px] text-primary" /></span>
+                <Calendar className="size-[13px] text-primary" />
                 {new Date(event.date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short' })}
               </span>
               {event.location && (
                 <span className="flex items-center gap-1">
-                  <span className="size-[13px] text-success"><MapPin className="size-[13px] text-success" /></span>
+                  <MapPin className="size-[13px] text-success" />
                   {event.location}
                 </span>
               )}
@@ -213,7 +213,7 @@ export default async function OrganizerMobileConsolePage() {
                 label: 'Not Checked In',
                 value: (totalRegs - checkedIn).toLocaleString(),
                 badge: `${100 - checkInRate}%`,
-                color: { bg: 'bg-red-300/10', text: 'text-red-300', badge: 'bg-red-300/10 text-red-300', bar: 'bg-red-300' },
+                color: { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10', text: 'text-red-500 dark:text-red-300', badge: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300', bar: 'bg-red-500 dark:bg-red-300' },
                 barPct: 100 - checkInRate,
                 sub: 'Awaiting collection',
               },
@@ -293,7 +293,7 @@ export default async function OrganizerMobileConsolePage() {
               >
                 <span className={`size-[20px] ${link.color}`}><link.icon className="size-[20px]" /></span>
                 <span className="text-[13px] font-medium text-foreground flex-1">{link.label}</span>
-                <span className="size-[16px] text-muted-foreground"><ChevronRight className="size-[16px] text-muted-foreground" /></span>
+                <ChevronRight className="size-[16px] text-muted-foreground" />
               </Link>
             ))}
           </div>

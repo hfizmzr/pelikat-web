@@ -112,7 +112,7 @@ export default function NewEventPage() {
             onClick={() => router.push('/organizer/events')}
             className="w-10 h-10 rounded-xl bg-card border border-muted flex items-center justify-center text-muted-foreground hover:bg-card hover:text-foreground transition-colors"
           >
-            <span className="size-[20px]"><ArrowLeft className="size-[20px]" /></span>
+            <ArrowLeft className="size-[20px]" />
           </button>
           <div>
             <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary uppercase w-fit mb-1 block">New Campaign</span>
@@ -135,7 +135,7 @@ export default function NewEventPage() {
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-border focus:outline-none focus:border-primary/50 transition-colors"
                 />
-                {errors.name && <p className="text-[12px] text-red-300 mt-1">{errors.name}</p>}
+                {errors.name && <p className="text-[12px] text-red-500 dark:text-red-300 mt-1">{errors.name}</p>}
               </div>
 
               <div className="flex flex-col gap-2 col-span-1 md:col-span-2">
@@ -157,7 +157,7 @@ export default function NewEventPage() {
                   onChange={(e) => setFormData(prev => ({ ...prev, event_date: e.target.value }))}
                   className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground focus:outline-none focus:border-primary/50 transition-colors [color-scheme:dark]"
                 />
-                {errors.event_date && <p className="text-[12px] text-red-300 mt-1">{errors.event_date}</p>}
+                {errors.event_date && <p className="text-[12px] text-red-500 dark:text-red-300 mt-1">{errors.event_date}</p>}
               </div>
 
               <div className="flex flex-col gap-2">
@@ -208,7 +208,7 @@ export default function NewEventPage() {
             {/* Inventory Section */}
             <div className="bg-card rounded-xl border border-muted p-5 w-full">
               <div className="flex items-center gap-3 mb-5">
-                <span className="size-[20px] text-primary"><Shirt className="size-[20px] text-primary" /></span>
+                <Shirt className="size-[20px] text-primary" />
                 <div>
                   <h2 className="text-[14px] font-bold text-foreground">REPC Shirt Inventory</h2>
                   <p className="text-[12px] text-muted-foreground">Initial race kit stock by size</p>
@@ -247,7 +247,7 @@ export default function NewEventPage() {
               >
                 {loading ? (
                   <>
-                    <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
+                    <LoaderCircle className="size-[18px] animate-spin" />
                     Creating...
                   </>
                 ) : (

@@ -9,7 +9,7 @@ export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    ctx.fillStyle = 'var(--background)'
+    ctx.fillStyle = '#18181b'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     ctx.fillStyle = '#94a3b8'
@@ -21,7 +21,7 @@ export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; 
     ctx.font = 'bold 48px monospace'
     ctx.fillText(bibNumber, canvas.width / 2, 110)
 
-    ctx.fillStyle = 'var(--muted-foreground)'
+    ctx.fillStyle = '#94a3b8'
     ctx.font = '18px system-ui'
     ctx.fillText(eventName, canvas.width / 2, 150)
 
@@ -52,14 +52,14 @@ export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; 
         onClick={handleSave}
         className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
       >
-        <span className="size-[18px]"><Download className="size-[18px]" /></span>
+        <Download className="size-[18px]" />
         Save Image
       </button>
       <button 
         onClick={handleShare}
         className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
       >
-        <span className="size-[18px]"><Share2 className="size-[18px]" /></span>
+        <Share2 className="size-[18px]" />
         Share
       </button>
     </div>

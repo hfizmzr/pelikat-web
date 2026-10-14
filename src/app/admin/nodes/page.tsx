@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Activity, ChartLine, Cpu, Gauge, Loader2, RefreshCw } from "lucide-react"
+import { Activity, ChartLine, CircleCheck, Cpu, Gauge, Loader2, RefreshCw, TriangleAlert } from "lucide-react"
 import { toast } from 'sonner'
 
 interface ServiceNode {
@@ -78,7 +78,7 @@ export default function AdminNodesPage() {
     },
     {
       label: 'Fleet Health Uptime',
-      value: metrics?.uptime || '99.95%',
+      value: metrics?.uptime || '—',
       unit: '',
       icon: ChartLine,
       color: 'text-success',
@@ -88,9 +88,9 @@ export default function AdminNodesPage() {
       label: 'Active System Alerts',
       value: metrics ? String(metrics.degradedCount + metrics.unhealthyCount) : '0',
       unit: metrics && (metrics.degradedCount + metrics.unhealthyCount) > 0 ? 'Degraded' : 'Healthy',
-      icon: metrics && (metrics.degradedCount + metrics.unhealthyCount) > 0 ? 'warning' : 'check_circle',
-      color: metrics && (metrics.degradedCount + metrics.unhealthyCount) > 0 ? 'text-red-300' : 'text-success',
-      bg: metrics && (metrics.degradedCount + metrics.unhealthyCount) > 0 ? 'bg-red-300/20' : 'bg-success/20',
+      icon: metrics && (metrics.degradedCount + metrics.unhealthyCount) > 0 ? TriangleAlert : CircleCheck,
+      color: metrics && (metrics.degradedCount + metrics.unhealthyCount) > 0 ? 'text-red-500' : 'text-success',
+      bg: metrics && (metrics.degradedCount + metrics.unhealthyCount) > 0 ? 'bg-red-500/10' : 'bg-success/20',
     },
   ]
 
@@ -100,7 +100,7 @@ export default function AdminNodesPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="size-[16px] text-success"><ChartLine className="size-[16px] text-success" /></span>
+            <ChartLine className="size-[16px] text-success" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-success">Fleet Telemetry</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Nodes & Telemetry</h1>
@@ -118,7 +118,7 @@ export default function AdminNodesPage() {
             disabled={refreshing}
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
           >
-            <span className="size-[16px] ${refreshing ? 'animate-spin' : ''}"><RefreshCw className="size-[16px] ${refreshing ? 'animate-spin' : ''}" /></span>
+            <RefreshCw className={`size-[16px] ${refreshing ? 'animate-spin' : ''}`} />
             <span>{refreshing ? 'Probing...' : 'Probe System Now'}</span>
           </button>
         </div>
@@ -146,7 +146,7 @@ export default function AdminNodesPage() {
       <div className="rounded-xl bg-card border border-border/30 overflow-hidden shadow-lg">
         <div className="p-5 border-b border-border/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-primary size-[20px]"><Activity className="text-primary size-[20px]" /></span>
+            <Activity className="text-primary size-[20px]" />
             <h2 className="font-jakarta font-semibold text-[18px] text-foreground">Service Registry & Health Check</h2>
           </div>
           <span className="text-[11px] text-success font-mono flex items-center gap-1.5">
@@ -178,7 +178,7 @@ export default function AdminNodesPage() {
                     {/* Service */}
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-2.5">
-                        <span className="size-[18px] ${ svc.status === 'operational' ? 'text-success' : 'text-red-300' }"><Cpu className="size-[18px] ${ svc.status === 'operational' ? 'text-success' : 'text-red-300' }" /></span>
+                        <Cpu className={`size-[18px] ${ svc.status === 'operational' ? 'text-success' : 'text-red-500 dark:text-red-300' }`} />
                         <span className="text-[13px] font-semibold text-foreground font-jakarta">{svc.name}</span>
                       </div>
                     </td>
@@ -207,14 +207,14 @@ export default function AdminNodesPage() {
                           ? 'text-success bg-success/10 border-success/20'
                           : svc.status === 'degraded'
                             ? 'text-amber-500 bg-amber-500/10 border-amber-500/20'
-                            : 'text-red-300 bg-red-300/10 border-red-300/20'
+                            : 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20'
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${
                           svc.status === 'operational'
                             ? 'bg-success'
                             : svc.status === 'degraded'
                               ? 'bg-amber-500 animate-pulse'
-                              : 'bg-red-300 animate-pulse'
+                              : 'bg-red-500 dark:bg-red-300 animate-pulse'
                         }`} />
                         {svc.status.toUpperCase()}
                       </span>

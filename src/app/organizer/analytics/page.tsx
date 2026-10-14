@@ -36,7 +36,7 @@ export default async function OrganizerAnalyticsPage() {
   if (!organizerId) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-muted-foreground">
-        <span className="size-[64px] mb-4"><TrendingUp className="size-[64px] mb-4" /></span>
+        <TrendingUp className="size-[64px] mb-4" />
         <h2 className="text-[18px] font-semibold text-foreground mb-2">No organizer profile</h2>
         <p className="text-[14px]">No analytics data available without an organizer account.</p>
       </div>
@@ -146,7 +146,7 @@ export default async function OrganizerAnalyticsPage() {
         <Suspense
           fallback={
             <div className="bg-card rounded-xl border border-muted p-12 flex items-center justify-center">
-              <span className="size-[32px] text-primary animate-spin"><LoaderCircle className="size-[32px] text-primary animate-spin" /></span>
+              <LoaderCircle className="size-[32px] text-primary animate-spin" />
             </div>
           }
         >

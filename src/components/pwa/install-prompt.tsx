@@ -6,7 +6,7 @@ export function PWAInstallPrompt() {
     <div className="min-h-dvh bg-background flex items-center justify-center p-6 font-sans">
       <div className="w-full max-w-md bg-background rounded-3xl border border-muted p-8 shadow-2xl flex flex-col items-center text-center">
         <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
-          <span className="size-[40px] text-primary"><Smartphone className="size-[40px] text-primary" /></span>
+          <Smartphone className="size-[40px] text-primary" />
         </div>
         
         <h1 className="text-[24px] font-bold text-foreground mb-3 tracking-tight">
@@ -21,7 +21,7 @@ export function PWAInstallPrompt() {
 
         <div className="w-full bg-card rounded-2xl border border-border p-5 mb-8 text-left">
           <h3 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-            <span className="size-[16px] text-primary"><Smartphone className="size-[16px] text-primary" /></span>
+            <Smartphone className="size-[16px] text-primary" />
             iOS (Safari)
           </h3>
           <ol className="text-[13px] text-muted-foreground space-y-3">
@@ -38,7 +38,7 @@ export function PWAInstallPrompt() {
 
         <div className="w-full bg-card rounded-2xl border border-border p-5 text-left">
           <h3 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-            <span className="size-[16px] text-success"><Smartphone className="size-[16px] text-success" /></span>
+            <Smartphone className="size-[16px] text-success" />
             Android (Chrome)
           </h3>
           <ol className="text-[13px] text-muted-foreground space-y-3">

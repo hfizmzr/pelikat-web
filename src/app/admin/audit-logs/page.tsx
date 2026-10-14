@@ -145,7 +145,7 @@ export default function AdminAuditLogsPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="size-[16px] text-success"><BadgeCheck className="size-[16px] text-success" /></span>
+            <BadgeCheck className="size-[16px] text-success" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-success font-inter">Compliance</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Audit Logs</h1>
@@ -160,7 +160,7 @@ export default function AdminAuditLogsPage() {
         >
           {exporting
             ? <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            : <span className="size-[18px] text-primary"><Download className="size-[18px] text-primary" /></span>
+            : <Download className="size-[18px] text-primary" />
           }
           Export CSV
         </button>
@@ -174,7 +174,7 @@ export default function AdminAuditLogsPage() {
       {/* ── Log Table ───────────────────────────────────────────────── */}
       <div className="rounded-xl bg-card border border-border/30 overflow-hidden">
         <div className="p-5 border-b border-border/30 flex items-center gap-2">
-          <span className="text-success size-[20px]"><ReceiptText className="text-success size-[20px]" /></span>
+          <ReceiptText className="text-success size-[20px]" />
           <h2 className="font-jakarta font-semibold text-[18px] text-foreground">Activity Ledger</h2>
           <span className="ml-auto text-[11px] text-border font-mono">
             Page {currentPage} of {totalPages || 1}
@@ -199,7 +199,7 @@ export default function AdminAuditLogsPage() {
                 {auditLogs.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                      <span className="size-[32px] block mb-2 text-border"><SearchX className="size-[32px] block mb-2 text-border" /></span>
+                      <SearchX className="size-[32px] block mb-2 text-border" />
                       No audit logs found.
                     </td>
                   </tr>
@@ -255,7 +255,7 @@ export default function AdminAuditLogsPage() {
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-center">
-                            <span className="size-[18px] text-border transition-transform ${isExpanded ? 'rotate-180' : ''}"><ChevronDown className="size-[18px] text-border transition-transform ${isExpanded ? 'rotate-180' : ''}" /></span>
+                            <ChevronDown className={`size-[18px] text-border transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                           </td>
                         </tr>
                         {isExpanded && (
@@ -264,8 +264,8 @@ export default function AdminAuditLogsPage() {
                               <div className="flex flex-col gap-3">
                                 {log.old_data && (
                                   <div>
-                                    <p className="text-[11px] font-bold text-red-300 mb-1.5 font-inter uppercase tracking-wide">Previous Data</p>
-                                    <pre className="text-[11px] text-muted-foreground bg-red-800/10 border border-red-300/10 p-3 rounded-lg overflow-auto max-h-40 font-mono">
+                                    <p className="text-[11px] font-bold text-red-500 dark:text-red-300 mb-1.5 font-inter uppercase tracking-wide">Previous Data</p>
+                                    <pre className="text-[11px] text-muted-foreground bg-red-800/10 border border-red-500 dark:border-red-300/10 p-3 rounded-lg overflow-auto max-h-40 font-mono">
                                       {JSON.stringify(log.old_data, null, 2)}
                                     </pre>
                                   </div>

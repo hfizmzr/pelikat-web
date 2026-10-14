@@ -14,7 +14,7 @@ function StatCard({ icon: Icon, label, value, sub, color }: { icon: LucideIcon, 
     primary: { bg: 'bg-primary/10', text: 'text-primary' },
     secondary: { bg: 'bg-primary/10', text: 'text-primary' },
     tertiary: { bg: 'bg-success/10', text: 'text-success' },
-    error: { bg: 'bg-red-300/10', text: 'text-red-300' },
+    error: { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10', text: 'text-red-500 dark:text-red-300' },
   }
   const c = colorMap[color]
 
@@ -104,8 +104,8 @@ export default async function RunnerDashboard() {
             <p className="text-[11px] text-muted-foreground">Ready for your next run?</p>
           </div>
           <button className="relative w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
-            <span className="size-[22px]"><Bell className="size-[22px]" /></span>
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-red-300 ring-2 ring-background" />
+            <Bell className="size-[22px]" />
+            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-red-500 dark:bg-red-300 ring-2 ring-background" />
           </button>
         </div>
       </header>
@@ -131,11 +131,11 @@ export default async function RunnerDashboard() {
                 </h1>
                 <div className="flex items-center gap-4 text-muted-foreground text-[11px]">
                   <span className="inline-flex items-center gap-1.5 bg-card px-2 py-1 rounded-md border border-border">
-                    <span className="size-[14px] text-primary"><Tag className="size-[14px] text-primary" /></span>
+                    <Tag className="size-[14px] text-primary" />
                     <span className="font-mono">{nextEvent.bib_number || 'TBA'}</span>
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <span className="size-[14px] text-success"><Tags className="size-[14px] text-success" /></span>
+                    <Tags className="size-[14px] text-success" />
                     {nextEvent.race_categories?.name}
                   </span>
                 </div>
@@ -154,7 +154,7 @@ export default async function RunnerDashboard() {
         ) : (
           <section className="rounded-xl bg-card p-6 border border-border/40 text-center flex flex-col items-center">
             <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center mb-3">
-              <span className="size-[24px] text-muted-foreground"><CalendarX className="size-[24px] text-muted-foreground" /></span>
+              <CalendarX className="size-[24px] text-muted-foreground" />
             </div>
             <h3 className="text-[14px] font-bold text-foreground mb-1">No Upcoming Events</h3>
             <p className="text-[12px] text-muted-foreground mb-4">Discover your next race and start training.</p>
@@ -210,7 +210,7 @@ export default async function RunnerDashboard() {
               {badges.map(badge => (
                 <div key={badge.id} className="snap-start shrink-0 w-[120px] p-4 bg-card rounded-xl border border-border/40 flex flex-col items-center text-center">
                   <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-2">
-                    <span className="size-[24px]"><Award className="size-[24px]" /></span>
+                    <Award className="size-[24px]" />
                   </div>
                   <span className="text-[11px] font-bold text-foreground leading-tight capitalize">
                     {badge.badge_key.replace(/_/g, ' ')}

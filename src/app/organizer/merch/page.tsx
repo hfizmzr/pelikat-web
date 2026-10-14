@@ -37,7 +37,7 @@ export default async function OrganizerMerchPage() {
             <p className="text-[14px] leading-[20px] text-muted-foreground">Manage your race kit products, variants, and stock levels.</p>
           </div>
           <button className="px-5 py-2.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all whitespace-nowrap self-start md:self-auto">
-            <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
+            <CirclePlus className="size-[18px]" />
             Add Product
           </button>
         </div>
@@ -48,7 +48,7 @@ export default async function OrganizerMerchPage() {
             { label: 'Total Products', value: products?.length || 0, icon: Package, color: 'text-primary' },
             { label: 'Active', value: activeProducts, icon: CircleCheck, color: 'text-success' },
             { label: 'SKU Variants', value: totalVariants, icon: Palette, color: 'text-primary' },
-            { label: 'Low Stock', value: 0, icon: TriangleAlert, color: 'text-red-300' },
+            { label: 'Low Stock', value: 0, icon: TriangleAlert, color: 'text-red-500 dark:text-red-300' },
           ].map(s => (
             <div key={s.label} className="bg-card rounded-xl p-4 border border-muted flex items-center gap-3">
               <span className={`size-[24px] ${s.color}`}><s.icon className="size-[24px]" /></span>
@@ -76,7 +76,7 @@ export default async function OrganizerMerchPage() {
                       <div className="flex flex-col gap-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-primary shrink-0">
-                            <span className="size-[18px]"><Shirt className="size-[18px]" /></span>
+                            <Shirt className="size-[18px]" />
                           </div>
                           <h3 className="text-[15px] leading-[20px] font-semibold text-foreground group-hover:text-primary transition-colors truncate">{product.name}</h3>
                         </div>
@@ -95,10 +95,10 @@ export default async function OrganizerMerchPage() {
                         <span className="text-[11px] text-muted-foreground">{variants.length} variant{variants.length !== 1 ? 's' : ''}</span>
                       </div>
                       <div className="text-right">
-                        <span className={`text-[22px] leading-[28px] tracking-[-0.015em] font-semibold ${isLowStock ? 'text-red-300' : 'text-success'}`}>
+                        <span className={`text-[22px] leading-[28px] tracking-[-0.015em] font-semibold ${isLowStock ? 'text-red-500 dark:text-red-300' : 'text-success'}`}>
                           {totalStock}
                         </span>
-                        <div className={`text-[11px] ${isLowStock ? 'text-red-300' : 'text-muted-foreground'}`}>
+                        <div className={`text-[11px] ${isLowStock ? 'text-red-500 dark:text-red-300' : 'text-muted-foreground'}`}>
                           {isLowStock ? 'Low stock!' : 'in stock'}
                         </div>
                       </div>
@@ -120,11 +120,11 @@ export default async function OrganizerMerchPage() {
 
                     <div className="flex items-center gap-2 pt-3 border-t border-muted">
                       <button className="flex-1 py-2 bg-card hover:bg-accent text-foreground text-[12px] leading-[16px] font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors border border-border">
-                        <span className="size-[16px]"><Pencil className="size-[16px]" /></span>
+                        <Pencil className="size-[16px]" />
                         Edit
                       </button>
-                      <button className="p-2 text-muted-foreground hover:text-red-300 hover:bg-red-300/10 rounded-lg transition-colors">
-                        <span className="size-[18px]"><Trash2 className="size-[18px]" /></span>
+                      <button className="p-2 text-muted-foreground hover:text-red-500 dark:text-red-300 hover:bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 rounded-lg transition-colors">
+                        <Trash2 className="size-[18px]" />
                       </button>
                     </div>
                   </div>
@@ -142,7 +142,7 @@ export default async function OrganizerMerchPage() {
               Add race kits, jerseys, and accessories to include in your event packages.
             </p>
             <button className="px-6 py-3 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all ">
-              <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
+              <CirclePlus className="size-[18px]" />
               Add your first product
             </button>
           </div>

@@ -101,14 +101,14 @@ export default function OrganizerLayout({
                 className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title="Notifications"
               >
-                <span className="size-[20px]"><Bell className="size-[20px]" /></span>
+                <Bell className="size-[20px]" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-border" />
               </button>
               <Link
                 href="/organizer/events/new"
                 className="px-4 py-1.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-primary transition-all "
               >
-                <span className="size-[16px]"><CirclePlus className="size-[16px]" /></span>
+                <CirclePlus className="size-[16px]" />
                 <span>Create Event</span>
               </Link>
             </div>

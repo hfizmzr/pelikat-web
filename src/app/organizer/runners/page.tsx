@@ -32,7 +32,7 @@ export default async function OrganizerRunnersPage() {
   const statusColor: Record<string, string> = {
     paid: 'text-success bg-success/15',
     pending: 'text-primary bg-primary/15',
-    failed: 'text-red-300 bg-red-300/15',
+    failed: 'text-red-500 dark:text-red-300 bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15',
     refunded: 'text-muted-foreground bg-accent',
   }
 
@@ -52,11 +52,11 @@ export default async function OrganizerRunnersPage() {
           </div>
           <div className="flex gap-2">
             <button className="px-4 py-2.5 bg-card hover:bg-card text-foreground text-[14px] leading-[20px] tracking-[0.01em] font-medium rounded-lg flex items-center gap-2 transition-colors border border-muted">
-              <span className="size-[18px]"><Download className="size-[18px]" /></span>
+              <Download className="size-[18px]" />
               Export CSV
             </button>
             <button className="px-4 py-2.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all ">
-              <span className="size-[18px]"><Badge className="size-[18px]" /></span>
+              <Badge className="size-[18px]" />
               Assign BIBs
             </button>
           </div>
@@ -82,7 +82,7 @@ export default async function OrganizerRunnersPage() {
 
         {/* Search + filter */}
         <div className="bg-card rounded-xl p-3 border border-muted flex items-center gap-3">
-          <span className="text-muted-foreground size-[20px] ml-1"><Search className="text-muted-foreground size-[20px] ml-1" /></span>
+          <Search className="text-muted-foreground size-[20px] ml-1" />
           <input
             className="flex-1 bg-transparent text-foreground text-[14px] leading-[20px] focus:outline-none placeholder:text-muted-foreground"
             placeholder="Search by name, BIB number, email..."
@@ -148,7 +148,7 @@ export default async function OrganizerRunnersPage() {
                   </div>
                   <div className="text-right">
                     <button className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors">
-                      <span className="size-[18px]"><MoreHorizontal className="size-[18px]" /></span>
+                      <MoreHorizontal className="size-[18px]" />
                     </button>
                   </div>
                 </div>
@@ -156,7 +156,7 @@ export default async function OrganizerRunnersPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-              <span className="size-[48px] mb-3"><Badge className="size-[48px] mb-3" /></span>
+              <Badge className="size-[48px] mb-3" />
               <p className="text-[14px] font-medium">No runners registered yet</p>
               <p className="text-[12px] mt-1">Create and publish an event to accept registrations</p>
             </div>

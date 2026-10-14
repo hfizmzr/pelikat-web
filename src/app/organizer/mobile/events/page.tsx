@@ -59,7 +59,7 @@ function statusChip(status: string) {
     published: { label: 'Open', cls: 'bg-primary/15 text-primary' },
     draft: { label: 'Draft', cls: 'bg-primary/15 text-primary' },
     completed: { label: 'Done', cls: 'bg-muted-foreground/15 text-muted-foreground' },
-    cancelled: { label: 'Cancelled', cls: 'bg-red-300/15 text-red-300' },
+    cancelled: { label: 'Cancelled', cls: 'bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300' },
   }
   const s = map[status] || { label: status, cls: 'bg-accent text-muted-foreground' }
   return (
@@ -88,7 +88,7 @@ export default async function OrganizerMobileEventsPage() {
             href="/organizer/mobile/events/new"
             className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold active:scale-95 transition-transform"
           >
-            <span className="size-[14px]"><Plus className="size-[14px]" /></span>
+            <Plus className="size-[14px]" />
             New
           </Link>
         </div>
@@ -114,12 +114,12 @@ export default async function OrganizerMobileEventsPage() {
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground mb-3">
                       <span className="flex items-center gap-1">
-                        <span className="size-[13px] text-primary"><Calendar className="size-[13px] text-primary" /></span>
+                        <Calendar className="size-[13px] text-primary" />
                         {new Date(event.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                       {event.location && (
                         <span className="flex items-center gap-1">
-                          <span className="size-[13px] text-success"><MapPin className="size-[13px] text-success" /></span>
+                          <MapPin className="size-[13px] text-success" />
                           {event.location}
                         </span>
                       )}
@@ -145,7 +145,7 @@ export default async function OrganizerMobileEventsPage() {
                         href={`/organizer/mobile/scanner`}
                         className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold active:scale-95 transition-transform"
                       >
-                        <span className="size-[14px]"><QrCode className="size-[14px]" /></span>
+                        <QrCode className="size-[14px]" />
                         Check-in
                       </Link>
                     </div>
@@ -169,7 +169,7 @@ export default async function OrganizerMobileEventsPage() {
                   className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/30"
                 >
                   <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                    <span className="size-[18px] text-muted-foreground"><CalendarDays className="size-[18px] text-muted-foreground" /></span>
+                    <CalendarDays className="size-[18px] text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-medium text-muted-foreground truncate">{event.name}</p>
@@ -186,7 +186,7 @@ export default async function OrganizerMobileEventsPage() {
 
         {events.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-            <span className="size-[48px] mb-3"><CalendarX className="size-[48px] mb-3" /></span>
+            <CalendarX className="size-[48px] mb-3" />
             <p className="text-[14px] font-medium">No events yet</p>
             <p className="text-[12px] mt-1">Create your first running event</p>
             <Link

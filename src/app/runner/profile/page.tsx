@@ -140,7 +140,7 @@ export default function RunnerProfilePage() {
   if (loading) {
     return (
       <div className="flex flex-col w-full min-h-full bg-background items-center justify-center">
-        <span className="size-[32px] text-muted-foreground animate-spin"><LoaderCircle className="size-[32px] text-muted-foreground animate-spin" /></span>
+        <LoaderCircle className="size-[32px] text-muted-foreground animate-spin" />
       </div>
     );
   }
@@ -151,7 +151,7 @@ export default function RunnerProfilePage() {
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
-            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
             <h1 className="text-[16px] font-bold text-foreground leading-tight">
@@ -233,7 +233,7 @@ export default function RunnerProfilePage() {
                 <option value="M">Male</option>
                 <option value="F">Female</option>
               </select>
-              <span className="absolute right-4 top-9 text-muted-foreground pointer-events-none"><ChevronDown className="absolute right-4 top-9 text-muted-foreground pointer-events-none" /></span>
+              <ChevronDown className="absolute right-4 top-9 text-muted-foreground pointer-events-none" />
             </div>
             <div className="flex flex-col gap-1.5 relative">
               <label htmlFor="t_shirt_size" className="text-[12px] font-bold text-muted-foreground ml-1">T-Shirt Size</label>
@@ -251,7 +251,7 @@ export default function RunnerProfilePage() {
                 <option value="XL">XL</option>
                 <option value="XXL">XXL</option>
               </select>
-              <span className="absolute right-4 top-9 text-muted-foreground pointer-events-none"><ChevronDown className="absolute right-4 top-9 text-muted-foreground pointer-events-none" /></span>
+              <ChevronDown className="absolute right-4 top-9 text-muted-foreground pointer-events-none" />
             </div>
           </div>
         </section>
@@ -320,7 +320,7 @@ export default function RunnerProfilePage() {
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
           <div className="p-5 border-b border-border/60">
             <h3 className="text-[16px] font-bold text-foreground flex items-center gap-2">
-              <span className="size-[20px] text-primary"><Keyboard className="size-[20px] text-primary" /></span>
+              <Keyboard className="size-[20px] text-primary" />
               Enter IC/Passport Manually
             </h3>
             <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">
@@ -331,7 +331,7 @@ export default function RunnerProfilePage() {
           <div className="p-5 flex flex-col gap-4">
             {profile?.ic_encrypted ? (
               <div className="flex items-center gap-2 rounded-xl bg-success/10 border border-success/20 px-4 py-3 text-[13px] text-success font-medium">
-                <span className="size-[18px]"><ShieldCheck className="size-[18px]" /></span>
+                <ShieldCheck className="size-[18px]" />
                 IC/Passport number securely stored
               </div>
             ) : (
@@ -359,12 +359,12 @@ export default function RunnerProfilePage() {
                 >
                   {icSaving ? (
                     <>
-                      <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
+                      <LoaderCircle className="size-[18px] animate-spin" />
                       Saving...
                     </>
                   ) : (
                     <>
-                      <span className="size-[18px]"><Lock className="size-[18px]" /></span>
+                      <Lock className="size-[18px]" />
                       Save Encrypted
                     </>
                   )}
@@ -372,14 +372,14 @@ export default function RunnerProfilePage() {
 
                 {icSaved && (
                   <div className="flex items-center gap-2 rounded-xl bg-success/10 border border-success/20 px-4 py-3 text-[13px] text-success font-medium">
-                    <span className="size-[18px]"><CircleCheck className="size-[18px]" /></span>
+                    <CircleCheck className="size-[18px]" />
                     IC number saved securely
                   </div>
                 )}
 
                 {icError && (
-                  <div className="p-3 rounded-lg bg-red-300/10 border border-red-300/20 text-red-300 text-[12px] flex items-center gap-2">
-                    <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
+                  <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+                    <CircleAlert className="size-[16px]" />
                     {icError}
                   </div>
                 )}
@@ -395,7 +395,7 @@ export default function RunnerProfilePage() {
         >
           {saving ? (
             <>
-              <span className="size-[20px] animate-spin"><LoaderCircle className="size-[20px] animate-spin" /></span>
+              <LoaderCircle className="size-[20px] animate-spin" />
               Saving...
             </>
           ) : (
@@ -404,14 +404,14 @@ export default function RunnerProfilePage() {
         </button>
 
         {saveError && (
-          <p className="text-[12px] text-red-300 mt-2 text-center">{saveError}</p>
+          <p className="text-[12px] text-red-500 dark:text-red-300 mt-2 text-center">{saveError}</p>
         )}
 
         {/* Danger Zone */}
-        <section className="bg-card rounded-2xl border border-red-300/30 overflow-hidden mt-8">
-          <div className="p-5 border-b border-red-300/20 bg-red-300/5">
-            <h2 className="text-[16px] font-bold text-red-300 flex items-center gap-2">
-              <span className="size-[20px]"><TriangleAlert className="size-[20px]" /></span>
+        <section className="bg-card rounded-2xl border border-red-500/40 dark:border-red-500 dark:border-red-300/30 overflow-hidden mt-8">
+          <div className="p-5 border-b border-red-500/30 dark:border-red-500 dark:border-red-300/20 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/5">
+            <h2 className="text-[16px] font-bold text-red-500 dark:text-red-300 flex items-center gap-2">
+              <TriangleAlert className="size-[20px]" />
               Danger Zone
             </h2>
           </div>
@@ -423,7 +423,7 @@ export default function RunnerProfilePage() {
             {deleteStep === 'idle' && (
               <button 
                 onClick={() => setDeleteStep('confirm')}
-                className="py-3 px-4 rounded-xl bg-red-300/10 text-red-300 text-[13px] font-bold border border-red-300/20 active:bg-red-300/20 transition-colors"
+                className="py-3 px-4 rounded-xl bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[13px] font-bold border border-red-500/30 dark:border-red-500 dark:border-red-300/20 active:bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20 transition-colors"
               >
                 Delete My Account
               </button>
@@ -432,7 +432,7 @@ export default function RunnerProfilePage() {
             {deleteStep === 'confirm' && (
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="delete-confirm" className="text-[12px] font-bold text-red-300 ml-1">
+                  <label htmlFor="delete-confirm" className="text-[12px] font-bold text-red-500 dark:text-red-300 ml-1">
                     Type <span className="font-extrabold">DELETE</span> to confirm
                   </label>
                   <input
@@ -441,7 +441,7 @@ export default function RunnerProfilePage() {
                     value={deleteConfirm}
                     onChange={(e) => setDeleteConfirm(e.target.value)}
                     placeholder="DELETE"
-                    className="w-full h-12 px-4 rounded-xl bg-muted border border-red-300/30 text-[14px] text-foreground focus:outline-none focus:border-red-300"
+                    className="w-full h-12 px-4 rounded-xl bg-muted border border-red-500/40 dark:border-red-500 dark:border-red-300/30 text-[14px] text-foreground focus:outline-none focus:border-red-500 dark:border-red-300"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -457,7 +457,7 @@ export default function RunnerProfilePage() {
                         setDeleteStep('idle')
                       }
                     }}
-                    className="flex-[2] py-3 rounded-xl bg-red-300 text-red-900 text-[13px] font-bold active:scale-95 transition-transform disabled:opacity-50"
+                    className="flex-[2] py-3 rounded-xl bg-red-500 dark:bg-red-300 text-red-900 text-[13px] font-bold active:scale-95 transition-transform disabled:opacity-50"
                   >
                     Confirm Delete
                   </button>
@@ -475,15 +475,15 @@ export default function RunnerProfilePage() {
             )}
 
             {deleteStep === 'deleting' && (
-              <div className="flex items-center justify-center gap-2 text-[13px] text-red-300 font-bold py-3 bg-red-300/10 rounded-xl">
-                <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
+              <div className="flex items-center justify-center gap-2 text-[13px] text-red-500 dark:text-red-300 font-bold py-3 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 rounded-xl">
+                <LoaderCircle className="size-[18px] animate-spin" />
                 Deleting...
               </div>
             )}
 
             {deleteError && (
-              <div className="p-3 rounded-lg bg-red-300/10 border border-red-300/20 text-red-300 text-[12px] flex items-center gap-2">
-                <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
+              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+                <CircleAlert className="size-[16px]" />
                 {deleteError}
               </div>
             )}

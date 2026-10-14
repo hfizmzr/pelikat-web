@@ -69,14 +69,14 @@ export default async function RunnerEventsPage({
         <div className="h-14 flex items-center justify-between">
           <h1 className="text-[20px] font-bold text-foreground tracking-tight">Explore Events</h1>
           <button className="w-10 h-10 flex items-center justify-center rounded-full bg-card border border-border/60 text-muted-foreground active:scale-95 transition-transform">
-            <span className="size-[20px]"><ListFilter className="size-[20px]" /></span>
+            <ListFilter className="size-[20px]" />
           </button>
         </div>
 
         {/* Search Bar */}
         <form action="/runner/events" method="GET" className="mt-2 relative">
           <input type="hidden" name="period" value={period} />
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 size-[20px] text-muted-foreground"><Search className="absolute left-3 top-1/2 -translate-y-1/2 size-[20px] text-muted-foreground" /></span>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-[20px] text-muted-foreground" />
           <input
             type="search"
             name="search"
@@ -89,7 +89,7 @@ export default async function RunnerEventsPage({
               href={`/runner/events?period=${period}`}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-accent text-foreground"
             >
-              <span className="size-[14px]"><X className="size-[14px]" /></span>
+              <X className="size-[14px]" />
             </Link>
           )}
         </form>
@@ -120,7 +120,7 @@ export default async function RunnerEventsPage({
         {joinedEvents.length > 0 && !search && (
           <section className="flex flex-col gap-3">
             <h2 className="text-[15px] font-bold text-foreground tracking-tight flex items-center gap-2">
-              <span className="size-[18px] text-success"><UserPlus className="size-[18px] text-success" /></span>
+              <UserPlus className="size-[18px] text-success" />
               Your Registered Events
             </h2>
             <div className="flex overflow-x-auto gap-3 pb-2 -mx-5 px-5 snap-x hide-scrollbar">
@@ -144,7 +144,7 @@ export default async function RunnerEventsPage({
                       {event.name}
                     </h3>
                     <div className="mt-auto flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <span className="size-[14px]"><Tag className="size-[14px]" /></span>
+                      <Tag className="size-[14px]" />
                       <span className="truncate">{reg?.race_categories?.name}</span>
                       <span className="mx-1">•</span>
                       <span className="font-mono text-muted-foreground">BIB {reg?.bib_number || 'TBA'}</span>
@@ -174,7 +174,7 @@ export default async function RunnerEventsPage({
                     {/* Placeholder for event banner image */}
                     <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent opacity-80" />
                     <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-background/80 backdrop-blur-md border border-border flex items-center gap-1.5">
-                      <span className="size-[14px] text-primary"><Calendar className="size-[14px] text-primary" /></span>
+                      <Calendar className="size-[14px] text-primary" />
                       <span className="text-[11px] font-bold text-foreground">
                         {new Date(event.event_date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
@@ -186,7 +186,7 @@ export default async function RunnerEventsPage({
                     </h3>
                     {event.location && (
                       <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground mb-3">
-                        <span className="size-[14px]"><MapPin className="size-[14px]" /></span>
+                        <MapPin className="size-[14px]" />
                         <span className="truncate">{event.location}</span>
                       </p>
                     )}
@@ -206,7 +206,7 @@ export default async function RunnerEventsPage({
             ) : (
               <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-2xl bg-card border border-border/40">
                 <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center mb-3">
-                  <span className="size-[24px] text-muted-foreground"><SearchX className="size-[24px] text-muted-foreground" /></span>
+                  <SearchX className="size-[24px] text-muted-foreground" />
                 </div>
                 <p className="text-[14px] font-bold text-foreground mb-1">
                   {search ? 'No events found' : 'No events available'}

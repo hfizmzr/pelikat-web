@@ -29,7 +29,7 @@ const APPLICANT_COLORS = [
   { bg: 'bg-primary/20', text: 'text-primary' },
   { bg: 'bg-success/20', text: 'text-success' },
   { bg: 'bg-primary/20', text: 'text-primary' },
-  { bg: 'bg-red-300/20', text: 'text-red-300' },
+  { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
 ]
 
 function getInitials(name: string) {
@@ -135,7 +135,7 @@ export function ApplicantTable({
   if (loading) {
     return (
       <div className="rounded-xl bg-card border border-border/30 p-8 text-center text-muted-foreground font-inter text-[13px]">
-        <span className="text-primary size-[32px] animate-pulse block mb-2"><UserSearch className="text-primary size-[32px] animate-pulse block mb-2" /></span>
+        <UserSearch className="text-primary size-[32px] animate-pulse block mb-2" />
         Loading applicants...
       </div>
     )
@@ -148,7 +148,7 @@ export function ApplicantTable({
         <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl shadow-2xl">
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
-              <span className="size-[20px] text-red-300"><X className="size-[20px] text-red-300" /></span>
+              <X className="size-[20px] text-red-500 dark:text-red-300" />
               Reject Application
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-inter text-[13px]">
@@ -165,10 +165,10 @@ export function ApplicantTable({
               Cancel
             </button>
             <button
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-300/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-500 dark:border-red-300/20"
               onClick={confirmReject}
             >
-              <span className="size-[18px]"><X className="size-[18px]" /></span>
+              <X className="size-[18px]" />
               Reject
             </button>
           </div>
@@ -180,7 +180,7 @@ export function ApplicantTable({
         <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl shadow-2xl">
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
-              <span className="size-[20px] text-red-300"><Trash2 className="size-[20px] text-red-300" /></span>
+              <Trash2 className="size-[20px] text-red-500 dark:text-red-300" />
               Delete Application
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-inter text-[13px]">
@@ -197,10 +197,10 @@ export function ApplicantTable({
               Cancel
             </button>
             <button
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-300/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-500 dark:border-red-300/20"
               onClick={confirmDelete}
             >
-              <span className="size-[18px]"><Trash2 className="size-[18px]" /></span>
+              <Trash2 className="size-[18px]" />
               Delete
             </button>
           </div>
@@ -224,7 +224,7 @@ export function ApplicantTable({
             {paginatedApplicants.length === 0 ? (
               <tr>
                 <td colSpan={4} className="py-12 text-center text-muted-foreground">
-                  <span className="size-[32px] block mb-2 text-border"><Inbox className="size-[32px] block mb-2 text-border" /></span>
+                  <Inbox className="size-[32px] block mb-2 text-border" />
                   No pending applications.
                 </td>
               </tr>
@@ -262,24 +262,24 @@ export function ApplicantTable({
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 hover:bg-success/20 text-success text-[12px] font-semibold transition-colors border border-success/20 font-inter"
                           onClick={() => onApprove(applicant)}
                         >
-                          <span className="size-[16px]"><CircleCheck className="size-[16px]" /></span>
+                          <CircleCheck className="size-[16px]" />
                           Approve
                         </button>
                         {/* Reject */}
                         <button
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-300/10 hover:bg-red-300/20 text-red-300 text-[12px] font-semibold transition-colors border border-red-300/20 font-inter"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 hover:bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20 text-red-500 dark:text-red-300 text-[12px] font-semibold transition-colors border border-red-500/30 dark:border-red-500 dark:border-red-300/20 font-inter"
                           onClick={() => handleRejectClick(applicant)}
                         >
-                          <span className="size-[16px]"><X className="size-[16px]" /></span>
+                          <X className="size-[16px]" />
                           Reject
                         </button>
                         {/* Delete */}
                         <button
-                          className="p-1.5 rounded-lg bg-card hover:bg-red-800/20 text-muted-foreground hover:text-red-300 transition-colors border border-border/30"
+                          className="p-1.5 rounded-lg bg-card hover:bg-red-800/20 text-muted-foreground hover:text-red-500 dark:text-red-300 transition-colors border border-border/30"
                           onClick={() => handleDeleteClick(applicant)}
                           title="Delete application"
                         >
-                          <span className="size-[18px]"><Trash2 className="size-[18px]" /></span>
+                          <Trash2 className="size-[18px]" />
                         </button>
                       </div>
                     </td>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import type { LucideIcon } from "lucide-react"
-import { History, Loader2, Lock, RefreshCw, Shield, ShieldCheck, UserCog } from "lucide-react"
+import { BadgeCheck, History, Loader2, Lock, LogIn, RefreshCw, Shield, ShieldCheck, UserCog } from "lucide-react"
 import { toast } from 'sonner'
 
 interface IAMRole {
@@ -20,6 +20,20 @@ interface SecurityPolicy {
   icon: LucideIcon
   color: string
   detail: string
+}
+
+// API serves legacy string icon names; map them to Lucide components here.
+const API_ICON_MAP: Record<string, LucideIcon> = {
+  lock: Lock,
+  verified_user: BadgeCheck,
+  policy: Shield,
+  encrypted: Lock,
+  history: History,
+  login: LogIn,
+}
+function resolveApiIcon(icon: LucideIcon | string): LucideIcon {
+  if (typeof icon === 'string') return API_ICON_MAP[icon] ?? Shield
+  return icon
 }
 
 interface SecurityStats {
@@ -44,7 +58,7 @@ export default function AdminSecurityPage() {
       const json = await res.json()
       if (json.success) {
         setRoles(json.iamRoles)
-        setPolicies(json.policies)
+        setPolicies(Array.isArray(json.policies) ? json.policies.map((p: SecurityPolicy) => ({ ...p, icon: resolveApiIcon(p.icon) })) : json.policies)
         setStats(json.stats)
         if (isManual) toast.success('Security audit refreshed')
       } else {
@@ -107,7 +121,7 @@ export default function AdminSecurityPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="size-[16px] text-primary"><Lock className="size-[16px] text-primary" /></span>
+            <Lock className="size-[16px] text-primary" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-primary">IAM & Compliance</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Security & Access Control</h1>
@@ -119,7 +133,7 @@ export default function AdminSecurityPage() {
           disabled={refreshing}
           className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
         >
-          <span className="size-[16px] ${refreshing ? 'animate-spin' : ''}"><RefreshCw className="size-[16px] ${refreshing ? 'animate-spin' : ''}" /></span>
+          <RefreshCw className={`size-[16px] ${refreshing ? 'animate-spin' : ''}`} />
           <span>Re-audit Access Controls</span>
         </button>
       </div>
@@ -147,7 +161,7 @@ export default function AdminSecurityPage() {
       <div className="rounded-xl bg-card border border-border/30 overflow-hidden shadow-lg">
         <div className="p-5 border-b border-border/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-primary size-[20px]"><UserCog className="text-primary size-[20px]" /></span>
+            <UserCog className="text-primary size-[20px]" />
             <h2 className="font-jakarta font-semibold text-[18px] text-foreground">IAM Role Access Matrix</h2>
           </div>
           <span className="text-[11px] text-muted-foreground font-mono">Live Identity Counts</span>
@@ -206,7 +220,7 @@ export default function AdminSecurityPage() {
       <div className="rounded-xl bg-card border border-border/30 overflow-hidden shadow-lg">
         <div className="p-5 border-b border-border/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-success size-[20px]"><ShieldCheck className="text-success size-[20px]" /></span>
+            <ShieldCheck className="text-success size-[20px]" />
             <h2 className="font-jakarta font-semibold text-[18px] text-foreground">Security Posture & Enforcement Checklist</h2>
           </div>
           <span className="text-[11px] text-success font-mono flex items-center gap-1.5">
@@ -236,7 +250,7 @@ export default function AdminSecurityPage() {
                 <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border self-start sm:self-center ${
                   p.status === 'enforced'
                     ? 'text-success bg-success/10 border-success/20'
-                    : 'text-red-300 bg-red-300/10 border-red-300/20'
+                    : 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20'
                 }`}>
                   {p.status.toUpperCase()}
                 </span>

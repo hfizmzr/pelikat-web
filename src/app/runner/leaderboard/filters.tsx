@@ -57,7 +57,7 @@ export function LeaderboardFilters({
             <option key={e.id} value={e.id}>{e.name}</option>
           ))}
         </select>
-        <span className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]" /></span>
+        <ChevronDown className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]" />
       </div>
 
       {showCategories && categories && categories.length > 0 && (
@@ -72,7 +72,7 @@ export function LeaderboardFilters({
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <span className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]" /></span>
+          <ChevronDown className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]" />
         </div>
       )}
 
@@ -86,7 +86,7 @@ export function LeaderboardFilters({
           <option value="M">Male</option>
           <option value="F">Female</option>
         </select>
-        <span className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]"><ChevronDown className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]" /></span>
+        <ChevronDown className="absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none size-[20px]" />
       </div>
     </div>
   )

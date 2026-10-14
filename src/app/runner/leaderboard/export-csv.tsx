@@ -31,7 +31,7 @@ export function ExportCSV({
       onClick={handleExport}
       className="py-2.5 px-3 rounded-xl bg-accent border border-border text-foreground text-[13px] font-bold flex items-center gap-1.5 active:scale-95 transition-transform shrink-0"
     >
-      <span className="size-[18px]"><Download className="size-[18px]" /></span>
+      <Download className="size-[18px]" />
       <span className="hidden sm:inline">Export</span>
     </button>
   )

@@ -24,11 +24,11 @@ export interface LeaderboardFilters {
 function getRankIcon(rank: number) {
   switch (rank) {
     case 1:
-      return <span className="text-amber-400 size-[28px] drop-shadow-[0_0_8px_rgba(227,196,91,0.5)]"><Crown className="text-amber-400 size-[28px] drop-shadow-[0_0_8px_rgba(227,196,91,0.5)]" /></span>
+      return <Crown className="text-amber-500 dark:text-amber-400 size-[28px] drop-shadow-[0_0_8px_rgba(227,196,91,0.5)]" />
     case 2:
-      return <span className="text-muted-foreground size-[24px]"><Crown className="text-muted-foreground size-[24px]" /></span>
+      return <Crown className="text-muted-foreground size-[24px]" />
     case 3:
-      return <span className="text-amber-700 size-[24px]"><Crown className="text-amber-700 size-[24px]" /></span>
+      return <Crown className="text-amber-700 size-[24px]" />
     default:
       return <span className="text-muted-foreground font-bold text-[14px]">#{rank}</span>
   }
@@ -152,7 +152,7 @@ export function LiveLeaderboard({
           onClick={() => setIsLive(!isLive)}
           className="flex items-center gap-1.5 text-[12px] font-bold text-muted-foreground bg-muted px-2.5 py-1 rounded-full border border-border active:scale-95 transition-transform"
         >
-          <span className="size-[14px] ${isLive ? 'animate-spin' : ''}"><RefreshCw className="size-[14px] ${isLive ? 'animate-spin' : ''}" /></span>
+          <RefreshCw className={`size-[14px] ${isLive ? 'animate-spin' : ''}`} />
           {isLive ? "Pause" : "Resume"}
         </button>
       </div>
@@ -224,7 +224,7 @@ export function LiveLeaderboard({
 
       {entries.length === 0 && (
         <div className="bg-card rounded-2xl border border-border/60 p-8 flex flex-col items-center text-center mt-4">
-          <span className="size-[48px] text-muted-foreground/50 mb-3"><Crown className="size-[48px] text-muted-foreground/50 mb-3" /></span>
+          <Crown className="size-[48px] text-muted-foreground/50 mb-3" />
           <p className="text-[14px] font-bold text-foreground mb-1">No runners yet</p>
           <p className="text-[12px] text-muted-foreground">The leaderboard is currently empty</p>
         </div>

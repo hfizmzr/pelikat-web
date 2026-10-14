@@ -53,7 +53,7 @@ export default async function OrganizerRepcPage() {
           </div>
           <Link href="/organizer/events">
             <button className="px-4 py-2.5 bg-success/20 text-success hover:bg-success/30 text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 transition-colors border border-success/20 shadow-sm">
-              <span className="size-[18px]"><QrCode className="size-[18px]" /></span>
+              <QrCode className="size-[18px]" />
               Launch Scanner HUD
             </button>
           </Link>
@@ -117,11 +117,11 @@ export default async function OrganizerRepcPage() {
                         <div>
                           <div className="text-[15px] leading-[20px] font-semibold text-foreground">{event.name}</div>
                           <div className="text-[12px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                            <span className="size-[14px]"><MapPin className="size-[14px]" /></span>
+                            <MapPin className="size-[14px]" />
                             {event.location || 'TBD'} • {new Date(event.event_date).toLocaleDateString('en-MY')}
                           </div>
                         </div>
-                        <span className={`text-[14px] font-semibold ${rate >= 80 ? 'text-success' : rate >= 50 ? 'text-primary' : 'text-red-300'}`}>
+                        <span className={`text-[14px] font-semibold ${rate >= 80 ? 'text-success' : rate >= 50 ? 'text-primary' : 'text-red-500 dark:text-red-300'}`}>
                           {rate}%
                         </span>
                       </div>
@@ -132,7 +132,7 @@ export default async function OrganizerRepcPage() {
                         </div>
                         <div className="w-full bg-accent rounded-full h-2 overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all ${rate >= 80 ? 'bg-success' : rate >= 50 ? 'bg-primary' : 'bg-red-300'}`}
+                            className={`h-full rounded-full transition-all ${rate >= 80 ? 'bg-success' : rate >= 50 ? 'bg-primary' : 'bg-red-500 dark:bg-red-300'}`}
                             style={{ width: `${Math.max(rate, 1)}%` }}
                           />
                         </div>
@@ -140,7 +140,7 @@ export default async function OrganizerRepcPage() {
                     </div>
                     <Link href={`/organizer/events/${event.id}/checkin`}>
                       <button className="shrink-0 px-4 py-2 bg-card hover:bg-accent text-foreground text-[12px] font-medium rounded-lg flex items-center gap-1.5 border border-border transition-colors">
-                        <span className="size-[16px]"><QrCode className="size-[16px]" /></span>
+                        <QrCode className="size-[16px]" />
                         Check-in
                       </button>
                     </Link>
@@ -153,7 +153,7 @@ export default async function OrganizerRepcPage() {
 
         {activeEvents.length === 0 && (
           <div className="bg-card rounded-xl border border-muted p-12 flex flex-col items-center justify-center text-center">
-            <span className="size-[64px] text-border mb-4"><QrCode className="size-[64px] text-border mb-4" /></span>
+            <QrCode className="size-[64px] text-border mb-4" />
             <h3 className="text-[18px] font-semibold text-foreground mb-2">No active events</h3>
             <p className="text-[14px] text-muted-foreground">Publish an event to enable REPC collection tracking</p>
           </div>

@@ -50,7 +50,7 @@ export default function CategoryBreakdownChart({ data }: { data: CategoryStat[] 
   if (data.length === 0) {
     return (
       <div className="p-8 flex flex-col items-center text-center">
-        <span className="size-[32px] text-muted-foreground/50 mb-2"><BarChart3 className="size-[32px] text-muted-foreground/50 mb-2" /></span>
+        <BarChart3 className="size-[32px] text-muted-foreground/50 mb-2" />
         <p className="text-[13px] text-muted-foreground">No categories defined yet</p>
       </div>
     )

@@ -261,7 +261,7 @@ export default function OrganizerAnalyticsCharts({ data }: { data: AnalyticsData
 
 function EmptyState({ icon, message }: { icon: 'chart' | 'money' | 'users'; message: string }) {
   return (
-    <div className="h-[200px] flex items-center justify-center text-border">
+    <div className="h-[200px] flex items-center justify-center text-muted-foreground">
       <div className="text-center">
         {icon === 'chart' && <BarChart3 className="size-[48px] mb-2 opacity-50" />}
         {icon === 'money' && <Wallet className="size-[48px] mb-2 opacity-50" />}

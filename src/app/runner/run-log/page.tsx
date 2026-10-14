@@ -190,7 +190,7 @@ export default function RunnerRunLogPage() {
   if (loading) {
     return (
       <div className="flex flex-col w-full min-h-full bg-background items-center justify-center">
-        <span className="size-[32px] text-muted-foreground animate-spin"><LoaderCircle className="size-[32px] text-muted-foreground animate-spin" /></span>
+        <LoaderCircle className="size-[32px] text-muted-foreground animate-spin" />
       </div>
     )
   }
@@ -200,7 +200,7 @@ export default function RunnerRunLogPage() {
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
-            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
             <h1 className="text-[16px] font-bold text-foreground leading-tight">
@@ -215,18 +215,18 @@ export default function RunnerRunLogPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
-            <span className="size-[20px] text-primary mb-1"><Map className="size-[20px] text-primary mb-1" /></span>
+            <Map className="size-[20px] text-primary mb-1" />
             <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider">Total Distance</span>
             <span className="text-[20px] font-extrabold text-foreground font-mono leading-none">{totalDistance.toFixed(1)} <span className="text-[14px]">KM</span></span>
           </div>
           <div className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
-            <span className="size-[20px] text-primary mb-1"><Clock className="size-[20px] text-primary mb-1" /></span>
+            <Clock className="size-[20px] text-primary mb-1" />
             <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider">Total Time</span>
             <span className="text-[16px] font-bold text-foreground mt-1 leading-none">{formatTime(totalTime)}</span>
           </div>
           <div className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-1 col-span-2 active:scale-[0.98] transition-transform">
             <div className="flex justify-between items-center">
-              <span className="size-[20px] text-success"><Footprints className="size-[20px] text-success" /></span>
+              <Footprints className="size-[20px] text-success" />
               <span className="text-[20px] font-extrabold text-foreground font-mono leading-none">{runLogs.length}</span>
             </div>
             <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider mt-2">Total Runs Logged</span>
@@ -257,7 +257,7 @@ export default function RunnerRunLogPage() {
               href="/runner/run-log/track"
               className="w-full py-3.5 rounded-xl border border-success/40 bg-success/5 text-success text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
-              <span className="size-[18px]"><Satellite className="size-[18px]" /></span>
+              <Satellite className="size-[18px]" />
               Start GPS Tracking
             </Link>
 
@@ -315,8 +315,8 @@ export default function RunnerRunLogPage() {
             </div>
 
             {logError && (
-              <div className="p-3 rounded-lg bg-red-300/10 border border-red-300/20 text-red-300 text-[12px] flex items-center gap-2">
-                <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
+              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+                <CircleAlert className="size-[16px]" />
                 {logError}
               </div>
             )}
@@ -328,12 +328,12 @@ export default function RunnerRunLogPage() {
             >
               {submitting ? (
                 <>
-                  <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
+                  <LoaderCircle className="size-[18px] animate-spin" />
                   Logging...
                 </>
               ) : (
                 <>
-                  <span className="size-[18px]"><Plus className="size-[18px]" /></span>
+                  <Plus className="size-[18px]" />
                   Log Run
                 </>
               )}
@@ -345,7 +345,7 @@ export default function RunnerRunLogPage() {
           <section className="bg-success/10 border border-success/30 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-success/20 blur-2xl rounded-full -mt-10 -mr-10 pointer-events-none" />
             <div className="flex items-center gap-2 text-success">
-              <span className="size-[24px]"><Trophy className="size-[24px]" /></span>
+              <Trophy className="size-[24px]" />
               <h2 className="text-[16px] font-bold">Badges Earned!</h2>
             </div>
             <div className="grid grid-cols-2 gap-3 relative z-10">
@@ -360,7 +360,7 @@ export default function RunnerRunLogPage() {
                       rel="noopener noreferrer"
                       className="mt-2 w-full py-1.5 rounded-md bg-success text-emerald-900 text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform"
                     >
-                      <span className="size-[12px]"><Download className="size-[12px]" /></span>
+                      <Download className="size-[12px]" />
                       Download Certificate
                     </a>
                   )}
@@ -409,9 +409,9 @@ export default function RunnerRunLogPage() {
                     </span>
                     <button 
                       onClick={() => handleDelete(log.id)}
-                      className="w-8 h-8 rounded-full bg-red-300/10 text-red-300 flex items-center justify-center active:scale-95 transition-transform"
+                      className="w-8 h-8 rounded-full bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 flex items-center justify-center active:scale-95 transition-transform"
                     >
-                      <span className="size-[16px]"><Trash2 className="size-[16px]" /></span>
+                      <Trash2 className="size-[16px]" />
                     </button>
                   </div>
                 </div>
@@ -419,7 +419,7 @@ export default function RunnerRunLogPage() {
             </div>
           ) : (
             <div className="bg-card rounded-2xl border border-border/60 p-8 flex flex-col items-center text-center">
-              <span className="size-[32px] text-muted-foreground/50 mb-2"><History className="size-[32px] text-muted-foreground/50 mb-2" /></span>
+              <History className="size-[32px] text-muted-foreground/50 mb-2" />
               <p className="text-[13px] text-muted-foreground">No runs logged yet</p>
             </div>
           )}

@@ -74,7 +74,7 @@ export default async function RunnerBibPage({
         type: 'svg',
         width: 220,
         margin: 1,
-        color: { dark: isCheckedIn ? '#22c55e' : '#f8fafc', light: '#00000000' },
+        color: { dark: isCheckedIn ? '#16a34a' : '#0f172a', light: '#ffffff' },
       })
     }
   } catch {
@@ -87,7 +87,7 @@ export default async function RunnerBibPage({
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
-            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <h1 className="flex-1 text-[16px] font-bold text-foreground text-center mr-8 truncate">
             Digital BIB
@@ -112,12 +112,12 @@ export default async function RunnerBibPage({
             <div className="relative z-10 flex flex-col items-center w-full">
               {isCheckedIn ? (
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success border border-success/20 mb-4">
-                  <span className="size-[16px]"><CircleCheck className="size-[16px]" /></span>
+                  <CircleCheck className="size-[16px]" />
                   <span className="text-[10px] font-bold tracking-wider uppercase">Checked In</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 mb-4">
-                  <span className="size-[16px]"><QrCode className="size-[16px]" /></span>
+                  <QrCode className="size-[16px]" />
                   <span className="text-[10px] font-bold tracking-wider uppercase">Ready for Scan</span>
                 </div>
               )}
@@ -130,15 +130,15 @@ export default async function RunnerBibPage({
               <div className="w-full h-px bg-gradient-to-r from-transparent via-accent to-transparent mb-6" />
 
               <div className="w-full flex justify-center mb-6">
-                <div className={`p-3 rounded-2xl ${isCheckedIn ? 'bg-success/5' : 'bg-foreground/5'} backdrop-blur-sm border border-border/40`}>
-                  {qrSvg ? (
+                {qrSvg ? (
+                  <div className="p-3 rounded-2xl bg-white border border-border/40 shadow-sm">
                     <div dangerouslySetInnerHTML={{ __html: qrSvg }} />
-                  ) : (
-                    <div className="w-[220px] h-[220px] flex items-center justify-center text-center text-red-300 text-[12px] px-4 border border-dashed border-red-300/30 rounded-xl">
-                      {qrError}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div className="w-[220px] h-[220px] flex items-center justify-center text-center text-red-500 text-[12px] px-4 border border-dashed border-red-500/40 rounded-xl">
+                    {qrError}
+                  </div>
+                )}
               </div>
 
               <div className="w-full flex flex-col gap-3 text-center mb-2">
@@ -174,13 +174,13 @@ export default async function RunnerBibPage({
           href={`/runner/events/${id}/bib/consent`}
           className="w-full py-3.5 mt-2 rounded-xl border border-border text-muted-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:bg-card transition-colors"
         >
-          <span className="size-[18px]"><Users className="size-[18px]" /></span>
+          <Users className="size-[18px]" />
           Generate Proxy Collection Code
         </Link>
         
         <div className="bg-card p-4 rounded-xl border border-border/40 w-full mt-2">
           <div className="flex items-center gap-2 mb-2">
-            <span className="size-[18px] text-primary"><Info className="size-[18px] text-primary" /></span>
+            <Info className="size-[18px] text-primary" />
             <span className="text-[13px] font-bold text-foreground">Instructions</span>
           </div>
           <ol className="text-[12px] text-muted-foreground space-y-2 list-decimal list-inside marker:text-muted-foreground">

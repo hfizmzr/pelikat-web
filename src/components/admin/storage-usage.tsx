@@ -50,14 +50,14 @@ export function StorageUsage() {
   const maxBucketSize = Math.max(...buckets.map((b) => b.size), 1)
 
   // Bucket color mapping
-  const bucketColors = ['bg-primary', 'bg-primary', 'bg-success', 'bg-red-300']
+  const bucketColors = ['bg-primary', 'bg-primary', 'bg-success', 'bg-red-500 dark:bg-red-300']
 
   return (
     <div className="rounded-xl bg-card p-5 shadow-md border border-border/30 flex flex-col gap-4 font-inter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-primary size-[20px]"><HardDrive className="text-primary size-[20px]" /></span>
+          <HardDrive className="text-primary size-[20px]" />
           <h3 className="font-semibold text-foreground text-[15px] font-jakarta">Storage Usage</h3>
         </div>
         <span className="text-[11px] text-muted-foreground font-mono">

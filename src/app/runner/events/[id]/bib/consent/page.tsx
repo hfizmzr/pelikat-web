@@ -123,7 +123,7 @@ export default function BibConsentPage({
   if (loading) {
     return (
       <div className="flex flex-col w-full min-h-full bg-background items-center justify-center">
-        <span className="size-[32px] text-muted-foreground animate-spin"><LoaderCircle className="size-[32px] text-muted-foreground animate-spin" /></span>
+        <LoaderCircle className="size-[32px] text-muted-foreground animate-spin" />
       </div>
     )
   }
@@ -137,7 +137,7 @@ export default function BibConsentPage({
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href={`/runner/events/${id}/bib`} className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
-            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
             <h1 className="text-[16px] font-bold text-foreground leading-tight">
@@ -156,8 +156,8 @@ export default function BibConsentPage({
         </div>
 
         {error && (
-          <div className="p-3 rounded-lg bg-red-300/10 border border-red-300/20 text-red-300 text-[12px] flex items-center gap-2">
-            <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
+          <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+            <CircleAlert className="size-[16px]" />
             {error}
           </div>
         )}
@@ -182,7 +182,7 @@ export default function BibConsentPage({
                     ? 'bg-success/10 text-success border border-success/20'
                     : consentStatus === 'used'
                       ? 'bg-primary/10 text-primary border border-primary/20'
-                      : 'bg-red-300/10 text-red-300 border border-red-300/20'
+                      : 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 border border-red-500/30 dark:border-red-500 dark:border-red-300/20'
                 }`}>
                   {canUseCurrentCode ? (
                     <CircleCheck className="size-[14px]" />
@@ -201,7 +201,7 @@ export default function BibConsentPage({
                 
                 {consentCode.expires_at && (
                   <p className="text-[11px] text-muted-foreground flex items-center justify-center gap-1">
-                    <span className="size-[14px]"><Clock className="size-[14px]" /></span>
+                    <Clock className="size-[14px]" />
                     Expires: {new Date(consentCode.expires_at).toLocaleString('en-MY', { 
                       month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
                     })}
@@ -228,7 +228,7 @@ export default function BibConsentPage({
                     disabled={!canUseCurrentCode}
                     className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
                   >
-                    <span className="size-[18px]"><Share2 className="size-[18px]" /></span>
+                    <Share2 className="size-[18px]" />
                     Share
                   </button>
                 </div>
@@ -239,7 +239,7 @@ export default function BibConsentPage({
                 >
                   {generating ? (
                     <>
-                      <span className="animate-spin size-[18px]"><LoaderCircle className="animate-spin size-[18px]" /></span>
+                      <LoaderCircle className="animate-spin size-[18px]" />
                       Generating...
                     </>
                   ) : (
@@ -249,7 +249,7 @@ export default function BibConsentPage({
               </div>
               
               <div className="mt-2 p-4 bg-muted rounded-xl flex items-start gap-3 border border-border/40">
-                <span className="size-[20px] text-primary shrink-0"><Info className="size-[20px] text-primary shrink-0" /></span>
+                <Info className="size-[20px] text-primary shrink-0" />
                 <p className="text-[12px] text-muted-foreground leading-relaxed">
                   {canUseCurrentCode
                     ? 'Give this active code to your proxy collector. They must show their own QR pass at the collection point.'
@@ -281,7 +281,7 @@ export default function BibConsentPage({
               >
                 {generating ? (
                   <>
-                    <span className="animate-spin size-[18px]"><LoaderCircle className="animate-spin size-[18px]" /></span>
+                    <LoaderCircle className="animate-spin size-[18px]" />
                     Generating...
                   </>
                 ) : (

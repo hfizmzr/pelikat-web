@@ -82,7 +82,7 @@ export default function AdminSettingsPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="size-[16px] text-primary"><ToggleRight className="size-[16px] text-primary" /></span>
+            <ToggleRight className="size-[16px] text-primary" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-primary font-inter">Platform Config</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Settings</h1>
@@ -94,7 +94,7 @@ export default function AdminSettingsPage() {
           className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all font-inter disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-          <span className="size-[18px]"><Save className="size-[18px]" /></span>
+          <Save className="size-[18px]" />
           Save Changes
         </button>
       </div>
@@ -102,7 +102,7 @@ export default function AdminSettingsPage() {
       {/* ── General Settings ─────────────────────────────────────────── */}
       <div className="rounded-xl bg-card border border-border/30 overflow-hidden">
         <div className="p-5 border-b border-border/30 flex items-center gap-2">
-          <span className="text-primary size-[20px]"><Settings className="text-primary size-[20px]" /></span>
+          <Settings className="text-primary size-[20px]" />
           <div>
             <h2 className="font-jakarta font-semibold text-[16px] text-foreground">General Settings</h2>
             <p className="text-[11px] text-muted-foreground font-inter">Basic platform identity and contact configuration</p>
@@ -138,7 +138,7 @@ export default function AdminSettingsPage() {
       {/* ── Feature Flags ─────────────────────────────────────────────── */}
       <div className="rounded-xl bg-card border border-border/30 overflow-hidden">
         <div className="p-5 border-b border-border/30 flex items-center gap-2">
-          <span className="text-primary size-[20px]"><ToggleRight className="text-primary size-[20px]" /></span>
+          <ToggleRight className="text-primary size-[20px]" />
           <div>
             <h2 className="font-jakarta font-semibold text-[16px] text-foreground">Feature Flags</h2>
             <p className="text-[11px] text-muted-foreground font-inter">Enable or disable platform features globally</p>
@@ -184,17 +184,17 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* ── Danger Zone ─────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-red-800/10 border border-red-300/20 overflow-hidden">
-        <div className="p-5 border-b border-red-300/10 flex items-center gap-2">
-          <span className="text-red-300 size-[20px]"><TriangleAlert className="text-red-300 size-[20px]" /></span>
+      <div className="rounded-xl bg-red-800/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 overflow-hidden">
+        <div className="p-5 border-b border-red-500 dark:border-red-300/10 flex items-center gap-2">
+          <TriangleAlert className="text-red-500 dark:text-red-300 size-[20px]" />
           <div>
-            <h2 className="font-jakarta font-semibold text-[16px] text-red-300">Danger Zone</h2>
+            <h2 className="font-jakarta font-semibold text-[16px] text-red-500 dark:text-red-300">Danger Zone</h2>
             <p className="text-[11px] text-muted-foreground font-inter">Irreversible platform-level actions</p>
           </div>
         </div>
         <div className="flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
-            <span className="size-[20px] text-red-300"><Construction className="size-[20px] text-red-300" /></span>
+            <Construction className="size-[20px] text-red-500 dark:text-red-300" />
             <div>
               <p className="text-[13px] font-semibold text-foreground font-inter">Maintenance Mode</p>
               <p className="text-[11px] text-muted-foreground font-inter">

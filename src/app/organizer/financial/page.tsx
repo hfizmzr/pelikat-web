@@ -80,7 +80,7 @@ export default async function OrganizerFinancialPage() {
             <p className="text-[14px] leading-[20px] text-muted-foreground">Revenue overview and connected payment gateway operations.</p>
           </div>
           <button className="px-4 py-2.5 bg-card hover:bg-card text-foreground text-[14px] leading-[20px] font-medium rounded-lg flex items-center gap-2 border border-muted transition-colors">
-            <span className="size-[18px]"><Download className="size-[18px]" /></span>
+            <Download className="size-[18px]" />
             Export Report
           </button>
         </div>
@@ -91,7 +91,7 @@ export default async function OrganizerFinancialPage() {
             <div className="flex items-center justify-between mb-4">
               <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">Gross Revenue</span>
               <div className="w-9 h-9 rounded-lg bg-card flex items-center justify-center text-success">
-                <span className="size-[20px]"><Banknote className="size-[20px]" /></span>
+                <Banknote className="size-[20px]" />
               </div>
             </div>
             <div className="flex items-baseline gap-1.5">
@@ -99,7 +99,7 @@ export default async function OrganizerFinancialPage() {
               <span className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-foreground">{grossRevenue.toLocaleString('en-MY', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
             </div>
             <div className="flex items-center gap-1.5 text-success text-[11px] mt-2">
-              <span className="size-[14px]"><CircleCheck className="size-[14px]" /></span>
+              <CircleCheck className="size-[14px]" />
               <span>{paidRegs.length} confirmed transactions</span>
             </div>
           </div>
@@ -108,7 +108,7 @@ export default async function OrganizerFinancialPage() {
             <div className="flex items-center justify-between mb-4">
               <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">Pending Revenue</span>
               <div className="w-9 h-9 rounded-lg bg-card flex items-center justify-center text-primary">
-                <span className="size-[20px]"><Clock className="size-[20px]" /></span>
+                <Clock className="size-[20px]" />
               </div>
             </div>
             <div className="flex items-baseline gap-1.5">
@@ -116,7 +116,7 @@ export default async function OrganizerFinancialPage() {
               <span className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-foreground">{pendingRevenue.toLocaleString('en-MY', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
             </div>
             <div className="flex items-center gap-1.5 text-primary text-[11px] mt-2">
-              <span className="size-[14px]"><Info className="size-[14px]" /></span>
+              <Info className="size-[14px]" />
               <span>Awaiting payment confirmation</span>
             </div>
           </div>
@@ -194,7 +194,7 @@ export default async function OrganizerFinancialPage() {
                 <div key={name} className="flex items-center justify-between px-6 py-4 hover:bg-card transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-primary">
-                      <span className="size-[18px]"><Flag className="size-[18px]" /></span>
+                      <Flag className="size-[18px]" />
                     </div>
                     <div>
                       <div className="text-[14px] leading-[20px] font-medium text-foreground">{name}</div>

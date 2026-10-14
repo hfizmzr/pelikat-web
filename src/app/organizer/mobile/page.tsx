@@ -102,7 +102,7 @@ function StatCard({
       text: 'text-success',
       bar: 'bg-success',
     },
-    error: { bg: 'bg-red-300/10', text: 'text-red-300', bar: 'bg-red-300' },
+    error: { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10', text: 'text-red-500 dark:text-red-300', bar: 'bg-red-500 dark:bg-red-300' },
   }
   const c = colorMap[color]
 
@@ -135,7 +135,7 @@ export default async function OrganizerMobileHome() {
     return (
       <div className="flex items-center justify-center min-h-dvh text-muted-foreground">
         <div className="text-center">
-          <span className="size-[48px] mb-3 block"><Lock className="size-[48px] mb-3 block" /></span>
+          <Lock className="size-[48px] mb-3 block" />
           <p className="text-[14px]">Session expired. Please log in.</p>
         </div>
       </div>
@@ -170,7 +170,7 @@ export default async function OrganizerMobileHome() {
           </div>
           <div className="flex items-center gap-2">
             <button className="relative w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
-              <span className="size-[22px]"><Bell className="size-[22px]" /></span>
+              <Bell className="size-[22px]" />
               <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary ring-2 ring-background" />
             </button>
           </div>
@@ -214,13 +214,13 @@ export default async function OrganizerMobileHome() {
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground mt-1 text-[11px]">
                   {data.nextEvent.location && (
                     <span className="inline-flex items-center gap-1">
-                      <span className="size-[13px] text-primary"><MapPin className="size-[13px] text-primary" /></span>
+                      <MapPin className="size-[13px] text-primary" />
                       {data.nextEvent.location}
                     </span>
                   )}
                   <span className="w-1 h-1 rounded-full bg-accent" />
                   <span className="inline-flex items-center gap-1">
-                    <span className="size-[13px] text-success"><Users className="size-[13px] text-success" /></span>
+                    <Users className="size-[13px] text-success" />
                     {data.nextEvent.registered} Registered
                   </span>
                 </div>
@@ -327,7 +327,7 @@ export default async function OrganizerMobileHome() {
                 href={`/organizer/mobile/scanner`}
                 className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold active:scale-95 transition-transform"
               >
-                <span className="size-[16px]"><QrCode className="size-[16px]" /></span>
+                <QrCode className="size-[16px]" />
                 Open Full Scanner
               </Link>
             </div>

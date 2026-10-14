@@ -83,7 +83,7 @@ export default function AdminLayout({
               href="/admin/organizers"
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold font-inter transition-all shadow-md"
             >
-              <span className="size-[18px]"><Store className="size-[18px]" /></span>
+              <Store className="size-[18px]" />
               <span className="hidden sm:inline">+ Add Tenant Organizer</span>
             </Link>
           </div>

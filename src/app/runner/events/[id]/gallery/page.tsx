@@ -82,7 +82,7 @@ export default async function RunnerGalleryPage({
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
-            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
             <h1 className="text-[16px] font-bold text-foreground leading-tight">
@@ -100,7 +100,7 @@ export default async function RunnerGalleryPage({
           <>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className="size-[18px] text-success"><Images className="size-[18px] text-success" /></span>
+                <Images className="size-[18px] text-success" />
                 <span className="text-[14px] font-bold text-foreground">{photosWithUrls.length} photos</span>
               </div>
               <span className="px-2 py-0.5 bg-success/10 text-success text-[10px] font-bold uppercase tracking-wider rounded border border-success/20">
@@ -122,7 +122,7 @@ export default async function RunnerGalleryPage({
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="size-[32px] text-muted-foreground/50"><ImageOff className="size-[32px] text-muted-foreground/50" /></span>
+                        <ImageOff className="size-[32px] text-muted-foreground/50" />
                       </div>
                     )}
                     
@@ -148,7 +148,7 @@ export default async function RunnerGalleryPage({
                     )}
                     {!photo.url && photo.urlError && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-3 text-center">
-                        <span className="text-[10px] text-red-300">{photo.urlError}</span>
+                        <span className="text-[10px] text-red-500 dark:text-red-300">{photo.urlError}</span>
                       </div>
                     )}
                   </div>
@@ -159,7 +159,7 @@ export default async function RunnerGalleryPage({
         ) : (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-card border border-border/40">
             <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4">
-              <span className="size-[32px] text-muted-foreground"><Camera className="size-[32px] text-muted-foreground" /></span>
+              <Camera className="size-[32px] text-muted-foreground" />
             </div>
             <p className="text-[16px] font-bold text-foreground mb-2">No photos found yet</p>
             <p className="text-[13px] text-muted-foreground">

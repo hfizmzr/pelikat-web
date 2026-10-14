@@ -81,8 +81,8 @@ export default async function OrganizerDashboard() {
   const statusColor: Record<string, string> = {
     published: 'text-success bg-success/15',
     draft: 'text-muted-foreground bg-accent',
-    closed: 'text-red-300 bg-red-300/15',
-    cancelled: 'text-red-300 bg-red-300/15',
+    closed: 'text-red-500 dark:text-red-300 bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15',
+    cancelled: 'text-red-500 dark:text-red-300 bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15',
   }
 
   return (
@@ -115,7 +115,7 @@ export default async function OrganizerDashboard() {
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative bg-card rounded-xl px-4 py-2.5 flex items-center gap-4 shadow-md min-w-[300px] border border-muted">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center text-primary shrink-0">
-                  <span className="size-[24px]"><Flag className="size-[24px]" /></span>
+                  <Flag className="size-[24px]" />
                 </div>
                 <div className="flex flex-col min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
@@ -125,13 +125,13 @@ export default async function OrganizerDashboard() {
                     </span>
                   </div>
                   <span className="text-[12px] leading-[16px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                    <span className="size-[14px]"><CalendarClock className="size-[14px]" /></span>
+                    <CalendarClock className="size-[14px]" />
                     {daysRemaining > 0 ? `${daysRemaining} Days Remaining` : 'Today!'} • {activeEvent.location || 'TBD'}
                   </span>
                 </div>
                 <Link href={`/organizer/events/${activeEvent.id}`}>
                   <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
-                    <span className="size-[20px]"><ExternalLink className="size-[20px]" /></span>
+                    <ExternalLink className="size-[20px]" />
                   </button>
                 </Link>
               </div>
@@ -139,12 +139,12 @@ export default async function OrganizerDashboard() {
               <div className="flex items-center gap-1.5">
                 <Link href="/organizer/runners">
                   <button className="p-2.5 bg-card hover:bg-card text-foreground rounded-lg transition-colors flex items-center justify-center shadow-sm border border-muted" title="Runner Directory">
-                    <span className="size-[20px]"><Badge className="size-[20px]" /></span>
+                    <Badge className="size-[20px]" />
                   </button>
                 </Link>
                 <Link href={`/organizer/events/${activeEvent?.id}/repc`}>
                   <button className="px-4 py-2.5 bg-success/20 text-success hover:bg-success/30 text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-sm">
-                    <span className="size-[18px]"><QrCode className="size-[18px]" /></span>
+                    <QrCode className="size-[18px]" />
                     <span>Scanner HUD</span>
                   </button>
                 </Link>
@@ -156,7 +156,7 @@ export default async function OrganizerDashboard() {
         {/* Global search bar */}
         <div className="w-full bg-card rounded-xl p-2 border border-muted flex flex-col md:flex-row items-center justify-between gap-2 shadow-md">
           <div className="relative flex-1 w-full flex items-center gap-2">
-            <span className="text-muted-foreground size-[20px] pl-2"><Search className="text-muted-foreground size-[20px] pl-2" /></span>
+            <Search className="text-muted-foreground size-[20px] pl-2" />
             <input
               className="w-full py-1.5 bg-transparent text-foreground text-[12px] leading-[16px] focus:outline-none placeholder:text-muted-foreground"
               placeholder="Search bibs, runners, SKUs, payment IDs..."
@@ -183,13 +183,13 @@ export default async function OrganizerDashboard() {
             <div className="flex items-center justify-between">
               <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">Confirmed Runners</span>
               <div className="w-9 h-9 rounded-lg bg-card flex items-center justify-center text-primary">
-                <span className="size-[20px]"><Users className="size-[20px]" /></span>
+                <Users className="size-[20px]" />
               </div>
             </div>
             <div className="mt-4">
               <div className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-foreground">{confirmedRunners.toLocaleString()}</div>
               <div className="flex items-center gap-1.5 text-success text-[10px] leading-[14px] font-semibold mt-1">
-                <span className="size-[16px]"><TrendingUp className="size-[16px]" /></span>
+                <TrendingUp className="size-[16px]" />
                 <span>{totalRunners > 0 ? `${Math.round((confirmedRunners / Math.max(totalRunners, 1)) * 100)}% paid` : 'No registrations'}</span>
                 <span className="text-muted-foreground ml-1">• {totalRunners} total</span>
               </div>
@@ -201,7 +201,7 @@ export default async function OrganizerDashboard() {
             <div className="flex items-center justify-between">
               <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">REPC Collection Rate</span>
               <div className="w-9 h-9 rounded-lg bg-card flex items-center justify-center text-primary">
-                <span className="size-[20px]"><QrCode className="size-[20px]" /></span>
+                <QrCode className="size-[20px]" />
               </div>
             </div>
             <div className="mt-4">
@@ -218,13 +218,13 @@ export default async function OrganizerDashboard() {
             <div className="flex items-center justify-between">
               <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">Total Events</span>
               <div className="w-9 h-9 rounded-lg bg-card flex items-center justify-center text-success">
-                <span className="size-[20px]"><Flag className="size-[20px]" /></span>
+                <Flag className="size-[20px]" />
               </div>
             </div>
             <div className="mt-4">
               <div className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-foreground">{events?.length || 0}</div>
               <div className="flex items-center gap-1.5 text-success text-[10px] leading-[14px] font-semibold mt-1">
-                <span className="size-[16px]"><CircleCheck className="size-[16px]" /></span>
+                <CircleCheck className="size-[16px]" />
                 <span>{events?.filter(e => e.status === 'published').length || 0} published</span>
                 <span className="text-muted-foreground ml-1">• {events?.filter(e => e.status === 'draft').length || 0} drafts</span>
               </div>
@@ -243,13 +243,13 @@ export default async function OrganizerDashboard() {
               <div className="flex items-center gap-2">
                 <Link href={`/organizer/events/${activeEvent?.id}/categories`}>
                   <button className="px-4 py-2 bg-card hover:bg-card text-foreground text-[14px] leading-[20px] tracking-[0.01em] font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-muted">
-                    <span className="size-[18px]"><SlidersHorizontal className="size-[18px]" /></span>
+                    <SlidersHorizontal className="size-[18px]" />
                     Category Rules
                   </button>
                 </Link>
                 <Link href={`/organizer/events/${activeEvent?.id}/categories`}>
                   <button className="px-4 py-2 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-primary transition-all">
-                    <span className="size-[18px]"><Plus className="size-[18px]" /></span>
+                    <Plus className="size-[18px]" />
                     Add Wave
                   </button>
                 </Link>
@@ -278,14 +278,14 @@ export default async function OrganizerDashboard() {
                             {cat.bib_prefix || 'BIB'}-#### • {cat.max_slots || '∞'} slots
                           </span>
                         </div>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${isAlmostFull ? 'bg-red-300/15 text-red-300' : 'bg-primary/15 text-primary'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${isAlmostFull ? 'bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300' : 'bg-primary/15 text-primary'}`}>
                           {fillPercent}%
                         </span>
                       </div>
                       <div>
                         <div className="flex justify-between text-[10px] text-muted-foreground mb-1.5 font-medium">
                           <span>0 of {cat.max_slots || '?'} slots</span>
-                          <span className={isAlmostFull ? 'text-red-300' : 'text-muted-foreground'}>
+                          <span className={isAlmostFull ? 'text-red-500 dark:text-red-300' : 'text-muted-foreground'}>
                             {cat.max_slots ? cat.max_slots : '?'} left
                           </span>
                         </div>
@@ -301,7 +301,7 @@ export default async function OrganizerDashboard() {
                 })}
                 {activeCategories.length === 0 && (
                   <div className="col-span-4 flex flex-col items-center justify-center py-8 text-muted-foreground">
-                    <span className="size-[48px] mb-2"><Flag className="size-[48px] mb-2" /></span>
+                    <Flag className="size-[48px] mb-2" />
                     <p className="text-[14px]">No categories yet — add your first race wave</p>
                   </div>
                 )}
@@ -320,7 +320,7 @@ export default async function OrganizerDashboard() {
             <Link href="/organizer/runners">
               <button className="px-4 py-2 bg-card hover:bg-card text-foreground text-[14px] leading-[20px] tracking-[0.01em] font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-muted">
                 View All
-                <span className="size-[18px]"><ArrowRight className="size-[18px]" /></span>
+                <ArrowRight className="size-[18px]" />
               </button>
             </Link>
           </div>
@@ -355,7 +355,7 @@ export default async function OrganizerDashboard() {
                           ? 'bg-success/15 text-success'
                           : reg.payment_status === 'pending'
                           ? 'bg-primary/15 text-primary'
-                          : 'bg-red-300/15 text-red-300'
+                          : 'bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300'
                       }`}>
                         {reg.payment_status}
                       </span>
@@ -365,7 +365,7 @@ export default async function OrganizerDashboard() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <span className="size-[48px] mb-2"><Badge className="size-[48px] mb-2" /></span>
+                <Badge className="size-[48px] mb-2" />
                 <p className="text-[14px]">No registrations yet</p>
                 <p className="text-[12px] mt-1">Create and publish an event to start accepting runners</p>
               </div>
@@ -435,7 +435,7 @@ export default async function OrganizerDashboard() {
             </div>
             <Link href="/organizer/events/new">
               <button className="px-4 py-2 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-primary transition-all ">
-                <span className="size-[16px]"><CirclePlus className="size-[16px]" /></span>
+                <CirclePlus className="size-[16px]" />
                 Create Event
               </button>
             </Link>
@@ -457,7 +457,7 @@ export default async function OrganizerDashboard() {
                           <div className="flex flex-col gap-1 min-w-0">
                             <span className="text-[16px] leading-[24px] font-semibold text-foreground group-hover:text-primary transition-colors truncate">{event.name}</span>
                             <span className="text-[12px] leading-[16px] text-muted-foreground flex items-center gap-1">
-                              <span className="size-[14px]"><Calendar className="size-[14px]" /></span>
+                              <Calendar className="size-[14px]" />
                               {new Date(event.event_date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </span>
                           </div>
@@ -467,18 +467,18 @@ export default async function OrganizerDashboard() {
                         </div>
                         {event.location && (
                           <p className="text-[12px] leading-[16px] text-muted-foreground flex items-center gap-1 mb-3">
-                            <span className="size-[14px]"><MapPin className="size-[14px]" /></span>
+                            <MapPin className="size-[14px]" />
                             {event.location}
                           </p>
                         )}
                         <div className="flex items-center justify-between text-[12px] leading-[16px]">
                           <div className="flex items-center gap-3">
                             <span className="flex items-center gap-1 text-muted-foreground">
-                              <span className="size-[16px]"><Badge className="size-[16px]" /></span>
+                              <Badge className="size-[16px]" />
                               {regs.length} runners
                             </span>
                             <span className="flex items-center gap-1 text-muted-foreground">
-                              <span className="size-[16px]"><Flag className="size-[16px]" /></span>
+                              <Flag className="size-[16px]" />
                               {catCount} categories
                             </span>
                           </div>
@@ -494,14 +494,14 @@ export default async function OrganizerDashboard() {
             </div>
           ) : (
             <div className="bg-card rounded-xl border border-muted p-12 flex flex-col items-center justify-center text-center">
-              <span className="size-[64px] text-border mb-4"><Flag className="size-[64px] text-border mb-4" /></span>
+              <Flag className="size-[64px] text-border mb-4" />
               <h3 className="text-[18px] leading-[24px] font-semibold text-foreground mb-2">No events yet</h3>
               <p className="text-[14px] leading-[20px] text-muted-foreground mb-6 max-w-sm">
                 Create your first running event to start accepting registrations and managing participants.
               </p>
               <Link href="/organizer/events/new">
                 <button className="px-6 py-2.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all">
-                  <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
+                  <CirclePlus className="size-[18px]" />
                   Create your first event
                 </button>
               </Link>

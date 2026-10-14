@@ -110,8 +110,8 @@ export default function AdminBillingPage() {
       value: String(summary?.pendingCount ?? 0),
       unit: 'Orders',
       icon: ClipboardList,
-      color: 'text-red-300',
-      bg: 'bg-red-300/20',
+      color: 'text-red-500 dark:text-red-300',
+      bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20',
       sub: `${summary?.overdueCount ?? 0} tenant accounts inactive`,
     },
   ]
@@ -122,7 +122,7 @@ export default function AdminBillingPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="size-[16px] text-primary"><Wallet className="size-[16px] text-primary" /></span>
+            <Wallet className="size-[16px] text-primary" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Finance & Escrow</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Billing & Platform Revenue</h1>
@@ -135,7 +135,7 @@ export default function AdminBillingPage() {
             disabled={refreshing}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
           >
-            <span className="size-[16px] ${refreshing ? 'animate-spin' : ''}"><RefreshCw className="size-[16px] ${refreshing ? 'animate-spin' : ''}" /></span>
+            <RefreshCw className={`size-[16px] ${refreshing ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
           <button
@@ -146,7 +146,7 @@ export default function AdminBillingPage() {
             disabled={invoices.length === 0}
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary transition-all "
           >
-            <span className="size-[18px]"><Download className="size-[18px]" /></span>
+            <Download className="size-[18px]" />
             <span>Export Ledger</span>
           </button>
         </div>
@@ -172,7 +172,7 @@ export default function AdminBillingPage() {
       <div className="rounded-xl bg-card border border-border/30 overflow-hidden shadow-lg">
         <div className="p-5 border-b border-border/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-primary size-[20px]"><ReceiptText className="text-primary size-[20px]" /></span>
+            <ReceiptText className="text-primary size-[20px]" />
             <h2 className="font-jakarta font-semibold text-[18px] text-foreground">Revenue & Settlement Ledger</h2>
           </div>
           <span className="text-[11px] text-muted-foreground font-mono">
@@ -239,7 +239,7 @@ export default function AdminBillingPage() {
                         inv.status === 'paid'
                           ? 'text-success bg-success/10 border-success/20'
                           : inv.status === 'overdue'
-                            ? 'text-red-300 bg-red-300/10 border-red-300/20'
+                            ? 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20'
                             : 'text-amber-500 bg-amber-500/10 border-amber-500/20'
                       }`}>
                         {inv.status.toUpperCase()}

@@ -205,7 +205,7 @@ export default function AdminRegistrationsPage() {
     { label: 'Total Registrations', value: metrics.total.toLocaleString(), icon: Users, color: 'text-primary', bg: 'bg-primary/20' },
     { label: 'Paid Athletes', value: metrics.paid.toLocaleString(), icon: Banknote, color: 'text-success', bg: 'bg-success/20' },
     { label: 'Checked In', value: `${metrics.checkedIn.toLocaleString()} (${checkInRate}%)`, icon: UserPlus, color: 'text-primary', bg: 'bg-primary/20' },
-    { label: 'Pending Payment', value: metrics.pending.toLocaleString(), icon: Clock, color: 'text-red-300', bg: 'bg-red-300/20' },
+    { label: 'Pending Payment', value: metrics.pending.toLocaleString(), icon: Clock, color: 'text-red-500 dark:text-red-300', bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20' },
   ]
 
   return (
@@ -214,7 +214,7 @@ export default function AdminRegistrationsPage() {
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="size-[16px] text-primary"><Users className="size-[16px] text-primary" /></span>
+            <Users className="size-[16px] text-primary" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Global Fleet</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Participant & BIB Management</h1>
@@ -227,7 +227,7 @@ export default function AdminRegistrationsPage() {
             disabled={loading}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
           >
-            <span className="size-[16px] ${loading ? 'animate-spin' : ''}"><RefreshCw className="size-[16px] ${loading ? 'animate-spin' : ''}" /></span>
+            <RefreshCw className={`size-[16px] ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
           <button
@@ -235,7 +235,7 @@ export default function AdminRegistrationsPage() {
             disabled={exporting || registrations.length === 0}
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary transition-all "
           >
-            <span className="size-[18px]"><Download className="size-[18px]" /></span>
+            <Download className="size-[18px]" />
             <span>Export CSV</span>
           </button>
         </div>
@@ -260,7 +260,7 @@ export default function AdminRegistrationsPage() {
       <div className="bg-card rounded-xl p-4 border border-border/30 flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
-          <span className="absolute left-3 top-2.5 text-muted-foreground size-[18px] pointer-events-none"><Search className="absolute left-3 top-2.5 text-muted-foreground size-[18px] pointer-events-none" /></span>
+          <Search className="absolute left-3 top-2.5 text-muted-foreground size-[18px] pointer-events-none" />
           <Input
             placeholder="Search BIB number or athlete..."
             value={search}
@@ -338,9 +338,9 @@ export default function AdminRegistrationsPage() {
               setSelectedCheckIn('all')
               setPage(1)
             }}
-            className="flex items-center gap-1 text-[12px] text-red-300 hover:underline px-2"
+            className="flex items-center gap-1 text-[12px] text-red-500 dark:text-red-300 hover:underline px-2"
           >
-            <span className="size-[14px]"><X className="size-[14px]" /></span>
+            <X className="size-[14px]" />
             Clear
           </button>
         )}
@@ -350,7 +350,7 @@ export default function AdminRegistrationsPage() {
       <div className="rounded-xl bg-card border border-border/30 overflow-hidden shadow-lg">
         <div className="p-5 border-b border-border/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-primary size-[20px]"><ReceiptText className="text-primary size-[20px]" /></span>
+            <ReceiptText className="text-primary size-[20px]" />
             <h2 className="font-jakarta font-semibold text-[18px] text-foreground">Live Registrations Ledger</h2>
           </div>
           <span className="text-[12px] text-muted-foreground font-mono">
@@ -378,7 +378,7 @@ export default function AdminRegistrationsPage() {
               ) : registrations.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-16 text-center text-muted-foreground">
-                    <span className="size-[36px] text-border block mb-2"><SearchX className="size-[36px] text-border block mb-2" /></span>
+                    <SearchX className="size-[36px] text-border block mb-2" />
                     No registrations matching the active criteria
                   </td>
                 </tr>
@@ -400,7 +400,7 @@ export default function AdminRegistrationsPage() {
                           title="Reassign BIB"
                           className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                         >
-                          <span className="size-[14px]"><Pencil className="size-[14px]" /></span>
+                          <Pencil className="size-[14px]" />
                         </button>
                       </div>
                     </td>
@@ -435,7 +435,7 @@ export default function AdminRegistrationsPage() {
                         reg.payment_status === 'paid'
                           ? 'text-success bg-success/10 border-success/20'
                           : reg.payment_status === 'refunded'
-                            ? 'text-red-300 bg-red-300/10 border-red-300/20'
+                            ? 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20'
                             : 'text-amber-500 bg-amber-500/10 border-amber-500/20'
                       }`}>
                         {reg.payment_status.toUpperCase()}
@@ -517,7 +517,7 @@ export default function AdminRegistrationsPage() {
         <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
-              <span className="text-primary"><Tag className="text-primary" /></span>
+              <Tag className="text-primary" />
               Reassign Race BIB
             </DialogTitle>
             <DialogDescription className="text-muted-foreground text-[13px]">

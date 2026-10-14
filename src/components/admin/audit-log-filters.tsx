@@ -69,7 +69,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
     <div className="flex flex-wrap items-center gap-3">
       {/* Search */}
       <div className="relative flex-1 min-w-[200px]">
-        <span className="absolute left-3 top-2.5 text-muted-foreground size-[18px] pointer-events-none"><Search className="absolute left-3 top-2.5 text-muted-foreground size-[18px] pointer-events-none" /></span>
+        <Search className="absolute left-3 top-2.5 text-muted-foreground size-[18px] pointer-events-none" />
         <Input
           placeholder="Search by action, actor, or target…"
           value={search}
@@ -137,7 +137,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
                 : 'bg-card border-border/40 text-muted-foreground hover:text-foreground'
             )}
           >
-            <span className="size-[16px]"><CalendarDays className="size-[16px]" /></span>
+            <CalendarDays className="size-[16px]" />
             {endDate ? endDate.toLocaleDateString() : 'To'}
           </button>
         </PopoverTrigger>
@@ -155,9 +155,9 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
       {hasFilters && (
         <button
           onClick={handleReset}
-          className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] text-red-300 bg-red-800/10 border border-red-300/20 hover:bg-red-800/20 transition-colors font-inter"
+          className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] text-red-500 dark:text-red-300 bg-red-800/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 hover:bg-red-800/20 transition-colors font-inter"
         >
-          <span className="size-[16px]"><X className="size-[16px]" /></span>
+          <X className="size-[16px]" />
           Clear
         </button>
       )}

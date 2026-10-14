@@ -47,12 +47,12 @@ export default function OrganizerSettingsPage() {
           >
             {saving ? (
               <>
-                <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
+                <LoaderCircle className="size-[18px] animate-spin" />
                 Saving...
               </>
             ) : (
               <>
-                <span className="size-[18px]"><Save className="size-[18px]" /></span>
+                <Save className="size-[18px]" />
                 Save Changes
               </>
             )}
@@ -145,7 +145,7 @@ export default function OrganizerSettingsPage() {
             <button className="px-4 py-2.5 bg-card hover:bg-card text-foreground text-[14px] font-medium rounded-lg border border-muted transition-colors">
               Manage Billing
             </button>
-            <button className="px-4 py-2.5 text-red-300 hover:bg-red-300/10 text-[14px] font-medium rounded-lg transition-colors">
+            <button className="px-4 py-2.5 text-red-500 dark:text-red-300 hover:bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-[14px] font-medium rounded-lg transition-colors">
               Cancel Subscription
             </button>
           </div>

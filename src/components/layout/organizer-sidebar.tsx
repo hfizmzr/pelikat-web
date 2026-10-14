@@ -124,7 +124,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
       <div className="h-16 px-4 flex items-center justify-between border-b border-muted bg-border shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-            <span className="text-primary size-[16px]"><Flag className="text-primary size-[16px]" /></span>
+            <Flag className="text-primary size-[16px]" />
           </div>
           <div className="flex flex-col">
             <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-foreground">
@@ -145,14 +145,14 @@ function SidebarContent({ pathname }: { pathname: string }) {
         <button className="w-full flex items-center justify-between p-2 rounded-lg bg-card hover:bg-card transition-colors text-left group">
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-primary shrink-0">
-              <span className="size-[18px]"><Building2 className="size-[18px]" /></span>
+              <Building2 className="size-[18px]" />
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-[12px] leading-[16px] font-semibold text-foreground truncate">{orgName}</span>
               <span className="text-[11px] text-primary font-medium">Organizer Portal</span>
             </div>
           </div>
-          <span className="text-muted-foreground group-hover:text-foreground transition-colors size-[18px]"><ChevronsUpDown className="text-muted-foreground group-hover:text-foreground transition-colors size-[18px]" /></span>
+          <ChevronsUpDown className="text-muted-foreground group-hover:text-foreground transition-colors size-[18px]" />
         </button>
       </div>
 
@@ -176,7 +176,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
           onClick={() => router.push('/organizer/events/new')}
           className="w-full py-2 px-3 bg-success/20 text-success hover:bg-success/30 text-[12px] leading-[16px] font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-success/20 shadow-sm"
         >
-          <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
+          <CirclePlus className="size-[18px]" />
           <span>Create Event</span>
         </button>
         <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-card text-[11px]">
@@ -204,7 +204,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
             className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
             title="Sign out"
           >
-            <span className="size-[18px]"><LogOut className="size-[18px]" /></span>
+            <LogOut className="size-[18px]" />
           </button>
         </div>
       </div>
@@ -224,7 +224,7 @@ export function OrganizerMobileNav() {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="lg:hidden text-foreground">
-          <span className="size-[20px]"><Menu className="size-[20px]" /></span>
+          <Menu className="size-[20px]" />
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0 bg-background border-r border-muted">

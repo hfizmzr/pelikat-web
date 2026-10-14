@@ -63,7 +63,7 @@ export function BadgeCertificateButton({ badge }: { badge: BadgeCertificate }) {
         </a>
       )}
       {error && (
-        <p className="text-[9px] text-red-300 mt-1 text-center">{error}</p>
+        <p className="text-[9px] text-red-500 dark:text-red-300 mt-1 text-center">{error}</p>
       )}
     </div>
   )

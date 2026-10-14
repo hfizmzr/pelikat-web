@@ -34,16 +34,16 @@ function ReviewSubmitButton({ onCancel }: { onCancel: () => void }) {
       <button 
         type="submit" 
         disabled={pending}
-        className="flex-1 py-3 rounded-xl bg-red-300 text-red-900 text-[13px] font-bold active:scale-95 transition-transform flex justify-center items-center gap-2"
+        className="flex-1 py-3 rounded-xl bg-red-500 dark:bg-red-300 text-red-900 text-[13px] font-bold active:scale-95 transition-transform flex justify-center items-center gap-2"
       >
         {pending ? (
           <>
-            <span className="animate-spin size-[16px]"><LoaderCircle className="animate-spin size-[16px]" /></span>
+            <LoaderCircle className="animate-spin size-[16px]" />
             Sending...
           </>
         ) : (
           <>
-            <span className="size-[16px]"><Flag className="size-[16px]" /></span>
+            <Flag className="size-[16px]" />
             Send to Review
           </>
         )}
@@ -145,12 +145,12 @@ export function RunnerPhotoActions({
           disabled={!imageUrl || isDownloading}
           onClick={handleDownload}
           title="Download photo"
-          className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-foreground active:scale-95 transition-transform disabled:opacity-50"
+          className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform disabled:opacity-50"
         >
           {isDownloading ? (
-            <span className="size-[16px] animate-spin"><LoaderCircle className="size-[16px] animate-spin" /></span>
+            <LoaderCircle className="size-[16px] animate-spin" />
           ) : (
-            <span className="size-[16px]"><Download className="size-[16px]" /></span>
+            <Download className="size-[16px]" />
           )}
         </button>
         <button
@@ -158,16 +158,16 @@ export function RunnerPhotoActions({
           disabled={!imageUrl || isSharing}
           onClick={handleShare}
           title="Share photo"
-          className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-foreground active:scale-95 transition-transform disabled:opacity-50"
+          className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform disabled:opacity-50"
         >
           {isSharing ? (
-            <span className="size-[16px] animate-spin"><LoaderCircle className="size-[16px] animate-spin" /></span>
+            <LoaderCircle className="size-[16px] animate-spin" />
           ) : feedback === 'success' ? (
-            <span className="size-[16px] text-success"><Check className="size-[16px] text-success" /></span>
+            <Check className="size-[16px] text-success" />
           ) : feedback === 'error' ? (
-            <span className="size-[16px] text-red-300"><X className="size-[16px] text-red-300" /></span>
+            <X className="size-[16px] text-red-500 dark:text-red-300" />
           ) : (
-            <span className="size-[16px]"><Share2 className="size-[16px]" /></span>
+            <Share2 className="size-[16px]" />
           )}
         </button>
         {eventId && photoTagId && (
@@ -175,9 +175,9 @@ export function RunnerPhotoActions({
             type="button"
             onClick={() => setShowReviewModal(true)}
             title="Not me? Send back to organizer review"
-            className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-red-300 active:scale-95 transition-transform"
+            className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-red-500 dark:text-red-300 active:scale-95 transition-transform"
           >
-            <span className="size-[16px]"><Flag className="size-[16px]" /></span>
+            <Flag className="size-[16px]" />
           </button>
         )}
       </div>
@@ -196,8 +196,8 @@ export function RunnerPhotoActions({
               <input type="hidden" name="photoTagId" value={photoTagId} />
               
               {reviewState.status === 'error' && reviewState.message && (
-                <div className="p-3 mb-2 rounded-lg bg-red-300/10 border border-red-300/20 text-red-300 text-[12px] flex items-center gap-2">
-                  <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
+                <div className="p-3 mb-2 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+                  <CircleAlert className="size-[16px]" />
                   {reviewState.message}
                 </div>
               )}

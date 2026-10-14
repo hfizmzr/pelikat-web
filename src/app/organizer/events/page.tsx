@@ -16,7 +16,7 @@ export default async function OrganizerEventsPage() {
   if (!organizerId) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-muted-foreground">
-        <span className="size-[64px] mb-4"><Flag className="size-[64px] mb-4" /></span>
+        <Flag className="size-[64px] mb-4" />
         <h2 className="text-[18px] leading-[24px] font-semibold text-foreground mb-2">No organizer profile</h2>
         <p className="text-[14px]">No organizer account is linked to this user.</p>
       </div>
@@ -42,8 +42,8 @@ export default async function OrganizerEventsPage() {
   const statusStyles: Record<string, string> = {
     published: 'text-success bg-success/15 border-success/20',
     draft: 'text-muted-foreground bg-accent border-border',
-    closed: 'text-red-300 bg-red-300/15 border-red-300/20',
-    cancelled: 'text-red-300 bg-red-300/15 border-red-300/20',
+    closed: 'text-red-500 dark:text-red-300 bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15 border-red-500/30 dark:border-red-500 dark:border-red-300/20',
+    cancelled: 'text-red-500 dark:text-red-300 bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15 border-red-500/30 dark:border-red-500 dark:border-red-300/20',
   }
 
   const EventCard = ({ event }: { event: NonNullable<typeof events>[0] }) => {
@@ -64,7 +64,7 @@ export default async function OrganizerEventsPage() {
               <h3 className="text-[16px] leading-[24px] font-semibold text-foreground group-hover:text-primary transition-colors">{event.name}</h3>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[12px] leading-[16px] text-muted-foreground flex items-center gap-1">
-                  <span className="size-[14px]"><Calendar className="size-[14px]" /></span>
+                  <Calendar className="size-[14px]" />
                   {new Date(event.event_date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
                 </span>
                 {daysLeft > 0 && daysLeft < 60 && (
@@ -81,7 +81,7 @@ export default async function OrganizerEventsPage() {
 
           {event.location && (
             <p className="text-[12px] leading-[16px] text-muted-foreground flex items-center gap-1 mb-4">
-              <span className="size-[14px]"><MapPin className="size-[14px]" /></span>
+              <MapPin className="size-[14px]" />
               {event.location}
             </p>
           )}
@@ -105,11 +105,11 @@ export default async function OrganizerEventsPage() {
             <div className="mb-4">
               <div className="flex justify-between text-[11px] text-muted-foreground mb-1.5">
                 <span>{regs.length} of {totalCap} slots</span>
-                <span className={fillPct >= 90 ? 'text-red-300 font-semibold' : 'text-muted-foreground'}>{fillPct}%</span>
+                <span className={fillPct >= 90 ? 'text-red-500 dark:text-red-300 font-semibold' : 'text-muted-foreground'}>{fillPct}%</span>
               </div>
               <div className="w-full bg-accent rounded-full h-1.5 overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${fillPct >= 90 ? 'bg-red-300' : fillPct >= 70 ? 'bg-primary' : 'bg-primary'}`}
+                  className={`h-full rounded-full transition-all ${fillPct >= 90 ? 'bg-red-500 dark:bg-red-300' : fillPct >= 70 ? 'bg-primary' : 'bg-primary'}`}
                   style={{ width: `${Math.max(fillPct, 1)}%` }}
                 />
               </div>
@@ -137,19 +137,19 @@ export default async function OrganizerEventsPage() {
             <div className="flex gap-1.5">
               <Link href={`/organizer/events/${event.id}/registrations`}>
                 <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" title="Registrations">
-                  <span className="size-[18px]"><Badge className="size-[18px]" /></span>
+                  <Badge className="size-[18px]" />
                 </button>
               </Link>
               <Link href={`/organizer/events/${event.id}/checkin`}>
                 <button className="p-2 rounded-lg text-muted-foreground hover:text-success hover:bg-accent transition-colors" title="Check-in">
-                  <span className="size-[18px]"><QrCode className="size-[18px]" /></span>
+                  <QrCode className="size-[18px]" />
                 </button>
               </Link>
             </div>
             <Link href={`/organizer/events/${event.id}`}>
               <button className="px-4 py-2 bg-card hover:bg-accent text-foreground text-[12px] leading-[16px] tracking-[0.02em] font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-border">
                 Manage
-                <span className="size-[16px]"><ArrowRight className="size-[16px]" /></span>
+                <ArrowRight className="size-[16px]" />
               </button>
             </Link>
           </div>
@@ -177,7 +177,7 @@ export default async function OrganizerEventsPage() {
           </div>
           <Link href="/organizer/events/new">
             <button className="px-5 py-2.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all whitespace-nowrap">
-              <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
+              <CirclePlus className="size-[18px]" />
               Create Event
             </button>
           </Link>
@@ -234,7 +234,7 @@ export default async function OrganizerEventsPage() {
         {(!events || events.length === 0) && (
           <div className="bg-card rounded-xl border border-muted p-16 flex flex-col items-center justify-center text-center">
             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <span className="size-[48px] text-primary"><Flag className="size-[48px] text-primary" /></span>
+              <Flag className="size-[48px] text-primary" />
             </div>
             <h3 className="text-[22px] leading-[28px] font-semibold text-foreground mb-2">No events yet</h3>
             <p className="text-[14px] leading-[20px] text-muted-foreground mb-8 max-w-sm">
@@ -242,7 +242,7 @@ export default async function OrganizerEventsPage() {
             </p>
             <Link href="/organizer/events/new">
               <button className="px-6 py-3 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all ">
-                <span className="size-[18px]"><CirclePlus className="size-[18px]" /></span>
+                <CirclePlus className="size-[18px]" />
                 Create your first event
               </button>
             </Link>

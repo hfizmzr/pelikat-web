@@ -67,7 +67,7 @@ export default async function RunnerEventDetailPage({
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href="/runner/events" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
-            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <h1 className="flex-1 text-[16px] font-bold text-foreground text-center mr-8 truncate">
             {event.name}
@@ -96,7 +96,7 @@ export default async function RunnerEventDetailPage({
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-4 bg-card p-4 rounded-2xl border border-border/60">
             <div className="w-12 h-12 bg-accent/50 rounded-xl flex flex-col items-center justify-center">
-              <span className="text-[10px] font-bold text-red-300 uppercase">{eventDate.toLocaleDateString('en-MY', { month: 'short' })}</span>
+              <span className="text-[10px] font-bold text-red-500 dark:text-red-300 uppercase">{eventDate.toLocaleDateString('en-MY', { month: 'short' })}</span>
               <span className="text-[16px] font-extrabold text-foreground leading-none">{eventDate.getDate()}</span>
             </div>
             <div className="flex flex-col">
@@ -110,7 +110,7 @@ export default async function RunnerEventDetailPage({
           {event.location && (
             <div className="flex items-center gap-4 bg-card p-4 rounded-2xl border border-border/60">
               <div className="w-12 h-12 bg-accent/50 rounded-xl flex items-center justify-center">
-                <span className="size-[20px] text-primary"><MapPin className="size-[20px] text-primary" /></span>
+                <MapPin className="size-[20px] text-primary" />
               </div>
               <div className="flex flex-col">
                 <span className="text-[14px] font-bold text-foreground">Event Location</span>
@@ -141,7 +141,7 @@ export default async function RunnerEventDetailPage({
               <div className="p-5 rounded-2xl bg-success/10 border border-success/20 flex flex-col gap-4 relative overflow-hidden">
                 <div className="absolute right-0 top-0 w-32 h-32 bg-success/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
                 <div className="flex items-center gap-3">
-                  <span className="size-[24px] text-success"><CircleCheck className="size-[24px] text-success" /></span>
+                  <CircleCheck className="size-[24px] text-success" />
                   <div className="flex flex-col">
                     <span className="text-[14px] font-bold text-success">You&apos;re Registered!</span>
                     <span className="text-[11px] text-success/80">See you at the start line.</span>

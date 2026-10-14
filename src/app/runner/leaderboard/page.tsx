@@ -83,7 +83,7 @@ export default async function RunnerLeaderboardPage({
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
-            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
             <h1 className="text-[16px] font-bold text-foreground leading-tight">
@@ -97,7 +97,7 @@ export default async function RunnerLeaderboardPage({
         
         <div className="flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-muted border border-border rounded-full flex items-center justify-center mb-3">
-            <span className="size-[32px] text-amber-400"><Trophy className="size-[32px] text-amber-400" /></span>
+            <Trophy className="size-[32px] text-amber-500 dark:text-amber-400" />
           </div>
           <h2 className="text-[20px] font-bold text-foreground tracking-tight">Global Rankings</h2>
           <p className="text-[13px] text-muted-foreground mt-1">Virtual run rankings by total distance</p>
@@ -119,7 +119,7 @@ export default async function RunnerLeaderboardPage({
 
         {resultsLocked ? (
           <div className="bg-card rounded-2xl border border-border/60 p-10 flex flex-col items-center text-center gap-3">
-            <span className="size-[40px] text-amber-400"><Hourglass className="size-[40px] text-amber-400" /></span>
+            <Hourglass className="size-[40px] text-amber-500 dark:text-amber-400" />
             <div>
               <h2 className="text-[16px] font-bold text-foreground mb-1">Results coming soon. Stay tuned!</h2>
               <p className="text-[13px] text-muted-foreground">

@@ -41,7 +41,7 @@ export default async function RunnerBadgesPage() {
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
-            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
             <h1 className="text-[16px] font-bold text-foreground leading-tight">
@@ -54,7 +54,7 @@ export default async function RunnerBadgesPage() {
       <div className="flex flex-col px-5 py-6 gap-4 max-w-sm w-full mx-auto">
         <div className="flex flex-col items-center text-center mb-2">
           <div className="w-20 h-20 bg-gradient-to-tr from-primary-foreground to-primary rounded-full flex items-center justify-center mb-4 border-4 border-background ">
-            <span className="size-[40px] text-foreground"><Medal className="size-[40px] text-foreground" /></span>
+            <Medal className="size-[40px] text-foreground" />
           </div>
           <h2 className="text-[20px] font-bold text-foreground tracking-tight">Trophy Case</h2>
           <p className="text-[13px] text-muted-foreground">Your achievements and milestones</p>
@@ -107,7 +107,7 @@ export default async function RunnerBadgesPage() {
         {(!badges || badges.length === 0) && (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-card border border-border/40 mt-4">
             <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4">
-              <span className="size-[32px] text-muted-foreground"><Frown className="size-[32px] text-muted-foreground" /></span>
+              <Frown className="size-[32px] text-muted-foreground" />
             </div>
             <p className="text-[16px] font-bold text-foreground mb-2">No badges yet</p>
             <p className="text-[13px] text-muted-foreground">

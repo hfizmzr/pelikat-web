@@ -76,7 +76,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
   if (loading) {
     return (
       <div className="flex flex-col w-full min-h-full bg-background items-center justify-center">
-        <span className="size-[32px] text-muted-foreground animate-spin"><LoaderCircle className="size-[32px] text-muted-foreground animate-spin" /></span>
+        <LoaderCircle className="size-[32px] text-muted-foreground animate-spin" />
       </div>
     )
   }
@@ -85,7 +85,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
     return (
       <div className="flex flex-col w-full min-h-full bg-background items-center justify-center px-5 text-center">
         <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4 border border-border/60">
-          <span className="size-[32px] text-muted-foreground"><TriangleAlert className="size-[32px] text-muted-foreground" /></span>
+          <TriangleAlert className="size-[32px] text-muted-foreground" />
         </div>
         <p className="text-[14px] text-foreground font-bold mb-4">Registration not found</p>
         <Link 
@@ -104,7 +104,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
-            <span className="size-[24px]"><ArrowLeft className="size-[24px]" /></span>
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <h1 className="flex-1 text-[16px] font-bold text-foreground text-center mr-8 truncate">
             Payment
@@ -120,7 +120,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
 
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
           <div className="bg-muted p-4 flex items-center gap-2 border-b border-border/60">
-            <span className="size-[18px] text-muted-foreground"><ReceiptText className="size-[18px] text-muted-foreground" /></span>
+            <ReceiptText className="size-[18px] text-muted-foreground" />
             <span className="text-[14px] font-bold text-foreground">Order Summary</span>
           </div>
           <div className="p-4 flex flex-col gap-3">
@@ -147,7 +147,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
 
         {success ? (
           <div className="bg-success/10 border border-success/30 p-5 rounded-2xl flex flex-col items-center text-center gap-3">
-            <span className="size-[40px] text-success"><CircleCheck className="size-[40px] text-success" /></span>
+            <CircleCheck className="size-[40px] text-success" />
             <div>
               <h3 className="text-[16px] font-bold text-success mb-1">Payment Successful!</h3>
               <p className="text-[13px] text-success/80 mb-4">Your registration is confirmed. See you at the start line.</p>
@@ -162,7 +162,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
         ) : (
           <section className="bg-card rounded-2xl border border-border/60 p-5 flex flex-col gap-4">
             <div className="flex items-start gap-3">
-              <span className="size-[20px] text-primary"><CreditCard className="size-[20px] text-primary" /></span>
+              <CreditCard className="size-[20px] text-primary" />
               <div className="flex flex-col">
                 <span className="text-[14px] font-bold text-foreground">Mock Gateway</span>
                 <span className="text-[12px] text-muted-foreground">This simulates a successful payment (PAYMENT_PROVIDER=mock). No real transaction occurs.</span>
@@ -170,8 +170,8 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
             </div>
 
             {error && (
-              <div className="p-3 rounded-lg bg-red-300/10 border border-red-300/20 text-red-300 text-[12px] flex items-center gap-2">
-                <span className="size-[16px]"><CircleAlert className="size-[16px]" /></span>
+              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+                <CircleAlert className="size-[16px]" />
                 {error}
               </div>
             )}
@@ -183,7 +183,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
             >
               {isPending ? (
                 <>
-                  <span className="size-[18px] animate-spin"><LoaderCircle className="size-[18px] animate-spin" /></span>
+                  <LoaderCircle className="size-[18px] animate-spin" />
                   Processing...
                 </>
               ) : (

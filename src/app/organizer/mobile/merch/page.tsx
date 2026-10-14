@@ -78,7 +78,7 @@ async function getMerchInventoryData() {
 }
 
 function StockBadge({ stock }: { stock: number }) {
-  if (stock <= 2) return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-300/20 text-red-300">Critical</span>
+  if (stock <= 2) return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20 text-red-500 dark:text-red-300">Critical</span>
   if (stock <= 10) return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/20 text-primary">Low</span>
   return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success/15 text-success">Healthy</span>
 }
@@ -95,7 +95,7 @@ export default async function OrganizerMobileMerchPage() {
           </div>
         </header>
         <div className="flex flex-col items-center justify-center flex-1 py-16 text-muted-foreground">
-          <span className="size-[48px] mb-3"><Package className="size-[48px] mb-3" /></span>
+          <Package className="size-[48px] mb-3" />
           <p className="text-[14px] font-medium">No access</p>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default async function OrganizerMobileMerchPage() {
           </div>
         </header>
         <div className="flex flex-col items-center justify-center flex-1 py-16 text-muted-foreground">
-          <span className="size-[48px] mb-3"><ShoppingBag className="size-[48px] mb-3" /></span>
+          <ShoppingBag className="size-[48px] mb-3" />
           <p className="text-[14px] font-medium">No active event</p>
           <p className="text-[12px] mt-1">Activate an event to manage inventory</p>
           <Link href="/organizer/mobile/events" className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold">
@@ -133,7 +133,7 @@ export default async function OrganizerMobileMerchPage() {
             <div className="flex items-center gap-1.5">
               <span className="text-[16px] font-bold text-foreground">Kit Inventory</span>
               {criticalItems > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-300/20 text-red-300">
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20 text-red-500 dark:text-red-300">
                   {criticalItems} critical
                 </span>
               )}
@@ -149,7 +149,7 @@ export default async function OrganizerMobileMerchPage() {
             href="/organizer/merch"
             className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-accent text-muted-foreground text-[11px] font-medium border border-border/60"
           >
-            <span className="size-[14px]"><Maximize2 className="size-[14px]" /></span>
+            <Maximize2 className="size-[14px]" />
             Full View
           </Link>
         </div>
@@ -175,16 +175,16 @@ export default async function OrganizerMobileMerchPage() {
             <div className="flex flex-col items-end">
               <span className="text-[11px] text-primary font-bold">{items.length} SKUs</span>
               {criticalItems > 0 && (
-                <span className="text-[11px] text-red-300 mt-0.5">{criticalItems} low stock</span>
+                <span className="text-[11px] text-red-500 dark:text-red-300 mt-0.5">{criticalItems} low stock</span>
               )}
             </div>
           </div>
 
           {/* Critical alert */}
           {criticalItems > 0 && (
-            <div className="mt-3 p-3 rounded-lg bg-red-800/30 flex items-start gap-2 border border-red-300/20">
-              <TriangleAlert className="size-[16px] text-red-300 shrink-0" />
-              <p className="text-[11px] text-red-300">
+            <div className="mt-3 p-3 rounded-lg bg-red-800/30 flex items-start gap-2 border border-red-500/30 dark:border-red-500 dark:border-red-300/20">
+              <TriangleAlert className="size-[16px] text-red-500 dark:text-red-300 shrink-0" />
+              <p className="text-[11px] text-red-500 dark:text-red-300">
                 {criticalItems} variant(s) at critical stock level. Restock required.
               </p>
             </div>
@@ -212,7 +212,7 @@ export default async function OrganizerMobileMerchPage() {
                           <div
                             key={v.id}
                             className={`flex items-center justify-between p-2.5 rounded-lg ${
-                              v.isCritical ? 'bg-red-300/5 border border-red-300/20' :
+                              v.isCritical ? 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/5 border border-red-500/30 dark:border-red-500 dark:border-red-300/20' :
                               v.isLow ? 'bg-primary/5 border border-primary/15' :
                               'bg-accent'
                             }`}
@@ -223,7 +223,7 @@ export default async function OrganizerMobileMerchPage() {
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               <span className={`text-[16px] font-bold ${
-                                v.isCritical ? 'text-red-300' : v.isLow ? 'text-primary' : 'text-foreground'
+                                v.isCritical ? 'text-red-500 dark:text-red-300' : v.isLow ? 'text-primary' : 'text-foreground'
                               }`}>
                                 {v.stock}
                               </span>
