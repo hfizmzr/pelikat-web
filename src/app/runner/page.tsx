@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react"
-import { Award, Bell, CalendarX, CheckCheck, Flame, Footprints, QrCode, Tag, Tags } from "lucide-react"
+import { Award, Bell, CalendarX, CheckCheck, Flame, Footprints, QrCode, ShoppingBag, Tag, Tags, Trophy } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -163,6 +163,28 @@ export default async function RunnerDashboard() {
             </Link>
           </section>
         )}
+
+        {/* Quick Links — Leaderboard & Merch */}
+        <div className="grid grid-cols-2 gap-3">
+          <Link
+            href="/runner/leaderboard"
+            className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/40 active:scale-[0.98] transition-transform"
+          >
+            <span className="p-2 rounded-lg bg-primary/10 text-primary">
+              <Trophy className="size-[18px]" />
+            </span>
+            <span className="text-[13px] font-semibold text-foreground">Leaderboard</span>
+          </Link>
+          <Link
+            href="/runner/merch"
+            className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/40 active:scale-[0.98] transition-transform"
+          >
+            <span className="p-2 rounded-lg bg-primary/10 text-primary">
+              <ShoppingBag className="size-[18px]" />
+            </span>
+            <span className="text-[13px] font-semibold text-foreground">Merch Store</span>
+          </Link>
+        </div>
 
         {/* Stats Grid */}
         <section>

@@ -218,7 +218,7 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all font-inter disabled:opacity-50"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Create Organizer'}

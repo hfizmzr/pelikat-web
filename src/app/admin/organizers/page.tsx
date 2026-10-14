@@ -220,7 +220,7 @@ export default function AdminOrganizersPage() {
         onSuccess={handleCreate}
         trigger={
           <button
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all font-inter"
           >
             <span className="size-[18px]"><Store className="size-[18px]" /></span>
             Add Organizer

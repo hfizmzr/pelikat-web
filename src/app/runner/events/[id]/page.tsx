@@ -1,4 +1,4 @@
-import { ArrowLeft, CircleCheck, CreditCard, Images, MapPin, QrCode } from "lucide-react"
+import { ArrowLeft, CircleCheck, CreditCard, Images, MapPin, QrCode, Trophy } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -191,8 +191,16 @@ export default async function RunnerEventDetailPage({
                   href={`/runner/events/${event.id}/gallery`}
                   className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                 >
-                  <span className="size-[18px]"><Images className="size-[18px]" /></span>
+                  <Images className="size-[18px]" />
                   Event Photos
+                </Link>
+
+                <Link
+                  href={`/runner/leaderboard?event_id=${event.id}`}
+                  className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                >
+                  <Trophy className="size-[18px]" />
+                  Event Leaderboard
                 </Link>
 
                 {!registration.checked_in && (

@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, BadgeCheck, Building2, Download, ExternalLink, Footprints, Megaphone, Settings, SlidersHorizontal, ToggleRight, TriangleAlert, Zap } from "lucide-react"
+import { ArrowRight, BadgeCheck, Building2, Download, ExternalLink, Footprints, Megaphone, Settings, SlidersHorizontal, ToggleRight, TriangleAlert, Zap } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { StorageUsage } from '@/components/admin/storage-usage'
@@ -89,9 +89,7 @@ export default async function AdminDashboard() {
       iconBg: 'bg-primary/20',
       glowColor: 'bg-primary/5',
       accent: 'text-primary',
-      sub: 'Active Season 2025',
-      barColor: 'from-primary/60 to-primary',
-      progressBar: true,
+      sub: 'All-time registrations',
     },
     {
       label: 'Platform Events',
@@ -103,19 +101,6 @@ export default async function AdminDashboard() {
       glowColor: 'bg-success/5',
       accent: 'text-success',
       sub: 'All time created',
-      barColor: 'from-success/60 to-success',
-    },
-    {
-      label: 'System SLA & Latency',
-      value: '99.99%',
-      unit: '',
-      icon: Activity,
-      iconColor: 'text-success',
-      iconBg: 'bg-success/20',
-      glowColor: 'bg-success/10',
-      accent: 'text-success',
-      sub: '14ms avg edge latency',
-      latencyBar: true,
     },
   ]
 
@@ -134,21 +119,11 @@ export default async function AdminDashboard() {
       {/* ── Page Header ──────────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-success shadow-[0_0_8px_rgba(78,222,163,0.9)] animate-pulse" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-success font-inter">
-              Mission Critical Cockpit
-            </span>
-            <span className="text-border text-[10px]">/</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-inter">
-              ap-southeast-1 Grid
-            </span>
-          </div>
           <h1 className="font-jakarta font-bold text-[28px] leading-tight tracking-tight text-foreground">
-            Global Platform Fleet Overview
+            Platform Overview
           </h1>
           <p className="text-[14px] text-muted-foreground max-w-2xl font-inter">
-            Real-time cross-tenant telemetry, distributed system throughput, and fleet health across {activeOrganizersCount ?? 0} active organizers.
+            Cross-tenant overview across {activeOrganizersCount ?? 0} organizer accounts.
           </p>
         </div>
 
@@ -159,7 +134,7 @@ export default async function AdminDashboard() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
           >
             <span className="size-[16px]"><Download className="size-[16px]" /></span>
-            <span>Export Fleet Telemetry</span>
+            <span>Audit Logs</span>
           </a>
           <Link
             href="/admin/organizers"
@@ -172,7 +147,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* ── KPI Metric Cards ─────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {kpiCards.map((card, i) => (
           <div
             key={i}
@@ -205,78 +180,12 @@ export default async function AdminDashboard() {
 
             {/* Bottom: sub-info */}
             <div className="mt-4 pt-3">
-              {card.progressBar && (
-                <>
-                  <div className="flex items-center justify-between text-[11px] font-inter mb-1.5">
-                    <span className="text-muted-foreground">Live Check-in Velocity</span>
-                    <span className="text-foreground font-semibold">94.2% completed</span>
-                  </div>
-                  <div className="w-full bg-accent rounded-full h-1.5 overflow-hidden mb-1">
-                    <div
-                      className={`bg-gradient-to-r ${card.barColor} h-1.5 rounded-full shadow-[0_0_10px_rgba(76,215,246,0.5)]`}
-                      style={{ width: '94.2%' }}
-                    />
-                  </div>
-                </>
-              )}
-              {card.latencyBar && (
-                <div className="flex items-center gap-1.5 mb-1">
-                  {[...Array(4)].map((_, j) => (
-                    <span
-                      key={j}
-                      className="flex-1 h-1.5 rounded-full bg-success shadow-[0_0_6px_rgba(78,222,163,0.8)]"
-                    />
-                  ))}
-                  <span className="flex-1 h-1.5 rounded-full bg-accent" />
-                </div>
-              )}
-              {!card.progressBar && !card.latencyBar && card.barColor && (
-                <div className="w-full h-8 flex items-end gap-1 opacity-60">
-                  {[45, 60, 50, 75, 65, 80, 95].map((h, j) => (
-                    <div
-                      key={j}
-                      className={`w-full bg-gradient-to-t ${j === 6 ? card.barColor : card.barColor.replace('to-', 'to-').split(' ')[0] + '/20'} rounded-t-sm transition-all hover:opacity-100`}
-                      style={{ height: `${h}%` }}
-                    />
-                  ))}
-                </div>
-              )}
               <p className={`text-[11px] font-inter ${card.accent} font-medium pt-0.5`}>
                 {card.sub}
               </p>
             </div>
           </div>
         ))}
-      </div>
-
-      {/* ── System Status Strip ──────────────────────────────────────────── */}
-      <div className="w-full bg-card rounded-xl px-5 py-3 shadow-md border border-border/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-success animate-pulse" />
-            <span className="text-[13px] font-semibold text-foreground font-inter">All Systems Operational</span>
-          </div>
-          <span className="text-border hidden md:inline">•</span>
-          <span className="text-[12px] text-muted-foreground font-mono hidden md:inline">AWS ap-southeast-1</span>
-          <span className="text-border hidden md:inline">•</span>
-          <span className="text-[12px] text-muted-foreground hidden md:inline font-inter">
-            API Latency <span className="text-success font-mono font-medium">14ms</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-5 text-[12px] text-muted-foreground font-mono">
-          <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground">Uptime</span>
-            <span className="text-success font-semibold">99.99%</span>
-          </div>
-          <div className="flex items-center gap-1.5 hidden sm:flex">
-            <span className="text-muted-foreground">OCR Vision</span>
-            <span className="text-primary font-semibold">Normal (42%)</span>
-          </div>
-          <div className="flex items-center gap-1.5 hidden sm:flex">
-            <span className="text-muted-foreground">Storage</span>
-            <span className="text-foreground font-semibold">4.8 TB / 10 TB</span>
-          </div>
-        </div>
       </div>
 
       {/* ── Expiring Subscriptions Alert ─────────────────────────────────── */}
@@ -318,7 +227,7 @@ export default async function AdminDashboard() {
           <div className="flex items-center gap-2 w-full lg:w-auto">
             <Link
               href="/admin/organizers"
-              className="flex-1 lg:flex-none px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all flex items-center justify-center gap-1.5 shadow-md glow-primary font-inter"
+              className="flex-1 lg:flex-none px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all flex items-center justify-center gap-1.5 shadow-md font-inter"
             >
               <span className="size-[18px]"><ExternalLink className="size-[18px]" /></span>
               Manage All Organizers

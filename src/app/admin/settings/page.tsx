@@ -91,7 +91,7 @@ export default function AdminSettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter disabled:opacity-60 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all font-inter disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
           <span className="size-[18px]"><Save className="size-[18px]" /></span>

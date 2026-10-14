@@ -1,7 +1,7 @@
 'use client'
 
 import type { LucideIcon } from "lucide-react"
-import { Badge, Building2, ChevronsUpDown, CirclePlus, ClipboardCheck, Flag, Images, Landmark, LayoutDashboard, LogOut, Menu, QrCode, Settings2, Shirt, TrendingUp, Trophy } from "lucide-react"
+import { Badge, Building2, ChevronsUpDown, CirclePlus, ClipboardCheck, Flag, Images, Landmark, LayoutDashboard, LogOut, Menu, QrCode, Settings2, Shirt, Smartphone, TrendingUp, Trophy } from "lucide-react"
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -29,6 +29,7 @@ const navSections = [
   {
     label: 'Operations & Config',
     items: [
+      { title: 'Mobile Console', href: '/organizer/mobile', icon: Smartphone },
       { title: 'Telemetry & Analytics', href: '/organizer/analytics', icon: TrendingUp },
       { title: 'Financial Rails', href: '/organizer/financial', icon: Landmark },
       { title: 'Settings & Webhooks', href: '/organizer/settings', icon: Settings2 },

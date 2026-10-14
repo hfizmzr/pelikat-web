@@ -1,6 +1,6 @@
 'use client'
 
-import { Server, Store } from "lucide-react"
+import { Store } from "lucide-react"
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -65,33 +65,23 @@ export default function AdminLayout({
             <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               <span className="text-[10px] font-bold tracking-widest uppercase font-inter text-primary">
-                Platform Control Plane
+                Platform Admin
               </span>
             </div>
 
-            {/* Fleet info */}
-            <div className="hidden lg:flex items-center gap-2 text-muted-foreground text-[12px] font-inter">
-              <span className="size-[15px] text-muted-foreground"><Server className="size-[15px] text-muted-foreground" /></span>
-              <span>Fleet AWS ap-southeast-1</span>
-              <span className="text-border">•</span>
-              <span className="text-success font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-success animate-ping inline-block" />
-                Multi-Tenant Strict
-              </span>
-            </div>
           </div>
 
           {/* Right: Clock + CTA */}
           <div className="flex items-center gap-3">
             {/* Live clock */}
             <span className="hidden lg:inline-block text-[11px] text-border font-mono font-inter">
-              NODE_CLOCK: {clock}
+              {clock}
             </span>
 
             {/* Add Tenant Organizer CTA */}
             <Link
               href="/admin/organizers"
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold font-inter transition-all shadow-md glow-primary"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold font-inter transition-all shadow-md"
             >
               <span className="size-[18px]"><Store className="size-[18px]" /></span>
               <span className="hidden sm:inline">+ Add Tenant Organizer</span>

@@ -95,7 +95,7 @@ export function StorageUsage() {
             )
           })}
           <p className="text-[10px] text-border font-inter pt-1">
-            {buckets.length} bucket{buckets.length !== 1 ? 's' : ''} · AWS ap-southeast-1
+            {buckets.length} storage bucket{buckets.length !== 1 ? "s" : ""}
           </p>
         </div>
       )}
