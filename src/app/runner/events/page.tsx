@@ -146,8 +146,12 @@ export default async function RunnerEventsPage({
                     <div className="mt-auto flex items-center gap-1.5 text-[11px] text-muted-foreground">
                       <Tag className="size-[14px]" />
                       <span className="truncate">{reg?.race_categories?.name}</span>
-                      <span className="mx-1">•</span>
-                      <span className="font-mono text-muted-foreground">BIB {reg?.bib_number || 'TBA'}</span>
+                      {event.event_type !== 'virtual' && reg?.bib_number && (
+                        <>
+                          <span className="mx-1">•</span>
+                          <span className="font-mono text-muted-foreground">BIB {reg.bib_number}</span>
+                        </>
+                      )}
                     </div>
                   </Link>
                 )

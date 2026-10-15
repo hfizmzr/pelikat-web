@@ -258,9 +258,11 @@ export async function generateConsentCode(registrationId: string) {
 
 export async function exportRegistrationsCsv(
   registrations: {
-    bib_number: string
+    bib_number: string | null
     checked_in: boolean
     payment_status: string
+    guest_name: string | null
+    registration_role: string
     runner_profiles: { full_name: string; phone: string } | null
     race_categories: { name: string } | null
   }[]
@@ -270,10 +272,11 @@ export async function exportRegistrationsCsv(
   const { user } = await requireAuth()
   void user
 
-  const headers = ['BIB', 'Name', 'Category', 'Phone', 'Payment', 'Checked In']
+  const headers = ['BIB', 'Name', 'Role', 'Category', 'Phone', 'Payment', 'Checked In']
   const rows = registrations.map((reg) => [
-    reg.bib_number,
-    reg.runner_profiles?.full_name || '',
+    reg.bib_number ?? '',
+    reg.guest_name || reg.runner_profiles?.full_name || '',
+    reg.registration_role,
     reg.race_categories?.name || '',
     reg.runner_profiles?.phone || '',
     reg.payment_status,

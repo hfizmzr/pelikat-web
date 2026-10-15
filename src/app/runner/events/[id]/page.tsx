@@ -1,9 +1,10 @@
-import { ArrowLeft, CircleCheck, CreditCard, Images, MapPin, QrCode, ShoppingBag, Trophy } from "lucide-react"
+import { ArrowLeft, CircleCheck, CreditCard, Footprints, Images, MapPin, QrCode, ShoppingBag, Trophy } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { RunnerRegistrationActions } from '@/components/events/runner-registration-actions'
 import { CancelRegistrationButton } from '@/components/events/cancel-registration-button'
+import { VirtualCertificateButton } from '@/components/gamification/virtual-certificate-button'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -58,6 +59,14 @@ export default async function RunnerEventDetailPage({
     .single()
 
   const isRegistered = !!registration
+  const isVirtual = (event.event_type as string | null) === 'virtual'
+
+  // Virtual run progress: logged distance for this event vs target
+  const { data: myLogs } = isVirtual && isRegistered
+    ? await supabase.from('run_logs').select('distance_km').eq('event_id', id).eq('runner_id', profile?.id)
+    : { data: null }
+  const loggedKm = (myLogs ?? []).reduce((acc, l) => acc + Number(l.distance_km || 0), 0)
+  const targetKm = Number(event.target_distance_km || 0)
   const raceCategories = (event.race_categories ?? []) as RaceCategory[]
   const eventDate = new Date(event.event_date)
 
@@ -80,9 +89,16 @@ export default async function RunnerEventDetailPage({
         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-90" />
         <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
           <div className="flex flex-col">
-            <span className="px-2 py-1 mb-2 w-max rounded text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-              {event.status}
-            </span>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2 py-1 w-max rounded text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                {event.status}
+              </span>
+              {isVirtual && (
+                <span className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success border border-success/20">
+                  Virtual Run
+                </span>
+              )}
+            </div>
             <h2 className="text-[24px] font-bold text-foreground leading-tight drop-shadow-md">
               {event.name}
             </h2>
@@ -134,7 +150,7 @@ export default async function RunnerEventDetailPage({
 
         {/* Registration Section */}
         <section className="mt-4 pt-6 border-t border-border/60 flex flex-col gap-4">
-          <h3 className="text-[16px] font-bold text-foreground">Registration</h3>
+          <h3 className="text-[16px] font-bold text-foreground">My Registration</h3>
           
           {isRegistered ? (
             <div className="flex flex-col gap-4">
@@ -149,33 +165,51 @@ export default async function RunnerEventDetailPage({
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 mt-2">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">BIB Number</span>
-                    <span className="text-[16px] font-mono font-bold text-foreground">{registration.bib_number || 'TBA'}</span>
-                  </div>
+                  {!isVirtual && (
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">BIB Number</span>
+                      <span className="text-[16px] font-mono font-bold text-foreground">{registration.bib_number || 'TBA'}</span>
+                    </div>
+                  )}
                   <div className="flex flex-col">
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Category</span>
                     <span className="text-[14px] font-bold text-foreground truncate">{registration.race_categories?.name}</span>
                   </div>
-                  <div className="flex flex-col col-span-2 pt-3 border-t border-success/20">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Payment Status</span>
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-muted text-foreground">
-                        {registration.payment_status?.toUpperCase()}
-                      </span>
+                  {isVirtual && targetKm > 0 && (
+                    <div className="flex flex-col col-span-2 pt-3 border-t border-success/20">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Progress</span>
+                        <span className="text-[11px] font-bold text-success">
+                          {loggedKm.toFixed(1)} / {targetKm} km
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-success"
+                          style={{ width: `${Math.min(100, Math.round((loggedKm / targetKm) * 100))}%` }}
+                        />
+                      </div>
                     </div>
+                  )}
+                  <div className="flex justify-between items-center pt-3 border-t border-success/20 col-span-2">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Payment Status</span>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-muted text-foreground">
+                      {registration.payment_status?.toUpperCase()}
+                    </span>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-col gap-3 mt-2">
-                <Link
-                  href={`/runner/events/${event.id}/bib`}
-                  className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
-                >
-                  <QrCode className="size-[18px]" />
-                  View Digital BIB Pass
-                </Link>
+                {!isVirtual && (
+                  <Link
+                    href={`/runner/events/${event.id}/bib`}
+                    className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                  >
+                    <QrCode className="size-[18px]" />
+                    View Digital BIB Pass
+                  </Link>
+                )}
 
                 {registration.payment_status !== 'paid' && (
                   <Link
@@ -186,7 +220,6 @@ export default async function RunnerEventDetailPage({
                     Complete Payment
                   </Link>
                 )}
-                
                 <Link
                   href={`/runner/events/${event.id}/merch`}
                   className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
@@ -195,13 +228,29 @@ export default async function RunnerEventDetailPage({
                   Event Merch
                 </Link>
 
-                <Link
-                  href={`/runner/events/${event.id}/gallery`}
-                  className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
-                >
-                  <Images className="size-[18px]" />
-                  Event Photos
-                </Link>
+                {isVirtual && targetKm > 0 && loggedKm >= targetKm && (
+                  <VirtualCertificateButton eventId={event.id} />
+                )}
+
+                {isVirtual && (
+                  <Link
+                    href="/runner/run-log"
+                    className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                  >
+                    <Footprints className="size-[18px]" />
+                    Log a Run
+                  </Link>
+                )}
+
+                {!isVirtual && (
+                  <Link
+                    href={`/runner/events/${event.id}/gallery`}
+                    className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                  >
+                    <Images className="size-[18px]" />
+                    Event Photos
+                  </Link>
+                )}
 
                 <Link
                   href={`/runner/leaderboard?event_id=${event.id}`}

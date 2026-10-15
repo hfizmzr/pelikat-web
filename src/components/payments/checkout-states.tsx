@@ -74,8 +74,19 @@ export function AwaitingState() {
   )
 }
 
-/** Payment confirmed. BIB comes from the registration row, never the URL. */
-export function ConfirmedState({ bibNumber, eventId }: { bibNumber: string | null; eventId: string }) {
+/** Payment confirmed. BIB comes from the registration row, never the URL.
+ *  Virtual events have no physical BIB: the primary CTA returns to the
+ *  event page instead of the BIB view. */
+export function ConfirmedState({
+  bibNumber,
+  eventId,
+  eventType,
+}: {
+  bibNumber: string | null
+  eventId: string
+  eventType?: string | null
+}) {
+  const isVirtual = eventType === 'virtual'
   return (
     <div className="bg-success/10 border border-success/30 p-5 rounded-2xl flex flex-col items-center text-center gap-3">
       <CircleCheck className="size-[40px] text-success" aria-hidden="true" />
@@ -83,24 +94,35 @@ export function ConfirmedState({ bibNumber, eventId }: { bibNumber: string | nul
         <h3 className="text-[16px] font-bold text-success mb-1">Payment Successful!</h3>
         <p className="text-[13px] text-success/80">Your registration is confirmed. See you at the start line.</p>
       </div>
-      {bibNumber && (
+      {bibNumber && !isVirtual && (
         <div className="w-full bg-card/60 rounded-xl border border-success/20 px-4 py-3 flex items-center justify-between">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Your BIB</span>
           <span className="font-mono text-[18px] font-bold text-foreground">{bibNumber}</span>
         </div>
       )}
-      <Link
-        href={`/runner/events/${eventId}/bib`}
-        className="w-full inline-flex items-center justify-center min-h-[44px] py-3 rounded-xl bg-success text-emerald-900 text-[13px] font-bold active:scale-95 transition-transform"
-      >
-        View Digital BIB
-      </Link>
-      <Link
-        href={`/runner/events/${eventId}`}
-        className="inline-flex items-center min-h-[44px] text-[12px] font-bold text-muted-foreground underline underline-offset-2"
-      >
-        Back to Event
-      </Link>
+      {isVirtual ? (
+        <Link
+          href={`/runner/events/${eventId}`}
+          className="w-full inline-flex items-center justify-center min-h-[44px] py-3 rounded-xl bg-success text-emerald-900 text-[13px] font-bold active:scale-95 transition-transform"
+        >
+          Back to Event
+        </Link>
+      ) : (
+        <>
+          <Link
+            href={`/runner/events/${eventId}/bib`}
+            className="w-full inline-flex items-center justify-center min-h-[44px] py-3 rounded-xl bg-success text-emerald-900 text-[13px] font-bold active:scale-95 transition-transform"
+          >
+            View Digital BIB
+          </Link>
+          <Link
+            href={`/runner/events/${eventId}`}
+            className="inline-flex items-center min-h-[44px] text-[12px] font-bold text-muted-foreground underline underline-offset-2"
+          >
+            Back to Event
+          </Link>
+        </>
+      )}
     </div>
   )
 }
