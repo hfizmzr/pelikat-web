@@ -20,7 +20,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
     bib_number: string
     payment_status: string
     checked_in: boolean
-    events: { name: string; event_date: string; location?: string }
+    events: { name: string; event_date: string; location?: string; event_type?: string }
     race_categories: { name: string; price: number }
   } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -152,10 +152,10 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
               <h3 className="text-[16px] font-bold text-success mb-1">Payment Successful!</h3>
               <p className="text-[13px] text-success/80 mb-4">Your registration is confirmed. See you at the start line.</p>
               <Link 
-                href={`/runner/events/${id}/bib`}
+                href={registration.events?.event_type === 'virtual' ? `/runner/events/${id}` : `/runner/events/${id}/bib`}
                 className="inline-flex w-full py-3 rounded-xl bg-success text-emerald-900 text-[13px] font-bold justify-center active:scale-95 transition-transform"
               >
-                View Digital BIB
+                {registration.events?.event_type === 'virtual' ? 'Back to Event' : 'View Digital BIB'}
               </Link>
             </div>
           </div>

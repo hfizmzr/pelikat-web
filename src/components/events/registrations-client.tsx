@@ -11,9 +11,11 @@ import { exportRegistrationsCsv } from '@/components/events/actions'
 
 type Registration = {
   id: string
-  bib_number: string
+  bib_number: string | null
   checked_in: boolean
   payment_status: string
+  guest_name: string | null
+  registration_role: string
   runner_profiles: { full_name: string; phone: string } | null
   race_categories: { name: string } | null
 }
@@ -35,8 +37,8 @@ export function RegistrationsClient({
       const query = searchQuery.toLowerCase()
       const matchesSearch =
         !query ||
-        reg.bib_number.toLowerCase().includes(query) ||
-        (reg.runner_profiles?.full_name || '').toLowerCase().includes(query) ||
+        reg.bib_number?.toLowerCase().includes(query) ||
+        (reg.guest_name || reg.runner_profiles?.full_name || '').toLowerCase().includes(query) ||
         (reg.race_categories?.name || '').toLowerCase().includes(query) ||
         (reg.runner_profiles?.phone || '').includes(query)
 
@@ -148,9 +150,14 @@ export function RegistrationsClient({
               <TableBody>
                 {filtered.map((reg) => (
                   <TableRow key={reg.id}>
-                    <TableCell className="font-mono">{reg.bib_number}</TableCell>
+                    <TableCell className="font-mono">{reg.bib_number || 'TBA'}</TableCell>
                     <TableCell className="font-medium">
-                      {reg.runner_profiles?.full_name || 'Unknown'}
+                      <span className="inline-flex items-center gap-2">
+                        {reg.guest_name || reg.runner_profiles?.full_name || 'Unknown'}
+                        {reg.registration_role !== 'runner' && (
+                          <Badge variant="outline" className="capitalize">{reg.registration_role}</Badge>
+                        )}
+                      </span>
                     </TableCell>
                     <TableCell>{reg.race_categories?.name || '-'}</TableCell>
                     <TableCell>{reg.runner_profiles?.phone || '-'}</TableCell>

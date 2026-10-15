@@ -129,7 +129,7 @@ export default async function RunnerEventsPage({
                 return (
                   <Link
                     key={event.id}
-                    href={`/runner/events/${event.id}/bib`}
+                    href={`/runner/events/${event.id}`}
                     className="snap-start shrink-0 w-[240px] flex flex-col p-4 bg-card rounded-2xl border border-border/60 active:scale-[0.98] transition-transform"
                   >
                     <div className="flex items-start justify-between mb-2">
@@ -146,8 +146,12 @@ export default async function RunnerEventsPage({
                     <div className="mt-auto flex items-center gap-1.5 text-[11px] text-muted-foreground">
                       <Tag className="size-[14px]" />
                       <span className="truncate">{reg?.race_categories?.name}</span>
-                      <span className="mx-1">•</span>
-                      <span className="font-mono text-muted-foreground">BIB {reg?.bib_number || 'TBA'}</span>
+                      {event.event_type !== 'virtual' && reg?.bib_number && (
+                        <>
+                          <span className="mx-1">•</span>
+                          <span className="font-mono text-muted-foreground">BIB {reg.bib_number}</span>
+                        </>
+                      )}
                     </div>
                   </Link>
                 )

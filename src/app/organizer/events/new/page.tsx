@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, LoaderCircle, Shirt } from "lucide-react"
+import { ArrowLeft, Footprints, LoaderCircle, Shirt } from "lucide-react"
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -14,6 +14,7 @@ interface FormData {
   name: string
   description: string
   event_date: string
+  event_type: 'physical' | 'virtual'
   location: string
   status: string
   reg_open: string
@@ -43,7 +44,7 @@ export default function NewEventPage() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [shirtInventory, setShirtInventory] = useState<Record<ShirtSize, string>>(createEmptyInventory)
   const [formData, setFormData] = useState<FormData>({
-    name: '', description: '', event_date: '', location: '',
+    name: '', description: '', event_date: '', event_type: 'physical', location: '',
     status: 'draft', reg_open: '', reg_close: '',
   })
 
@@ -72,7 +73,8 @@ export default function NewEventPage() {
           name: formData.name.trim(),
           description: formData.description.trim() || null,
           event_date: formData.event_date,
-          location: formData.location.trim() || null,
+          event_type: formData.event_type,
+          location: formData.event_type === 'virtual' ? null : (formData.location.trim() || null),
           status: formData.status,
           reg_open: formData.reg_open || null,
           reg_close: formData.reg_close || null,
@@ -81,18 +83,24 @@ export default function NewEventPage() {
         .single()
       if (error) throw error
 
-      const inventoryRows = SHIRT_SIZES.map((size) => ({
-        event_id: event.id,
-        organizer_id: organizerId,
-        size,
-        initial_qty: parseInventoryQuantity(shirtInventory[size]),
-        claimed_qty: 0,
-      }))
-      const { error: inventoryError } = await supabase.from('event_shirt_inventory').upsert(inventoryRows, { onConflict: 'event_id,size' })
-      if (inventoryError) throw inventoryError
+      if (formData.event_type === 'physical') {
+        const inventoryRows = SHIRT_SIZES.map((size) => ({
+          event_id: event.id,
+          organizer_id: organizerId,
+          size,
+          initial_qty: parseInventoryQuantity(shirtInventory[size]),
+          claimed_qty: 0,
+        }))
+        const { error: inventoryError } = await supabase.from('event_shirt_inventory').upsert(inventoryRows, { onConflict: 'event_id,size' })
+        if (inventoryError) throw inventoryError
+      }
 
-      await logAudit(supabase, 'organizer_create_event', event.id, { name: formData.name, event_date: formData.event_date, location: formData.location })
-      router.push(`/organizer/events/${event.id}/repc`)
+      await logAudit(supabase, 'organizer_create_event', event.id, { name: formData.name, event_date: formData.event_date, event_type: formData.event_type })
+      if (formData.event_type === 'virtual') {
+        router.push(`/organizer/events/${event.id}/categories`)
+      } else {
+        router.push(`/organizer/events/${event.id}/repc`)
+      }
     } catch (error) {
       console.error('Error creating event:', error)
     } finally {
@@ -161,15 +169,29 @@ export default function NewEventPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Location</label>
-                <input
-                  type="text"
-                  placeholder="e.g., Kuala Lumpur, Malaysia"
-                  value={formData.location}
-                  onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-border focus:outline-none focus:border-primary/50 transition-colors"
-                />
+                <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Event Type *</label>
+                <select
+                  value={formData.event_type}
+                  onChange={(e) => setFormData(prev => ({ ...prev, event_type: e.target.value as FormData['event_type'] }))}
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground focus:outline-none focus:border-primary/50 transition-colors appearance-none"
+                >
+                  <option value="physical">Physical Event</option>
+                  <option value="virtual">Virtual Run</option>
+                </select>
               </div>
+
+              {formData.event_type === 'physical' && (
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Location</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Kuala Lumpur, Malaysia"
+                    value={formData.location}
+                    onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-border focus:outline-none focus:border-primary/50 transition-colors"
+                  />
+                </div>
+              )}
 
               <div className="flex flex-col gap-2">
                 <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Registration Opens</label>
@@ -205,31 +227,44 @@ export default function NewEventPage() {
               </div>
             </div>
 
-            {/* Inventory Section */}
-            <div className="bg-card rounded-xl border border-muted p-5 w-full">
-              <div className="flex items-center gap-3 mb-5">
-                <Shirt className="size-[20px] text-primary" />
-                <div>
-                  <h2 className="text-[14px] font-bold text-foreground">REPC Shirt Inventory</h2>
-                  <p className="text-[12px] text-muted-foreground">Initial race kit stock by size</p>
+            {/* Inventory Section (physical events only) */}
+            {formData.event_type === 'physical' && (
+              <div className="bg-card rounded-xl border border-muted p-5 w-full">
+                <div className="flex items-center gap-3 mb-5">
+                  <Shirt className="size-[20px] text-primary" />
+                  <div>
+                    <h2 className="text-[14px] font-bold text-foreground">REPC Shirt Inventory</h2>
+                    <p className="text-[12px] text-muted-foreground">Initial race kit stock by size</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                  {SHIRT_SIZES.map((size) => (
+                    <div key={size} className="flex flex-col gap-2">
+                      <label className="text-[12px] font-semibold tracking-wide text-muted-foreground text-center">{size}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={shirtInventory[size]}
+                        onChange={(e) => setShirtInventory(curr => ({ ...curr, [size]: e.target.value }))}
+                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-[14px] text-center text-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
+            )}
 
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-                {SHIRT_SIZES.map((size) => (
-                  <div key={size} className="flex flex-col gap-2">
-                    <label className="text-[12px] font-semibold tracking-wide text-muted-foreground text-center">{size}</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={shirtInventory[size]}
-                      onChange={(e) => setShirtInventory(curr => ({ ...curr, [size]: e.target.value }))}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-[14px] text-center text-foreground focus:outline-none focus:border-primary/50 transition-colors"
-                    />
-                  </div>
-                ))}
+            {formData.event_type === 'virtual' && (
+              <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-5 text-[12px] text-muted-foreground">
+                <Footprints className="size-[18px] shrink-0 text-primary" />
+                <p>
+                  Virtual Run: no venue, race-kit collection or physical bibs.
+                  Participants submit their runs and sync to a live leaderboard.
+                  Next: add distance categories for the run.
+                </p>
               </div>
-            </div>
+            )}
 
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-2">

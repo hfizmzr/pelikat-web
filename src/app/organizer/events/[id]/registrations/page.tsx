@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { RegistrationsClient } from '@/components/events/registrations-client'
+import { ComplimentaryGuestsClient } from '@/components/events/complimentary-guests-client'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -18,11 +19,10 @@ export default async function OrganizerEventRegistrationsPage({
     createClient(),
   ])
 
-  const { data: event } = await supabase
-    .from('events')
-    .select('id, name')
-    .eq('id', id)
-    .single()
+  const [{ data: event }, { data: categories }] = await Promise.all([
+    supabase.from('events').select('id, name').eq('id', id).single(),
+    supabase.from('race_categories').select('id, name').eq('event_id', id).order('name'),
+  ])
 
   if (!event) {
     notFound()
@@ -30,7 +30,7 @@ export default async function OrganizerEventRegistrationsPage({
 
   const { data: registrations } = await supabase
     .from('registrations')
-    .select('id, bib_number, checked_in, payment_status, runner_profiles(full_name, phone), race_categories(name)')
+    .select('id, bib_number, checked_in, payment_status, guest_name, registration_role, runner_profiles(full_name, phone), race_categories(name)')
     .eq('event_id', id)
     .order('created_at', { ascending: false })
 
@@ -42,6 +42,8 @@ export default async function OrganizerEventRegistrationsPage({
       bib_number: reg.bib_number as string,
       checked_in: (reg.checked_in ?? false) as boolean,
       payment_status: (reg.payment_status ?? 'pending') as string,
+      guest_name: (reg.guest_name ?? null) as string | null,
+      registration_role: (reg.registration_role ?? 'runner') as string,
       runner_profiles: runner ? { full_name: runner.full_name ?? '', phone: runner.phone ?? '' } : null,
       race_categories: cat ? { name: cat.name ?? '' } : null,
     }
@@ -54,10 +56,16 @@ export default async function OrganizerEventRegistrationsPage({
   }
 
   return (
-    <RegistrationsClient
-      eventName={event.name}
-      registrations={rows}
-      stats={stats}
-    />
+    <div className="space-y-6">
+      <ComplimentaryGuestsClient
+        eventId={id}
+        categories={(categories ?? []) as { id: string; name: string }[]}
+      />
+      <RegistrationsClient
+        eventName={event.name}
+        registrations={rows}
+        stats={stats}
+      />
+    </div>
   )
 }
