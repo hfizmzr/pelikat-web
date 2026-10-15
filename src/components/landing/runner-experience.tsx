@@ -1,5 +1,5 @@
 import { CheckCircle, MoreHorizontal } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { PhoneMockup } from "./phone-mockup"
 
@@ -17,7 +17,7 @@ export function RunnerExperience() {
                   <span className="text-xs font-semibold text-primary">
                     PELIKAT RUN
                   </span>
-                  <button type="button" className="text-muted-foreground">
+                  <button type="button" className="text-muted-foreground" aria-label="More options">
                     <MoreHorizontal className="size-5" />
                   </button>
                 </div>
@@ -25,13 +25,13 @@ export function RunnerExperience() {
                 {/* User Card */}
                 <div className="mt-6 flex items-center gap-3">
                   <Avatar className="size-12 border-2 border-primary">
-                    <AvatarImage src="/placeholder.svg" alt="Adam Razak" />
+                    
                     <AvatarFallback className="bg-primary/20 text-primary">
                       AR
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h4 className="font-semibold text-foreground">Adam Razak</h4>
+                    <h3 className="text-base font-semibold text-foreground">Adam Razak</h3>
                     <p className="text-xs text-muted-foreground">
                       21K runner - Elite Group
                     </p>
@@ -61,25 +61,27 @@ export function RunnerExperience() {
                 </div>
 
                 {/* Finish Photos Button */}
-                <Button className="mt-6 w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button className="mt-6 w-full bg-primary text-primary-foreground hover:brightness-95">
                   FINISH PHOTOS
                 </Button>
               </div>
             </PhoneMockup>
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              Illustrative runner view
+            </p>
           </div>
 
           {/* Content */}
           <div className="order-1 lg:order-2">
             <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               <span className="text-balance">
-                The Complete{" "}
-                <span className="text-gradient-purple">Runner Experience</span>
+                Race day,{" "}
+                <span className="text-primary">in your runners&apos; browsers.</span>
               </span>
             </h2>
             <p className="mt-6 text-base text-muted-foreground sm:text-lg">
-              No apps to download. Our Progressive Web App (PWA) gives runners
-              everything they need through a simple link. Instant results, photo
-              access, and digital medals at their fingertips.
+              Runners open one link on race day, no download required. Results,
+              photos, and e-certificates load straight in their browser.
             </p>
 
             {/* Feature List */}
@@ -87,22 +89,22 @@ export function RunnerExperience() {
               <li className="flex items-start gap-3">
                 <CheckCircle className="mt-0.5 size-5 flex-shrink-0 text-success" />
                 <div>
-                  <h4 className="font-semibold text-foreground">
-                    Zero Friction Access
-                  </h4>
+                  <h3 className="text-[15px] font-semibold text-foreground">
+                    No app installs
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Share results and race photos without app stores.
+                    Share results and race photos with runners through one link.
                   </p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="mt-0.5 size-5 flex-shrink-0 text-success" />
                 <div>
-                  <h4 className="font-semibold text-foreground">
+                  <h3 className="text-[15px] font-semibold text-foreground">
                     Interactive Route Maps
-                  </h4>
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Live GPS tracking and water station locators.
+                    Follow the route live and locate water stations while running.
                   </p>
                 </div>
               </li>

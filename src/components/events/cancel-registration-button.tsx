@@ -1,5 +1,6 @@
 'use client'
 
+import { X } from "lucide-react"
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { cancelRegistration } from '@/components/events/actions'
@@ -24,29 +25,29 @@ export function CancelRegistrationButton({ eventId }: { eventId: string }) {
     return (
       <button
         onClick={() => setShowConfirm(true)}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#ffb4ab]/10 text-[#ffb4ab] text-[13px] font-bold active:scale-95 transition-transform"
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[13px] font-bold active:scale-95 transition-transform"
       >
-        <span className="material-symbols-outlined text-[18px]">cancel</span>
+        <X className="size-[18px]" />
         Cancel Registration
       </button>
     )
   }
 
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-xl bg-[#ffb4ab]/5 border border-[#ffb4ab]/20">
-      <p className="text-[12px] text-[#ffb4ab] text-center font-medium">Are you sure you want to cancel?</p>
+    <div className="flex flex-col gap-3 p-4 rounded-xl bg-red-500/10 dark:bg-red-300/5 border border-red-500/30 dark:border-red-300/20">
+      <p className="text-[12px] text-red-500 dark:text-red-300 text-center font-medium">Are you sure you want to cancel?</p>
       <div className="flex gap-2">
         <button
           onClick={handleCancel}
           disabled={isPending}
-          className="flex-1 py-2.5 rounded-lg bg-[#ffb4ab] text-[#690005] text-[12px] font-bold active:scale-95 transition-transform disabled:opacity-50"
+          className="flex-1 py-2.5 rounded-lg bg-red-500 dark:bg-red-300 text-red-900 text-[12px] font-bold active:scale-95 transition-transform disabled:opacity-50"
         >
           {isPending ? 'Canceling...' : 'Yes, Cancel'}
         </button>
         <button
           onClick={() => setShowConfirm(false)}
           disabled={isPending}
-          className="flex-1 py-2.5 rounded-lg bg-[#2a2a2c] text-[#e5e1e4] text-[12px] font-bold active:scale-95 transition-transform disabled:opacity-50"
+          className="flex-1 py-2.5 rounded-lg bg-accent text-foreground text-[12px] font-bold active:scale-95 transition-transform disabled:opacity-50"
         >
           Keep It
         </button>

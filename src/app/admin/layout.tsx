@@ -1,5 +1,6 @@
 'use client'
 
+import { Store } from "lucide-react"
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -45,9 +46,9 @@ export default function AdminLayout({
   }, [])
 
   return (
-    <div className="flex min-h-screen bg-[#131315] dark">
+    <div className="flex min-h-dvh bg-background dark">
       {/* ── Sticky Desktop Sidebar ─────────────────────────────── */}
-      <div className="hidden lg:sticky lg:top-0 lg:h-screen lg:flex lg:flex-col shrink-0">
+      <div className="hidden lg:sticky lg:top-0 lg:h-dvh lg:flex lg:flex-col shrink-0">
         <AdminSidebar />
       </div>
 
@@ -55,51 +56,41 @@ export default function AdminLayout({
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
 
         {/* ── Control Plane Header Strip ──────────────────────── */}
-        <header className="sticky top-0 z-40 h-16 bg-[#1c1b1d]/80 backdrop-blur-md border-b border-[#23232b] flex items-center justify-between px-6 gap-4 shrink-0">
+        <header className="sticky top-0 z-40 h-16 bg-card/80 backdrop-blur-md border-b border-muted flex items-center justify-between px-6 gap-4 shrink-0">
           {/* Left: Mobile toggle + breadcrumbs */}
           <div className="flex items-center gap-3">
             <AdminMobileNav />
 
             {/* Platform indicator */}
-            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#d0bcff]/10 border border-[#d0bcff]/20">
-              <span className="w-2 h-2 rounded-full bg-[#d0bcff] animate-pulse" />
-              <span className="text-[10px] font-bold tracking-widest uppercase font-inter text-[#d0bcff]">
-                Platform Control Plane
+            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="text-[10px] font-bold tracking-widest uppercase font-inter text-primary">
+                Platform Admin
               </span>
             </div>
 
-            {/* Fleet info */}
-            <div className="hidden lg:flex items-center gap-2 text-[#cbc3d7] text-[12px] font-inter">
-              <span className="material-symbols-outlined text-[15px] text-[#958ea0]">dns</span>
-              <span>Fleet AWS ap-southeast-1</span>
-              <span className="text-[#494454]">•</span>
-              <span className="text-[#4edea3] font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#4edea3] animate-ping inline-block" />
-                Multi-Tenant Strict
-              </span>
-            </div>
           </div>
 
           {/* Right: Clock + CTA */}
           <div className="flex items-center gap-3">
             {/* Live clock */}
-            <span className="hidden lg:inline-block text-[11px] text-[#494454] font-mono font-inter">
-              NODE_CLOCK: {clock}
+            <span className="hidden lg:inline-block text-[11px] text-border font-mono font-inter">
+              {clock}
             </span>
 
             {/* Add Tenant Organizer CTA */}
             <Link
               href="/admin/organizers"
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#d0bcff] hover:bg-[#6d3bd7] text-[#3c0091] hover:text-white text-[13px] font-semibold font-inter transition-all shadow-md glow-primary"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold font-inter transition-all shadow-md"
             >
-              <span className="material-symbols-outlined text-[18px]">add_business</span>
+              <Store className="size-[18px]" />
               <span className="hidden sm:inline">+ Add Tenant Organizer</span>
             </Link>
           </div>
         </header>
 
         {/* ── Page Content ────────────────────────────────────── */}
-        <main className="flex-1 overflow-y-auto bg-[#131315] p-6 scrollbar-none">
+        <main className="flex-1 overflow-y-auto bg-background p-6 scrollbar-none">
           {children}
         </main>
       </div>

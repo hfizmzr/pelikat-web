@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Pencil, Store } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -142,15 +142,17 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
         </div>
       )}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="bg-[#201f22] border border-[#494454]/40 text-[#e5e1e4] rounded-xl shadow-2xl">
+        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="font-jakarta text-[18px] text-[#e5e1e4] flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-[#d0bcff]">
-              {isEdit ? 'edit' : 'add_business'}
-            </span>
+          <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
+            {isEdit ? (
+              <Pencil className="size-[20px] text-primary" />
+            ) : (
+              <Store className="size-[20px] text-primary" />
+            )}
             {isEdit ? 'Edit Organizer' : 'Add New Organizer'}
           </DialogTitle>
-          <DialogDescription className="text-[#cbc3d7] font-inter text-[13px]">
+          <DialogDescription className="text-muted-foreground font-inter text-[13px]">
             {isEdit
               ? 'Update organizer details. The organizer will still be able to access their dashboard if active.'
               : 'Create a new organizer account. They can then sign in to manage their events.'}
@@ -158,7 +160,7 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-1">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-[#cbc3d7] font-inter" htmlFor={isEdit ? 'edit-name' : 'name'}>Organizer Name</label>
+            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor={isEdit ? 'edit-name' : 'name'}>Organizer Name</label>
             <Input
               id={isEdit ? 'edit-name' : 'name'}
               placeholder="e.g., Jakarta Marathon"
@@ -166,49 +168,49 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
               onChange={(e) => setName(e.target.value)}
               onBlur={(e) => !isEdit && !slug && setSlug(generateSlug(e.target.value))}
               required
-              className="bg-[#131315] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#494454] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
+              className="bg-background border-border/40 text-foreground placeholder:text-border focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-[#cbc3d7] font-inter" htmlFor={isEdit ? 'edit-slug' : 'slug'}>URL Slug</label>
+            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor={isEdit ? 'edit-slug' : 'slug'}>URL Slug</label>
             <Input
               id={isEdit ? 'edit-slug' : 'slug'}
               placeholder="jakarta-marathon"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               required
-              className="bg-[#131315] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#494454] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
+              className="bg-background border-border/40 text-foreground placeholder:text-border focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
             />
-            <p className="text-[11px] text-[#958ea0] font-inter">Used as: pelikat.com/o/{slug}</p>
+            <p className="text-[11px] text-muted-foreground font-inter">Used as: pelikat.com/o/{slug}</p>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-[#cbc3d7] font-inter" htmlFor={isEdit ? 'edit-contactEmail' : 'contactEmail'}>Contact Email</label>
+            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor={isEdit ? 'edit-contactEmail' : 'contactEmail'}>Contact Email</label>
             <Input
               id={isEdit ? 'edit-contactEmail' : 'contactEmail'}
               type="email"
               placeholder="organizer@example.com"
               value={contactEmail}
               onChange={(e) => setContactEmail(e.target.value)}
-              className="bg-[#131315] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#494454] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
+              className="bg-background border-border/40 text-foreground placeholder:text-border focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
             />
-            <p className="text-[11px] text-[#958ea0] font-inter">Used for login and notifications</p>
+            <p className="text-[11px] text-muted-foreground font-inter">Used for login and notifications</p>
           </div>
           {isEdit && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-[12px] font-semibold text-[#cbc3d7] font-inter" htmlFor="edit-expires">Subscription Expires</label>
+              <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor="edit-expires">Subscription Expires</label>
               <Input
                 id="edit-expires"
                 type="date"
                 value={subExpiresAt}
                 onChange={(e) => setSubExpiresAt(e.target.value)}
-                className="bg-[#131315] border-[#494454]/40 text-[#e5e1e4] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
+                className="bg-background border-border/40 text-foreground focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
               />
             </div>
           )}
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
-              className="px-4 py-2 rounded-lg bg-[#2a2a2c] hover:bg-[#353437] text-[#e5e1e4] text-[13px] font-medium font-inter transition-colors border border-[#494454]/30"
+              className="px-4 py-2 rounded-lg bg-accent hover:bg-accent text-foreground text-[13px] font-medium font-inter transition-colors border border-border/30"
               onClick={() => onOpenChange(false)}
             >
               Cancel
@@ -216,7 +218,7 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#d0bcff] hover:bg-[#6d3bd7] text-[#3c0091] hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all font-inter disabled:opacity-50"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Create Organizer'}

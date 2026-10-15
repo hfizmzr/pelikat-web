@@ -1,5 +1,7 @@
 'use client'
 
+import { ArrowLeft, CircleAlert, Clock, Download, Footprints, History, LoaderCircle, Map, Plus, Satellite, Trash2, Trophy } from "lucide-react"
+
 import { useAuth } from '@/hooks/use-auth'
 import { createClient } from '@/lib/supabase/client'
 import { evaluateBadges } from '@/lib/badges'
@@ -187,21 +189,21 @@ export default function RunnerRunLogPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center">
-        <span className="material-symbols-outlined text-[32px] text-[#cbc3d7] animate-spin">progress_activity</span>
+      <div className="flex flex-col w-full min-h-full bg-background items-center justify-center">
+        <LoaderCircle className="size-[32px] text-muted-foreground animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-[#131315]">
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+    <div className="flex flex-col w-full min-h-full bg-background">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
-          <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
-            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+          <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
-            <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
+            <h1 className="text-[16px] font-bold text-foreground leading-tight">
               Run Log
             </h1>
           </div>
@@ -212,109 +214,109 @@ export default function RunnerRunLogPage() {
         
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
-            <span className="material-symbols-outlined text-[20px] text-[#4cd7f6] mb-1">map</span>
-            <span className="text-[12px] text-[#958ea0] font-medium uppercase tracking-wider">Total Distance</span>
-            <span className="text-[20px] font-extrabold text-[#e5e1e4] font-mono leading-none">{totalDistance.toFixed(1)} <span className="text-[14px]">KM</span></span>
+          <div className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
+            <Map className="size-[20px] text-primary mb-1" />
+            <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider">Total Distance</span>
+            <span className="text-[20px] font-extrabold text-foreground font-mono leading-none">{totalDistance.toFixed(1)} <span className="text-[14px]">KM</span></span>
           </div>
-          <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
-            <span className="material-symbols-outlined text-[20px] text-[#d0bcff] mb-1">schedule</span>
-            <span className="text-[12px] text-[#958ea0] font-medium uppercase tracking-wider">Total Time</span>
-            <span className="text-[16px] font-bold text-[#e5e1e4] mt-1 leading-none">{formatTime(totalTime)}</span>
+          <div className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
+            <Clock className="size-[20px] text-primary mb-1" />
+            <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider">Total Time</span>
+            <span className="text-[16px] font-bold text-foreground mt-1 leading-none">{formatTime(totalTime)}</span>
           </div>
-          <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-1 col-span-2 active:scale-[0.98] transition-transform">
+          <div className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-1 col-span-2 active:scale-[0.98] transition-transform">
             <div className="flex justify-between items-center">
-              <span className="material-symbols-outlined text-[20px] text-[#4edea3]">directions_run</span>
-              <span className="text-[20px] font-extrabold text-[#e5e1e4] font-mono leading-none">{runLogs.length}</span>
+              <Footprints className="size-[20px] text-success" />
+              <span className="text-[20px] font-extrabold text-foreground font-mono leading-none">{runLogs.length}</span>
             </div>
-            <span className="text-[12px] text-[#958ea0] font-medium uppercase tracking-wider mt-2">Total Runs Logged</span>
+            <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider mt-2">Total Runs Logged</span>
           </div>
         </div>
 
         {gpsRoutePoints.length >= 2 && (
-          <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-[#353437]/60 flex items-center justify-between">
-              <h2 className="text-[14px] font-bold text-[#e5e1e4]">Your Last Route</h2>
-              <span className="text-[10px] text-[#cbc3d7] bg-[#23232b] px-2 py-0.5 rounded uppercase tracking-wider">{gpsRoutePoints.length} Points</span>
+          <section className="bg-card rounded-2xl border border-border/60 overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-border/60 flex items-center justify-between">
+              <h2 className="text-[14px] font-bold text-foreground">Your Last Route</h2>
+              <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded uppercase tracking-wider">{gpsRoutePoints.length} Points</span>
             </div>
-            <div className="p-2 aspect-video bg-[#131315]">
+            <div className="p-2 aspect-video bg-background">
               <RouteMap points={gpsRoutePoints} />
             </div>
           </section>
         )}
 
         {/* Log a Run */}
-        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-[#353437]/60">
-            <h2 className="text-[14px] font-bold text-[#e5e1e4]">Log a Run</h2>
-            <p className="text-[12px] text-[#958ea0]">Add your virtual run activity</p>
+        <section className="bg-card rounded-2xl border border-border/60 overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-border/60">
+            <h2 className="text-[14px] font-bold text-foreground">Log a Run</h2>
+            <p className="text-[12px] text-muted-foreground">Add your virtual run activity</p>
           </div>
           
           <div className="p-5 flex flex-col gap-4">
             <Link 
               href="/runner/run-log/track"
-              className="w-full py-3.5 rounded-xl border border-[#4edea3]/40 bg-[#4edea3]/5 text-[#4edea3] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+              className="w-full py-3.5 rounded-xl border border-success/40 bg-success/5 text-success text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
-              <span className="material-symbols-outlined text-[18px]">satellite_alt</span>
+              <Satellite className="size-[18px]" />
               Start GPS Tracking
             </Link>
 
-            <div className="w-full h-px bg-[#353437]/40 my-1 relative flex items-center justify-center">
-              <span className="bg-[#1c1b1d] px-2 text-[#958ea0] text-[10px] font-bold uppercase tracking-widest absolute">or manual</span>
+            <div className="w-full h-px bg-accent/40 my-1 relative flex items-center justify-center">
+              <span className="bg-card px-2 text-muted-foreground text-[10px] font-bold uppercase tracking-widest absolute">or manual</span>
             </div>
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-bold text-[#cbc3d7] ml-1 uppercase tracking-wider">Distance (KM)</label>
+                <label className="text-[11px] font-bold text-muted-foreground ml-1 uppercase tracking-wider">Distance (KM)</label>
                 <input
                   type="number"
                   step="0.001"
                   placeholder="5.0"
                   value={newRun.distance_km}
                   onChange={(e) => setNewRun({ ...newRun, distance_km: e.target.value })}
-                  className="w-full h-12 px-4 rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                  className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-bold text-[#cbc3d7] ml-1 uppercase tracking-wider">Hrs</label>
+                  <label className="text-[11px] font-bold text-muted-foreground ml-1 uppercase tracking-wider">Hrs</label>
                   <input
                     type="number"
                     min="0"
                     value={newRun.duration_hours}
                     onChange={(e) => setNewRun({ ...newRun, duration_hours: e.target.value })}
-                    className="w-full h-12 px-3 text-center rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                    className="w-full h-12 px-3 text-center rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-bold text-[#cbc3d7] ml-1 uppercase tracking-wider">Min</label>
+                  <label className="text-[11px] font-bold text-muted-foreground ml-1 uppercase tracking-wider">Min</label>
                   <input
                     type="number"
                     min="0"
                     max="59"
                     value={newRun.duration_minutes}
                     onChange={(e) => setNewRun({ ...newRun, duration_minutes: e.target.value })}
-                    className="w-full h-12 px-3 text-center rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                    className="w-full h-12 px-3 text-center rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-bold text-[#cbc3d7] ml-1 uppercase tracking-wider">Sec</label>
+                  <label className="text-[11px] font-bold text-muted-foreground ml-1 uppercase tracking-wider">Sec</label>
                   <input
                     type="number"
                     min="0"
                     max="59"
                     value={newRun.duration_seconds}
                     onChange={(e) => setNewRun({ ...newRun, duration_seconds: e.target.value })}
-                    className="w-full h-12 px-3 text-center rounded-xl bg-[#23232b] border border-[#353437] text-[14px] text-[#e5e1e4] focus:outline-none focus:border-[#d0bcff]/50"
+                    className="w-full h-12 px-3 text-center rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
                   />
                 </div>
               </div>
             </div>
 
             {logError && (
-              <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px]">error</span>
+              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+                <CircleAlert className="size-[16px]" />
                 {logError}
               </div>
             )}
@@ -322,16 +324,16 @@ export default function RunnerRunLogPage() {
             <button
               onClick={handleAddRun}
               disabled={submitting}
-              className="w-full py-3.5 mt-2 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+              className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
             >
               {submitting ? (
                 <>
-                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                  <LoaderCircle className="size-[18px] animate-spin" />
                   Logging...
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[18px]">add</span>
+                  <Plus className="size-[18px]" />
                   Log Run
                 </>
               )}
@@ -340,25 +342,25 @@ export default function RunnerRunLogPage() {
         </section>
 
         {newBadges.length > 0 && (
-          <section className="bg-[#4edea3]/10 border border-[#4edea3]/30 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#4edea3]/20 blur-2xl rounded-full -mt-10 -mr-10 pointer-events-none" />
-            <div className="flex items-center gap-2 text-[#4edea3]">
-              <span className="material-symbols-outlined text-[24px]">emoji_events</span>
+          <section className="bg-success/10 border border-success/30 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-success/20 blur-2xl rounded-full -mt-10 -mr-10 pointer-events-none" />
+            <div className="flex items-center gap-2 text-success">
+              <Trophy className="size-[24px]" />
               <h2 className="text-[16px] font-bold">Badges Earned!</h2>
             </div>
             <div className="grid grid-cols-2 gap-3 relative z-10">
               {newBadges.map((badge) => (
-                <div key={badge.badge_key} className="bg-[#131315]/80 p-3 rounded-xl border border-[#4edea3]/20 flex flex-col items-center text-center">
+                <div key={badge.badge_key} className="bg-background/80 p-3 rounded-xl border border-success/20 flex flex-col items-center text-center">
                   <span className="text-[24px] mb-2">{badge.icon}</span>
-                  <p className="text-[12px] font-bold text-[#e5e1e4] leading-tight">{badge.name}</p>
+                  <p className="text-[12px] font-bold text-foreground leading-tight">{badge.name}</p>
                   {badge.cert_url && (
                     <a
                       href={badge.cert_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-2 w-full py-1.5 rounded-md bg-[#4edea3] text-[#003926] text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform"
+                      className="mt-2 w-full py-1.5 rounded-md bg-success text-emerald-900 text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform"
                     >
-                      <span className="material-symbols-outlined text-[12px]">download</span>
+                      <Download className="size-[12px]" />
                       Download Certificate
                     </a>
                   )}
@@ -367,7 +369,7 @@ export default function RunnerRunLogPage() {
             </div>
             <button 
               onClick={() => setNewBadges([])}
-              className="w-full py-2.5 rounded-lg bg-[#4edea3]/20 text-[#4edea3] text-[12px] font-bold active:scale-95 transition-transform"
+              className="w-full py-2.5 rounded-lg bg-success/20 text-success text-[12px] font-bold active:scale-95 transition-transform"
             >
               Dismiss
             </button>
@@ -375,23 +377,25 @@ export default function RunnerRunLogPage() {
         )}
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-[16px] font-bold text-[#e5e1e4] ml-1">Run History</h2>
+          <h2 className="text-[16px] font-bold text-foreground ml-1">Run History</h2>
           
           {runLogs.length > 0 ? (
             <div className="flex flex-col gap-3">
               {runLogs.map((log) => (
-                <div key={log.id} className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex items-center justify-between">
+                <div key={log.id} className="bg-card rounded-2xl border border-border/60 p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      log.gps_data ? 'bg-[#4cd7f6]/10 text-[#4cd7f6]' : 'bg-[#d0bcff]/10 text-[#d0bcff]'
+                      log.gps_data ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary'
                     }`}>
-                      <span className="material-symbols-outlined text-[20px]">
-                        {log.gps_data ? 'satellite_alt' : 'directions_run'}
-                      </span>
+                      {log.gps_data ? (
+                        <Satellite className="size-[20px]" />
+                      ) : (
+                        <Footprints className="size-[20px]" />
+                      )}
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[15px] font-bold text-[#e5e1e4]">{log.distance_km} KM</span>
-                      <div className="flex items-center gap-1.5 text-[11px] text-[#958ea0]">
+                      <span className="text-[15px] font-bold text-foreground">{log.distance_km} KM</span>
+                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         <span>{formatTime(log.duration_sec)}</span>
                         <span>•</span>
                         <span>{(log.pace_min_km || 0).toFixed(1)} min/km</span>
@@ -400,23 +404,23 @@ export default function RunnerRunLogPage() {
                   </div>
                   
                   <div className="flex flex-col items-end gap-2">
-                    <span className="text-[10px] text-[#cbc3d7]">
+                    <span className="text-[10px] text-muted-foreground">
                       {new Date(log.logged_at).toLocaleDateString('en-MY', { month: 'short', day: 'numeric' })}
                     </span>
                     <button 
                       onClick={() => handleDelete(log.id)}
-                      className="w-8 h-8 rounded-full bg-[#ffb4ab]/10 text-[#ffb4ab] flex items-center justify-center active:scale-95 transition-transform"
+                      className="w-8 h-8 rounded-full bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 flex items-center justify-center active:scale-95 transition-transform"
                     >
-                      <span className="material-symbols-outlined text-[16px]">delete</span>
+                      <Trash2 className="size-[16px]" />
                     </button>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-8 flex flex-col items-center text-center">
-              <span className="material-symbols-outlined text-[32px] text-[#353437] mb-2">history</span>
-              <p className="text-[13px] text-[#958ea0]">No runs logged yet</p>
+            <div className="bg-card rounded-2xl border border-border/60 p-8 flex flex-col items-center text-center">
+              <History className="size-[32px] text-muted-foreground/50 mb-2" />
+              <p className="text-[13px] text-muted-foreground">No runs logged yet</p>
             </div>
           )}
         </section>

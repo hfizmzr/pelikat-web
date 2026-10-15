@@ -1,3 +1,4 @@
+import { ArrowLeft, Hourglass, Trophy } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import { LiveLeaderboard, type LeaderboardEntry } from '@/components/gamification/live-leaderboard'
 import { LeaderboardFilters } from './filters'
@@ -77,15 +78,15 @@ export default async function RunnerLeaderboardPage({
 
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+    <div className="flex flex-col w-full min-h-full bg-background">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
-          <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
-            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+          <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
-            <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
+            <h1 className="text-[16px] font-bold text-foreground leading-tight">
               Leaderboard
             </h1>
           </div>
@@ -95,14 +96,14 @@ export default async function RunnerLeaderboardPage({
       <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto pb-24">
         
         <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-[#23232b] border border-[#353437] rounded-full flex items-center justify-center mb-3">
-            <span className="material-symbols-outlined text-[32px] text-[#e3c45b]">trophy</span>
+          <div className="w-16 h-16 bg-muted border border-border rounded-full flex items-center justify-center mb-3">
+            <Trophy className="size-[32px] text-amber-500 dark:text-amber-400" />
           </div>
-          <h2 className="text-[20px] font-bold text-[#e5e1e4] tracking-tight">Global Rankings</h2>
-          <p className="text-[13px] text-[#958ea0] mt-1">Virtual run rankings by total distance</p>
+          <h2 className="text-[20px] font-bold text-foreground tracking-tight">Global Rankings</h2>
+          <p className="text-[13px] text-muted-foreground mt-1">Virtual run rankings by total distance</p>
         </div>
 
-        <div className="flex flex-col gap-3 p-3 bg-[#1c1b1d] rounded-2xl border border-[#353437]/60">
+        <div className="flex flex-col gap-3 p-3 bg-card rounded-2xl border border-border/60">
           <div className="flex items-center justify-between gap-3">
             <LeaderboardFilters
               events={events ?? []}
@@ -117,11 +118,11 @@ export default async function RunnerLeaderboardPage({
         </div>
 
         {resultsLocked ? (
-          <div className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-10 flex flex-col items-center text-center gap-3">
-            <span className="material-symbols-outlined text-[40px] text-[#e3c45b]">hourglass_top</span>
+          <div className="bg-card rounded-2xl border border-border/60 p-10 flex flex-col items-center text-center gap-3">
+            <Hourglass className="size-[40px] text-amber-500 dark:text-amber-400" />
             <div>
-              <h2 className="text-[16px] font-bold text-[#e5e1e4] mb-1">Results coming soon. Stay tuned!</h2>
-              <p className="text-[13px] text-[#958ea0]">
+              <h2 className="text-[16px] font-bold text-foreground mb-1">Results coming soon. Stay tuned!</h2>
+              <p className="text-[13px] text-muted-foreground">
                 The organizer hasn&apos;t published results for this event yet.
               </p>
             </div>

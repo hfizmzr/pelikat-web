@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { Loader2 } from 'lucide-react'
+import { Camera, Construction, Footprints, Loader2, Save, Settings, Shield, ToggleRight, TriangleAlert } from "lucide-react"
 import { toast } from 'sonner'
 
 interface PlatformSettings {
@@ -71,57 +71,57 @@ export default function AdminSettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-7 w-7 animate-spin text-[#d0bcff]" />
+        <Loader2 className="h-7 w-7 animate-spin text-primary" />
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-8 font-inter text-[#e5e1e4]">
+    <div className="flex flex-col gap-8 font-inter text-foreground">
       {/* ── Page Header ─────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#d0bcff]">toggle_on</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#d0bcff] font-inter">Platform Config</span>
+            <ToggleRight className="size-[16px] text-primary" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary font-inter">Platform Config</span>
           </div>
-          <h1 className="font-jakarta font-bold text-[28px] text-[#e5e1e4] tracking-tight">Settings</h1>
-          <p className="text-[13px] text-[#958ea0]">Manage platform-wide configuration, feature flags, and operational controls</p>
+          <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Settings</h1>
+          <p className="text-[13px] text-muted-foreground">Manage platform-wide configuration, feature flags, and operational controls</p>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[#d0bcff] hover:bg-[#6d3bd7] text-[#3c0091] hover:text-white text-[13px] font-semibold transition-all glow-primary font-inter disabled:opacity-60 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all font-inter disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-          <span className="material-symbols-outlined text-[18px]">save</span>
+          <Save className="size-[18px]" />
           Save Changes
         </button>
       </div>
 
       {/* ── General Settings ─────────────────────────────────────────── */}
-      <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 overflow-hidden">
-        <div className="p-5 border-b border-[#494454]/30 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#d0bcff] text-[20px]">settings</span>
+      <div className="rounded-xl bg-card border border-border/30 overflow-hidden">
+        <div className="p-5 border-b border-border/30 flex items-center gap-2">
+          <Settings className="text-primary size-[20px]" />
           <div>
-            <h2 className="font-jakarta font-semibold text-[16px] text-[#e5e1e4]">General Settings</h2>
-            <p className="text-[11px] text-[#958ea0] font-inter">Basic platform identity and contact configuration</p>
+            <h2 className="font-jakarta font-semibold text-[16px] text-foreground">General Settings</h2>
+            <p className="text-[11px] text-muted-foreground font-inter">Basic platform identity and contact configuration</p>
           </div>
         </div>
         <div className="p-5 flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-[#cbc3d7] font-inter" htmlFor="platform-name">
+            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor="platform-name">
               Platform Name
             </label>
             <Input
               id="platform-name"
               value={settings.platform_name}
               onChange={(e) => updateSetting('platform_name', e.target.value)}
-              className="bg-[#201f22] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#958ea0] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
+              className="bg-card border-border/40 text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-[#cbc3d7] font-inter" htmlFor="support-email">
+            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor="support-email">
               Support Email
             </label>
             <Input
@@ -129,54 +129,54 @@ export default function AdminSettingsPage() {
               type="email"
               value={settings.support_email}
               onChange={(e) => updateSetting('support_email', e.target.value)}
-              className="bg-[#201f22] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#958ea0] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
+              className="bg-card border-border/40 text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
             />
           </div>
         </div>
       </div>
 
       {/* ── Feature Flags ─────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 overflow-hidden">
-        <div className="p-5 border-b border-[#494454]/30 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#4cd7f6] text-[20px]">toggle_on</span>
+      <div className="rounded-xl bg-card border border-border/30 overflow-hidden">
+        <div className="p-5 border-b border-border/30 flex items-center gap-2">
+          <ToggleRight className="text-primary size-[20px]" />
           <div>
-            <h2 className="font-jakarta font-semibold text-[16px] text-[#e5e1e4]">Feature Flags</h2>
-            <p className="text-[11px] text-[#958ea0] font-inter">Enable or disable platform features globally</p>
+            <h2 className="font-jakarta font-semibold text-[16px] text-foreground">Feature Flags</h2>
+            <p className="text-[11px] text-muted-foreground font-inter">Enable or disable platform features globally</p>
           </div>
         </div>
-        <div className="divide-y divide-[#353437]/30">
+        <div className="divide-y divide-accent/30">
           {[
             {
               key: 'feature_virtual_run' as const,
               label: 'Virtual Run Tracking',
               desc: 'Enable GPS-based virtual run tracking and verification',
-              icon: 'directions_run',
+              icon: Footprints,
             },
             {
               key: 'feature_photo_ai' as const,
               label: 'AI BIB Photo Vision',
               desc: 'Enable AI-powered race photo bib number recognition (OCR)',
-              icon: 'photo_camera',
+              icon: Camera,
             },
             {
               key: 'feature_repc_collection' as const,
               label: 'REPC Consent Collection',
               desc: 'Enable participant consent data collection at check-in',
-              icon: 'policy',
+              icon: Shield,
             },
           ].map((flag) => (
-            <div key={flag.key} className="flex items-center justify-between px-5 py-4 hover:bg-[#201f22]/50 transition-colors">
+            <div key={flag.key} className="flex items-center justify-between px-5 py-4 hover:bg-card/50 transition-colors">
               <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[20px] text-[#d0bcff]">{flag.icon}</span>
+                <flag.icon className="size-[20px] text-primary" />
                 <div>
-                  <p className="text-[13px] font-semibold text-[#e5e1e4] font-inter">{flag.label}</p>
-                  <p className="text-[11px] text-[#958ea0] font-inter">{flag.desc}</p>
+                  <p className="text-[13px] font-semibold text-foreground font-inter">{flag.label}</p>
+                  <p className="text-[11px] text-muted-foreground font-inter">{flag.desc}</p>
                 </div>
               </div>
               <Switch
                 checked={settings[flag.key]}
                 onCheckedChange={(checked) => updateSetting(flag.key, checked)}
-                className="data-[state=checked]:bg-[#a078ff]"
+                className="data-[state=checked]:bg-primary"
               />
             </div>
           ))}
@@ -184,20 +184,20 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* ── Danger Zone ─────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-[#93000a]/10 border border-[#ffb4ab]/20 overflow-hidden">
-        <div className="p-5 border-b border-[#ffb4ab]/10 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#ffb4ab] text-[20px]">warning</span>
+      <div className="rounded-xl bg-red-800/10 border border-red-500/30 dark:border-red-300/20 overflow-hidden">
+        <div className="p-5 border-b border-red-500 dark:border-red-300/10 flex items-center gap-2">
+          <TriangleAlert className="text-red-500 dark:text-red-300 size-[20px]" />
           <div>
-            <h2 className="font-jakarta font-semibold text-[16px] text-[#ffb4ab]">Danger Zone</h2>
-            <p className="text-[11px] text-[#cbc3d7] font-inter">Irreversible platform-level actions</p>
+            <h2 className="font-jakarta font-semibold text-[16px] text-red-500 dark:text-red-300">Danger Zone</h2>
+            <p className="text-[11px] text-muted-foreground font-inter">Irreversible platform-level actions</p>
           </div>
         </div>
         <div className="flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-[20px] text-[#ffb4ab]">construction</span>
+            <Construction className="size-[20px] text-red-500 dark:text-red-300" />
             <div>
-              <p className="text-[13px] font-semibold text-[#e5e1e4] font-inter">Maintenance Mode</p>
-              <p className="text-[11px] text-[#958ea0] font-inter">
+              <p className="text-[13px] font-semibold text-foreground font-inter">Maintenance Mode</p>
+              <p className="text-[11px] text-muted-foreground font-inter">
                 Blocks all non-admin access to the platform. Use during deployments.
               </p>
             </div>
@@ -205,7 +205,7 @@ export default function AdminSettingsPage() {
           <Switch
             checked={settings.maintenance_mode}
             onCheckedChange={(checked) => updateSetting('maintenance_mode', checked)}
-            className="data-[state=checked]:bg-[#93000a]"
+            className="data-[state=checked]:bg-red-800"
           />
         </div>
       </div>

@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Loader2 } from 'lucide-react'
+import { Banknote, Clock, Download, Loader2, Pencil, ReceiptText, RefreshCw, Search, SearchX, Tag, UserPlus, Users, X } from "lucide-react"
 import { toast } from 'sonner'
 
 interface Registration {
@@ -202,40 +202,40 @@ export default function AdminRegistrationsPage() {
   const checkInRate = metrics.total > 0 ? Math.round((metrics.checkedIn / metrics.total) * 100) : 0
 
   const metricCards = [
-    { label: 'Total Registrations', value: metrics.total.toLocaleString(), icon: 'groups', color: 'text-[#d0bcff]', bg: 'bg-[#d0bcff]/20' },
-    { label: 'Paid Athletes', value: metrics.paid.toLocaleString(), icon: 'payments', color: 'text-[#4edea3]', bg: 'bg-[#4edea3]/20' },
-    { label: 'Checked In', value: `${metrics.checkedIn.toLocaleString()} (${checkInRate}%)`, icon: 'how_to_reg', color: 'text-[#4cd7f6]', bg: 'bg-[#4cd7f6]/20' },
-    { label: 'Pending Payment', value: metrics.pending.toLocaleString(), icon: 'pending', color: 'text-[#ffb4ab]', bg: 'bg-[#ffb4ab]/20' },
+    { label: 'Total Registrations', value: metrics.total.toLocaleString(), icon: Users, color: 'text-primary', bg: 'bg-primary/20' },
+    { label: 'Paid Athletes', value: metrics.paid.toLocaleString(), icon: Banknote, color: 'text-success', bg: 'bg-success/20' },
+    { label: 'Checked In', value: `${metrics.checkedIn.toLocaleString()} (${checkInRate}%)`, icon: UserPlus, color: 'text-primary', bg: 'bg-primary/20' },
+    { label: 'Pending Payment', value: metrics.pending.toLocaleString(), icon: Clock, color: 'text-red-500 dark:text-red-300', bg: 'bg-red-500/10 dark:bg-red-300/20' },
   ]
 
   return (
-    <div className="flex flex-col gap-8 font-inter text-[#e5e1e4]">
+    <div className="flex flex-col gap-8 font-inter text-foreground">
       {/* ── Page Header ──────────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#d0bcff]">groups</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#d0bcff]">Global Fleet</span>
+            <Users className="size-[16px] text-primary" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Global Fleet</span>
           </div>
-          <h1 className="font-jakarta font-bold text-[28px] text-[#e5e1e4] tracking-tight">Participant & BIB Management</h1>
-          <p className="text-[13px] text-[#958ea0]">Cross-tenant registration ledger, race bib assignments, and real-time check-in controls</p>
+          <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Participant & BIB Management</h1>
+          <p className="text-[13px] text-muted-foreground">Cross-tenant registration ledger, race bib assignments, and real-time check-in controls</p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={fetchRegistrations}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-medium hover:bg-[#353437] hover:text-[#d0bcff] transition-all border border-[#494454]/30"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
           >
-            <span className={`material-symbols-outlined text-[16px] ${loading ? 'animate-spin' : ''}`}>refresh</span>
+            <RefreshCw className={`size-[16px] ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
           <button
             onClick={handleExportCSV}
             disabled={exporting || registrations.length === 0}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#a078ff] text-[#340080] text-[13px] font-semibold hover:bg-[#d0bcff] transition-all shadow-[0_0_20px_rgba(160,120,255,0.35)]"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary transition-all "
           >
-            <span className="material-symbols-outlined text-[18px]">download</span>
+            <Download className="size-[18px]" />
             <span>Export CSV</span>
           </button>
         </div>
@@ -244,25 +244,23 @@ export default function AdminRegistrationsPage() {
       {/* ── Metric Cards ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
         {metricCards.map((m, i) => (
-          <div key={i} className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 p-5 flex flex-col gap-3">
+          <div key={i} className="rounded-xl bg-card border border-border/30 p-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#958ea0]">{m.label}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{m.label}</span>
               <div className={`p-1.5 rounded-lg ${m.bg} ${m.color}`}>
-                <span className="material-symbols-outlined text-[18px]">{m.icon}</span>
+                <m.icon className="size-[18px]" />
               </div>
             </div>
-            <span className="text-[32px] font-bold leading-none text-[#e5e1e4] font-tabular">{m.value}</span>
+            <span className="text-[32px] font-bold leading-none text-foreground font-tabular">{m.value}</span>
           </div>
         ))}
       </div>
 
       {/* ── Filter Bar ───────────────────────────────────────────────────── */}
-      <div className="bg-[#1c1b1d] rounded-xl p-4 border border-[#494454]/30 flex flex-wrap items-center gap-3">
+      <div className="bg-card rounded-xl p-4 border border-border/30 flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
-          <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#958ea0] text-[18px] pointer-events-none">
-            search
-          </span>
+          <Search className="absolute left-3 top-2.5 text-muted-foreground size-[18px] pointer-events-none" />
           <Input
             placeholder="Search BIB number or athlete..."
             value={search}
@@ -270,7 +268,7 @@ export default function AdminRegistrationsPage() {
               setSearch(e.target.value)
               setPage(1)
             }}
-            className="pl-9 bg-[#201f22] border-[#494454]/30 text-[#e5e1e4] placeholder:text-[#958ea0] h-9 text-[13px] focus-visible:ring-1 focus-visible:ring-[#d0bcff]"
+            className="pl-9 bg-card border-border/30 text-foreground placeholder:text-muted-foreground h-9 text-[13px] focus-visible:ring-1 focus-visible:ring-primary"
           />
         </div>
 
@@ -282,10 +280,10 @@ export default function AdminRegistrationsPage() {
             setPage(1)
           }}
         >
-          <SelectTrigger className="w-[180px] bg-[#201f22] border-[#494454]/30 text-[#e5e1e4] h-9 text-[13px]">
+          <SelectTrigger className="w-[180px] bg-card border-border/30 text-foreground h-9 text-[13px]">
             <SelectValue placeholder="All Events" />
           </SelectTrigger>
-          <SelectContent className="bg-[#201f22] border-[#494454] text-[#e5e1e4]">
+          <SelectContent className="bg-card border-border text-foreground">
             <SelectItem value="all">All Events</SelectItem>
             {events.map((e) => (
               <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
@@ -301,10 +299,10 @@ export default function AdminRegistrationsPage() {
             setPage(1)
           }}
         >
-          <SelectTrigger className="w-[140px] bg-[#201f22] border-[#494454]/30 text-[#e5e1e4] h-9 text-[13px]">
+          <SelectTrigger className="w-[140px] bg-card border-border/30 text-foreground h-9 text-[13px]">
             <SelectValue placeholder="Payment" />
           </SelectTrigger>
-          <SelectContent className="bg-[#201f22] border-[#494454] text-[#e5e1e4]">
+          <SelectContent className="bg-card border-border text-foreground">
             <SelectItem value="all">All Payments</SelectItem>
             <SelectItem value="paid">Paid</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
@@ -320,10 +318,10 @@ export default function AdminRegistrationsPage() {
             setPage(1)
           }}
         >
-          <SelectTrigger className="w-[140px] bg-[#201f22] border-[#494454]/30 text-[#e5e1e4] h-9 text-[13px]">
+          <SelectTrigger className="w-[140px] bg-card border-border/30 text-foreground h-9 text-[13px]">
             <SelectValue placeholder="Check-In" />
           </SelectTrigger>
-          <SelectContent className="bg-[#201f22] border-[#494454] text-[#e5e1e4]">
+          <SelectContent className="bg-card border-border text-foreground">
             <SelectItem value="all">All Check-Ins</SelectItem>
             <SelectItem value="true">Checked In</SelectItem>
             <SelectItem value="false">Not Checked In</SelectItem>
@@ -340,22 +338,22 @@ export default function AdminRegistrationsPage() {
               setSelectedCheckIn('all')
               setPage(1)
             }}
-            className="flex items-center gap-1 text-[12px] text-[#ffb4ab] hover:underline px-2"
+            className="flex items-center gap-1 text-[12px] text-red-500 dark:text-red-300 hover:underline px-2"
           >
-            <span className="material-symbols-outlined text-[14px]">close</span>
+            <X className="size-[14px]" />
             Clear
           </button>
         )}
       </div>
 
       {/* ── Registrations Table ──────────────────────────────────────────── */}
-      <div className="rounded-xl bg-[#1c1b1d] border border-[#494454]/30 overflow-hidden shadow-lg">
-        <div className="p-5 border-b border-[#494454]/30 flex items-center justify-between">
+      <div className="rounded-xl bg-card border border-border/30 overflow-hidden shadow-lg">
+        <div className="p-5 border-b border-border/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#d0bcff] text-[20px]">receipt_long</span>
-            <h2 className="font-jakarta font-semibold text-[18px] text-[#e5e1e4]">Live Registrations Ledger</h2>
+            <ReceiptText className="text-primary size-[20px]" />
+            <h2 className="font-jakarta font-semibold text-[18px] text-foreground">Live Registrations Ledger</h2>
           </div>
-          <span className="text-[12px] text-[#958ea0] font-mono">
+          <span className="text-[12px] text-muted-foreground font-mono">
             Showing {registrations.length} of {totalCount} total
           </span>
         </div>
@@ -363,34 +361,34 @@ export default function AdminRegistrationsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#494454]/30">
+              <tr className="border-b border-border/30">
                 {['BIB', 'Athlete', 'Event & Category', 'Payment', 'Check-In Status', 'Date', 'Actions'].map((h) => (
-                  <th key={h} className="py-3 px-5 text-[10px] font-bold uppercase tracking-wider text-[#958ea0]">{h}</th>
+                  <th key={h} className="py-3 px-5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#353437]/30 text-[13px]">
+            <tbody className="divide-y divide-accent/30 text-[13px]">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-[#958ea0]">
-                    <Loader2 className="h-7 w-7 animate-spin mx-auto text-[#d0bcff] mb-2" />
+                  <td colSpan={7} className="py-16 text-center text-muted-foreground">
+                    <Loader2 className="h-7 w-7 animate-spin mx-auto text-primary mb-2" />
                     <span>Loading participant records...</span>
                   </td>
                 </tr>
               ) : registrations.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-[#958ea0]">
-                    <span className="material-symbols-outlined text-[36px] text-[#494454] block mb-2">search_off</span>
+                  <td colSpan={7} className="py-16 text-center text-muted-foreground">
+                    <SearchX className="size-[36px] text-border block mb-2" />
                     No registrations matching the active criteria
                   </td>
                 </tr>
               ) : (
                 registrations.map((reg) => (
-                  <tr key={reg.id} className="hover:bg-[#201f22]/50 transition-colors">
+                  <tr key={reg.id} className="hover:bg-card/50 transition-colors">
                     {/* BIB */}
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-bold text-[#d0bcff] bg-[#d0bcff]/10 px-2 py-0.5 rounded border border-[#d0bcff]/20">
+                        <span className="font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
                           #{reg.bib_number || 'UNASSIGNED'}
                         </span>
                         <button
@@ -400,9 +398,9 @@ export default function AdminRegistrationsPage() {
                             setEditBibOpen(true)
                           }}
                           title="Reassign BIB"
-                          className="p-1 rounded text-[#958ea0] hover:text-[#e5e1e4] hover:bg-[#2a2a2c] transition-colors"
+                          className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                         >
-                          <span className="material-symbols-outlined text-[14px]">edit</span>
+                          <Pencil className="size-[14px]" />
                         </button>
                       </div>
                     </td>
@@ -410,11 +408,11 @@ export default function AdminRegistrationsPage() {
                     {/* Athlete */}
                     <td className="py-3.5 px-5">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-[#e5e1e4] font-jakarta">
+                        <span className="font-semibold text-foreground font-jakarta">
                           {reg.runner_profiles?.full_name || 'Anonymous Runner'}
                         </span>
                         {reg.runner_profiles?.phone && (
-                          <span className="text-[11px] text-[#958ea0] font-mono">
+                          <span className="text-[11px] text-muted-foreground font-mono">
                             {reg.runner_profiles.phone} · Size {reg.runner_profiles.t_shirt_size || 'M'}
                           </span>
                         )}
@@ -424,8 +422,8 @@ export default function AdminRegistrationsPage() {
                     {/* Event & Category */}
                     <td className="py-3.5 px-5">
                       <div className="flex flex-col">
-                        <span className="text-[#e5e1e4] font-medium">{reg.events?.name || '—'}</span>
-                        <span className="text-[11px] text-[#cbc3d7]">
+                        <span className="text-foreground font-medium">{reg.events?.name || '—'}</span>
+                        <span className="text-[11px] text-muted-foreground">
                           {reg.race_categories?.name || 'General'} · RM {(reg.race_categories?.price ?? 0).toFixed(2)}
                         </span>
                       </div>
@@ -435,10 +433,10 @@ export default function AdminRegistrationsPage() {
                     <td className="py-3.5 px-5">
                       <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
                         reg.payment_status === 'paid'
-                          ? 'text-[#4edea3] bg-[#4edea3]/10 border-[#4edea3]/20'
+                          ? 'text-success bg-success/10 border-success/20'
                           : reg.payment_status === 'refunded'
-                            ? 'text-[#ffb4ab] bg-[#ffb4ab]/10 border-[#ffb4ab]/20'
-                            : 'text-[#f59e0b] bg-[#f59e0b]/10 border-[#f59e0b]/20'
+                            ? 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20'
+                            : 'text-amber-500 bg-amber-500/10 border-amber-500/20'
                       }`}>
                         {reg.payment_status.toUpperCase()}
                       </span>
@@ -451,13 +449,13 @@ export default function AdminRegistrationsPage() {
                         disabled={updatingId === reg.id}
                         className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border inline-flex items-center gap-1.5 transition-all ${
                           reg.checked_in
-                            ? 'text-[#4cd7f6] bg-[#4cd7f6]/10 border-[#4cd7f6]/20 hover:bg-[#4cd7f6]/20'
-                            : 'text-[#958ea0] bg-[#958ea0]/10 border-[#958ea0]/20 hover:text-[#e5e1e4] hover:bg-[#353437]'
+                            ? 'text-primary bg-primary/10 border-primary/20 hover:bg-primary/20'
+                            : 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20 hover:text-foreground hover:bg-accent'
                         }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${reg.checked_in ? 'bg-[#4cd7f6]' : 'bg-[#958ea0]'}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${reg.checked_in ? 'bg-primary' : 'bg-muted-foreground'}`} />
                         {updatingId === reg.id ? (
-                          <Loader2 className="h-3 w-3 animate-spin text-[#d0bcff]" />
+                          <Loader2 className="h-3 w-3 animate-spin text-primary" />
                         ) : reg.checked_in ? (
                           'Checked In'
                         ) : (
@@ -467,7 +465,7 @@ export default function AdminRegistrationsPage() {
                     </td>
 
                     {/* Date */}
-                    <td className="py-3.5 px-5 text-[#958ea0] font-mono text-[12px]">
+                    <td className="py-3.5 px-5 text-muted-foreground font-mono text-[12px]">
                       {new Date(reg.created_at).toLocaleDateString()}
                     </td>
 
@@ -477,7 +475,7 @@ export default function AdminRegistrationsPage() {
                         <button
                           onClick={() => handleToggleCheckIn(reg)}
                           disabled={updatingId === reg.id}
-                          className="px-2 py-1 rounded bg-[#201f22] text-[#cbc3d7] hover:text-white hover:bg-[#2a2a2c] text-[11px] font-medium border border-[#494454]/30"
+                          className="px-2 py-1 rounded bg-card text-muted-foreground hover:text-white hover:bg-accent text-[11px] font-medium border border-border/30"
                         >
                           {reg.checked_in ? 'Undo' : 'Check-In'}
                         </button>
@@ -492,20 +490,20 @@ export default function AdminRegistrationsPage() {
 
         {/* Pagination controls */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-[#494454]/30 flex items-center justify-between text-[12px] text-[#958ea0]">
+          <div className="p-4 border-t border-border/30 flex items-center justify-between text-[12px] text-muted-foreground">
             <span>Page {page} of {totalPages}</span>
             <div className="flex items-center gap-2">
               <button
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-3 py-1 rounded bg-[#201f22] text-[#e5e1e4] disabled:opacity-40 hover:bg-[#2a2a2c] border border-[#494454]/30"
+                className="px-3 py-1 rounded bg-card text-foreground disabled:opacity-40 hover:bg-accent border border-border/30"
               >
                 Previous
               </button>
               <button
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="px-3 py-1 rounded bg-[#201f22] text-[#e5e1e4] disabled:opacity-40 hover:bg-[#2a2a2c] border border-[#494454]/30"
+                className="px-3 py-1 rounded bg-card text-foreground disabled:opacity-40 hover:bg-accent border border-border/30"
               >
                 Next
               </button>
@@ -516,25 +514,25 @@ export default function AdminRegistrationsPage() {
 
       {/* ── Edit BIB Dialog ──────────────────────────────────────────────── */}
       <Dialog open={editBibOpen} onOpenChange={setEditBibOpen}>
-        <DialogContent className="bg-[#201f22] border-[#494454] text-[#e5e1e4] max-w-md">
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-jakarta text-[18px] text-[#e5e1e4] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#d0bcff]">tag</span>
+            <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
+              <Tag className="text-primary" />
               Reassign Race BIB
             </DialogTitle>
-            <DialogDescription className="text-[#958ea0] text-[13px]">
+            <DialogDescription className="text-muted-foreground text-[13px]">
               Update the assigned BIB number for athlete {selectedReg?.runner_profiles?.full_name || 'Anonymous'}.
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-4 space-y-3">
             <div className="space-y-1.5">
-              <label className="text-[12px] font-semibold text-[#cbc3d7]">New BIB Number</label>
+              <label className="text-[12px] font-semibold text-muted-foreground">New BIB Number</label>
               <Input
                 value={newBib}
                 onChange={(e) => setNewBib(e.target.value)}
                 placeholder="e.g. 1042"
-                className="bg-[#1c1b1d] border-[#494454] text-[#e5e1e4] font-mono text-[16px] tracking-wider focus-visible:ring-[#d0bcff]"
+                className="bg-card border-border text-foreground font-mono text-[16px] tracking-wider focus-visible:ring-primary"
               />
             </div>
           </div>
@@ -542,14 +540,14 @@ export default function AdminRegistrationsPage() {
           <DialogFooter className="gap-2">
             <button
               onClick={() => setEditBibOpen(false)}
-              className="px-4 py-2 rounded-lg bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-medium hover:bg-[#353437]"
+              className="px-4 py-2 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent"
             >
               Cancel
             </button>
             <button
               onClick={handleSaveBib}
               disabled={savingBib || !newBib.trim()}
-              className="px-4 py-2 rounded-lg bg-[#a078ff] text-[#340080] text-[13px] font-bold hover:bg-[#d0bcff] transition-all flex items-center gap-1.5"
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-[13px] font-bold hover:bg-primary transition-all flex items-center gap-1.5"
             >
               {savingBib && <Loader2 className="h-4 w-4 animate-spin" />}
               Save BIB

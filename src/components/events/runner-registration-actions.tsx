@@ -1,5 +1,6 @@
 'use client'
 
+import { CircleAlert, LoaderCircle, User } from "lucide-react"
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -121,19 +122,19 @@ export function RunnerRegistrationActions({
                 disabled={isPending}
                 className={`flex flex-col text-left p-4 rounded-xl border transition-all ${
                   isSelected 
-                    ? 'bg-[#d0bcff]/10 border-[#d0bcff]' 
-                    : 'bg-[#1c1b1d] border-[#353437]/60 hover:border-[#cbc3d7]/30'
+                    ? 'bg-primary/10 border-primary' 
+                    : 'bg-card border-border/60 hover:border-muted-foreground/30'
                 }`}
               >
                 <div className="flex justify-between items-center w-full mb-1">
-                  <span className={`text-[14px] font-bold ${isSelected ? 'text-[#d0bcff]' : 'text-[#e5e1e4]'}`}>
+                  <span className={`text-[14px] font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                     {category.name}
                   </span>
-                  <span className={`text-[14px] font-bold ${isSelected ? 'text-[#d0bcff]' : 'text-[#e5e1e4]'}`}>
+                  <span className={`text-[14px] font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                     RM {category.price ?? 0}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] text-[#958ea0]">
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                   <span>{category.gender || 'Any'}</span>
                   <span>•</span>
                   <span>Ages {category.min_age || '0'}-{category.max_age || '99'}</span>
@@ -154,60 +155,60 @@ export function RunnerRegistrationActions({
       {hasRunnerProfile && (
         <div className={`p-4 rounded-xl border ${
           runner.tShirtSize
-            ? 'bg-[#1c1b1d] border-[#353437]/60'
-            : 'bg-[#e3c45b]/5 border-[#e3c45b]/30'
+            ? 'bg-card border-border/60'
+            : 'bg-amber-500 dark:bg-amber-400/5 border-amber-500 dark:border-amber-400/30'
         } flex flex-col gap-3`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-[#4edea3]">person</span>
-              <span className="text-[12px] font-bold text-[#e5e1e4] uppercase tracking-wider">Using Your Saved Profile</span>
+              <User className="size-[18px] text-success" />
+              <span className="text-[12px] font-bold text-foreground uppercase tracking-wider">Using Your Saved Profile</span>
             </div>
-            <a href="/runner/profile" className="text-[11px] font-bold text-[#d0bcff] hover:underline shrink-0">
+            <a href="/runner/profile" className="text-[11px] font-bold text-primary hover:underline shrink-0">
               Edit
             </a>
           </div>
 
           <div className="grid gap-2 text-[12px]">
             <div className="flex justify-between gap-3">
-              <span className="text-[#958ea0]">Name</span>
-              <span className="text-[#e5e1e4] font-medium text-right truncate">{runner.name || 'Not set'}</span>
+              <span className="text-muted-foreground">Name</span>
+              <span className="text-foreground font-medium text-right truncate">{runner.name || 'Not set'}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-[#958ea0]">Email</span>
-              <span className="text-[#e5e1e4] font-medium text-right truncate">{runner.email || 'Not set'}</span>
+              <span className="text-muted-foreground">Email</span>
+              <span className="text-foreground font-medium text-right truncate">{runner.email || 'Not set'}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-[#958ea0]">Date of Birth</span>
-              <span className="text-[#e5e1e4] font-medium text-right truncate">
+              <span className="text-muted-foreground">Date of Birth</span>
+              <span className="text-foreground font-medium text-right truncate">
                 {runner.dob ? new Date(runner.dob).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not set'}
               </span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-[#958ea0]">Gender</span>
-              <span className="text-[#e5e1e4] font-medium text-right truncate">
+              <span className="text-muted-foreground">Gender</span>
+              <span className="text-foreground font-medium text-right truncate">
                 {!!runner.gender && (runner.gender === 'M' ? 'Male' : runner.gender === 'F' ? 'Female' : runner.gender)}
               </span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-[#958ea0]">IC / Passport</span>
-              <span className={runner.icOnFile ? 'text-[#4edea3] font-medium' : 'text-[#e3c45b] font-medium'}>
+              <span className="text-muted-foreground">IC / Passport</span>
+              <span className={runner.icOnFile ? 'text-success font-medium' : 'text-amber-500 dark:text-amber-400 font-medium'}>
                 {/* IC count never leaves the database encrypted; display matches the profile page's own policy. */}
                 {runner.icOnFile ? 'Securely on file (encrypted)' : 'Not set'}
               </span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-[#958ea0]">Phone</span>
-              <span className="text-[#e5e1e4] font-medium text-right truncate">{runner.phone || 'Not set'}</span>
+              <span className="text-muted-foreground">Phone</span>
+              <span className="text-foreground font-medium text-right truncate">{runner.phone || 'Not set'}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-[#958ea0]">T-Shirt Size</span>
-              <span className={`font-medium text-right ${runner.tShirtSize ? 'text-[#e5e1e4]' : 'text-[#e3c45b]'}`}>
+              <span className="text-muted-foreground">T-Shirt Size</span>
+              <span className={`font-medium text-right ${runner.tShirtSize ? 'text-foreground' : 'text-amber-500 dark:text-amber-400'}`}>
                 {runner.tShirtSize || 'Not set'}
               </span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-[#958ea0]">Emergency Contact</span>
-              <span className={`font-medium text-right truncate ${runner.emergencyContactName ? 'text-[#e5e1e4]' : 'text-[#e3c45b]'}`}>
+              <span className="text-muted-foreground">Emergency Contact</span>
+              <span className={`font-medium text-right truncate ${runner.emergencyContactName ? 'text-foreground' : 'text-amber-500 dark:text-amber-400'}`}>
                 {runner.emergencyContactName
                   ? `${runner.emergencyContactName}${runner.emergencyContactPhone ? ` · ${runner.emergencyContactPhone}` : ''}`
                   : 'Not set'}
@@ -216,14 +217,14 @@ export function RunnerRegistrationActions({
           </div>
 
           {!runner.tShirtSize && (
-            <p className="text-[11px] text-[#e3c45b]">Set a t-shirt size in your profile so the right shirt is reserved at REPC.</p>
+            <p className="text-[11px] text-amber-500 dark:text-amber-400">Set a t-shirt size in your profile so the right shirt is reserved at REPC.</p>
           )}
         </div>
       )}
 
       {error && (
-        <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
-          <span className="material-symbols-outlined text-[16px]">error</span>
+        <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+          <CircleAlert className="size-[16px]" />
           {error}
         </div>
       )}
@@ -231,11 +232,11 @@ export function RunnerRegistrationActions({
       <button
         onClick={handleRegister}
         disabled={isPending || categories.length === 0}
-        className="w-full py-3.5 mt-2 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+        className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
       >
         {isPending ? (
           <>
-            <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+            <LoaderCircle className="size-[18px] animate-spin" />
             Processing...
           </>
         ) : (

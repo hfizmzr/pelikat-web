@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { Download, LoaderCircle } from 'lucide-react'
 import { generateBadgeCertificate } from '@/lib/actions/cert'
 
 export interface BadgeCertificate {
@@ -47,20 +48,22 @@ export function BadgeCertificateButton({ badge }: { badge: BadgeCertificate }) {
       <button
         onClick={handleDownload}
         disabled={isPending}
-        className="py-1.5 rounded-md bg-[#d0bcff]/15 text-[#d0bcff] text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform disabled:opacity-50"
+        className="py-1.5 rounded-md bg-primary/15 text-primary text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform disabled:opacity-50"
       >
-        <span className="material-symbols-outlined text-[12px]">
-          {isPending ? 'progress_activity' : 'download'}
-        </span>
+        {isPending ? (
+          <LoaderCircle className="size-[12px] animate-spin" />
+        ) : (
+          <Download className="size-[12px]" />
+        )}
         {isPending ? 'Generating…' : 'Download Certificate'}
       </button>
       {fallbackUrl && (
-        <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#d0bcff] mt-1 text-center underline">
+        <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary mt-1 text-center underline">
           Open certificate
         </a>
       )}
       {error && (
-        <p className="text-[9px] text-[#ffb4ab] mt-1 text-center">{error}</p>
+        <p className="text-[9px] text-red-500 dark:text-red-300 mt-1 text-center">{error}</p>
       )}
     </div>
   )
