@@ -257,7 +257,7 @@ export default function AdminOrganizersPage() {
               Cancel
             </button>
             <button
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-500 dark:border-red-300/20 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-300/20 disabled:opacity-50"
               disabled={deleting}
               onClick={handleConfirmDelete}
             >

@@ -213,7 +213,7 @@ export default async function OrganizerMobileConsolePage() {
                 label: 'Not Checked In',
                 value: (totalRegs - checkedIn).toLocaleString(),
                 badge: `${100 - checkInRate}%`,
-                color: { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10', text: 'text-red-500 dark:text-red-300', badge: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300', bar: 'bg-red-500 dark:bg-red-300' },
+                color: { bg: 'bg-red-500/10 dark:bg-red-300/10', text: 'text-red-500 dark:text-red-300', badge: 'bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300', bar: 'bg-red-500 dark:bg-red-300' },
                 barPct: 100 - checkInRate,
                 sub: 'Awaiting collection',
               },

@@ -59,7 +59,7 @@ function statusChip(status: string) {
     published: { label: 'Open', cls: 'bg-primary/15 text-primary' },
     draft: { label: 'Draft', cls: 'bg-primary/15 text-primary' },
     completed: { label: 'Done', cls: 'bg-muted-foreground/15 text-muted-foreground' },
-    cancelled: { label: 'Cancelled', cls: 'bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300' },
+    cancelled: { label: 'Cancelled', cls: 'bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300' },
   }
   const s = map[status] || { label: status, cls: 'bg-accent text-muted-foreground' }
   return (

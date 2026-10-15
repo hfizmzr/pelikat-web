@@ -102,7 +102,7 @@ function StatCard({
       text: 'text-success',
       bar: 'bg-success',
     },
-    error: { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10', text: 'text-red-500 dark:text-red-300', bar: 'bg-red-500 dark:bg-red-300' },
+    error: { bg: 'bg-red-500/10 dark:bg-red-300/10', text: 'text-red-500 dark:text-red-300', bar: 'bg-red-500 dark:bg-red-300' },
   }
   const c = colorMap[color]
 

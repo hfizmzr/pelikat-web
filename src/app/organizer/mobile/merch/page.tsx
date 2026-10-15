@@ -78,7 +78,7 @@ async function getMerchInventoryData() {
 }
 
 function StockBadge({ stock }: { stock: number }) {
-  if (stock <= 2) return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20 text-red-500 dark:text-red-300">Critical</span>
+  if (stock <= 2) return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/10 dark:bg-red-300/20 text-red-500 dark:text-red-300">Critical</span>
   if (stock <= 10) return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/20 text-primary">Low</span>
   return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success/15 text-success">Healthy</span>
 }
@@ -133,7 +133,7 @@ export default async function OrganizerMobileMerchPage() {
             <div className="flex items-center gap-1.5">
               <span className="text-[16px] font-bold text-foreground">Kit Inventory</span>
               {criticalItems > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20 text-red-500 dark:text-red-300">
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-500/10 dark:bg-red-300/20 text-red-500 dark:text-red-300">
                   {criticalItems} critical
                 </span>
               )}
@@ -182,7 +182,7 @@ export default async function OrganizerMobileMerchPage() {
 
           {/* Critical alert */}
           {criticalItems > 0 && (
-            <div className="mt-3 p-3 rounded-lg bg-red-800/30 flex items-start gap-2 border border-red-500/30 dark:border-red-500 dark:border-red-300/20">
+            <div className="mt-3 p-3 rounded-lg bg-red-800/30 flex items-start gap-2 border border-red-500/30 dark:border-red-300/20">
               <TriangleAlert className="size-[16px] text-red-500 dark:text-red-300 shrink-0" />
               <p className="text-[11px] text-red-500 dark:text-red-300">
                 {criticalItems} variant(s) at critical stock level. Restock required.
@@ -212,7 +212,7 @@ export default async function OrganizerMobileMerchPage() {
                           <div
                             key={v.id}
                             className={`flex items-center justify-between p-2.5 rounded-lg ${
-                              v.isCritical ? 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/5 border border-red-500/30 dark:border-red-500 dark:border-red-300/20' :
+                              v.isCritical ? 'bg-red-500/10 dark:bg-red-300/5 border border-red-500/30 dark:border-red-300/20' :
                               v.isLow ? 'bg-primary/5 border border-primary/15' :
                               'bg-accent'
                             }`}

@@ -157,7 +157,7 @@ export default function RunnerTracker() {
             </span>
           )}
           {state === "tracking" && (
-            <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 px-3 py-1">
+            <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 px-3 py-1">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 dark:bg-red-300 opacity-75" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500 dark:bg-red-300" />

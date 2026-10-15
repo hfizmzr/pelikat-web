@@ -206,7 +206,7 @@ export default function OrganizerMobileScannerPage() {
       ? 'border-success/40 bg-success/5'
       : scanResult.alreadyCheckedIn
       ? 'border-primary/40 bg-primary/5'
-      : 'border-red-500 dark:border-red-300/40 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/5'
+      : 'border-red-500 dark:border-red-300/40 bg-red-500/10 dark:bg-red-300/5'
     : 'border-border/40 bg-card'
 
   return (
@@ -304,7 +304,7 @@ export default function OrganizerMobileScannerPage() {
           onClick={scanning ? stopScanning : startScanning}
           className={`w-full py-3.5 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md ${
             scanning
-              ? 'bg-red-800/80 text-red-500 dark:text-red-300 border border-red-500/40 dark:border-red-500 dark:border-red-300/30'
+              ? 'bg-red-800/80 text-red-500 dark:text-red-300 border border-red-500/30 dark:border-red-300/30'
               : 'bg-primary text-primary-foreground'
           }`}
         >
@@ -355,7 +355,7 @@ export default function OrganizerMobileScannerPage() {
                     ? 'bg-success/20 text-success'
                     : scanResult.alreadyCheckedIn
                     ? 'bg-primary/20 text-primary'
-                    : 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20 text-red-500 dark:text-red-300'
+                    : 'bg-red-500/10 dark:bg-red-300/20 text-red-500 dark:text-red-300'
                 }`}
               >
                 {scanResult.success && !scanResult.alreadyCheckedIn ? (

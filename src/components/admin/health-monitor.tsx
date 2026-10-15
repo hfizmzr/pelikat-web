@@ -17,8 +17,8 @@ interface HealthResponse {
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { label: string; color: string; dot: string }> = {
     healthy:   { label: 'Healthy',   color: 'text-success bg-success/10 border-success/20', dot: 'bg-success' },
-    degraded:  { label: 'Degraded',  color: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300' },
-    unhealthy: { label: 'Unhealthy', color: 'text-red-500 dark:text-red-300 bg-red-800/20 border-red-500/30 dark:border-red-500 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300 animate-pulse' },
+    degraded:  { label: 'Degraded',  color: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300' },
+    unhealthy: { label: 'Unhealthy', color: 'text-red-500 dark:text-red-300 bg-red-800/20 border-red-500/30 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300 animate-pulse' },
   }
   const cfg = map[status] ?? { label: 'Unknown', color: 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20', dot: 'bg-muted-foreground' }
   return (

@@ -155,7 +155,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
       {hasFilters && (
         <button
           onClick={handleReset}
-          className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] text-red-500 dark:text-red-300 bg-red-800/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 hover:bg-red-800/20 transition-colors font-inter"
+          className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] text-red-500 dark:text-red-300 bg-red-800/10 border border-red-500/30 dark:border-red-300/20 hover:bg-red-800/20 transition-colors font-inter"
         >
           <X className="size-[16px]" />
           Clear

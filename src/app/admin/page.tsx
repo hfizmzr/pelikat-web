@@ -109,7 +109,7 @@ export default async function AdminDashboard() {
     { bg: 'bg-primary/20', text: 'text-primary' },
     { bg: 'bg-primary/20', text: 'text-primary' },
     { bg: 'bg-success/20', text: 'text-success' },
-    { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
+    { bg: 'bg-red-500/10 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
     { bg: 'bg-primary/20', text: 'text-primary' },
   ]
 
@@ -190,7 +190,7 @@ export default async function AdminDashboard() {
 
       {/* ── Expiring Subscriptions Alert ─────────────────────────────────── */}
       {(expiringSoonCount ?? 0) > 0 && (
-        <div className="w-full bg-red-800/10 rounded-xl p-5 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 flex flex-col gap-3">
+        <div className="w-full bg-red-800/10 rounded-xl p-5 border border-red-500/30 dark:border-red-300/20 flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <TriangleAlert className="size-[20px] text-red-500 dark:text-red-300" />
             <h3 className="font-semibold text-red-500 dark:text-red-300 text-[15px] font-jakarta">
@@ -204,7 +204,7 @@ export default async function AdminDashboard() {
                   <p className="text-[13px] font-semibold text-foreground font-inter">{org.name}</p>
                   <p className="text-[11px] text-muted-foreground font-mono">@{org.slug}</p>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-bold border border-red-500/30 dark:border-red-500 dark:border-red-300/20 font-inter">
+                <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-bold border border-red-500/30 dark:border-red-300/20 font-inter">
                   Expires {new Date(org.sub_expires_at).toLocaleDateString()}
                 </span>
               </div>
@@ -286,12 +286,12 @@ export default async function AdminDashboard() {
                       </td>
                       <td className="py-4 px-4 text-center">
                         {isExpired ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-semibold inline-flex items-center gap-1.5 border border-red-500/30 dark:border-red-500 dark:border-red-300/20">
+                          <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-semibold inline-flex items-center gap-1.5 border border-red-500/30 dark:border-red-300/20">
                             <span className="w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-300" />
                             Expired
                           </span>
                         ) : isExpiring ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-semibold inline-flex items-center gap-1.5 border border-red-500/30 dark:border-red-500 dark:border-red-300/20">
+                          <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-semibold inline-flex items-center gap-1.5 border border-red-500/30 dark:border-red-300/20">
                             <span className="w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-300" />
                             Expiring
                           </span>

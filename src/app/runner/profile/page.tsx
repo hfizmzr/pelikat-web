@@ -378,7 +378,7 @@ export default function RunnerProfilePage() {
                 )}
 
                 {icError && (
-                  <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+                  <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
                     <CircleAlert className="size-[16px]" />
                     {icError}
                   </div>
@@ -408,8 +408,8 @@ export default function RunnerProfilePage() {
         )}
 
         {/* Danger Zone */}
-        <section className="bg-card rounded-2xl border border-red-500/40 dark:border-red-500 dark:border-red-300/30 overflow-hidden mt-8">
-          <div className="p-5 border-b border-red-500/30 dark:border-red-500 dark:border-red-300/20 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/5">
+        <section className="bg-card rounded-2xl border border-red-500/30 dark:border-red-300/30 overflow-hidden mt-8">
+          <div className="p-5 border-b border-red-500/30 dark:border-red-300/20 bg-red-500/10 dark:bg-red-300/5">
             <h2 className="text-[16px] font-bold text-red-500 dark:text-red-300 flex items-center gap-2">
               <TriangleAlert className="size-[20px]" />
               Danger Zone
@@ -423,7 +423,7 @@ export default function RunnerProfilePage() {
             {deleteStep === 'idle' && (
               <button 
                 onClick={() => setDeleteStep('confirm')}
-                className="py-3 px-4 rounded-xl bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[13px] font-bold border border-red-500/30 dark:border-red-500 dark:border-red-300/20 active:bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20 transition-colors"
+                className="py-3 px-4 rounded-xl bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[13px] font-bold border border-red-500/30 dark:border-red-300/20 active:bg-red-500/10 dark:bg-red-300/20 transition-colors"
               >
                 Delete My Account
               </button>
@@ -441,7 +441,7 @@ export default function RunnerProfilePage() {
                     value={deleteConfirm}
                     onChange={(e) => setDeleteConfirm(e.target.value)}
                     placeholder="DELETE"
-                    className="w-full h-12 px-4 rounded-xl bg-muted border border-red-500/40 dark:border-red-500 dark:border-red-300/30 text-[14px] text-foreground focus:outline-none focus:border-red-500 dark:border-red-300"
+                    className="w-full h-12 px-4 rounded-xl bg-muted border border-red-500/30 dark:border-red-300/30 text-[14px] text-foreground focus:outline-none focus:border-red-500 dark:border-red-300"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -475,14 +475,14 @@ export default function RunnerProfilePage() {
             )}
 
             {deleteStep === 'deleting' && (
-              <div className="flex items-center justify-center gap-2 text-[13px] text-red-500 dark:text-red-300 font-bold py-3 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 rounded-xl">
+              <div className="flex items-center justify-center gap-2 text-[13px] text-red-500 dark:text-red-300 font-bold py-3 bg-red-500/10 dark:bg-red-300/10 rounded-xl">
                 <LoaderCircle className="size-[18px] animate-spin" />
                 Deleting...
               </div>
             )}
 
             {deleteError && (
-              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
                 <CircleAlert className="size-[16px]" />
                 {deleteError}
               </div>

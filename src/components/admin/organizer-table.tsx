@@ -63,7 +63,7 @@ const ORG_COLORS = [
   { bg: 'bg-primary/20', text: 'text-primary' },
   { bg: 'bg-primary/20', text: 'text-primary' },
   { bg: 'bg-success/20', text: 'text-success' },
-  { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
+  { bg: 'bg-red-500/10 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
   { bg: 'bg-primary/20', text: 'text-primary' },
 ]
 
@@ -89,10 +89,10 @@ function getSubscriptionStatus(organizer: Organizer) {
   const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
   if (expires <= now) {
-    return { label: 'Expired', color: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300' }
+    return { label: 'Expired', color: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300' }
   }
   if (expires <= sevenDaysFromNow) {
-    return { label: 'Expiring Soon', color: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300' }
+    return { label: 'Expiring Soon', color: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300' }
   }
   return { label: 'Active', color: 'text-success bg-success/10 border-success/20', dot: 'bg-success' }
 }

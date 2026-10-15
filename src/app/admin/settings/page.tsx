@@ -184,7 +184,7 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* ── Danger Zone ─────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-red-800/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 overflow-hidden">
+      <div className="rounded-xl bg-red-800/10 border border-red-500/30 dark:border-red-300/20 overflow-hidden">
         <div className="p-5 border-b border-red-500 dark:border-red-300/10 flex items-center gap-2">
           <TriangleAlert className="text-red-500 dark:text-red-300 size-[20px]" />
           <div>

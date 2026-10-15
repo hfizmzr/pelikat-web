@@ -63,7 +63,7 @@ function SidebarContent({
           </div>
           <span className="font-jakarta font-bold text-[17px] tracking-tight text-foreground">Pelikat</span>
         </div>
-        <span className="px-2 py-0.5 rounded-full bg-red-800/20 text-red-500 dark:text-red-300 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-[10px] font-bold tracking-wider uppercase font-inter">
+        <span className="px-2 py-0.5 rounded-full bg-red-800/20 text-red-500 dark:text-red-300 border border-red-500/30 dark:border-red-300/20 text-[10px] font-bold tracking-wider uppercase font-inter">
           ROOT
         </span>
       </div>
@@ -147,7 +147,7 @@ function SidebarContent({
       {/* ── Footer / User Profile ────────────────────────────── */}
       <div className="p-2 border-t border-muted flex flex-col gap-2 mt-auto shrink-0">
         {/* Failsafe Armed indicator */}
-        <div className="p-2 rounded-lg bg-red-800/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 flex items-center justify-between">
+        <div className="p-2 rounded-lg bg-red-800/10 border border-red-500/30 dark:border-red-300/20 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-red-500 dark:text-red-300">
             <TriangleAlert className="size-[16px]" />
             <span className="text-[10px] font-mono font-bold uppercase font-inter">Failsafe Armed</span>

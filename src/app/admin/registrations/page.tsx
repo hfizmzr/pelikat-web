@@ -205,7 +205,7 @@ export default function AdminRegistrationsPage() {
     { label: 'Total Registrations', value: metrics.total.toLocaleString(), icon: Users, color: 'text-primary', bg: 'bg-primary/20' },
     { label: 'Paid Athletes', value: metrics.paid.toLocaleString(), icon: Banknote, color: 'text-success', bg: 'bg-success/20' },
     { label: 'Checked In', value: `${metrics.checkedIn.toLocaleString()} (${checkInRate}%)`, icon: UserPlus, color: 'text-primary', bg: 'bg-primary/20' },
-    { label: 'Pending Payment', value: metrics.pending.toLocaleString(), icon: Clock, color: 'text-red-500 dark:text-red-300', bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20' },
+    { label: 'Pending Payment', value: metrics.pending.toLocaleString(), icon: Clock, color: 'text-red-500 dark:text-red-300', bg: 'bg-red-500/10 dark:bg-red-300/20' },
   ]
 
   return (
@@ -435,7 +435,7 @@ export default function AdminRegistrationsPage() {
                         reg.payment_status === 'paid'
                           ? 'text-success bg-success/10 border-success/20'
                           : reg.payment_status === 'refunded'
-                            ? 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20'
+                            ? 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20'
                             : 'text-amber-500 bg-amber-500/10 border-amber-500/20'
                       }`}>
                         {reg.payment_status.toUpperCase()}

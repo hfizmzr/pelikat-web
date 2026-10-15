@@ -25,7 +25,7 @@ export function CancelRegistrationButton({ eventId }: { eventId: string }) {
     return (
       <button
         onClick={() => setShowConfirm(true)}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[13px] font-bold active:scale-95 transition-transform"
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[13px] font-bold active:scale-95 transition-transform"
       >
         <X className="size-[18px]" />
         Cancel Registration
@@ -34,7 +34,7 @@ export function CancelRegistrationButton({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-xl bg-red-500/10 dark:bg-red-500 dark:bg-red-300/5 border border-red-500/30 dark:border-red-500 dark:border-red-300/20">
+    <div className="flex flex-col gap-3 p-4 rounded-xl bg-red-500/10 dark:bg-red-300/5 border border-red-500/30 dark:border-red-300/20">
       <p className="text-[12px] text-red-500 dark:text-red-300 text-center font-medium">Are you sure you want to cancel?</p>
       <div className="flex gap-2">
         <button

@@ -170,7 +170,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
             </div>
 
             {error && (
-              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
                 <CircleAlert className="size-[16px]" />
                 {error}
               </div>

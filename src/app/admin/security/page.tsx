@@ -250,7 +250,7 @@ export default function AdminSecurityPage() {
                 <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border self-start sm:self-center ${
                   p.status === 'enforced'
                     ? 'text-success bg-success/10 border-success/20'
-                    : 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20'
+                    : 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20'
                 }`}>
                   {p.status.toUpperCase()}
                 </span>

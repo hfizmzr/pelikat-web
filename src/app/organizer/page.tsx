@@ -81,8 +81,8 @@ export default async function OrganizerDashboard() {
   const statusColor: Record<string, string> = {
     published: 'text-success bg-success/15',
     draft: 'text-muted-foreground bg-accent',
-    closed: 'text-red-500 dark:text-red-300 bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15',
-    cancelled: 'text-red-500 dark:text-red-300 bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15',
+    closed: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/15',
+    cancelled: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/15',
   }
 
   return (
@@ -278,7 +278,7 @@ export default async function OrganizerDashboard() {
                             {cat.bib_prefix || 'BIB'}-#### • {cat.max_slots || '∞'} slots
                           </span>
                         </div>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${isAlmostFull ? 'bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300' : 'bg-primary/15 text-primary'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${isAlmostFull ? 'bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300' : 'bg-primary/15 text-primary'}`}>
                           {fillPercent}%
                         </span>
                       </div>
@@ -355,7 +355,7 @@ export default async function OrganizerDashboard() {
                           ? 'bg-success/15 text-success'
                           : reg.payment_status === 'pending'
                           ? 'bg-primary/15 text-primary'
-                          : 'bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300'
+                          : 'bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300'
                       }`}>
                         {reg.payment_status}
                       </span>

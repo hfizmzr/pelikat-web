@@ -14,7 +14,7 @@ function StatCard({ icon: Icon, label, value, sub, color }: { icon: LucideIcon, 
     primary: { bg: 'bg-primary/10', text: 'text-primary' },
     secondary: { bg: 'bg-primary/10', text: 'text-primary' },
     tertiary: { bg: 'bg-success/10', text: 'text-success' },
-    error: { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10', text: 'text-red-500 dark:text-red-300' },
+    error: { bg: 'bg-red-500/10 dark:bg-red-300/10', text: 'text-red-500 dark:text-red-300' },
   }
   const c = colorMap[color]
 

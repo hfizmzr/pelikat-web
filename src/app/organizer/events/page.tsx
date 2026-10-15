@@ -42,8 +42,8 @@ export default async function OrganizerEventsPage() {
   const statusStyles: Record<string, string> = {
     published: 'text-success bg-success/15 border-success/20',
     draft: 'text-muted-foreground bg-accent border-border',
-    closed: 'text-red-500 dark:text-red-300 bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15 border-red-500/30 dark:border-red-500 dark:border-red-300/20',
-    cancelled: 'text-red-500 dark:text-red-300 bg-red-500 dark:bg-red-500/10 dark:bg-red-300/15 border-red-500/30 dark:border-red-500 dark:border-red-300/20',
+    closed: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/15 border-red-500/30 dark:border-red-300/20',
+    cancelled: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/15 border-red-500/30 dark:border-red-300/20',
   }
 
   const EventCard = ({ event }: { event: NonNullable<typeof events>[0] }) => {

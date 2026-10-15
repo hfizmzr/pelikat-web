@@ -159,7 +159,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="py-3 px-4 w-full rounded-xl border border-red-500/40 dark:border-red-500 dark:border-red-300/30 text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/5 text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+              className="py-3 px-4 w-full rounded-xl border border-red-500/30 dark:border-red-300/30 text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/5 text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
             >
               {deleting ? (
                 <>
@@ -270,7 +270,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
         )}
 
         {error && (
-          <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+          <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
             <CircleAlert className="size-[16px]" />
             {error}
           </div>

@@ -111,7 +111,7 @@ export default function AdminBillingPage() {
       unit: 'Orders',
       icon: ClipboardList,
       color: 'text-red-500 dark:text-red-300',
-      bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20',
+      bg: 'bg-red-500/10 dark:bg-red-300/20',
       sub: `${summary?.overdueCount ?? 0} tenant accounts inactive`,
     },
   ]
@@ -239,7 +239,7 @@ export default function AdminBillingPage() {
                         inv.status === 'paid'
                           ? 'text-success bg-success/10 border-success/20'
                           : inv.status === 'overdue'
-                            ? 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20'
+                            ? 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20'
                             : 'text-amber-500 bg-amber-500/10 border-amber-500/20'
                       }`}>
                         {inv.status.toUpperCase()}

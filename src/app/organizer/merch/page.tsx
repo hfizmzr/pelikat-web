@@ -123,7 +123,7 @@ export default async function OrganizerMerchPage() {
                         <Pencil className="size-[16px]" />
                         Edit
                       </button>
-                      <button className="p-2 text-muted-foreground hover:text-red-500 dark:text-red-300 hover:bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 rounded-lg transition-colors">
+                      <button className="p-2 text-muted-foreground hover:text-red-500 dark:text-red-300 hover:bg-red-500/10 dark:bg-red-300/10 rounded-lg transition-colors">
                         <Trash2 className="size-[18px]" />
                       </button>
                     </div>

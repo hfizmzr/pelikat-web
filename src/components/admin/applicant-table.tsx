@@ -29,7 +29,7 @@ const APPLICANT_COLORS = [
   { bg: 'bg-primary/20', text: 'text-primary' },
   { bg: 'bg-success/20', text: 'text-success' },
   { bg: 'bg-primary/20', text: 'text-primary' },
-  { bg: 'bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
+  { bg: 'bg-red-500/10 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
 ]
 
 function getInitials(name: string) {
@@ -165,7 +165,7 @@ export function ApplicantTable({
               Cancel
             </button>
             <button
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-500 dark:border-red-300/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-300/20"
               onClick={confirmReject}
             >
               <X className="size-[18px]" />
@@ -197,7 +197,7 @@ export function ApplicantTable({
               Cancel
             </button>
             <button
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-500 dark:border-red-300/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-300/20"
               onClick={confirmDelete}
             >
               <Trash2 className="size-[18px]" />
@@ -267,7 +267,7 @@ export function ApplicantTable({
                         </button>
                         {/* Reject */}
                         <button
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 hover:bg-red-500/10 dark:bg-red-500 dark:bg-red-300/20 text-red-500 dark:text-red-300 text-[12px] font-semibold transition-colors border border-red-500/30 dark:border-red-500 dark:border-red-300/20 font-inter"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 dark:bg-red-300/10 hover:bg-red-500/10 dark:bg-red-300/20 text-red-500 dark:text-red-300 text-[12px] font-semibold transition-colors border border-red-500/30 dark:border-red-300/20 font-inter"
                           onClick={() => handleRejectClick(applicant)}
                         >
                           <X className="size-[16px]" />

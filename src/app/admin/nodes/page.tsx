@@ -207,7 +207,7 @@ export default function AdminNodesPage() {
                           ? 'text-success bg-success/10 border-success/20'
                           : svc.status === 'degraded'
                             ? 'text-amber-500 bg-amber-500/10 border-amber-500/20'
-                            : 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border-red-500/30 dark:border-red-500 dark:border-red-300/20'
+                            : 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20'
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${
                           svc.status === 'operational'

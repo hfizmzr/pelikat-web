@@ -315,7 +315,7 @@ export default function RunnerRunLogPage() {
             </div>
 
             {logError && (
-              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 border border-red-500/30 dark:border-red-500 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
                 <CircleAlert className="size-[16px]" />
                 {logError}
               </div>
@@ -409,7 +409,7 @@ export default function RunnerRunLogPage() {
                     </span>
                     <button 
                       onClick={() => handleDelete(log.id)}
-                      className="w-8 h-8 rounded-full bg-red-500/10 dark:bg-red-500 dark:bg-red-300/10 text-red-500 dark:text-red-300 flex items-center justify-center active:scale-95 transition-transform"
+                      className="w-8 h-8 rounded-full bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 flex items-center justify-center active:scale-95 transition-transform"
                     >
                       <Trash2 className="size-[16px]" />
                     </button>
