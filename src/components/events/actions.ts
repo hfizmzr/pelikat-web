@@ -25,6 +25,137 @@ export async function confirmDummyPayment(registrationId: string) {
   if (error) throw new Error(error.message)
 }
 
+// ── HitPay checkout (server-side funnel via Django) ──────────────────────────
+// The browser never sees the HitPay API. Amount and reference come from
+// the server; confirmation happens only through the signed webhook in
+// Django — a redirect back from HitPay never marks anything paid.
+
+interface DjangoCreatePayment {
+  provider_request_id: string
+  checkout_url: string
+  qr_code: string | null
+  direct_link_url: string | null
+  status: string
+}
+
+export interface HitpayCheckoutResult {
+  checkoutUrl: string
+  qrCode: string | null
+  providerRequestId: string
+}
+
+function hitpayRedirectUrl(path: string): string {
+  const appUrl =
+    process.env.NEXT_PUBLIC_TUNNEL_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    'http://localhost:3000'
+  return `${appUrl}${path}`
+}
+
+export async function createHitpayCheckout(input: {
+  registrationId: string
+  email: string
+  name: string
+}): Promise<HitpayCheckoutResult> {
+  const { supabase } = await requireAuth()
+
+  const { data: registration, error } = await supabase
+    .from('registrations')
+    .select('id, event_id, runner_id, race_categories(price)')
+    .eq('id', input.registrationId)
+    .single()
+
+  if (error || !registration) throw new Error('Registration not found')
+
+  const category = Array.isArray(registration.race_categories)
+    ? registration.race_categories[0]
+    : registration.race_categories
+
+  const result: DjangoCreatePayment = await fetchDjangoApi('/payments/create', {
+    method: 'POST',
+    body: JSON.stringify({
+      order_type: 'registration',
+      registration_id: registration.id,
+      reference_number: registration.id,
+      runner_id: registration.runner_id,
+      // Amount snapshot: race_categories.price read server-side, never
+      // taken from the client.
+      amount: Number(category?.price ?? 0),
+      email: input.email,
+      name: input.name,
+      purpose: 'Event registration',
+      redirect_url: hitpayRedirectUrl(
+        `/runner/events/${registration.event_id}/payment`
+      ),
+    }),
+  })
+
+  return {
+    checkoutUrl: result.checkout_url,
+    qrCode: result.qr_code ?? null,
+    providerRequestId: result.provider_request_id,
+  }
+}
+
+export async function createHitpaySubscriptionCheckout(
+  amount: number
+): Promise<HitpayCheckoutResult> {
+  const { supabase, user } = await requireAuth()
+
+  const organizerId = user.app_metadata?.organizer_id
+  if (!organizerId) throw new Error('Organizer profile not found')
+
+  const { data: organizer, error } = await supabase
+    .from('organizers')
+    .select('id, name, contact_email')
+    .eq('id', organizerId)
+    .single()
+
+  if (error || !organizer) throw new Error('Organizer profile not found')
+
+  const result: DjangoCreatePayment = await fetchDjangoApi('/payments/create', {
+    method: 'POST',
+    body: JSON.stringify({
+      order_type: 'organizer_subscription',
+      organizer_id: organizer.id,
+      amount,
+      email: organizer.contact_email ?? user.email,
+      name: organizer.name,
+      purpose: 'Organizer subscription',
+      redirect_url: hitpayRedirectUrl('/organizer/payment'),
+    }),
+  })
+
+  return {
+    checkoutUrl: result.checkout_url,
+    qrCode: result.qr_code ?? null,
+    providerRequestId: result.provider_request_id,
+  }
+}
+
+export async function getPaymentStatus(
+  registrationId: string
+): Promise<{ status: string; paymentRail: string | null }> {
+  const { supabase } = await requireAuth()
+
+  const { data: registration } = await supabase
+    .from('registrations')
+    .select('id')
+    .eq('id', registrationId)
+    .single()
+
+  if (!registration) throw new Error('Registration not found')
+
+  const result = await fetchDjangoApi(
+    `/payments/status?reference_number=${encodeURIComponent(registrationId)}`
+  )
+
+  return {
+    status: result.status,
+    paymentRail: result.payment_rail ?? null,
+  }
+}
+
 export async function cancelRegistration(eventId: string) {
   const supabase = await createClient()
 

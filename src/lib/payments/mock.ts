@@ -33,7 +33,7 @@ export interface PaymentConfirmation {
   paidAt: string
 }
 
-export type PaymentProvider = 'mock'
+export type PaymentProvider = 'mock' | 'hitpay'
 
 export function getPaymentProvider(): PaymentProvider {
   const provider =
@@ -41,18 +41,23 @@ export function getPaymentProvider(): PaymentProvider {
     process.env.PAYMENT_PROVIDER ??
     'mock'
 
-  if (provider !== 'mock') {
+  if (provider !== 'mock' && provider !== 'hitpay') {
     throw new Error(
       `Payment provider "${provider}" is not implemented yet. ` +
         `Add lib/payments/${provider}.ts with createCheckout/confirmPayment ` +
         `and register it in getPaymentProvider().`
     )
   }
-  return 'mock'
+  return provider
 }
 
 export async function createCheckout(input: CheckoutInput): Promise<CheckoutSession> {
-  getPaymentProvider()
+  if (getPaymentProvider() !== 'mock') {
+    throw new Error(
+      'createCheckout is the mock flow; the hitpay provider creates its ' +
+        'checkout server-side (Django /payments/create funnel).'
+    )
+  }
 
   const reference = `mock_${input.referenceId.slice(0, 8)}_${crypto.randomUUID().slice(0, 8)}`
 
@@ -68,7 +73,12 @@ export async function createCheckout(input: CheckoutInput): Promise<CheckoutSess
 export async function confirmPayment(
   session: Pick<CheckoutSession, 'reference'>
 ): Promise<PaymentConfirmation> {
-  getPaymentProvider()
+  if (getPaymentProvider() !== 'mock') {
+    throw new Error(
+      'confirmPayment is the mock flow; hitpay payments are confirmed ' +
+        'server-side via the signed webhook only.'
+    )
+  }
 
   return {
     provider: 'mock',
