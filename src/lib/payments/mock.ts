@@ -35,20 +35,44 @@ export interface PaymentConfirmation {
 
 export type PaymentProvider = 'mock' | 'hitpay'
 
-export function getPaymentProvider(): PaymentProvider {
-  const provider =
-    process.env.NEXT_PUBLIC_PAYMENT_PROVIDER ??
-    process.env.PAYMENT_PROVIDER ??
-    'mock'
+/**
+ * ⚠ RELEASE CHECKLIST: NEXT_PUBLIC_PAYMENT_PROVIDER (client, build-time
+ * inlined) and PAYMENT_PROVIDER (server runtime) MUST be set to the same
+ * value in every deployed environment. Next.js cannot share a server env
+ * var with the browser bundle, so one deployment decision surfaces as two
+ * env vars — this gate suite is the only place that reads either.
+ */
+function parsePaymentProvider(
+  raw: string | undefined,
+  envVar: string
+): PaymentProvider {
+  const provider = raw ?? 'mock'
 
   if (provider !== 'mock' && provider !== 'hitpay') {
     throw new Error(
-      `Payment provider "${provider}" is not implemented yet. ` +
+      `Payment provider "${provider}" (via ${envVar}) is not implemented yet. ` +
         `Add lib/payments/${provider}.ts with createCheckout/confirmPayment ` +
-        `and register it in getPaymentProvider().`
+        `and register it in parsePaymentProvider().`
     )
   }
   return provider
+}
+
+/** Client gate — reads only the build-time literal NEXT_PUBLIC_PAYMENT_PROVIDER. */
+export function getPaymentProvider(): PaymentProvider {
+  return parsePaymentProvider(
+    process.env.NEXT_PUBLIC_PAYMENT_PROVIDER,
+    'NEXT_PUBLIC_PAYMENT_PROVIDER'
+  )
+}
+
+/**
+ * Server gate for 'use server' actions and route handlers — reads the
+ * server-runtime PAYMENT_PROVIDER env var explicitly. Never fall back to
+ * NEXT_PUBLIC here, and never call this from client code.
+ */
+export function getServerPaymentProvider(): PaymentProvider {
+  return parsePaymentProvider(process.env.PAYMENT_PROVIDER, 'PAYMENT_PROVIDER')
 }
 
 export async function createCheckout(input: CheckoutInput): Promise<CheckoutSession> {

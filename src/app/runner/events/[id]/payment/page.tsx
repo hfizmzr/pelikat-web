@@ -6,7 +6,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { confirmDummyPayment, createHitpayCheckout, getPaymentStatus } from '@/components/events/actions'
-import { createCheckout, confirmPayment } from '@/lib/payments/mock'
+import { createCheckout, confirmPayment, getPaymentProvider } from '@/lib/payments/mock'
 import DuitNowQrPanel from '@/components/payments/duitnow-qr-panel'
 import {
   CreatingState,
@@ -33,9 +33,8 @@ interface CheckoutIntent {
   providerRequestId: string
 }
 
-function getPaymentProvider(): 'mock' | 'hitpay' {
-  return process.env.NEXT_PUBLIC_PAYMENT_PROVIDER === 'hitpay' ? 'hitpay' : 'mock'
-}
+// Gate: getPaymentProvider() from '@/lib/payments/mock' — the one shared
+// client gate in the app (build-time NEXT_PUBLIC_PAYMENT_PROVIDER literal).
 
 // Uses useParams() instead of React.use(params): the promise returned by
 // Next 16 suspends the whole tree on first render, which breaks hydration

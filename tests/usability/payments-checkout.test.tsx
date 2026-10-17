@@ -29,7 +29,14 @@ const { createCheckout, confirmPayment, confirmDummyPayment, createHitpayCheckou
     getPaymentStatus: vi.fn(),
   }))
 
-vi.mock('@/lib/payments/mock', () => ({ createCheckout, confirmPayment }))
+vi.mock('@/lib/payments/mock', () => ({
+  createCheckout,
+  confirmPayment,
+  // mirrors the shared client gate (build-time NEXT_PUBLIC literal) so the
+  // real vi.stubEnv(NEXT_PUBLIC_PAYMENT_PROVIDER, ...) controls the flow
+  getPaymentProvider: () =>
+    process.env.NEXT_PUBLIC_PAYMENT_PROVIDER === 'hitpay' ? 'hitpay' : 'mock',
+}))
 
 vi.mock('@/components/events/actions', () => ({
   confirmDummyPayment,

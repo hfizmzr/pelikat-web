@@ -19,13 +19,18 @@ const mockSupabase = {
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => mockSupabase),
 }))
+// confirmDummyPayment (re-exported from '@/lib/actions/payments') reaches for
+// the service-role client per migration 060; stub it out for action tests.
+vi.mock('@/lib/supabase/service-role', () => ({
+  supabaseAdmin: { rpc: vi.fn() },
+}))
 
 // ── Subjects under test ──────────────────────────────────────
 import { POST as createPOST } from '@/app/api/payments/create/route'
 import { GET as statusGET } from '@/app/api/payments/status/route'
 import { POST as refundPOST } from '@/app/api/payments/refund/route'
 import { createHitpayCheckout } from '@/components/events/actions'
-import { getPaymentProvider } from '@/lib/payments'
+import { getPaymentProvider, getServerPaymentProvider } from '@/lib/payments'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const read = (...parts: string[]) =>
@@ -251,14 +256,22 @@ describe('Integration: Payments BFF (Task 3)', () => {
 
   describe('provider gate', () => {
     it("accepts 'hitpay' alongside 'mock'", () => {
-      process.env.PAYMENT_PROVIDER = 'hitpay'
+      process.env.NEXT_PUBLIC_PAYMENT_PROVIDER = 'hitpay'
       expect(getPaymentProvider()).toBe('hitpay')
     })
 
-    it("still defaults to 'mock' and still throws for unknown providers", () => {
+    it('still defaults to mock and throws for unknown providers', () => {
+      delete process.env.NEXT_PUBLIC_PAYMENT_PROVIDER
       expect(getPaymentProvider()).toBe('mock')
-      process.env.PAYMENT_PROVIDER = 'stripe'
+      process.env.NEXT_PUBLIC_PAYMENT_PROVIDER = 'stripe'
       expect(() => getPaymentProvider()).toThrow(/not implemented yet/)
+    })
+
+    it('server gate reads PAYMENT_PROVIDER for server-side guards', () => {
+      process.env.PAYMENT_PROVIDER = 'hitpay'
+      expect(getServerPaymentProvider()).toBe('hitpay')
+      process.env.PAYMENT_PROVIDER = 'stripe'
+      expect(() => getServerPaymentProvider()).toThrow(/not implemented yet/)
     })
   })
 

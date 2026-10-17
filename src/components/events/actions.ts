@@ -2,6 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { fetchDjangoApi } from '@/lib/django'
+// Dummy confirmation writes financial rows, so it lives with the other
+// service-role-backed server actions; re-exported here to keep the runner
+// payment page's `await confirmDummyPayment(...)` call site unchanged.
+export { confirmDummyPayment } from '@/lib/actions/payments'
 import {
   normalizeRepcCheckInResult,
   type RepcCheckInResult,
@@ -14,16 +18,6 @@ import { redirect } from 'next/navigation'
 // ─────────────────────────────────────────────────────────────────────────────
 // Registration Actions
 // ─────────────────────────────────────────────────────────────────────────────
-
-export async function confirmDummyPayment(registrationId: string) {
-  const { supabase } = await requireAuth()
-
-  const { error } = await supabase.rpc('confirm_dummy_payment', {
-    p_registration_id: registrationId,
-  })
-
-  if (error) throw new Error(error.message)
-}
 
 // ── HitPay checkout (server-side funnel via Django) ──────────────────────────
 // The browser never sees the HitPay API. Amount and reference come from

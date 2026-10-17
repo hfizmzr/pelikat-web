@@ -7,6 +7,7 @@
 
 export {
   getPaymentProvider,
+  getServerPaymentProvider,
   createCheckout,
   confirmPayment,
   type PaymentProvider,
