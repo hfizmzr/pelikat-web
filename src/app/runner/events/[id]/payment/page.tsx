@@ -284,7 +284,7 @@ export default function PaymentPage() {
       {/* Sticky Header */}
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
-          <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
+          <Link href={`/runner/events/${id}`} className="w-11 h-11 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
             <ArrowLeft className="size-[24px]" />
           </Link>
           <h1 className="flex-1 text-[16px] font-bold text-foreground text-center mr-8 truncate">
