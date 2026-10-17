@@ -25,9 +25,10 @@ vi.mock('@/lib/supabase/service-role', () => ({
   supabaseAdmin: { rpc: vi.fn() },
 }))
 
-// ── Subjects under test ──────────────────────────────────────
-import { POST as createPOST } from '@/app/api/payments/create/route'
-import { GET as statusGET } from '@/app/api/payments/status/route'
+// ── Subjects under test ─────────────────────────────────────────
+// The former /api/payments/create and /api/payments/status BFF routes were
+// dead duplicates of the server actions and have been deleted; refund
+// remains the sole payments BFF route.
 import { POST as refundPOST } from '@/app/api/payments/refund/route'
 import { createHitpayCheckout } from '@/components/events/actions'
 import { getPaymentProvider, getServerPaymentProvider } from '@/lib/payments'
@@ -83,104 +84,6 @@ afterEach(() => {
 })
 
 describe('Integration: Payments BFF (Task 3)', () => {
-  describe('POST /api/payments/create', () => {
-    it('forwards reference_number=registrationId and server-read amount to Django', async () => {
-      singleRow('registrations', REGISTRATION)
-      fetchDjangoApi.mockResolvedValue(DJANGO_CREATE)
-
-      const response = await createPOST(
-        new Request('http://localhost/api/payments/create', {
-          method: 'POST',
-          body: JSON.stringify({
-            registrationId: 'reg-uuid-1',
-            email: 'runner@example.com',
-            name: 'Runner One',
-          }),
-        })
-      )
-      const body = await response.json()
-
-      expect(response.status).toBe(200)
-      expect(body.provider_request_id).toBe('pr-1')
-      expect(body.checkout_url).toContain('hit-pay')
-
-      expect(fetchDjangoApi).toHaveBeenCalledTimes(1)
-      const [endpoint, options] = fetchDjangoApi.mock.calls[0]
-      expect(endpoint).toBe('/payments/create')
-      const payload = JSON.parse(options.body)
-      expect(payload.reference_number).toBe('reg-uuid-1')
-      expect(payload.registration_id).toBe('reg-uuid-1')
-      expect(payload.order_type).toBe('registration')
-      // amount comes from race_categories.price server-side, not the client
-      expect(payload.amount).toBe(50)
-    })
-
-    it('rejects unauthenticated callers before touching Django', async () => {
-      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: null } })
-      const response = await createPOST(
-        new Request('http://localhost/api/payments/create', {
-          method: 'POST',
-          body: JSON.stringify({ registrationId: 'reg-uuid-1' }),
-        })
-      )
-      expect(response.status).toBe(401)
-      expect(fetchDjangoApi).not.toHaveBeenCalled()
-    })
-
-    it('404s when the registration does not exist (RLS-scoped)', async () => {
-      singleRow('registrations', null)
-      const response = await createPOST(
-        new Request('http://localhost/api/payments/create', {
-          method: 'POST',
-          body: JSON.stringify({
-            registrationId: 'someone-elses',
-            email: 'x@example.com',
-            name: 'X',
-          }),
-        })
-      )
-      expect(response.status).toBe(404)
-      expect(fetchDjangoApi).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('GET /api/payments/status', () => {
-    it('test_redirect_params_never_confirm: ?status=completed alone never marks paid', async () => {
-      singleRow('registrations', REGISTRATION)
-      // Django knows the truth: still pending.
-      fetchDjangoApi.mockResolvedValue({
-        status: 'pending',
-        payment_rail: null,
-        provider_request_id: 'pr-1',
-      })
-
-      const response = await statusGET(
-        new Request(
-          'http://localhost/api/payments/status?registrationId=reg-uuid-1&status=completed'
-        )
-      )
-      const body = await response.json()
-
-      expect(body.status).toBe('pending')
-      expect(body.status).not.toBe('paid')
-      expect(body.status).not.toBe('completed')
-
-      // Only reference_number is forwarded — the spoofable query param is not.
-      const [endpoint] = fetchDjangoApi.mock.calls[0]
-      expect(endpoint).toBe('/payments/status?reference_number=reg-uuid-1')
-      expect(endpoint).not.toContain('status=completed')
-    })
-
-    it('404s for a registration the caller does not own', async () => {
-      singleRow('registrations', null)
-      const response = await statusGET(
-        new Request('http://localhost/api/payments/status?registrationId=nope')
-      )
-      expect(response.status).toBe(404)
-      expect(fetchDjangoApi).not.toHaveBeenCalled()
-    })
-  })
-
   describe('POST /api/payments/refund', () => {
     it('forwards the refund for a payment the organizer owns (RLS-scoped)', async () => {
       singleRow('payments', { id: 'pay-row-1' })
@@ -276,19 +179,43 @@ describe('Integration: Payments BFF (Task 3)', () => {
   })
 
   describe('redirect trust (source-level)', () => {
-    it('no payments BFF route or action marks anything paid from query params', () => {
-      const routeFiles = [
-        'src/app/api/payments/create/route.ts',
-        'src/app/api/payments/status/route.ts',
-        'src/app/api/payments/refund/route.ts',
-      ]
-      for (const file of routeFiles) {
-        const content = read(file)
-        expect(content).not.toContain("payment_status: 'paid'")
-        expect(content).not.toContain("status: 'paid'")
-        expect(content).not.toContain('confirm_dummy_payment')
-        expect(content).not.toContain("'confirm_payment'")
-      }
+    it('test_redirect_params_never_confirm: the actions layer never confirms payment from URL params', () => {
+      // The old BFF status route is gone; its semantics move to the
+      // actions layer: no server action parses URL/query params, and the
+      // only "paid" write is the provider-guarded dummy-confirm RPC.
+      const paymentActions = read('src', 'lib', 'actions', 'payments.ts')
+      expect(paymentActions).not.toMatch(/searchParams|request\.url|new URL\(/i)
+      expect(paymentActions).toContain('confirm_dummy_payment')
+      expect(paymentActions).toContain("getServerPaymentProvider() !== 'mock'")
+      expect(paymentActions).not.toContain("'status=completed'")
+      expect(paymentActions).not.toContain('status=completed')
+
+      const eventActions = read('src', 'components', 'events', 'actions.ts')
+      expect(eventActions).not.toMatch(/searchParams|request\.url/i)
+      expect(eventActions).not.toContain("payment_status: 'paid'")
+
+      // Redirect params on the payment page are display-only hints: they can
+      // at most switch to the `awaiting` phase; confirmation comes only from
+      // Realtime/poll of Django's webhook truth.
+      const runnerPage = read(
+        'src',
+        'app',
+        'runner',
+        'events',
+        '[id]',
+        'payment',
+        'page.tsx'
+      )
+      expect(runnerPage).toContain("urlParams.has('reference') || urlParams.has('status')")
+      expect(runnerPage).toMatch(/NEVER trusted for state/)
+      expect(runnerPage).not.toContain("payment_status: 'paid'")
+
+      // Refund is the only remaining BFF route and never marks payments paid.
+      const refundRoute = read('src', 'app', 'api', 'payments', 'refund', 'route.ts')
+      expect(refundRoute).not.toContain("payment_status: 'paid'")
+      expect(refundRoute).not.toContain("status: 'paid'")
+      expect(refundRoute).not.toContain('confirm_dummy_payment')
+      expect(refundRoute).not.toContain("'confirm_payment'")
     })
   })
 })
