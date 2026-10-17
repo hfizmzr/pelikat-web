@@ -98,3 +98,28 @@ describe('Reliability: HitPay Payments Schema (Task 1)', () => {
     expect(migration).toContain("'organizer_subscription_payment'")
   })
 })
+
+describe('Reliability: Payment Write Lockdown (Task: migration 060)', () => {
+  const lockdown = read('supabase', 'migrations', '060_payment_write_lockdown.sql')
+
+  it('confirm_dummy_payment (035 signature: uuid) is revoked from public/anon/authenticated', () => {
+    expect(lockdown).toContain('revoke execute on function public.confirm_dummy_payment(uuid) from public')
+    expect(lockdown).toContain('revoke execute on function public.confirm_dummy_payment(uuid) from anon')
+    expect(lockdown).toContain('revoke execute on function public.confirm_dummy_payment(uuid) from authenticated')
+  })
+
+  it('confirm_dummy_payment is granted to service_role only', () => {
+    expect(lockdown).toContain('grant execute on function public.confirm_dummy_payment(uuid) to service_role')
+    expect(lockdown).toMatch(/grant execute on function public\.confirm_dummy_payment\(uuid\) to service_role;$/m)
+  })
+
+  it('drops the 059 organizer-UPDATE policy on payments (financial rows are service-role write-only)', () => {
+    expect(lockdown).toContain('drop policy if exists "organizer updates own payments" on public.payments')
+  })
+
+  it('documents the lockdown on the function (comment trail)', () => {
+    expect(lockdown).toContain(
+      "is 'mock-mode payment confirm; service_role only since 060'"
+    )
+  })
+})
