@@ -1,20 +1,60 @@
 'use client'
 
-import { ArrowLeft, CircleAlert, CircleCheck, CreditCard, LoaderCircle, ReceiptText, TriangleAlert } from "lucide-react"
-import { use, useState, useTransition, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { ArrowLeft, CircleAlert, CreditCard, LoaderCircle, ReceiptText, TriangleAlert } from "lucide-react"
+import { useState, useTransition, useEffect, useCallback, useRef } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { confirmDummyPayment } from '@/components/events/actions'
+import { confirmDummyPayment, createHitpayCheckout, getPaymentStatus } from '@/components/events/actions'
 import { createCheckout, confirmPayment } from '@/lib/payments/mock'
+import DuitNowQrPanel from '@/components/payments/duitnow-qr-panel'
+import {
+  CreatingState,
+  RedirectingState,
+  AwaitingState,
+  ConfirmedState,
+  PaymentErrorState,
+  PayMethodCard,
+} from '@/components/payments/checkout-states'
 
-export default function PaymentPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+type HitpayPhase =
+  | 'idle'
+  | 'creating'
+  | 'qr_display'
+  | 'redirecting'
+  | 'awaiting'
+  | 'confirmed'
+  | 'failed'
+  | 'expired'
+
+interface CheckoutIntent {
+  checkoutUrl: string
+  qrCode: string | null
+  providerRequestId: string
+}
+
+function getPaymentProvider(): 'mock' | 'hitpay' {
+  return process.env.NEXT_PUBLIC_PAYMENT_PROVIDER === 'hitpay' ? 'hitpay' : 'mock'
+}
+
+// Uses useParams() instead of React.use(params): the promise returned by
+// Next 16 suspends the whole tree on first render, which breaks hydration
+// recovery in low-trust embed contexts; useParams never suspends.
+export default function PaymentPage() {
+  const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const supabase = createClient()
+  // Stable Supabase client instance. createClient() returns a NEW object on
+  // every call; capturing it in state keeps effect deps referentially stable
+  // and prevents effect ↔ re-render loops (e.g. same-value setBibNumber
+  // in the confirmation effect).
+  const [supabase] = useState(() => createClient())
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [phase, setPhase] = useState<HitpayPhase>('idle')
+  const [checkout, setCheckout] = useState<CheckoutIntent | null>(null)
+  const [failureReason, setFailureReason] = useState<string | null>(null)
+  const [bibNumber, setBibNumber] = useState<string | null>(null)
+  const [contact, setContact] = useState<{ email: string; name: string }>({ email: '', name: '' })
   const [registration, setRegistration] = useState<{
     id: string
     bib_number: string
@@ -31,7 +71,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
 
       const { data: profile } = await supabase
         .from('runner_profiles')
-        .select('id')
+        .select('id, full_name')
         .eq('user_id', user?.id)
         .single()
 
@@ -43,19 +83,157 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
         .single()
 
       setRegistration(reg)
+      setContact({ email: user?.email ?? '', name: profile?.full_name ?? '' })
       setLoading(false)
     })()
   }, [id, supabase])
 
-  const handlePayment = () => {
+  // ── HitPay: return from hosted checkout ───────────────────────
+  // The gateway appends ?reference=&status= to the return URL. Those
+  // values are NEVER trusted for state — their presence only means
+  // "we came back from the hosted checkout", confirmation is driven
+  // exclusively by Realtime/poll below.
+  useEffect(() => {
+    if (getPaymentProvider() !== 'hitpay') return
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.has('reference') || urlParams.has('status')) {
+      setPhase('awaiting')
+    }
+  }, [])
+
+  // ── HitPay: hosted-checkout handoff ───────────────────────────
+  const redirectedRef = useRef(false)
+
+  const startCheckout = useCallback(async () => {
+    if (!registration) return
+    setError(null)
+    setFailureReason(null)
+    redirectedRef.current = false
+    setPhase('creating')
+    try {
+      const res = await createHitpayCheckout({
+        registrationId: registration.id,
+        email: contact.email,
+        name: contact.name,
+      })
+      setCheckout(res)
+      setPhase(res.qrCode ? 'qr_display' : 'redirecting')
+    } catch (e) {
+      setFailureReason(
+        e instanceof Error ? e.message : 'Could not start the payment. Please try again.'
+      )
+      setPhase('failed')
+    }
+  }, [registration, contact])
+
+  // ── HitPay: hosted-checkout handoff timer ─────────────────────
+  useEffect(() => {
+    if (phase !== 'redirecting' || !checkout?.checkoutUrl || redirectedRef.current) return
+    redirectedRef.current = true
+    const timer = setTimeout(() => {
+      window.location.href = checkout.checkoutUrl
+    }, 1200)
+    return () => clearTimeout(timer)
+  }, [phase, checkout])
+
+  // ── HitPay: confirmation watcher (Realtime + poll fallback) ──
+  // Active while the QR is on screen or we're awaiting confirmation.
+  // payments.status is flipped by Django's webhook via confirm_payment.
+  const watching = phase === 'qr_display' || phase === 'awaiting'
+  const registrationId = registration?.id
+  useEffect(() => {
+    if (!watching || !registrationId || getPaymentProvider() !== 'hitpay') return
+    const applyStatus = (status?: string | null) => {
+      if (cancelled) return
+      if (status === 'completed' || status === 'paid') {
+        setPhase('confirmed')
+      } else if (status === 'failed') {
+        setFailureReason('The payment was not completed — no charge was made.')
+        setPhase('failed')
+      } else if (status === 'expired' || status === 'canceled') {
+        setPhase('expired')
+      }
+    }
+
+    let cancelled = false
+
+    const channel = supabase
+      .channel(`payment-status-${registrationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'payments',
+          filter: `registration_id=eq.${registrationId}`,
+        },
+        (payload) => {
+          const next = payload.new as { status?: string } | null
+          applyStatus(next?.status)
+        }
+      )
+      .subscribe()
+
+    const POLL_MS = 3000
+    const MAX_WAIT_MS = 5 * 60 * 1000
+    const startedAt = Date.now()
+    const poll = setInterval(async () => {
+      if (Date.now() - startedAt > MAX_WAIT_MS) {
+        clearInterval(poll)
+        if (!cancelled) setPhase('expired')
+        return
+      }
+      try {
+        const status = await getPaymentStatus(registrationId)
+        if (!cancelled) applyStatus(status?.status)
+      } catch {
+        // Transient network error — the next tick retries.
+      }
+    }, POLL_MS)
+
+    return () => {
+      cancelled = true
+      clearInterval(poll)
+      supabase.removeChannel(channel)
+    }
+  }, [watching, registrationId, supabase])
+
+  // ── Confirmed: pull the assigned BIB from the registration row ─
+  useEffect(() => {
+    if (phase !== 'confirmed' || !registrationId) return
+    let cancelled = false
+    ;(async () => {
+      const { data } = await supabase
+        .from('registrations')
+        .select('bib_number')
+        .eq('id', registrationId)
+        .single()
+      if (!cancelled && data?.bib_number) setBibNumber(data.bib_number)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [phase, registrationId, supabase])
+
+  // ── Focus management on state transitions ─────────────────────
+  const stateRegionRef = useRef<HTMLDivElement>(null)
+  const prevPhaseRef = useRef(phase)
+  useEffect(() => {
+    if (prevPhaseRef.current !== phase && getPaymentProvider() === 'hitpay') {
+      stateRegionRef.current?.focus()
+    }
+    prevPhaseRef.current = phase
+  }, [phase])
+
+  const handleMockPayment = () => {
     setError(null)
     startTransition(async () => {
       try {
         if (!registration) throw new Error('Registration not found')
 
-        // Mock gateway flow (PAYMENT_PROVIDER=mock) — swap point for the
-        // real provider. confirm_dummy_payment then applies the DB state
-        // (ownership check, pending→paid, audit) unchanged.
+        // Mock gateway flow (PAYMENT_PROVIDER=mock) — kept for tests
+        // and local dev. confirm_dummy_payment then applies the DB
+        // state (ownership check, pending→paid, audit) unchanged.
         const session = await createCheckout({
           amount: registration.race_categories?.price ?? 0,
           description: `Registration ${registration.bib_number} — ${registration.events?.name}`,
@@ -65,7 +243,8 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
         await confirmPayment(session)
 
         await confirmDummyPayment(registration.id)
-        setSuccess(true)
+        setBibNumber(registration.bib_number ?? null)
+        setPhase('confirmed')
         router.refresh()
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Payment failed')
@@ -76,7 +255,7 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
   if (loading) {
     return (
       <div className="flex flex-col w-full min-h-full bg-background items-center justify-center">
-        <LoaderCircle className="size-[32px] text-muted-foreground animate-spin" />
+        <LoaderCircle className="size-[32px] text-muted-foreground animate-spin motion-reduce:animate-none" />
       </div>
     )
   }
@@ -88,15 +267,18 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
           <TriangleAlert className="size-[32px] text-muted-foreground" />
         </div>
         <p className="text-[14px] text-foreground font-bold mb-4">Registration not found</p>
-        <Link 
+        <Link
           href={`/runner/events/${id}`}
-          className="px-6 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold"
+          className="px-6 py-3 rounded-xl bg-accent text-accent-foreground text-[13px] font-bold"
         >
           Back to Event
         </Link>
       </div>
     )
   }
+
+  const isHitpay = getPaymentProvider() === 'hitpay'
+  const amount = registration.race_categories?.price ?? 0
 
   return (
     <div className="flex flex-col w-full min-h-full bg-background">
@@ -140,57 +322,76 @@ export default function PaymentPage({ params }: { params: Promise<{ id: string }
             </div>
             <div className="border-t border-border/40 pt-3 mt-1 flex justify-between items-center">
               <span className="text-[14px] font-bold text-foreground">Total to Pay</span>
-              <span className="text-[16px] font-bold text-primary">RM {registration.race_categories?.price ?? 0}</span>
+              <span className="text-[16px] font-bold text-primary">RM {amount}</span>
             </div>
           </div>
         </section>
 
-        {success ? (
-          <div className="bg-success/10 border border-success/30 p-5 rounded-2xl flex flex-col items-center text-center gap-3">
-            <CircleCheck className="size-[40px] text-success" />
-            <div>
-              <h3 className="text-[16px] font-bold text-success mb-1">Payment Successful!</h3>
-              <p className="text-[13px] text-success/80 mb-4">Your registration is confirmed. See you at the start line.</p>
-              <Link 
-                href={`/runner/events/${id}/bib`}
-                className="inline-flex w-full py-3 rounded-xl bg-success text-emerald-900 text-[13px] font-bold justify-center active:scale-95 transition-transform"
-              >
-                View Digital BIB
-              </Link>
-            </div>
+        {isHitpay ? (
+          <div ref={stateRegionRef} tabIndex={-1} role="status" aria-live="polite" className="flex flex-col rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+            {phase === 'idle' && <PayMethodCard amount={amount} onStart={startCheckout} />}
+
+            {phase === 'creating' && <CreatingState />}
+
+            {phase === 'qr_display' && checkout?.qrCode && (
+              <DuitNowQrPanel
+                payload={checkout.qrCode}
+                amount={amount}
+                eventName={registration.events?.name ?? ''}
+                fallbackUrl={checkout.checkoutUrl}
+                onPaid={() => setPhase('awaiting')}
+              />
+            )}
+            {phase === 'qr_display' && !checkout?.qrCode && <RedirectingState checkoutUrl={checkout?.checkoutUrl} />}
+
+            {phase === 'redirecting' && <RedirectingState checkoutUrl={checkout?.checkoutUrl} />}
+
+            {phase === 'awaiting' && <AwaitingState />}
+
+            {phase === 'confirmed' && <ConfirmedState bibNumber={bibNumber} eventId={id} />}
+
+            {(phase === 'failed' || phase === 'expired') && (
+              <PaymentErrorState kind={phase} reason={failureReason} onRetry={startCheckout} />
+            )}
           </div>
         ) : (
-          <section className="bg-card rounded-2xl border border-border/60 p-5 flex flex-col gap-4">
-            <div className="flex items-start gap-3">
-              <CreditCard className="size-[20px] text-primary" />
-              <div className="flex flex-col">
-                <span className="text-[14px] font-bold text-foreground">Mock Gateway</span>
-                <span className="text-[12px] text-muted-foreground">This simulates a successful payment (PAYMENT_PROVIDER=mock). No real transaction occurs.</span>
-              </div>
-            </div>
+          <>
+            {phase === 'confirmed' ? (
+              <ConfirmedState bibNumber={bibNumber} eventId={id} />
+            ) : (
+              <section className="bg-card rounded-2xl border border-border/60 p-5 flex flex-col gap-4">
+                <div className="flex items-start gap-3">
+                  <CreditCard className="size-[20px] text-primary" />
+                  <div className="flex flex-col">
+                    <span className="text-[14px] font-bold text-foreground">Mock Gateway</span>
+                    <span className="text-[12px] text-muted-foreground">This simulates a successful payment (PAYMENT_PROVIDER=mock). No real transaction occurs.</span>
+                  </div>
+                </div>
 
-            {error && (
-              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
-                <CircleAlert className="size-[16px]" />
-                {error}
-              </div>
+                {error && (
+                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-[12px] flex items-center gap-2">
+                    <CircleAlert className="size-[16px]" />
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  onClick={handleMockPayment}
+                  disabled={isPending}
+                  className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                >
+                  {isPending ? (
+                    <>
+                      <LoaderCircle className="size-[18px] animate-spin motion-reduce:animate-none" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Confirm Payment'
+                  )}
+                </button>
+              </section>
             )}
-
-            <button 
-              onClick={handlePayment} 
-              disabled={isPending}
-              className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
-            >
-              {isPending ? (
-                <>
-                  <LoaderCircle className="size-[18px] animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                'Confirm Payment'
-              )}
-            </button>
-          </section>
+          </>
         )}
       </div>
     </div>
