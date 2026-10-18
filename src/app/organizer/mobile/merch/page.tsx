@@ -1,3 +1,4 @@
+import { Maximize2, Package, ShoppingBag, TriangleAlert } from "lucide-react"
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { MerchEventPicker } from '@/components/merch/event-picker'
@@ -7,24 +8,24 @@ import { formatRM, stockLevel, variantLabel } from '@/lib/merch'
 
 function MobileHeader({ subtitle, alerts }: { subtitle?: string; alerts?: number }) {
   return (
-    <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#353437]/40 px-5 pt-safe">
+    <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/40 px-5 pt-safe">
       <div className="h-14 flex items-center justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[16px] font-bold text-[#e5e1e4]">Merch Hub</span>
+            <span className="text-[16px] font-bold text-foreground">Merch Hub</span>
             {alerts ? (
-              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#f5c26b]/20 text-[#f5c26b]">
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 dark:bg-amber-400/20 text-amber-500 dark:text-amber-400">
                 {alerts} low stock
               </span>
             ) : null}
           </div>
-          {subtitle && <span className="block text-[10px] text-[#958ea0] truncate max-w-[220px]">{subtitle}</span>}
+          {subtitle && <span className="block text-[10px] text-muted-foreground truncate max-w-[220px]">{subtitle}</span>}
         </div>
         <Link
           href="/organizer/merch"
-          className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#2a2a2c] text-[#cbc3d7] text-[11px] font-medium border border-[#353437]/60"
+          className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-accent text-muted-foreground text-[11px] font-medium border border-border/60"
         >
-          <span className="material-symbols-outlined text-[14px]">open_in_full</span>
+          <Maximize2 className="size-[14px]" />
           Full View
         </Link>
       </div>
@@ -46,13 +47,13 @@ export default async function OrganizerMobileMerchPage({
 
   if (!organizerId || !event) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#131315]">
+      <div className="flex flex-col min-h-dvh bg-background">
         <MobileHeader />
-        <div className="flex flex-col items-center justify-center flex-1 py-16 text-[#958ea0]">
-          <span className="material-symbols-outlined text-[48px] mb-3">shopping_bag</span>
+        <div className="flex flex-col items-center justify-center flex-1 py-16 text-muted-foreground">
+          <ShoppingBag className="size-[48px] mb-3" />
           <p className="text-[14px] font-medium">No events yet</p>
           <p className="text-[12px] mt-1">Create an event to sell merchandise</p>
-          <Link href="/organizer/mobile/events" className="mt-4 px-5 py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold">
+          <Link href="/organizer/mobile/events" className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold">
             View Events
           </Link>
         </div>
@@ -72,7 +73,7 @@ export default async function OrganizerMobileMerchPage({
   const readyCount = orders.filter((o) => o.status === 'ready').length
 
   return (
-    <div className="flex flex-col w-full bg-[#131315] min-h-screen">
+    <div className="flex flex-col w-full bg-background min-h-dvh">
       <MobileHeader subtitle={event.name} alerts={lowStock.length} />
 
       <div className="flex flex-col px-4 py-4 space-y-5">
@@ -85,27 +86,27 @@ export default async function OrganizerMobileMerchPage({
             { label: 'Ready', value: readyCount },
             { label: 'Revenue', value: formatRM(revenue) },
           ].map((s) => (
-            <div key={s.label} className="rounded-xl bg-[#201f22] p-3 border border-[#353437]/40">
-              <div className="text-[10px] uppercase tracking-wider text-[#958ea0] font-semibold">{s.label}</div>
-              <div className="text-[18px] font-extrabold text-[#e5e1e4] mt-1 truncate tabular-nums">{s.value}</div>
+            <div key={s.label} className="rounded-xl bg-card p-3 border border-border/40">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{s.label}</div>
+              <div className="text-[18px] font-extrabold text-foreground mt-1 truncate tabular-nums">{s.value}</div>
             </div>
           ))}
         </div>
 
         {/* Low stock */}
         {lowStock.length > 0 && (
-          <section className="rounded-xl bg-[#f5c26b]/5 border border-[#f5c26b]/20 p-3">
+          <section className="rounded-xl bg-amber-500/5 dark:bg-amber-400/5 border border-amber-500/20 dark:border-amber-400/20 p-3">
             <div className="flex items-center gap-2 mb-2">
-              <span className="material-symbols-outlined text-[16px] text-[#f5c26b]">warning</span>
-              <span className="text-[12px] font-bold text-[#f5c26b]">Low or sold out</span>
+              <TriangleAlert className="size-[16px] text-amber-500 dark:text-amber-400" />
+              <span className="text-[12px] font-bold text-amber-500 dark:text-amber-400">Low or sold out</span>
             </div>
             <div className="flex flex-col gap-1.5">
               {lowStock.map((item) => (
                 <div key={item.id} className="flex items-center justify-between text-[12px]">
-                  <span className="text-[#e5e1e4] truncate">
-                    {item.name} <span className="text-[#958ea0]">· {item.variant}</span>
+                  <span className="text-foreground truncate">
+                    {item.name} <span className="text-muted-foreground">· {item.variant}</span>
                   </span>
-                  <span className={`font-bold ${item.stock === 0 ? 'text-[#ffb4ab]' : 'text-[#f5c26b]'}`}>
+                  <span className={`font-bold ${item.stock === 0 ? 'text-red-500 dark:text-red-300' : 'text-amber-500 dark:text-amber-400'}`}>
                     {item.stock === 0 ? 'Sold out' : item.stock}
                   </span>
                 </div>
@@ -116,13 +117,13 @@ export default async function OrganizerMobileMerchPage({
 
         {/* Orders */}
         <section>
-          <h2 className="text-[12px] font-bold text-[#cbc3d7] uppercase tracking-wider mb-3">Orders</h2>
+          <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-3">Orders</h2>
           {products.length === 0 && orders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-[#958ea0]">
-              <span className="material-symbols-outlined text-[48px] mb-3">inventory_2</span>
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <Package className="size-[48px] mb-3" />
               <p className="text-[14px] font-medium">No merchandise yet</p>
               <p className="text-[12px] mt-1">Add products from the full organizer view</p>
-              <Link href="/organizer/merch" className="mt-4 px-5 py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold">
+              <Link href="/organizer/merch" className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold">
                 Manage Merch
               </Link>
             </div>

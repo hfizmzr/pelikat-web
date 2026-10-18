@@ -1,5 +1,6 @@
 'use client'
 
+import { CalendarX, CircleAlert, CreditCard, Landmark, LoaderCircle, Lock, ShoppingCart, Store, Trash2, type LucideIcon } from "lucide-react"
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -28,9 +29,9 @@ type CheckoutLine = {
   problem: string | null
 }
 
-const PAYMENT_OPTIONS: { method: MerchPaymentMethod; icon: string; hint: string }[] = [
-  { method: 'fpx', icon: 'account_balance', hint: 'Maybank2u, CIMB Clicks, Public Bank & more' },
-  { method: 'card', icon: 'credit_card', hint: 'Visa / Mastercard' },
+const PAYMENT_OPTIONS: { method: MerchPaymentMethod; icon: LucideIcon; hint: string }[] = [
+  { method: 'fpx', icon: Landmark, hint: 'Maybank2u, CIMB Clicks, Public Bank & more' },
+  { method: 'card', icon: CreditCard, hint: 'Visa / Mastercard' },
 ]
 
 export function Checkout({ data }: { data: StoreData & { event: NonNullable<StoreData['event']> } }) {
@@ -92,13 +93,13 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
   if (cart.lines.length === 0) {
     return (
       <div className="px-5 py-10 flex flex-col items-center text-center gap-3">
-        <div className="w-16 h-16 bg-[#1c1b1d] rounded-full flex items-center justify-center border border-[#353437]/60">
-          <span className="material-symbols-outlined text-[32px] text-[#958ea0]">shopping_cart</span>
+        <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center border border-border/60">
+          <ShoppingCart className="size-[32px] text-muted-foreground" />
         </div>
-        <p className="text-[15px] font-bold text-[#e5e1e4]">Your cart is empty</p>
+        <p className="text-[15px] font-bold text-foreground">Your cart is empty</p>
         <Link
           href={`/runner/events/${event.id}/merch`}
-          className="mt-2 px-6 py-3 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold"
+          className="mt-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold"
         >
           Browse merch
         </Link>
@@ -109,24 +110,24 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
   return (
     <div className="flex flex-col px-5 py-5 gap-5">
       {/* Cart */}
-      <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
-        <div className="px-4 py-3 border-b border-[#353437]/60 flex items-center justify-between">
-          <span className="text-[14px] font-bold text-[#e5e1e4]">Your cart</span>
-          <Link href={`/runner/events/${event.id}/merch`} className="text-[12px] font-semibold text-[#d0bcff]">
+      <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+        <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
+          <span className="text-[14px] font-bold text-foreground">Your cart</span>
+          <Link href={`/runner/events/${event.id}/merch`} className="text-[12px] font-semibold text-primary">
             Add more
           </Link>
         </div>
-        <ul className="divide-y divide-[#353437]/50">
+        <ul className="divide-y divide-border/50">
           {lines.map((line) => (
             <li key={line.variantId} className="p-4 flex gap-3">
               <ProductThumb imagePath={line.imagePath} name={line.name} className="w-14 h-14 rounded-xl shrink-0" />
               <div className="flex-1 min-w-0 flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-[13px] font-bold text-[#e5e1e4] leading-tight truncate">{line.name}</p>
-                    <p className="text-[11px] text-[#958ea0]">{line.variantLabel}</p>
+                    <p className="text-[13px] font-bold text-foreground leading-tight truncate">{line.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{line.variantLabel}</p>
                   </div>
-                  <span className="text-[13px] font-mono font-bold text-[#e5e1e4] whitespace-nowrap">
+                  <span className="text-[13px] font-mono font-bold text-foreground whitespace-nowrap">
                     {formatRM(line.price * line.quantity)}
                   </span>
                 </div>
@@ -145,14 +146,14 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
                     type="button"
                     onClick={() => cart.remove(line.variantId)}
                     disabled={isPending}
-                    className="text-[12px] font-semibold text-[#958ea0] flex items-center gap-1 py-1"
+                    className="text-[12px] font-semibold text-muted-foreground flex items-center gap-1 py-1"
                   >
-                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                    <Trash2 className="size-[16px]" />
                     Remove
                   </button>
                 </div>
                 {line.problem && (
-                  <p className="text-[12px] font-semibold text-[#ffb4ab]">
+                  <p className="text-[12px] font-semibold text-red-500 dark:text-red-300">
                     {line.problem}
                     {line.stock > 0 && line.quantity > line.stock && (
                       <button
@@ -172,11 +173,11 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
       </section>
 
       {/* Collection */}
-      <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex gap-3">
-        <span className="material-symbols-outlined text-[22px] text-[#4edea3]">storefront</span>
+      <section className="bg-card rounded-2xl border border-border/60 p-4 flex gap-3">
+        <Store className="size-[22px] text-success" />
         <div className="flex flex-col gap-0.5">
-          <span className="text-[13px] font-bold text-[#e5e1e4]">Collect at REPC</span>
-          <span className="text-[12px] text-[#958ea0] leading-[18px]">
+          <span className="text-[13px] font-bold text-foreground">Collect at REPC</span>
+          <span className="text-[12px] text-muted-foreground leading-[18px]">
             Pick up your order with your race kit{event.location ? ` (${event.location})` : ''}. Show your Digital
             BIB QR at the counter.
           </span>
@@ -185,7 +186,7 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
 
       {/* Payment method */}
       <section className="flex flex-col gap-2">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-[#958ea0] px-1">Pay with</span>
+        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1">Pay with</span>
         <div role="radiogroup" aria-label="Payment method" className="flex flex-col gap-2">
           {PAYMENT_OPTIONS.map((option) => {
             const active = method === option.method
@@ -197,22 +198,20 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
                 aria-checked={active}
                 onClick={() => setMethod(option.method)}
                 className={`flex items-center gap-3 p-4 rounded-2xl border text-left transition-colors ${
-                  active ? 'bg-[#d0bcff]/10 border-[#d0bcff]' : 'bg-[#1c1b1d] border-[#353437]/60'
+                  active ? 'bg-primary/10 border-primary' : 'bg-card border-border/60'
                 }`}
               >
-                <span className={`material-symbols-outlined text-[22px] ${active ? 'text-[#d0bcff]' : 'text-[#cbc3d7]'}`}>
-                  {option.icon}
-                </span>
+                <option.icon className={`size-[22px] ${active ? 'text-primary' : 'text-muted-foreground'}`} />
                 <span className="flex-1 flex flex-col">
-                  <span className="text-[14px] font-bold text-[#e5e1e4]">{MERCH_PAYMENT_METHOD_LABEL[option.method]}</span>
-                  <span className="text-[11px] text-[#958ea0]">{option.hint}</span>
+                  <span className="text-[14px] font-bold text-foreground">{MERCH_PAYMENT_METHOD_LABEL[option.method]}</span>
+                  <span className="text-[11px] text-muted-foreground">{option.hint}</span>
                 </span>
                 <span
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    active ? 'border-[#d0bcff]' : 'border-[#494454]'
+                    active ? 'border-primary' : 'border-border'
                   }`}
                 >
-                  {active && <span className="w-2.5 h-2.5 rounded-full bg-[#d0bcff]" />}
+                  {active && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
                 </span>
               </button>
             )
@@ -221,31 +220,31 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
       </section>
 
       {/* Total + pay */}
-      <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-4">
+      <section className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <span className="text-[14px] font-bold text-[#e5e1e4]">Total</span>
-          <span className="text-[20px] font-mono font-extrabold text-[#d0bcff]">{formatRM(total)}</span>
+          <span className="text-[14px] font-bold text-foreground">Total</span>
+          <span className="text-[20px] font-mono font-extrabold text-primary">{formatRM(total)}</span>
         </div>
 
         {salesClosed ? (
-          <Notice tone="warn" icon="event_busy">
+          <Notice tone="warn" icon={CalendarX}>
             Merch sales for this event have closed.
           </Notice>
         ) : !registrationPaid ? (
-          <Notice tone="warn" icon="lock">
+          <Notice tone="warn" icon={Lock}>
             <Link href={`/runner/events/${event.id}/payment`} className="font-bold underline underline-offset-2">
               Complete your race registration payment
             </Link>{' '}
             before buying merch.
           </Notice>
         ) : hasProblems ? (
-          <Notice tone="error" icon="error">
+          <Notice tone="error" icon={CircleAlert}>
             Some items changed since you added them. Update or remove them to continue.
           </Notice>
         ) : null}
 
         {error && (
-          <Notice tone="error" icon="error">
+          <Notice tone="error" icon={CircleAlert}>
             {error}
           </Notice>
         )}
@@ -254,21 +253,21 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
           type="button"
           onClick={placeOrder}
           disabled={!canPay}
-          className="w-full py-3.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-40 disabled:active:scale-100"
+          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-40 disabled:active:scale-100"
         >
           {isPending ? (
             <>
-              <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+              <LoaderCircle className="size-[18px] animate-spin" />
               Reserving your items…
             </>
           ) : (
             <>
-              <span className="material-symbols-outlined text-[18px]">lock</span>
+              <Lock className="size-[18px]" />
               Proceed to payment
             </>
           )}
         </button>
-        <p className="text-[11px] text-[#958ea0] text-center -mt-1">
+        <p className="text-[11px] text-muted-foreground text-center -mt-1">
           Items are held for {MERCH_RESERVATION_MINUTES} minutes while you pay.
         </p>
       </section>

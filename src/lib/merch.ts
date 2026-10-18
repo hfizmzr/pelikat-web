@@ -1,3 +1,4 @@
+import { CircleCheck, CircleCheckBig, CircleX, Hourglass, Store, type LucideIcon } from "lucide-react"
 export const MERCH_IMAGE_BUCKET = 'merch-images'
 
 export const MERCH_SIZE_PRESETS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
@@ -10,11 +11,11 @@ export const MERCH_ORDER_STATUS_META: Record<
   MerchOrderStatus,
   { label: string; className: string }
 > = {
-  pending: { label: 'Pending', className: 'text-[#cbc3d7] bg-[#353437] border-[#494454]' },
-  confirmed: { label: 'Confirmed', className: 'text-[#4cd7f6] bg-[#4cd7f6]/10 border-[#4cd7f6]/20' },
-  ready: { label: 'Ready', className: 'text-[#d0bcff] bg-[#d0bcff]/10 border-[#d0bcff]/20' },
-  collected: { label: 'Collected', className: 'text-[#4edea3] bg-[#4edea3]/15 border-[#4edea3]/20' },
-  cancelled: { label: 'Cancelled', className: 'text-[#ffb4ab] bg-[#ffb4ab]/10 border-[#ffb4ab]/20' },
+  pending: { label: 'Pending', className: 'text-muted-foreground bg-accent border-border' },
+  confirmed: { label: 'Confirmed', className: 'text-primary bg-primary/10 border-primary/20' },
+  ready: { label: 'Ready', className: 'text-amber-500 dark:text-amber-400 bg-amber-500/10 border-amber-500/20' },
+  collected: { label: 'Collected', className: 'text-success bg-success/15 border-success/20' },
+  cancelled: { label: 'Cancelled', className: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/20 dark:border-red-300/20' },
 }
 
 // Orders in these states count as sold (matches the merch_product_sales view)
@@ -117,32 +118,32 @@ export const MERCH_PAYMENT_METHOD_LABEL: Record<MerchPaymentMethod, string> = {
 // Runner-facing wording for each status (FR-73)
 export const MERCH_RUNNER_STATUS_META: Record<
   MerchOrderStatus,
-  { label: string; description: string; icon: string }
+  { label: string; description: string; icon: LucideIcon }
 > = {
   pending: {
     label: 'Awaiting payment',
     description: 'Complete payment before your reservation expires.',
-    icon: 'hourglass_top',
+    icon: Hourglass,
   },
   confirmed: {
     label: 'Confirmed',
     description: 'Payment received. The organizer is packing your order.',
-    icon: 'task_alt',
+    icon: CircleCheckBig,
   },
   ready: {
     label: 'Ready to collect',
     description: 'Collect it at REPC — show your Digital BIB QR at the counter.',
-    icon: 'storefront',
+    icon: Store,
   },
   collected: {
     label: 'Collected',
     description: 'Picked up at REPC. Enjoy your gear!',
-    icon: 'check_circle',
+    icon: CircleCheck,
   },
   cancelled: {
     label: 'Cancelled',
     description: 'This order was cancelled.',
-    icon: 'cancel',
+    icon: CircleX,
   },
 }
 

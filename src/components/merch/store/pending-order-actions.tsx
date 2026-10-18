@@ -1,5 +1,6 @@
 'use client'
 
+import { CircleAlert, Lock, Timer, TimerOff } from "lucide-react"
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -35,7 +36,7 @@ export function PendingOrderActions({
 
   if (expired) {
     return (
-      <Notice tone="error" icon="timer_off">
+      <Notice tone="error" icon={TimerOff}>
         The reservation expired and the items were released.{' '}
         <Link href={`/runner/events/${eventId}/merch`} className="font-bold underline underline-offset-2">
           Check out again
@@ -48,27 +49,27 @@ export function PendingOrderActions({
   return (
     <div className="flex flex-col gap-3">
       {expiresAt && (
-        <Notice tone="warn" icon="timer">
+        <Notice tone="warn" icon={Timer}>
           Items are held for you for <ReservationCountdown expiresAt={expiresAt} /> more.
         </Notice>
       )}
       {error && (
-        <Notice tone="error" icon="error">
+        <Notice tone="error" icon={CircleAlert}>
           {error}
         </Notice>
       )}
       <Link
         href={`/runner/merch/pay/${orderId}${method ? `?method=${method}` : ''}`}
-        className="w-full py-3.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2"
+        className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2"
       >
-        <span className="material-symbols-outlined text-[18px]">lock</span>
+        <Lock className="size-[18px]" />
         Continue to payment
       </Link>
       <button
         type="button"
         onClick={cancel}
         disabled={isPending}
-        className="text-[13px] font-semibold text-[#958ea0] py-2 disabled:opacity-50"
+        className="text-[13px] font-semibold text-muted-foreground py-2 disabled:opacity-50"
       >
         {isPending ? 'Cancelling…' : 'Cancel order'}
       </button>

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Loader2, Pencil, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Pencil, Shirt, Trash2 } from "lucide-react"
 import { toast } from 'sonner'
 import {
   AlertDialog,
@@ -26,9 +26,9 @@ import {
 } from '@/lib/merch'
 
 const LEVEL_CHIP: Record<StockLevel, string> = {
-  out: 'border-[#ffb4ab]/40 text-[#ffb4ab] bg-[#ffb4ab]/10',
-  low: 'border-[#f5c26b]/40 text-[#f5c26b] bg-[#f5c26b]/10',
-  ok: 'border-[#494454] text-[#cbc3d7]',
+  out: 'border-red-500/40 dark:border-red-300/40 text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10',
+  low: 'border-amber-500/40 dark:border-amber-400/40 text-amber-500 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-400/10',
+  ok: 'border-border text-muted-foreground',
 }
 
 type ProductGridProps = {
@@ -91,19 +91,19 @@ function ProductCard({
   }
 
   return (
-    <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] overflow-hidden flex flex-col hover:border-[#4cd7f6]/30 transition-all">
-      <div className="relative aspect-[16/9] bg-[#201f22] flex items-center justify-center">
+    <div className="bg-card rounded-xl border border-muted overflow-hidden flex flex-col hover:border-primary/30 transition-all">
+      <div className="relative aspect-[16/9] bg-card flex items-center justify-center">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={imageUrl} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
         ) : (
-          <span className="material-symbols-outlined text-[40px] text-[#494454]">apparel</span>
+          <Shirt className="size-[40px] text-border" />
         )}
         <span
           className={`absolute top-3 right-3 text-[10px] leading-[14px] px-2 py-0.5 rounded-full font-semibold border backdrop-blur ${
             product.is_active
-              ? 'text-[#4edea3] bg-[#131315]/70 border-[#4edea3]/30'
-              : 'text-[#cbc3d7] bg-[#131315]/70 border-[#494454]'
+              ? 'text-success bg-background/70 border-success/30'
+              : 'text-muted-foreground bg-background/70 border-border'
           }`}
         >
           {product.is_active ? 'Active' : 'Hidden'}
@@ -112,24 +112,24 @@ function ProductCard({
 
       <div className="p-5 flex flex-col gap-4 flex-1">
         <div className="flex flex-col gap-1 min-w-0">
-          <h3 className="text-[15px] leading-[20px] font-semibold text-[#e5e1e4] truncate">{product.name}</h3>
+          <h3 className="text-[15px] leading-[20px] font-semibold text-foreground truncate">{product.name}</h3>
           {product.description && (
-            <p className="text-[12px] leading-[16px] text-[#958ea0] line-clamp-2">{product.description}</p>
+            <p className="text-[12px] leading-[16px] text-muted-foreground line-clamp-2">{product.description}</p>
           )}
         </div>
 
         <div className="flex items-end justify-between">
           <div className="flex flex-col">
-            <span className="text-[22px] leading-[28px] tracking-[-0.015em] font-semibold text-[#e5e1e4]">
+            <span className="text-[22px] leading-[28px] tracking-[-0.015em] font-semibold text-foreground">
               {formatRM(product.price)}
             </span>
-            <span className="text-[11px] text-[#958ea0]">
+            <span className="text-[11px] text-muted-foreground">
               {variants.length} variant{variants.length !== 1 ? 's' : ''}
             </span>
           </div>
           <div className="text-right">
-            <span className="text-[22px] leading-[28px] font-semibold text-[#e5e1e4]">{totalStock}</span>
-            <div className={`text-[11px] ${alertCount > 0 ? 'text-[#f5c26b]' : 'text-[#958ea0]'}`}>
+            <span className="text-[22px] leading-[28px] font-semibold text-foreground">{totalStock}</span>
+            <div className={`text-[11px] ${alertCount > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground'}`}>
               {alertCount > 0 ? `${alertCount} low / sold out` : 'in stock'}
             </div>
           </div>
@@ -146,13 +146,13 @@ function ProductCard({
           ))}
         </div>
 
-        <div className="mt-auto flex items-center gap-2 pt-3 border-t border-[#23232b]">
+        <div className="mt-auto flex items-center gap-2 pt-3 border-t border-muted">
           <ProductFormDialog
             eventId={eventId}
             organizerId={organizerId}
             product={product}
             trigger={
-              <button className="flex-1 h-10 bg-[#201f22] hover:bg-[#2a2a2c] text-[#e5e1e4] text-[12px] font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors border border-[#353437]">
+              <button className="flex-1 h-10 bg-card hover:bg-accent text-foreground text-[12px] font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors border border-border">
                 <Pencil className="h-4 w-4" /> Edit
               </button>
             }
@@ -162,7 +162,7 @@ function ProductCard({
             disabled={isPending}
             title={product.is_active ? 'Hide from store' : 'Show in store'}
             aria-label={product.is_active ? 'Hide from store' : 'Show in store'}
-            className="h-10 w-10 flex items-center justify-center text-[#958ea0] hover:text-[#e5e1e4] hover:bg-[#2a2a2c] rounded-lg transition-colors disabled:opacity-50"
+            className="h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors disabled:opacity-50"
           >
             {isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -177,7 +177,7 @@ function ProductCard({
             disabled={isPending}
             title="Delete product"
             aria-label="Delete product"
-            className="h-10 w-10 flex items-center justify-center text-[#958ea0] hover:text-[#ffb4ab] hover:bg-[#ffb4ab]/10 rounded-lg transition-colors disabled:opacity-50"
+            className="h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-red-500 dark:hover:text-red-300 hover:bg-red-500/10 dark:hover:bg-red-300/10 rounded-lg transition-colors disabled:opacity-50"
           >
             <Trash2 className="h-4 w-4" />
           </button>

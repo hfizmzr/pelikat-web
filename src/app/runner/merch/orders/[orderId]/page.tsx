@@ -1,3 +1,4 @@
+import { Check, CircleCheck, QrCode } from "lucide-react"
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -50,38 +51,38 @@ export default async function RunnerMerchOrderPage({
   const reached = STEP_INDEX[order.status] ?? -1
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+    <div className="flex flex-col w-full min-h-full bg-background">
       <StoreHeader title="Order details" subtitle={order.events?.name} backHref="/runner/merch" />
 
       <div className="flex flex-col px-5 py-5 gap-5">
         {/* FR-72: confirmation with the order number */}
         {justPaid ? (
-          <section className="bg-[#4edea3]/10 border border-[#4edea3]/30 rounded-2xl p-5 flex flex-col items-center text-center gap-2">
-            <span className="material-symbols-outlined text-[44px] text-[#4edea3]">check_circle</span>
-            <h2 className="text-[18px] font-bold text-[#4edea3]">Payment successful</h2>
-            <p className="text-[12px] text-[#4edea3]/80">Your order is confirmed. Keep this order number:</p>
-            <span className="mt-1 px-4 py-2 rounded-xl bg-[#131315]/60 font-mono text-[22px] font-extrabold tracking-wider text-[#e5e1e4]">
+          <section className="bg-success/10 border border-success/30 rounded-2xl p-5 flex flex-col items-center text-center gap-2">
+            <CircleCheck className="size-[44px] text-success" />
+            <h2 className="text-[18px] font-bold text-success">Payment successful</h2>
+            <p className="text-[12px] text-success/80">Your order is confirmed. Keep this order number:</p>
+            <span className="mt-1 px-4 py-2 rounded-xl bg-background/60 font-mono text-[22px] font-extrabold tracking-wider text-foreground">
               {order.order_number}
             </span>
           </section>
         ) : (
-          <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex items-center justify-between gap-3">
+          <section className="bg-card rounded-2xl border border-border/60 p-4 flex items-center justify-between gap-3">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#958ea0]">Order number</span>
-              <span className="font-mono text-[18px] font-extrabold text-[#e5e1e4] tracking-wide">{order.order_number}</span>
-              <span className="text-[11px] text-[#958ea0]">Placed {formatOrderDate(order.created_at)}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Order number</span>
+              <span className="font-mono text-[18px] font-extrabold text-foreground tracking-wide">{order.order_number}</span>
+              <span className="text-[11px] text-muted-foreground">Placed {formatOrderDate(order.created_at)}</span>
             </div>
             <OrderStatusChip status={order.status} />
           </section>
         )}
 
         {/* FR-73: status */}
-        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-4">
+        <section className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-4">
           <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-[22px] text-[#d0bcff]">{meta.icon}</span>
+            <meta.icon className="size-[22px] text-primary" />
             <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-[#e5e1e4]">{meta.label}</span>
-              <span className="text-[12px] text-[#958ea0] leading-[18px]">
+              <span className="text-[14px] font-bold text-foreground">{meta.label}</span>
+              <span className="text-[12px] text-muted-foreground leading-[18px]">
                 {order.status === 'cancelled' && order.cancel_reason
                   ? MERCH_CANCEL_REASON_LABEL[order.cancel_reason] ?? meta.description
                   : meta.description}
@@ -99,20 +100,20 @@ export default async function RunnerMerchOrderPage({
                     <div className="flex flex-col items-center">
                       <span
                         className={`w-5 h-5 rounded-full flex items-center justify-center border-2 ${
-                          done ? 'bg-[#4edea3] border-[#4edea3]' : 'border-[#494454]'
+                          done ? 'bg-success border-success' : 'border-border'
                         }`}
                       >
-                        {done && <span className="material-symbols-outlined text-[14px] text-[#003926]">check</span>}
+                        {done && <Check className="size-[14px] text-emerald-900" />}
                       </span>
                       {i < TIMELINE.length - 1 && (
-                        <span className={`w-0.5 flex-1 min-h-5 ${i < reached ? 'bg-[#4edea3]' : 'bg-[#353437]'}`} />
+                        <span className={`w-0.5 flex-1 min-h-5 ${i < reached ? 'bg-success' : 'bg-accent'}`} />
                       )}
                     </div>
                     <div className="flex flex-col pb-4">
-                      <span className={`text-[13px] font-semibold ${done ? 'text-[#e5e1e4]' : 'text-[#958ea0]'}`}>
+                      <span className={`text-[13px] font-semibold ${done ? 'text-foreground' : 'text-muted-foreground'}`}>
                         {step.label}
                       </span>
-                      {done && at && <span className="text-[11px] text-[#958ea0]">{formatOrderDate(at)}</span>}
+                      {done && at && <span className="text-[11px] text-muted-foreground">{formatOrderDate(at)}</span>}
                     </div>
                   </li>
                 )
@@ -130,7 +131,7 @@ export default async function RunnerMerchOrderPage({
           )}
 
           {(order.status === 'confirmed' || order.status === 'ready') && (
-            <Notice tone={order.status === 'ready' ? 'success' : 'info'} icon="qr_code_2">
+            <Notice tone={order.status === 'ready' ? 'success' : 'info'} icon={QrCode}>
               Collect at REPC{order.events?.location ? ` (${order.events.location})` : ''} — show your{' '}
               <Link href={`/runner/events/${order.event_id}/bib`} className="font-bold underline underline-offset-2">
                 Digital BIB QR
@@ -141,47 +142,47 @@ export default async function RunnerMerchOrderPage({
         </section>
 
         {/* Items */}
-        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#353437]/60 text-[14px] font-bold text-[#e5e1e4]">Items</div>
-          <ul className="divide-y divide-[#353437]/50">
+        <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+          <div className="px-4 py-3 border-b border-border/60 text-[14px] font-bold text-foreground">Items</div>
+          <ul className="divide-y divide-border/50">
             {order.merch_order_items.map((item) => (
               <li key={item.id} className="px-4 py-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[13px] font-bold text-[#e5e1e4] truncate">{item.product_name ?? 'Item'}</p>
-                  <p className="text-[11px] text-[#958ea0]">
+                  <p className="text-[13px] font-bold text-foreground truncate">{item.product_name ?? 'Item'}</p>
+                  <p className="text-[11px] text-muted-foreground">
                     {item.variant_label ?? 'One size'} · {item.quantity} × {formatRM(Number(item.unit_price))}
                   </p>
                 </div>
-                <span className="text-[13px] font-mono font-bold text-[#e5e1e4] whitespace-nowrap">
+                <span className="text-[13px] font-mono font-bold text-foreground whitespace-nowrap">
                   {formatRM(Number(item.unit_price) * item.quantity)}
                 </span>
               </li>
             ))}
           </ul>
-          <div className="px-4 py-3 bg-[#23232b]/50 border-t border-[#353437]/40 flex items-center justify-between">
-            <span className="text-[12px] font-bold uppercase tracking-widest text-[#958ea0]">Total</span>
-            <span className="text-[18px] font-mono font-extrabold text-[#d0bcff]">{formatRM(Number(order.total_amount))}</span>
+          <div className="px-4 py-3 bg-muted/50 border-t border-border/40 flex items-center justify-between">
+            <span className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground">Total</span>
+            <span className="text-[18px] font-mono font-extrabold text-primary">{formatRM(Number(order.total_amount))}</span>
           </div>
         </section>
 
         {/* Payment */}
         {order.paid_at && (
-          <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 p-4 flex flex-col gap-2 text-[12px]">
-            <span className="text-[14px] font-bold text-[#e5e1e4] mb-1">Payment</span>
+          <section className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-2 text-[12px]">
+            <span className="text-[14px] font-bold text-foreground mb-1">Payment</span>
             <div className="flex justify-between gap-3">
-              <span className="text-[#958ea0]">Method</span>
-              <span className="text-[#e5e1e4]">
+              <span className="text-muted-foreground">Method</span>
+              <span className="text-foreground">
                 {order.payment_method ? MERCH_PAYMENT_METHOD_LABEL[order.payment_method] : '—'}
               </span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-[#958ea0]">Paid</span>
-              <span className="text-[#e5e1e4]">{formatOrderDate(order.paid_at)}</span>
+              <span className="text-muted-foreground">Paid</span>
+              <span className="text-foreground">{formatOrderDate(order.paid_at)}</span>
             </div>
             {order.payment_ref && (
               <div className="flex justify-between gap-3">
-                <span className="text-[#958ea0]">Reference</span>
-                <span className="font-mono text-[#e5e1e4] truncate">{order.payment_ref}</span>
+                <span className="text-muted-foreground">Reference</span>
+                <span className="font-mono text-foreground truncate">{order.payment_ref}</span>
               </div>
             )}
           </section>
@@ -190,7 +191,7 @@ export default async function RunnerMerchOrderPage({
         {justPaid && (
           <Link
             href="/runner/merch"
-            className="w-full py-3.5 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[14px] font-bold text-center"
+            className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-bold text-center"
           >
             View all my orders
           </Link>

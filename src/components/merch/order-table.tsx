@@ -203,8 +203,8 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
               onClick={() => setFilter(key)}
               className={`h-9 px-3 rounded-full text-[12px] font-medium border transition-colors ${
                 filter === key
-                  ? 'bg-[#d0bcff] text-[#3c0091] border-[#d0bcff]'
-                  : 'bg-[#201f22] text-[#cbc3d7] border-[#353437] hover:border-[#494454]'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card text-muted-foreground border-border hover:border-border'
               }`}
             >
               {key === 'all' ? 'All' : MERCH_ORDER_STATUS_META[key].label}
@@ -213,7 +213,7 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
           ))}
         </div>
         <div className="relative lg:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#958ea0]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -226,8 +226,8 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
 
       {/* Bulk bar */}
       {selected.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-[#d0bcff]/30 bg-[#d0bcff]/5 px-3 py-2">
-          <span className="text-[13px] text-[#e5e1e4] mr-auto">{selected.size} selected</span>
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+          <span className="text-[13px] text-foreground mr-auto">{selected.size} selected</span>
           <Button
             size="sm"
             onClick={() => requestStatus(selectedReadyable, 'ready')}
@@ -252,13 +252,13 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
       )}
 
       {visible.length === 0 ? (
-        <div className="rounded-xl border border-[#23232b] py-12 text-center text-[13px] text-[#958ea0]">
+        <div className="rounded-xl border border-muted py-12 text-center text-[13px] text-muted-foreground">
           {orders.length === 0 ? 'No orders yet for this event.' : 'No orders match this filter.'}
         </div>
       ) : (
         <>
           {/* Desktop table */}
-          <div className="hidden md:block rounded-xl border border-[#23232b] overflow-x-auto">
+          <div className="hidden md:block rounded-xl border border-muted overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -268,7 +268,7 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
                       aria-label="Select all visible orders"
                       checked={allVisibleSelected}
                       onChange={toggleAllVisible}
-                      className="h-4 w-4 accent-[#d0bcff]"
+                      className="h-4 w-4 accent-primary"
                     />
                   </TableHead>
                   <TableHead>Order</TableHead>
@@ -288,7 +288,7 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
                         aria-label={`Select ${order.orderNumber}`}
                         checked={selected.has(order.id)}
                         onChange={() => toggle(order.id)}
-                        className="h-4 w-4 accent-[#d0bcff]"
+                        className="h-4 w-4 accent-primary"
                       />
                     </TableCell>
                     <TableCell>
@@ -321,19 +321,19 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
 
           {/* Mobile cards */}
           <div className="md:hidden flex flex-col gap-3">
-            <label className="flex items-center gap-2 text-[12px] text-[#cbc3d7] px-1">
+            <label className="flex items-center gap-2 text-[12px] text-muted-foreground px-1">
               <input
                 type="checkbox"
                 checked={allVisibleSelected}
                 onChange={toggleAllVisible}
-                className="h-4 w-4 accent-[#d0bcff]"
+                className="h-4 w-4 accent-primary"
               />
               Select all shown
             </label>
             {visible.map((order) => (
               <div
                 key={order.id}
-                className={`rounded-xl border p-4 bg-[#1c1b1d] ${selected.has(order.id) ? 'border-[#d0bcff]/50' : 'border-[#353437]/60'}`}
+                className={`rounded-xl border p-4 bg-card ${selected.has(order.id) ? 'border-primary/50' : 'border-border/60'}`}
               >
                 <div className="flex items-start gap-3">
                   <input
@@ -341,22 +341,22 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
                     aria-label={`Select ${order.orderNumber}`}
                     checked={selected.has(order.id)}
                     onChange={() => toggle(order.id)}
-                    className="h-5 w-5 mt-0.5 accent-[#d0bcff]"
+                    className="h-5 w-5 mt-0.5 accent-primary"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-[13px] text-[#e5e1e4]">{order.orderNumber}</span>
+                      <span className="font-mono text-[13px] text-foreground">{order.orderNumber}</span>
                       <StatusBadge status={order.status} />
                     </div>
-                    <div className="text-[13px] font-semibold text-[#e5e1e4] mt-1 truncate">
+                    <div className="text-[13px] font-semibold text-foreground mt-1 truncate">
                       {order.runnerName}
-                      {order.bibNumber && <span className="font-normal text-[#958ea0]"> · BIB {order.bibNumber}</span>}
+                      {order.bibNumber && <span className="font-normal text-muted-foreground"> · BIB {order.bibNumber}</span>}
                     </div>
-                    <div className="text-[12px] text-[#cbc3d7] mt-1">
+                    <div className="text-[12px] text-muted-foreground mt-1">
                       {order.items.map((item) => `${item.quantity}× ${item.label}`).join(', ')}
                     </div>
                     <div className="flex items-center justify-between mt-3">
-                      <span className="text-[13px] font-semibold text-[#e5e1e4]">{formatRM(order.total)}</span>
+                      <span className="text-[13px] font-semibold text-foreground">{formatRM(order.total)}</span>
                       {renderRowActions(order)}
                     </div>
                   </div>

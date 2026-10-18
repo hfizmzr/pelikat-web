@@ -20,9 +20,9 @@ import { updateMerchVariantStock } from '@/components/merch/actions'
 import { stockLevel, variantLabel, type MerchProduct, type StockLevel } from '@/lib/merch'
 
 const LEVEL_BADGE: Record<StockLevel, { label: string; className: string }> = {
-  out: { label: 'Sold out', className: 'text-[#ffb4ab] bg-[#ffb4ab]/10 border-[#ffb4ab]/30' },
-  low: { label: 'Low stock', className: 'text-[#f5c26b] bg-[#f5c26b]/10 border-[#f5c26b]/30' },
-  ok: { label: 'In stock', className: 'text-[#4edea3] bg-[#4edea3]/10 border-[#4edea3]/20' },
+  out: { label: 'Sold out', className: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/30' },
+  low: { label: 'Low stock', className: 'text-amber-500 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-400/10 border-amber-500/30 dark:border-amber-400/30' },
+  ok: { label: 'In stock', className: 'text-success bg-success/10 border-success/20' },
 }
 
 type InventoryRow = {
@@ -74,19 +74,19 @@ export function InventoryTable({ products }: { products: MerchProduct[] }) {
   }
 
   if (rows.length === 0) {
-    return <p className="text-[13px] text-[#958ea0] py-8 text-center">Add a product to start tracking stock.</p>
+    return <p className="text-[13px] text-muted-foreground py-8 text-center">Add a product to start tracking stock.</p>
   }
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {alertCount > 0 ? (
-          <div className="flex items-center gap-2 text-[13px] text-[#f5c26b]">
+          <div className="flex items-center gap-2 text-[13px] text-amber-500 dark:text-amber-400">
             <AlertTriangle className="h-4 w-4" />
             {alertCount} variant{alertCount !== 1 ? 's' : ''} low or sold out
           </div>
         ) : (
-          <span className="text-[13px] text-[#958ea0]">All variants above their low-stock threshold.</span>
+          <span className="text-[13px] text-muted-foreground">All variants above their low-stock threshold.</span>
         )}
         <div className="flex items-center gap-2">
           <Switch id="alerts-only" checked={alertsOnly} onCheckedChange={setAlertsOnly} />
@@ -94,7 +94,7 @@ export function InventoryTable({ products }: { products: MerchProduct[] }) {
         </div>
       </div>
 
-      <div className="rounded-xl border border-[#23232b] overflow-x-auto">
+      <div className="rounded-xl border border-muted overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -130,7 +130,7 @@ export function InventoryTable({ products }: { products: MerchProduct[] }) {
                       step={1}
                       value={draft ?? String(row.stock)}
                       onChange={(e) => setDrafts((d) => ({ ...d, [row.id]: e.target.value }))}
-                      className={`ml-auto w-24 text-right ${changed ? 'border-[#4cd7f6]' : ''}`}
+                      className={`ml-auto w-24 text-right ${changed ? 'border-primary' : ''}`}
                       disabled={isPending}
                     />
                   </TableCell>

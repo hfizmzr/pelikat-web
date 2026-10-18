@@ -1,3 +1,4 @@
+import { Banknote, CirclePlus, ClipboardList, Package, Store, TriangleAlert } from "lucide-react"
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
@@ -34,16 +35,16 @@ export default async function OrganizerMerchPage({
 
   if (!organizerId || !event) {
     return (
-      <div className="w-full min-h-full px-6 py-8 bg-[#131315]">
-        <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] p-16 flex flex-col items-center text-center">
-          <span className="material-symbols-outlined text-[48px] text-[#4cd7f6] mb-4">storefront</span>
-          <h1 className="text-[22px] font-semibold text-[#e5e1e4] mb-2">Create an event first</h1>
-          <p className="text-[14px] text-[#958ea0] mb-6 max-w-sm">
+      <div className="w-full min-h-full px-6 py-8 bg-background">
+        <div className="bg-card rounded-xl border border-muted p-16 flex flex-col items-center text-center">
+          <Store className="size-[48px] text-primary mb-4" />
+          <h1 className="text-[22px] font-semibold text-foreground mb-2">Create an event first</h1>
+          <p className="text-[14px] text-muted-foreground mb-6 max-w-sm">
             Merchandise is sold per event. Create an event to start listing products.
           </p>
           <Link
             href="/organizer/events/new"
-            className="px-5 py-2.5 bg-[#d0bcff] text-[#3c0091] text-[14px] font-semibold rounded-lg hover:bg-[#a078ff] transition-all"
+            className="px-5 py-2.5 bg-primary text-primary-foreground text-[14px] font-semibold rounded-lg hover:bg-primary transition-all"
           >
             Create Event
           </Link>
@@ -66,8 +67,8 @@ export default async function OrganizerMerchPage({
       eventId={event.id}
       organizerId={organizerId}
       trigger={
-        <button className="h-11 px-5 bg-[#d0bcff] text-[#3c0091] text-[14px] font-semibold rounded-lg flex items-center gap-2 hover:bg-[#a078ff] transition-all shadow-[0_0_16px_rgba(208,188,255,0.25)] whitespace-nowrap">
-          <span className="material-symbols-outlined text-[18px]">add_circle</span>
+        <button className="h-11 px-5 bg-primary text-primary-foreground text-[14px] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all shadow-[0_0_16px_rgba(208,188,255,0.25)] whitespace-nowrap">
+          <CirclePlus className="size-[18px]" />
           Add Product
         </button>
       }
@@ -75,18 +76,18 @@ export default async function OrganizerMerchPage({
   )
 
   return (
-    <div className="relative w-full min-h-full px-4 sm:px-6 py-8 bg-[#131315]">
-      <div className="absolute -top-32 -left-20 w-96 h-96 bg-[#4cd7f6]/10 rounded-full blur-[120px] pointer-events-none" />
+    <div className="relative w-full min-h-full px-4 sm:px-6 py-8 bg-background">
+      <div className="absolute -top-32 -left-20 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col gap-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-[#4cd7f6]/10 text-[#acedff] uppercase w-fit">
+            <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary uppercase w-fit">
               Merch Hub
             </span>
-            <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-[#e5e1e4]">Merch Hub Manager</h1>
-            <p className="text-[14px] leading-[20px] text-[#cbc3d7]">
+            <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-foreground">Merch Hub Manager</h1>
+            <p className="text-[14px] leading-[20px] text-muted-foreground">
               Products, stock, runner orders and sales for each event. Runners collect at REPC.
             </p>
           </div>
@@ -97,7 +98,7 @@ export default async function OrganizerMerchPage({
         </div>
 
         {error && (
-          <div className="rounded-lg border border-[#ffb4ab]/30 bg-[#ffb4ab]/10 px-4 py-3 text-[13px] text-[#ffb4ab]">
+          <div className="rounded-lg border border-red-500/30 dark:border-red-300/30 bg-red-500/10 dark:bg-red-300/10 px-4 py-3 text-[13px] text-red-500 dark:text-red-300">
             Could not load all merch data: {error.message}
           </div>
         )}
@@ -105,16 +106,16 @@ export default async function OrganizerMerchPage({
         {/* Summary stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Products', value: products.length, icon: 'inventory_2', color: 'text-[#4cd7f6]' },
-            { label: 'Stock alerts', value: stockAlerts, icon: 'warning', color: stockAlerts > 0 ? 'text-[#f5c26b]' : 'text-[#958ea0]' },
-            { label: 'Orders to fulfil', value: toFulfil, icon: 'pending_actions', color: 'text-[#d0bcff]' },
-            { label: 'Revenue', value: formatRM(revenue), icon: 'payments', color: 'text-[#4edea3]' },
+            { label: 'Products', value: products.length, icon: Package, color: 'text-primary' },
+            { label: 'Stock alerts', value: stockAlerts, icon: TriangleAlert, color: stockAlerts > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground' },
+            { label: 'Orders to fulfil', value: toFulfil, icon: ClipboardList, color: 'text-primary' },
+            { label: 'Revenue', value: formatRM(revenue), icon: Banknote, color: 'text-success' },
           ].map((s) => (
-            <div key={s.label} className="bg-[#1c1b1d] rounded-xl p-4 border border-[#23232b] flex items-center gap-3">
-              <span className={`material-symbols-outlined text-[24px] ${s.color}`}>{s.icon}</span>
+            <div key={s.label} className="bg-card rounded-xl p-4 border border-muted flex items-center gap-3">
+              <s.icon className={`size-[24px] ${s.color}`} />
               <div className="min-w-0">
-                <div className="text-[20px] leading-[28px] tracking-[-0.01em] font-semibold text-[#e5e1e4] truncate tabular-nums">{s.value}</div>
-                <div className="text-[11px] text-[#958ea0]">{s.label}</div>
+                <div className="text-[20px] leading-[28px] tracking-[-0.01em] font-semibold text-foreground truncate tabular-nums">{s.value}</div>
+                <div className="text-[11px] text-muted-foreground">{s.label}</div>
               </div>
             </div>
           ))}
@@ -126,13 +127,13 @@ export default async function OrganizerMerchPage({
             <TabsTrigger value="inventory">
               Inventory
               {stockAlerts > 0 && (
-                <span className="ml-1 rounded-full bg-[#f5c26b]/20 text-[#f5c26b] px-1.5 text-[10px] font-bold">{stockAlerts}</span>
+                <span className="ml-1 rounded-full bg-amber-500/20 dark:bg-amber-400/20 text-amber-500 dark:text-amber-400 px-1.5 text-[10px] font-bold">{stockAlerts}</span>
               )}
             </TabsTrigger>
             <TabsTrigger value="orders">
               Orders
               {toFulfil > 0 && (
-                <span className="ml-1 rounded-full bg-[#d0bcff]/20 text-[#d0bcff] px-1.5 text-[10px] font-bold">{toFulfil}</span>
+                <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 text-[10px] font-bold">{toFulfil}</span>
               )}
             </TabsTrigger>
             <TabsTrigger value="sales">Sales</TabsTrigger>
@@ -142,12 +143,12 @@ export default async function OrganizerMerchPage({
             {products.length > 0 ? (
               <ProductGrid products={products} eventId={event.id} organizerId={organizerId} />
             ) : (
-              <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] p-16 flex flex-col items-center justify-center text-center">
-                <div className="w-20 h-20 rounded-full bg-[#4cd7f6]/10 flex items-center justify-center mb-6">
-                  <span className="material-symbols-outlined text-[48px] text-[#4cd7f6]">inventory_2</span>
+              <div className="bg-card rounded-xl border border-muted p-16 flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                  <Package className="size-[48px] text-primary" />
                 </div>
-                <h3 className="text-[22px] leading-[28px] font-semibold text-[#e5e1e4] mb-2">No merchandise yet</h3>
-                <p className="text-[14px] leading-[20px] text-[#958ea0] mb-8 max-w-sm">
+                <h3 className="text-[22px] leading-[28px] font-semibold text-foreground mb-2">No merchandise yet</h3>
+                <p className="text-[14px] leading-[20px] text-muted-foreground mb-8 max-w-sm">
                   Add finisher tees, caps and tumblers for {event.name}. Runners collect them with their race kit.
                 </p>
                 {addProductButton}

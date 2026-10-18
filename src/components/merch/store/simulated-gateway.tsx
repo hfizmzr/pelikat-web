@@ -1,5 +1,6 @@
 'use client'
 
+import { CircleAlert, Landmark, LoaderCircle, ShieldCheck, Timer, TimerOff } from "lucide-react"
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -30,7 +31,7 @@ function formatExpiry(value: string) {
 }
 
 const inputClass =
-  'w-full h-12 px-4 rounded-xl bg-[#131315] border border-[#494454] text-[15px] text-[#e5e1e4] placeholder:text-[#5a5560] outline-none focus:border-[#d0bcff] font-mono'
+  'w-full h-12 px-4 rounded-xl bg-background border border-border text-[15px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary font-mono'
 
 export function SimulatedGateway({
   order,
@@ -84,19 +85,19 @@ export function SimulatedGateway({
   }
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-[#0e0e10]">
+    <div className="flex flex-col w-full min-h-full bg-background">
       {/* Gateway chrome — deliberately different from the app so it reads as a separate payment page */}
-      <header className="sticky top-0 z-40 bg-[#0e0e10]/95 backdrop-blur-xl border-b border-[#23232b]">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center justify-between h-14 px-5 pt-safe">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[22px] text-[#4edea3]">verified_user</span>
-            <span className="text-[15px] font-extrabold text-[#e5e1e4] tracking-tight">Pelikat Pay</span>
-            <span className="px-1.5 py-0.5 rounded bg-[#ffb86b]/15 text-[#ffb86b] text-[9px] font-bold uppercase tracking-wider">
+            <ShieldCheck className="size-[22px] text-success" />
+            <span className="text-[15px] font-extrabold text-foreground tracking-tight">Pelikat Pay</span>
+            <span className="px-1.5 py-0.5 rounded bg-amber-500/15 dark:bg-amber-400/15 text-amber-500 dark:text-amber-400 text-[9px] font-bold uppercase tracking-wider">
               Sandbox
             </span>
           </div>
-          <span className="flex items-center gap-1 text-[12px] text-[#cbc3d7]" aria-live="polite">
-            <span className="material-symbols-outlined text-[16px]">timer</span>
+          <span className="flex items-center gap-1 text-[12px] text-muted-foreground" aria-live="polite">
+            <Timer className="size-[16px]" />
             <span className="font-mono tabular-nums">
               {remainingMs === null ? '--:--' : formatCountdown(remainingMs)}
             </span>
@@ -107,22 +108,22 @@ export function SimulatedGateway({
       <div className="flex flex-col px-5 py-6 gap-5">
         {/* Amount */}
         <section className="flex flex-col items-center text-center gap-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#958ea0]">Amount to pay</span>
-          <span className="text-[32px] font-mono font-extrabold text-[#e5e1e4] tracking-tight">{amount}</span>
-          <span className="text-[12px] text-[#958ea0]">
-            Order <span className="font-mono text-[#cbc3d7]">{order.order_number}</span>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Amount to pay</span>
+          <span className="text-[32px] font-mono font-extrabold text-foreground tracking-tight">{amount}</span>
+          <span className="text-[12px] text-muted-foreground">
+            Order <span className="font-mono text-muted-foreground">{order.order_number}</span>
             {order.events?.name ? ` · ${order.events.name}` : ''}
           </span>
         </section>
 
         {expired ? (
           <section className="flex flex-col gap-4">
-            <Notice tone="error" icon="timer_off">
+            <Notice tone="error" icon={TimerOff}>
               Your reservation has expired and the items were released. Please check out again.
             </Notice>
             <Link
               href={storeHref}
-              className="w-full py-3.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold text-center"
+              className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold text-center"
             >
               Back to store
             </Link>
@@ -138,7 +139,7 @@ export function SimulatedGateway({
         ) : (
           <>
             {/* Method tabs */}
-            <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-[#1c1b1d] border border-[#353437]/60">
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-card border border-border/60">
               {(['fpx', 'card'] as const).map((m) => (
                 <button
                   key={m}
@@ -148,7 +149,7 @@ export function SimulatedGateway({
                     setError(null)
                   }}
                   className={`py-2.5 rounded-lg text-[13px] font-bold transition-colors ${
-                    method === m ? 'bg-[#2a2a2c] text-[#e5e1e4]' : 'text-[#958ea0]'
+                    method === m ? 'bg-accent text-foreground' : 'text-muted-foreground'
                   }`}
                 >
                   {m === 'fpx' ? 'FPX' : 'Card'}
@@ -157,14 +158,14 @@ export function SimulatedGateway({
             </div>
 
             {error && (
-              <Notice tone="error" icon="error">
+              <Notice tone="error" icon={CircleAlert}>
                 {error}
               </Notice>
             )}
 
             {method === 'fpx' ? (
               <section className="flex flex-col gap-3">
-                <span className="text-[12px] font-bold text-[#cbc3d7]">{MERCH_PAYMENT_METHOD_LABEL.fpx} — choose your bank</span>
+                <span className="text-[12px] font-bold text-muted-foreground">{MERCH_PAYMENT_METHOD_LABEL.fpx} — choose your bank</span>
                 <div className="grid grid-cols-2 gap-2">
                   {SIMULATED_FPX_BANKS.map((b) => (
                     <button
@@ -173,8 +174,8 @@ export function SimulatedGateway({
                       onClick={() => setBankCode(b.code)}
                       className={`h-12 px-3 rounded-xl border text-[13px] font-semibold text-left transition-colors ${
                         bankCode === b.code
-                          ? 'border-[#d0bcff] bg-[#d0bcff]/10 text-[#e5e1e4]'
-                          : 'border-[#353437] bg-[#1c1b1d] text-[#cbc3d7]'
+                          ? 'border-primary bg-primary/10 text-foreground'
+                          : 'border-border bg-card text-muted-foreground'
                       }`}
                     >
                       {b.name}
@@ -185,7 +186,7 @@ export function SimulatedGateway({
                   type="button"
                   disabled={!bank || isPending}
                   onClick={() => setStep('bank')}
-                  className="w-full py-3.5 mt-1 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold disabled:opacity-40"
+                  className="w-full py-3.5 mt-1 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold disabled:opacity-40"
                 >
                   {bank ? `Continue to ${bank.name}` : 'Choose a bank'}
                 </button>
@@ -199,7 +200,7 @@ export function SimulatedGateway({
                 }}
               >
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-[12px] font-bold text-[#cbc3d7]">Card number</span>
+                  <span className="text-[12px] font-bold text-muted-foreground">Card number</span>
                   <input
                     className={inputClass}
                     inputMode="numeric"
@@ -212,7 +213,7 @@ export function SimulatedGateway({
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="flex flex-col gap-1.5">
-                    <span className="text-[12px] font-bold text-[#cbc3d7]">Expiry</span>
+                    <span className="text-[12px] font-bold text-muted-foreground">Expiry</span>
                     <input
                       className={inputClass}
                       inputMode="numeric"
@@ -224,7 +225,7 @@ export function SimulatedGateway({
                     />
                   </label>
                   <label className="flex flex-col gap-1.5">
-                    <span className="text-[12px] font-bold text-[#cbc3d7]">CVC</span>
+                    <span className="text-[12px] font-bold text-muted-foreground">CVC</span>
                     <input
                       className={inputClass}
                       inputMode="numeric"
@@ -238,7 +239,7 @@ export function SimulatedGateway({
                   </label>
                 </div>
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-[12px] font-bold text-[#cbc3d7]">Name on card</span>
+                  <span className="text-[12px] font-bold text-muted-foreground">Name on card</span>
                   <input
                     className={`${inputClass} font-sans`}
                     autoComplete="cc-name"
@@ -247,14 +248,14 @@ export function SimulatedGateway({
                   />
                 </label>
 
-                <details className="rounded-xl bg-[#1c1b1d] border border-[#353437]/60 px-4 py-3 text-[12px] text-[#958ea0]">
-                  <summary className="cursor-pointer font-semibold text-[#cbc3d7]">Sandbox test cards</summary>
+                <details className="rounded-xl bg-card border border-border/60 px-4 py-3 text-[12px] text-muted-foreground">
+                  <summary className="cursor-pointer font-semibold text-muted-foreground">Sandbox test cards</summary>
                   <ul className="mt-2 flex flex-col gap-1">
                     {SIMULATED_TEST_CARDS.map((c) => (
                       <li key={c.number} className="flex justify-between gap-2">
                         <button
                           type="button"
-                          className="font-mono text-[#d0bcff]"
+                          className="font-mono text-primary"
                           onClick={() => setCard({ ...card, number: c.number, expiry: card.expiry || '12/30', cvc: card.cvc || '123' })}
                         >
                           {c.number}
@@ -269,11 +270,11 @@ export function SimulatedGateway({
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full py-3.5 mt-1 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3.5 mt-1 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isPending ? (
                     <>
-                      <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                      <LoaderCircle className="size-[18px] animate-spin" />
                       Processing…
                     </>
                   ) : (
@@ -287,14 +288,14 @@ export function SimulatedGateway({
               type="button"
               onClick={cancel}
               disabled={isPending}
-              className="text-[13px] font-semibold text-[#958ea0] py-2 disabled:opacity-50"
+              className="text-[13px] font-semibold text-muted-foreground py-2 disabled:opacity-50"
             >
               Cancel payment and release items
             </button>
           </>
         )}
 
-        <p className="text-[11px] text-[#5a5560] text-center leading-[16px]">
+        <p className="text-[11px] text-muted-foreground/50 text-center leading-[16px]">
           Sandbox gateway for testing — no real money is charged.
         </p>
       </div>
@@ -316,26 +317,26 @@ function BankApproval({
   onReject: () => void
 }) {
   return (
-    <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden">
-      <div className="px-4 py-3 bg-[#23232b] border-b border-[#353437]/60 flex items-center gap-2">
-        <span className="material-symbols-outlined text-[18px] text-[#4cd7f6]">account_balance</span>
-        <span className="text-[14px] font-bold text-[#e5e1e4]">{bankName}</span>
-        <span className="ml-auto text-[10px] font-bold uppercase tracking-wider text-[#958ea0]">FPX</span>
+    <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+      <div className="px-4 py-3 bg-muted border-b border-border/60 flex items-center gap-2">
+        <Landmark className="size-[18px] text-primary" />
+        <span className="text-[14px] font-bold text-foreground">{bankName}</span>
+        <span className="ml-auto text-[10px] font-bold uppercase tracking-wider text-muted-foreground">FPX</span>
       </div>
       <div className="p-5 flex flex-col gap-4">
-        <p className="text-[13px] text-[#cbc3d7] leading-[20px]">
-          Approve a payment of <span className="font-mono font-bold text-[#e5e1e4]">{amount}</span> to{' '}
-          <span className="font-bold text-[#e5e1e4]">Pelikat</span>?
+        <p className="text-[13px] text-muted-foreground leading-[20px]">
+          Approve a payment of <span className="font-mono font-bold text-foreground">{amount}</span> to{' '}
+          <span className="font-bold text-foreground">Pelikat</span>?
         </p>
         <button
           type="button"
           onClick={onApprove}
           disabled={busy}
-          className="w-full py-3.5 rounded-xl bg-[#4edea3] text-[#003926] text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+          className="w-full py-3.5 rounded-xl bg-success text-emerald-900 text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {busy ? (
             <>
-              <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+              <LoaderCircle className="size-[18px] animate-spin" />
               Processing…
             </>
           ) : (
@@ -346,7 +347,7 @@ function BankApproval({
           type="button"
           onClick={onReject}
           disabled={busy}
-          className="w-full py-3 rounded-xl border border-[#ffb4ab]/40 text-[#ffb4ab] text-[13px] font-bold disabled:opacity-50"
+          className="w-full py-3 rounded-xl border border-red-500/40 dark:border-red-300/40 text-red-500 dark:text-red-300 text-[13px] font-bold disabled:opacity-50"
         >
           Reject
         </button>

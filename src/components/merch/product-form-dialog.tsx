@@ -213,7 +213,7 @@ export function ProductFormDialog({ eventId, organizerId, product, trigger }: Pr
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isPending}
-                className="relative aspect-square w-full rounded-lg border border-dashed border-[#494454] bg-[#201f22] overflow-hidden flex items-center justify-center text-[#958ea0] hover:border-[#4cd7f6]/50 transition-colors"
+                className="relative aspect-square w-full rounded-lg border border-dashed border-border bg-card overflow-hidden flex items-center justify-center text-muted-foreground hover:border-primary/50 transition-colors"
               >
                 {imagePreview ? (
                   // eslint-disable-next-line @next/next/no-img-element

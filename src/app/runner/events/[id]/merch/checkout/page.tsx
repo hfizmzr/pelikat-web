@@ -19,7 +19,7 @@ export default async function RunnerMerchCheckoutPage({ params }: { params: Prom
   if (!data.registered) redirect(`/runner/events/${id}/merch`)
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+    <div className="flex flex-col w-full min-h-full bg-background">
       <StoreHeader title="Checkout" subtitle={event.name} backHref={`/runner/events/${event.id}/merch`} />
       <Checkout data={{ ...data, event }} />
     </div>

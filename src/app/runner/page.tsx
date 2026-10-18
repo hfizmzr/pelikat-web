@@ -150,9 +150,9 @@ export default async function RunnerDashboard() {
                 </Link>
                 <Link
                   href="/runner/merch"
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold active:scale-95 transition-transform"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-foreground text-[13px] font-bold active:scale-95 transition-transform"
                 >
-                  <span className="material-symbols-outlined text-[16px]">shopping_bag</span>
+                  <ShoppingBag className="size-[16px]" />
                   Merch
                 </Link>
               </div>

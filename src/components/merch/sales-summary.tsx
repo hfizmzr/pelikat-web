@@ -22,13 +22,13 @@ function RevenueTooltip({ active, payload }: { active?: boolean; payload?: { pay
   if (!active || !payload?.length) return null
   const row = payload[0].payload
   return (
-    <div className="bg-[#1c1b1d] border border-[#353437] rounded-lg px-3 py-2 text-[12px] shadow-xl text-[#e5e1e4]">
+    <div className="bg-card border border-border rounded-lg px-3 py-2 text-[12px] shadow-xl text-foreground">
       <p className="font-semibold mb-1">{row.name}</p>
-      <p className="text-[#cbc3d7]">
-        Revenue <span className="font-semibold text-[#e5e1e4]">{formatRM(row.revenue)}</span>
+      <p className="text-muted-foreground">
+        Revenue <span className="font-semibold text-foreground">{formatRM(row.revenue)}</span>
       </p>
-      <p className="text-[#cbc3d7]">
-        Items sold <span className="font-semibold text-[#e5e1e4]">{row.items_sold}</span>
+      <p className="text-muted-foreground">
+        Items sold <span className="font-semibold text-foreground">{row.items_sold}</span>
       </p>
     </div>
   )
@@ -50,32 +50,32 @@ export function SalesSummary({ sales, paidOrders, pendingOrders }: SalesSummaryP
     <div className="space-y-5">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {tiles.map((tile) => (
-          <div key={tile.label} className="bg-[#1c1b1d] rounded-xl p-4 border border-[#23232b]">
-            <div className="text-[11px] text-[#958ea0]">{tile.label}</div>
-            <div className="text-[22px] leading-[28px] tracking-[-0.01em] font-semibold text-[#e5e1e4] mt-1 tabular-nums">
+          <div key={tile.label} className="bg-card rounded-xl p-4 border border-muted">
+            <div className="text-[11px] text-muted-foreground">{tile.label}</div>
+            <div className="text-[22px] leading-[28px] tracking-[-0.01em] font-semibold text-foreground mt-1 tabular-nums">
               {tile.value}
             </div>
           </div>
         ))}
       </div>
-      <p className="text-[12px] text-[#958ea0]">
+      <p className="text-[12px] text-muted-foreground">
         Counts confirmed, ready and collected orders. Pending and cancelled orders are excluded.
       </p>
 
       {sales.length === 0 ? (
-        <p className="text-[13px] text-[#958ea0] py-8 text-center">No products yet.</p>
+        <p className="text-[13px] text-muted-foreground py-8 text-center">No products yet.</p>
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
-          <div className="bg-[#1c1b1d] rounded-xl border border-[#23232b] p-4">
-            <h3 className="text-[14px] font-semibold text-[#e5e1e4]">Revenue by product</h3>
+          <div className="bg-card rounded-xl border border-muted p-4">
+            <h3 className="text-[14px] font-semibold text-foreground">Revenue by product</h3>
             <div className="mt-3" style={{ height: Math.max(160, sorted.length * 44 + 40) }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={sorted} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 0 }}>
-                  <CartesianGrid horizontal={false} stroke="#2a2a2c" />
+                  <CartesianGrid horizontal={false} stroke="var(--border)" />
                   <XAxis
                     type="number"
                     tickFormatter={(v: number) => `RM ${v}`}
-                    tick={{ fill: '#958ea0', fontSize: 11 }}
+                    tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
                   />
@@ -83,18 +83,18 @@ export function SalesSummary({ sales, paidOrders, pendingOrders }: SalesSummaryP
                     type="category"
                     dataKey="name"
                     width={110}
-                    tick={{ fill: '#cbc3d7', fontSize: 12 }}
+                    tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
                     axisLine={false}
                     tickLine={false}
                   />
-                  <Tooltip content={<RevenueTooltip />} cursor={{ fill: '#ffffff08' }} />
-                  <Bar dataKey="revenue" fill="#4cd7f6" barSize={20} radius={[0, 4, 4, 0]} />
+                  <Tooltip content={<RevenueTooltip />} cursor={{ fill: 'var(--accent)', opacity: 0.4 }} />
+                  <Bar dataKey="revenue" fill="var(--primary)" barSize={20} radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="rounded-xl border border-[#23232b] overflow-x-auto">
+          <div className="rounded-xl border border-muted overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
