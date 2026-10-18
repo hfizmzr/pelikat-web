@@ -99,8 +99,12 @@ describe('Reliability: Mock Payment Provider (Phase 3)', () => {
     expect(impl).toContain("getServerPaymentProvider() !== 'mock'")
     expect(impl).toContain("from '@/lib/supabase/service-role'")
     expect(impl).toContain("rpc('confirm_dummy_payment', {")
-    const eventActions = read('src', 'components', 'events', 'actions.ts')
-    expect(eventActions).toContain("export { confirmDummyPayment } from '@/lib/actions/payments'")
+    // NOTE: actions.ts is "use server" and may only export async functions
+    // defined in that module — a re-export of lib/actions/payments throws
+    // "Only async functions are allowed to be exported in a 'use server'
+    // file". The runner payment page imports the action from its defining
+    // module directly instead (observed live as a Turbopack build error).
+    expect(read('src', 'components', 'events', 'actions.ts')).not.toContain('export { confirmDummyPayment }')
   })
 
   it('both payment surfaces route through the module', () => {

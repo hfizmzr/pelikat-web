@@ -39,9 +39,16 @@ vi.mock('@/lib/payments/mock', () => ({
 }))
 
 vi.mock('@/components/events/actions', () => ({
-  confirmDummyPayment,
+  confirmDummyPayment: vi.fn(),
   createHitpayCheckout,
   getPaymentStatus,
+}))
+
+// the runner payment page now imports the dummy-confirmation action from its
+// defining module ("use server" files may not re-export other actions), so
+// mock it at its import site to keep the server-only module out of the graph
+vi.mock('@/lib/actions/payments', () => ({
+  confirmDummyPayment,
 }))
 
 vi.mock('next/navigation', () => ({

@@ -3,9 +3,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { fetchDjangoApi } from '@/lib/django'
 // Dummy confirmation writes financial rows, so it lives with the other
-// service-role-backed server actions; re-exported here to keep the runner
-// payment page's `await confirmDummyPayment(...)` call site unchanged.
-export { confirmDummyPayment } from '@/lib/actions/payments'
+// service-role-backed server actions live in lib/actions — re-exports are NOT
+// allowed here ("use server" files may only export async functions from this
+// module; a barreled re-export of another module's action throws a build
+// error), so call sites import them from their defining module directly.
 import {
   normalizeRepcCheckInResult,
   type RepcCheckInResult,
