@@ -17,8 +17,27 @@ export async function confirmDummyPayment(registrationId: string) {
     )
   }
 
-  // Auth is still required even though the RPC runs as service role.
-  await requireAuth()
+  // Auth is still required (JWT client also powers the ownership check).
+  const { supabase, user } = await requireAuth()
+
+  // Migration 061 contract: the RPC no longer does the auth.uid() ownership
+  // check (it runs as service role), so enforce it here with the caller's
+  // JWT client before touching financial rows.
+  const [{ data: profile }, { data: registration }] = await Promise.all([
+    supabase
+      .from('runner_profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('registrations')
+      .select('runner_id')
+      .eq('id', registrationId)
+      .maybeSingle(),
+  ])
+  if (!profile || !registration || profile.id !== registration.runner_id) {
+    throw new Error('Not your registration')
+  }
 
   // Migration 060 revoked `authenticated` execute on confirm_dummy_payment
   // and granted service_role; this is the only call path left.
