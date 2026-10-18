@@ -76,6 +76,7 @@ function StatusBadge({ status }: { status: MerchOrderStatus }) {
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString('en-MY', {
+    timeZone: 'Asia/Kuala_Lumpur',
     day: 'numeric',
     month: 'short',
     hour: '2-digit',

@@ -41,9 +41,9 @@ export function SalesSummary({ sales, paidOrders, pendingOrders }: SalesSummaryP
 
   const tiles = [
     { label: 'Total revenue', value: formatRM(totalRevenue) },
-    { label: 'Items sold', value: totalItems.toLocaleString() },
-    { label: 'Paid orders', value: paidOrders.toLocaleString() },
-    { label: 'Awaiting payment', value: pendingOrders.toLocaleString() },
+    { label: 'Items sold', value: totalItems.toLocaleString('en-MY') },
+    { label: 'Paid orders', value: paidOrders.toLocaleString('en-MY') },
+    { label: 'Awaiting payment', value: pendingOrders.toLocaleString('en-MY') },
   ]
 
   return (

@@ -24,7 +24,7 @@ export function MerchEventPicker({ events, value }: { events: MerchEventOption[]
           <SelectItem key={event.id} value={event.id}>
             {event.name}
             <span className="ml-2 text-muted-foreground text-[12px]">
-              {new Date(event.event_date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {new Date(event.event_date).toLocaleDateString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', day: 'numeric', month: 'short', year: 'numeric' })}
             </span>
           </SelectItem>
         ))}

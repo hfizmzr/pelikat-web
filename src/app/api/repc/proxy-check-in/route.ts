@@ -3,7 +3,7 @@ import { fetchDjangoApi } from '@/lib/django'
 import { createClient } from '@/lib/supabase/server'
 import { getUserRole } from '@/lib/auth/requireRole'
 import {
-  collectMerchOnCheckIn,
+  REPC_CHECK_IN_RPC,
   normalizeRepcCheckInResult,
   type RepcCheckInResult,
   type RepcCheckInRpcRow,
@@ -193,7 +193,7 @@ export async function POST(request: Request) {
   const collectorProfile = getProfile(collectorRegistration as RegistrationWithProfile)
   const collectorLabel = `${collectorProfile?.full_name ?? 'Unknown collector'} (BIB ${collectorRegistration.bib_number})`
 
-  const { data, error } = await supabase.rpc('repc_check_in_registration', {
+  const { data, error } = await supabase.rpc(REPC_CHECK_IN_RPC, {
     p_event_id: eventId,
     p_runner_id: absentRegistration.runner_id,
     p_bib_number: absentRegistration.bib_number,
@@ -217,10 +217,6 @@ export async function POST(request: Request) {
   }
 
   const result = normalizeRepcCheckInResult((data?.[0] ?? null) as RepcCheckInRpcRow | null)
-
-  if (result.success) {
-    result.merch = await collectMerchOnCheckIn(supabase, eventId, absentRegistration.runner_id)
-  }
 
   if (result.success && !result.alreadyCheckedIn) {
     let consentCodeId: string | null = null

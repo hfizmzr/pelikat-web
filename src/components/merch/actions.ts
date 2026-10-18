@@ -146,11 +146,14 @@ export async function saveMerchProduct(
   }
 
   for (const variant of input.variants.filter((v) => v.id)) {
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('merch_variants')
       .update(normalizeVariant(variant))
       .eq('id', variant.id!)
+      .eq('product_id', input.id)
+      .select('id')
     if (error) return { ok: false, error: friendlyDbError(error) }
+    if (!updated?.length) return { ok: false, error: 'Variant not found. Refresh and try again.' }
   }
 
   const newVariants = input.variants.filter((v) => !v.id)
@@ -161,12 +164,14 @@ export async function saveMerchProduct(
     if (error) return { ok: false, error: friendlyDbError(error) }
   }
 
-  const { error: updateError } = await supabase
+  const { data: updatedProduct, error: updateError } = await supabase
     .from('merch_products')
     .update(productFields)
     .eq('id', input.id)
+    .select('id')
 
   if (updateError) return { ok: false, error: updateError.message }
+  if (!updatedProduct?.length) return { ok: false, error: 'Product not found.' }
 
   if (existing.image_path && existing.image_path !== input.imagePath) {
     await supabase.storage.from(MERCH_IMAGE_BUCKET).remove([existing.image_path])
@@ -209,12 +214,14 @@ export async function setMerchProductActive(
 ): Promise<MerchActionResult> {
   const { supabase } = await requireOrganizer()
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('merch_products')
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
     .eq('id', productId)
+    .select('id')
 
   if (error) return { ok: false, error: error.message }
+  if (!data?.length) return { ok: false, error: 'Product not found.' }
 
   revalidateMerch()
   return { ok: true, data: undefined }
@@ -229,8 +236,13 @@ export async function updateMerchVariantStock(
     if (!Number.isInteger(stock) || stock < 0) {
       return { ok: false, error: 'Stock must be a whole number, 0 or more.' }
     }
-    const { error } = await supabase.from('merch_variants').update({ stock }).eq('id', id)
+    const { data, error } = await supabase
+      .from('merch_variants')
+      .update({ stock })
+      .eq('id', id)
+      .select('id')
     if (error) return { ok: false, error: error.message }
+    if (!data?.length) return { ok: false, error: 'Variant not found. Refresh and try again.' }
   }
 
   revalidateMerch()

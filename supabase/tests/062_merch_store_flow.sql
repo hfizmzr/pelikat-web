@@ -1,5 +1,5 @@
 -- ============================================================================
--- Migration 062 flow test: runner checkout → payment → ready → REPC collected,
+-- Migration 062 + 063 flow test: runner checkout → payment → ready → REPC collected,
 -- plus expiry, cancel and rejection cases.
 --
 -- Run in the Supabase SQL editor (or execute_sql with write access).
@@ -114,17 +114,34 @@ begin
   set local role authenticated;
   v_n := public.merch_update_order_status(array[v_a2], 'ready');
   v_log := v_log || format(E'\n15 organizer marks ready: updated %s', v_n);
-  select string_agg(format('%s collected=%s items=%s', order_number, collected, item_count), '; ') into v_s
-    from public.merch_collect_for_runner(v_event, v_hafiz);
-  v_log := v_log || E'\n16 REPC hand-over: ' || coalesce(v_s, 'none') || '  [expect collected=true items=3]';
-  select string_agg(order_number, ',') into v_s from public.merch_collect_for_runner(v_event, v_hafiz);
-  v_log := v_log || E'\n17 re-scan: ' || coalesce(v_s, 'nothing more to hand over');
+
+  -- 063: merch_collect_for_runner is internal; the hand-over runs inside REPC check-in
+  begin perform public.merch_collect_for_runner(v_event, v_hafiz);
+    v_log := v_log || E'\n15a direct hand-over call: FAIL accepted';
+  exception when others then v_log := v_log || E'\n15a direct hand-over call rejected: ' || sqlerrm; end;
+  reset role;
+
+  -- 063: hand-over refuses a runner who is not checked in (called as owner, like the wrapper does)
+  update public.registrations set checked_in = false where event_id = v_event and runner_id = v_hafiz;
+  perform set_config('request.jwt.claims', json_build_object('sub', gen_random_uuid(), 'role', 'authenticated',
+    'app_metadata', json_build_object('organizer_id', v_org))::text, true);
+  begin perform public.merch_collect_for_runner(v_event, v_hafiz);
+    v_log := v_log || E'\n15b hand-over before check-in: FAIL accepted';
+  exception when others then v_log := v_log || E'\n15b hand-over before check-in rejected: ' || sqlerrm; end;
+  select bib_number into v_s from public.registrations where event_id = v_event and runner_id = v_hafiz;
+
+  set local role authenticated;
+  select * into r from public.repc_check_in_with_merch(v_event, v_hafiz, v_s, false, null, 'TEST');
+  v_log := v_log || format(E'\n16 REPC check-in + hand-over: success=%s msg=%s merch=%s  [expect success=true, collected=true items=3]',
+    r.success, r.message, r.merch);
+  select * into r from public.repc_check_in_with_merch(v_event, v_hafiz, v_s, false, null, 'TEST');
+  v_log := v_log || format(E'\n17 re-scan: already_checked_in=%s merch=%s  [expect true, []]', r.already_checked_in, r.merch);
 
   perform set_config('request.jwt.claims', json_build_object('sub', gen_random_uuid(), 'role', 'authenticated',
     'app_metadata', json_build_object('organizer_id', gen_random_uuid()))::text, true);
-  begin perform public.merch_collect_for_runner(v_event, v_hafiz);
-    v_log := v_log || E'\n18 other organizer hand-over: FAIL accepted';
-  exception when others then v_log := v_log || E'\n18 other organizer rejected: ' || sqlerrm; end;
+  select * into r from public.repc_check_in_with_merch(v_event, v_hafiz, v_s, false, null, 'TEST');
+  v_log := v_log || format(E'\n18 other organizer: success=%s msg=%s merch=%s  [expect false, not allowed, null]',
+    r.success, r.message, r.merch);
   reset role;
 
   select status || ' paid_at=' || (paid_at is not null) || ' ready_at=' || (ready_at is not null)

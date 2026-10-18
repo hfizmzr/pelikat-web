@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { ImagePlus, Loader2, Plus, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -70,6 +70,12 @@ export function ProductFormDialog({ eventId, organizerId, product, trigger }: Pr
   const [imagePreview, setImagePreview] = useState<string | null>(merchImageUrl(product?.image_path ?? null))
   const [removeImage, setRemoveImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Release the local preview blob when it is replaced, cleared or the dialog unmounts
+  useEffect(() => {
+    if (!imagePreview?.startsWith('blob:')) return
+    return () => URL.revokeObjectURL(imagePreview)
+  }, [imagePreview])
 
   const resetState = () => {
     setError(null)

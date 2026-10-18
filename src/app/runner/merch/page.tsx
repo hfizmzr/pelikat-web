@@ -80,7 +80,7 @@ export default async function RunnerMerchPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[14px] font-bold text-foreground truncate">{event.name}</p>
                   <p className="text-[11px] text-muted-foreground">
-                    {new Date(event.event_date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {new Date(event.event_date).toLocaleDateString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', day: 'numeric', month: 'short', year: 'numeric' })}
                     {' · '}
                     {event.productCount} {event.productCount === 1 ? 'item' : 'items'}
                   </p>

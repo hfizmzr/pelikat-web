@@ -95,6 +95,7 @@ export function Notice({
 
 export function formatOrderDate(value: string) {
   return new Date(value).toLocaleString('en-MY', {
+    timeZone: 'Asia/Kuala_Lumpur',
     day: 'numeric',
     month: 'short',
     year: 'numeric',

@@ -1,5 +1,3 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
-
 export type RepcCheckInResult = {
   success: boolean
   message: string
@@ -29,7 +27,13 @@ export type RepcCheckInRpcRow = {
   shirt_size: string | null
   remaining_qty: number | null
   already_checked_in: boolean | null
+  // Only returned by repc_check_in_with_merch(); null when check-in failed
+  merch?: { order_number: string; item_count: number; collected: boolean }[] | null
 }
+
+// REPC check-in and merch hand-over run in one transaction (migration 063), so a
+// successful check-in always means the runner's `ready` orders were collected.
+export const REPC_CHECK_IN_RPC = 'repc_check_in_with_merch'
 
 export function normalizeRepcCheckInResult(row: RepcCheckInRpcRow | null): RepcCheckInResult {
   return {
@@ -41,36 +45,12 @@ export function normalizeRepcCheckInResult(row: RepcCheckInRpcRow | null): RepcC
     shirtSize: row?.shirt_size ?? null,
     remainingQty: row?.remaining_qty ?? null,
     alreadyCheckedIn: row?.already_checked_in ?? false,
+    merch: row?.merch ? toMerchHandover(row.merch) : null,
   }
 }
 
-type MerchCollectRow = {
-  order_number: string
-  item_count: number
-  collected: boolean
-}
-
-// Marks the runner's `ready` merch orders `collected` after a successful REPC scan.
-// A failure here must not fail the check-in itself, so errors are logged and
-// reported as null (the organizer can still mark orders collected in Merch Hub).
-export async function collectMerchOnCheckIn(
-  supabase: SupabaseClient,
-  eventId: string,
-  runnerId: string
-): Promise<MerchHandover | null> {
-  const { data, error } = await supabase.rpc('merch_collect_for_runner', {
-    p_event_id: eventId,
-    p_runner_id: runnerId,
-  })
-
-  if (error) {
-    console.error('merch_collect_for_runner RPC error:', { message: error.message, eventId, runnerId })
-    return null
-  }
-
-  const rows = (data ?? []) as MerchCollectRow[]
-  const toOrder = (row: MerchCollectRow) => ({ orderNumber: row.order_number, itemCount: row.item_count })
-
+function toMerchHandover(rows: NonNullable<RepcCheckInRpcRow['merch']>): MerchHandover {
+  const toOrder = (row: (typeof rows)[number]) => ({ orderNumber: row.order_number, itemCount: row.item_count })
   return {
     collected: rows.filter((row) => row.collected).map(toOrder),
     notPacked: rows.filter((row) => !row.collected).map(toOrder),
