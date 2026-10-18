@@ -129,7 +129,7 @@ export default async function RunnerEventsPage({
                 return (
                   <Link
                     key={event.id}
-                    href={`/runner/events/${event.id}/bib`}
+                    href={`/runner/events/${event.id}`}
                     className="snap-start shrink-0 w-[240px] flex flex-col p-4 bg-card rounded-2xl border border-border/60 active:scale-[0.98] transition-transform"
                   >
                     <div className="flex items-start justify-between mb-2">
