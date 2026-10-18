@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Html5Qrcode } from 'html5-qrcode'
-import { QrCode, Search, CheckCircle, XCircle, Users } from 'lucide-react'
+import { QrCode, Search, CheckCircle, XCircle, Users, ShoppingBag } from 'lucide-react'
 import { checkInRegistrationByBib } from '@/components/events/actions'
-import type { RepcCheckInResult } from '@/lib/repc'
+import type { MerchHandover, RepcCheckInResult } from '@/lib/repc'
 
 type ScanResult = {
   success: boolean
@@ -20,6 +20,7 @@ type ScanResult = {
     shirtSize?: string | null
     remainingQty?: number | null
   }
+  merch?: MerchHandover | null
 }
 
 type RecentCheckIn = {
@@ -45,7 +46,36 @@ function resultFromRpc(result: RepcCheckInResult): ScanResult {
           remainingQty: result.remainingQty,
         }
       : undefined,
+    merch: result.merch,
   }
+}
+
+function formatOrders(orders: MerchHandover['collected']) {
+  return orders
+    .map((order) => `${order.orderNumber} (${order.itemCount} ${order.itemCount === 1 ? 'item' : 'items'})`)
+    .join(', ')
+}
+
+function MerchHandoverNote({ merch }: { merch: MerchHandover }) {
+  if (merch.collected.length === 0 && merch.notPacked.length === 0) return null
+
+  return (
+    <div className="mt-2 flex items-start gap-2 rounded-md border border-current/20 px-2 py-1.5 text-sm">
+      <ShoppingBag className="mt-0.5 h-4 w-4 shrink-0" />
+      <div>
+        {merch.collected.length > 0 && (
+          <p>
+            <span className="font-medium">Hand over merch:</span> {formatOrders(merch.collected)}
+          </p>
+        )}
+        {merch.notPacked.length > 0 && (
+          <p className="text-amber-500">
+            <span className="font-medium">Paid, not packed yet:</span> {formatOrders(merch.notPacked)}
+          </p>
+        )}
+      </div>
+    </div>
+  )
 }
 
 function vibrate(pattern: number | number[]) {
@@ -120,6 +150,7 @@ export default function OrganizerCheckinPage({
                 remainingQty: data.runner.remaining_qty ?? null,
               }
             : undefined,
+          merch: data.merch ?? null,
         }
 
         setScanResult(result)
@@ -267,6 +298,7 @@ export default function OrganizerCheckinPage({
                 remainingQty: data.runner.remaining_qty ?? null,
               }
             : undefined,
+          merch: data.merch ?? null,
         }
 
         setScanResult(result)
@@ -376,6 +408,7 @@ export default function OrganizerCheckinPage({
                       )}
                     </div>
                   )}
+                  {scanResult.merch && <MerchHandoverNote merch={scanResult.merch} />}
                 </div>
               </div>
             )}

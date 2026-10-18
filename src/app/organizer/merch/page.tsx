@@ -1,152 +1,173 @@
-import { CircleCheck, CirclePlus, Package, Palette, Pencil, Shirt, Trash2, TriangleAlert } from "lucide-react"
-import { createClient } from '@/lib/supabase/server'
+import { Banknote, CirclePlus, ClipboardList, Package, Store, TriangleAlert } from "lucide-react"
+import Link from 'next/link'
 import type { Metadata } from 'next'
+import { createClient } from '@/lib/supabase/server'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { MerchEventPicker } from '@/components/merch/event-picker'
+import { ProductFormDialog } from '@/components/merch/product-form-dialog'
+import { ProductGrid } from '@/components/merch/product-grid'
+import { InventoryTable } from '@/components/merch/inventory-table'
+import { OrderTable } from '@/components/merch/order-table'
+import { SalesSummary } from '@/components/merch/sales-summary'
+import { getMerchHubData, getOrganizerMerchEvents, pickDefaultEvent } from '@/components/merch/queries'
+import { formatRM, stockLevel } from '@/lib/merch'
 
 export const metadata: Metadata = {
-  title: 'Merch & Kit Inventory - Organizer Hub | Pelikat',
-  description: 'Manage event merchandise and race kit inventory',
+  title: 'Merch Hub - Organizer Hub | Pelikat',
+  description: 'Manage event merchandise, stock, orders and sales',
 }
 
-export default async function OrganizerMerchPage() {
-  const supabase = await createClient()
+const TABS = ['products', 'inventory', 'orders', 'sales'] as const
+type Tab = (typeof TABS)[number]
+
+export default async function OrganizerMerchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ event?: string; tab?: string }>
+}) {
+  const [params, supabase] = await Promise.all([searchParams, createClient()])
   const { data: { user } } = await supabase.auth.getUser()
-  const organizerId = user?.app_metadata?.organizer_id
+  const organizerId = user?.app_metadata?.organizer_id as string | undefined
 
-  const { data: products } = await supabase
-    .from('merch_products')
-    .select('*, merch_variants(*)')
-    .eq('organizer_id', organizerId)
-    .order('created_at', { ascending: false })
+  const events = organizerId ? await getOrganizerMerchEvents(supabase, organizerId) : []
+  const event = pickDefaultEvent(events, params.event)
+  const initialTab: Tab = TABS.includes(params.tab as Tab) ? (params.tab as Tab) : 'products'
 
-  const totalVariants = products?.reduce((a, p) => a + (p.merch_variants?.length || 0), 0) || 0
-  const activeProducts = products?.filter(p => p.is_active).length || 0
+  if (!organizerId || !event) {
+    return (
+      <div className="w-full min-h-full px-6 py-8 bg-background">
+        <div className="bg-card rounded-xl border border-muted p-16 flex flex-col items-center text-center">
+          <Store className="size-[48px] text-primary mb-4" />
+          <h1 className="text-[22px] font-semibold text-foreground mb-2">Create an event first</h1>
+          <p className="text-[14px] text-muted-foreground mb-6 max-w-sm">
+            Merchandise is sold per event. Create an event to start listing products.
+          </p>
+          <Link
+            href="/organizer/events/new"
+            className="px-5 py-2.5 bg-primary text-primary-foreground text-[14px] font-semibold rounded-lg hover:bg-primary transition-all"
+          >
+            Create Event
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const { products, orders, sales, paidOrders, pendingOrders, error } = await getMerchHubData(supabase, event.id)
+
+  const stockAlerts = products.reduce(
+    (sum, p) => sum + p.merch_variants.filter((v) => stockLevel(v.stock, p.low_stock_threshold) !== 'ok').length,
+    0
+  )
+  const toFulfil = orders.filter((o) => o.status === 'confirmed').length
+  const revenue = sales.reduce((sum, s) => sum + s.revenue, 0)
+
+  const addProductButton = (
+    <ProductFormDialog
+      eventId={event.id}
+      organizerId={organizerId}
+      trigger={
+        <button className="h-11 px-5 bg-primary text-primary-foreground text-[14px] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all shadow-[0_0_16px_rgba(208,188,255,0.25)] whitespace-nowrap">
+          <CirclePlus className="size-[18px]" />
+          Add Product
+        </button>
+      }
+    />
+  )
 
   return (
-    <div className="relative w-full min-h-full px-6 py-8 bg-background">
-      {/* Ambient */}
+    <div className="relative w-full min-h-full px-4 sm:px-6 py-8 bg-background">
       <div className="absolute -top-32 -left-20 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
             <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary uppercase w-fit">
-              Inventory Module
+              Merch Hub
             </span>
-            <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-foreground">Merch & Kit Inventory</h1>
-            <p className="text-[14px] leading-[20px] text-muted-foreground">Manage your race kit products, variants, and stock levels.</p>
+            <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-foreground">Merch Hub Manager</h1>
+            <p className="text-[14px] leading-[20px] text-muted-foreground">
+              Products, stock, runner orders and sales for each event. Runners collect at REPC.
+            </p>
           </div>
-          <button className="px-5 py-2.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all whitespace-nowrap self-start md:self-auto">
-            <CirclePlus className="size-[18px]" />
-            Add Product
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <MerchEventPicker events={events} value={event.id} />
+            {addProductButton}
+          </div>
         </div>
+
+        {error && (
+          <div className="rounded-lg border border-red-500/30 dark:border-red-300/30 bg-red-500/10 dark:bg-red-300/10 px-4 py-3 text-[13px] text-red-500 dark:text-red-300">
+            Could not load all merch data: {error.message}
+          </div>
+        )}
 
         {/* Summary stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Total Products', value: products?.length || 0, icon: Package, color: 'text-primary' },
-            { label: 'Active', value: activeProducts, icon: CircleCheck, color: 'text-success' },
-            { label: 'SKU Variants', value: totalVariants, icon: Palette, color: 'text-primary' },
-            { label: 'Low Stock', value: 0, icon: TriangleAlert, color: 'text-red-500 dark:text-red-300' },
-          ].map(s => (
+            { label: 'Products', value: products.length, icon: Package, color: 'text-primary' },
+            { label: 'Stock alerts', value: stockAlerts, icon: TriangleAlert, color: stockAlerts > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground' },
+            { label: 'Orders to fulfil', value: toFulfil, icon: ClipboardList, color: 'text-primary' },
+            { label: 'Revenue', value: formatRM(revenue), icon: Banknote, color: 'text-success' },
+          ].map((s) => (
             <div key={s.label} className="bg-card rounded-xl p-4 border border-muted flex items-center gap-3">
-              <span className={`size-[24px] ${s.color}`}><s.icon className="size-[24px]" /></span>
-              <div>
-                <div className="text-[24px] leading-[28px] tracking-[-0.01em] font-semibold text-foreground">{s.value}</div>
+              <s.icon className={`size-[24px] ${s.color}`} />
+              <div className="min-w-0">
+                <div className="text-[20px] leading-[28px] tracking-[-0.01em] font-semibold text-foreground truncate tabular-nums">{s.value}</div>
                 <div className="text-[11px] text-muted-foreground">{s.label}</div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Products grid */}
-        {products && products.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {products.map((product) => {
-              const variants = product.merch_variants || []
-              const totalStock = variants.reduce((a: number, v: { stock_quantity?: number }) => a + (v.stock_quantity || 0), 0)
-              const isLowStock = totalStock > 0 && totalStock < 50
+        <Tabs defaultValue={initialTab} className="gap-4">
+          <TabsList className="w-full sm:w-fit overflow-x-auto justify-start">
+            <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="inventory">
+              Inventory
+              {stockAlerts > 0 && (
+                <span className="ml-1 rounded-full bg-amber-500/20 dark:bg-amber-400/20 text-amber-500 dark:text-amber-400 px-1.5 text-[10px] font-bold">{stockAlerts}</span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="orders">
+              Orders
+              {toFulfil > 0 && (
+                <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 text-[10px] font-bold">{toFulfil}</span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="sales">Sales</TabsTrigger>
+          </TabsList>
 
-              return (
-                <div key={product.id} className="bg-card rounded-xl border border-muted overflow-hidden group hover:border-primary/30 transition-all">
-                  <div className="h-1.5 bg-gradient-to-r from-primary to-success" />
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div className="flex flex-col gap-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-primary shrink-0">
-                            <Shirt className="size-[18px]" />
-                          </div>
-                          <h3 className="text-[15px] leading-[20px] font-semibold text-foreground group-hover:text-primary transition-colors truncate">{product.name}</h3>
-                        </div>
-                        {product.description && (
-                          <p className="text-[12px] leading-[16px] text-muted-foreground mt-1">{product.description}</p>
-                        )}
-                      </div>
-                      <span className={`shrink-0 text-[10px] leading-[14px] px-2 py-0.5 rounded-full font-semibold border ${product.is_active ? 'text-success bg-success/15 border-success/20' : 'text-muted-foreground bg-accent border-border'}`}>
-                        {product.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex flex-col">
-                        <span className="text-[22px] leading-[28px] tracking-[-0.015em] font-semibold text-foreground">RM {Number(product.price).toFixed(2)}</span>
-                        <span className="text-[11px] text-muted-foreground">{variants.length} variant{variants.length !== 1 ? 's' : ''}</span>
-                      </div>
-                      <div className="text-right">
-                        <span className={`text-[22px] leading-[28px] tracking-[-0.015em] font-semibold ${isLowStock ? 'text-red-500 dark:text-red-300' : 'text-success'}`}>
-                          {totalStock}
-                        </span>
-                        <div className={`text-[11px] ${isLowStock ? 'text-red-500 dark:text-red-300' : 'text-muted-foreground'}`}>
-                          {isLowStock ? 'Low stock!' : 'in stock'}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Variants preview */}
-                    {variants.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {variants.slice(0, 5).map((v: { id: string; size?: string; color?: string; stock_quantity?: number }) => (
-                          <span key={v.id} className="text-[10px] leading-[14px] px-2 py-0.5 rounded border border-border text-muted-foreground">
-                            {[v.size, v.color].filter(Boolean).join(' / ') || 'Variant'} ({v.stock_quantity || 0})
-                          </span>
-                        ))}
-                        {variants.length > 5 && (
-                          <span className="text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground">+{variants.length - 5}</span>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2 pt-3 border-t border-muted">
-                      <button className="flex-1 py-2 bg-card hover:bg-accent text-foreground text-[12px] leading-[16px] font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors border border-border">
-                        <Pencil className="size-[16px]" />
-                        Edit
-                      </button>
-                      <button className="p-2 text-muted-foreground hover:text-red-500 dark:text-red-300 hover:bg-red-500/10 dark:bg-red-300/10 rounded-lg transition-colors">
-                        <Trash2 className="size-[18px]" />
-                      </button>
-                    </div>
-                  </div>
+          <TabsContent value="products">
+            {products.length > 0 ? (
+              <ProductGrid products={products} eventId={event.id} organizerId={organizerId} />
+            ) : (
+              <div className="bg-card rounded-xl border border-muted p-16 flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                  <Package className="size-[48px] text-primary" />
                 </div>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="bg-card rounded-xl border border-muted p-16 flex flex-col items-center justify-center text-center">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <Package className="size-[48px] text-primary" />
-            </div>
-            <h3 className="text-[22px] leading-[28px] font-semibold text-foreground mb-2">No merchandise yet</h3>
-            <p className="text-[14px] leading-[20px] text-muted-foreground mb-8 max-w-sm">
-              Add race kits, jerseys, and accessories to include in your event packages.
-            </p>
-            <button className="px-6 py-3 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all ">
-              <CirclePlus className="size-[18px]" />
-              Add your first product
-            </button>
-          </div>
-        )}
+                <h3 className="text-[22px] leading-[28px] font-semibold text-foreground mb-2">No merchandise yet</h3>
+                <p className="text-[14px] leading-[20px] text-muted-foreground mb-8 max-w-sm">
+                  Add finisher tees, caps and tumblers for {event.name}. Runners collect them with their race kit.
+                </p>
+                {addProductButton}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="inventory">
+            <InventoryTable products={products} />
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <OrderTable orders={orders} />
+          </TabsContent>
+
+          <TabsContent value="sales">
+            <SalesSummary sales={sales} paidOrders={paidOrders} pendingOrders={pendingOrders} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

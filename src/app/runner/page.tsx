@@ -148,6 +148,13 @@ export default async function RunnerDashboard() {
                   <QrCode className="size-[16px]" />
                   Digital BIB Pass
                 </Link>
+                <Link
+                  href="/runner/merch"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-foreground text-[13px] font-bold active:scale-95 transition-transform"
+                >
+                  <ShoppingBag className="size-[16px]" />
+                  Merch
+                </Link>
               </div>
             </div>
           </section>

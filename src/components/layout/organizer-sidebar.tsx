@@ -23,7 +23,7 @@ const navSections = [
       { title: 'Race Events & Waves', href: '/organizer/events', icon: Flag },
       { title: 'Runner Directory & BIBs', href: '/organizer/runners', icon: Badge },
       { title: 'REPC Station', href: '/organizer/repc', icon: QrCode, badge: 'Live' },
-      { title: 'Merch & Kit Inventory', href: '/organizer/merch', icon: Shirt },
+      { title: 'Merch Hub', href: '/organizer/merch', icon: Shirt },
     ],
   },
   {

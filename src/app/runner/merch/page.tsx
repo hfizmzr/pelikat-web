@@ -1,119 +1,161 @@
-import { ArrowLeft, Shirt, ShoppingBag, ShoppingCart } from "lucide-react"
-import { createClient } from '@/lib/supabase/server'
+import { ChevronRight, ReceiptText, ShoppingBag } from "lucide-react"
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { createClient } from '@/lib/supabase/server'
+import {
+  RUNNER_MERCH_ORDER_SELECT,
+  formatRM,
+  orderItemCount,
+  type RunnerMerchOrder,
+} from '@/lib/merch'
+import { malaysiaToday } from '@/components/merch/store/queries'
+import { OrderStatusChip, StoreHeader, formatOrderDate } from '@/components/merch/store/store-ui'
 
 export const metadata: Metadata = {
   title: 'Merchandise - Pelikat',
-  description: 'Your merchandise orders',
+  description: 'Shop event merch and track your orders',
 }
+
+type ShopEvent = { id: string; name: string; event_date: string; productCount: number }
 
 export default async function RunnerMerchPage() {
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = user
+    ? await supabase.from('runner_profiles').select('id').eq('user_id', user.id).maybeSingle()
+    : { data: null }
 
-  const { data: profile } = await supabase
-    .from('runner_profiles')
-    .select('id')
-    .eq('user_id', user?.id)
-    .single()
+  // RLS limits products to events the runner is registered for, and orders to their own
+  const [{ data: registrations }, { data: products }, { data: orderRows }] = profile
+    ? await Promise.all([
+        supabase
+          .from('registrations')
+          .select('event_id, events(id, name, event_date)')
+          .eq('runner_id', profile.id),
+        supabase.from('merch_products').select('event_id').eq('is_active', true),
+        supabase
+          .from('merch_orders')
+          .select(RUNNER_MERCH_ORDER_SELECT)
+          .eq('runner_id', profile.id)
+          .order('created_at', { ascending: false }),
+      ])
+    : [{ data: null }, { data: null }, { data: null }]
 
-  const { data: orders } = await supabase
-    .from('merch_orders')
-    .select('*, merch_order_items(*, merch_variants(*, merch_products(*)))')
-    .eq('runner_id', profile?.id)
-    .order('created_at', { ascending: false })
+  const productCounts = new Map<string, number>()
+  for (const p of products ?? []) productCounts.set(p.event_id, (productCounts.get(p.event_id) ?? 0) + 1)
+
+  const today = malaysiaToday()
+  const shopEvents: ShopEvent[] = (registrations ?? [])
+    .map((r) => r.events as unknown as { id: string; name: string; event_date: string } | null)
+    .filter((e): e is NonNullable<typeof e> => !!e && e.event_date >= today && productCounts.has(e.id))
+    .map((e) => ({ ...e, productCount: productCounts.get(e.id) ?? 0 }))
+    .sort((a, b) => a.event_date.localeCompare(b.event_date))
+
+  const orders = (orderRows ?? []) as unknown as RunnerMerchOrder[]
+  const activeOrders = orders.filter((o) => ['pending', 'confirmed', 'ready'].includes(o.status))
+  const pastOrders = orders.filter((o) => !['pending', 'confirmed', 'ready'].includes(o.status))
 
   return (
     <div className="flex flex-col w-full min-h-full bg-background">
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
-        <div className="flex items-center h-14 px-4 pt-safe">
-          <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
-            <ArrowLeft className="size-[24px]" />
-          </Link>
-          <div className="flex-1 flex flex-col items-center mr-8 truncate">
-            <h1 className="text-[16px] font-bold text-foreground leading-tight">
-              Merchandise
-            </h1>
-          </div>
-        </div>
-      </header>
+      <StoreHeader title="Merchandise" backHref="/runner" />
 
-      <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto pb-24">
-        
-        <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-primary/10 border border-primary/30 rounded-full flex items-center justify-center mb-3">
-            <ShoppingBag className="size-[32px] text-primary" />
-          </div>
-          <h2 className="text-[20px] font-bold text-foreground tracking-tight">Your Orders</h2>
-          <p className="text-[13px] text-muted-foreground mt-1">Track your merchandise purchases</p>
-        </div>
-
-        {orders && orders.length > 0 ? (
-          <div className="flex flex-col gap-4">
-            {orders.map((order) => (
-              <div key={order.id} className="bg-card rounded-2xl border border-border/60 flex flex-col overflow-hidden">
-                <div className="p-4 border-b border-border/60 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[14px] font-bold text-foreground">Order #{order.id.slice(0, 8)}</span>
-                    <span className="text-[11px] text-muted-foreground">
-                      {new Date(order.created_at).toLocaleDateString('en-MY', { 
-                        month: 'short', day: 'numeric', year: 'numeric' 
-                      })}
-                    </span>
-                  </div>
-                  
-                  <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
-                    order.status === 'paid'
-                      ? 'bg-success/10 text-success border border-success/20'
-                      : 'bg-muted text-muted-foreground border border-border'
-                  }`}>
-                    {order.status}
-                  </div>
+      <div className="flex flex-col px-5 py-5 gap-7">
+        {/* FR-69: shop by registered event */}
+        <section className="flex flex-col gap-3">
+          <h2 className="text-[15px] font-bold text-foreground tracking-tight">Shop event merch</h2>
+          {shopEvents.length > 0 ? (
+            shopEvents.map((event) => (
+              <Link
+                key={event.id}
+                href={`/runner/events/${event.id}/merch`}
+                className="relative overflow-hidden flex items-center gap-3 p-4 rounded-2xl bg-card border border-border/60 active:scale-[0.98] transition-transform"
+              >
+                <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
+                <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0">
+                  <ShoppingBag className="size-[22px] text-primary" />
                 </div>
-                
-                <div className="p-4 flex flex-col gap-3">
-                  {order.merch_order_items?.map((item: { id: string; quantity: number; unit_price: number; merch_variants: { merch_products: { name: string } | null } | null }) => (
-                    <div key={item.id} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center text-muted-foreground">
-                          <Shirt className="size-[20px]" />
-                        </div>
-                        <div className="flex flex-col max-w-[150px]">
-                          <span className="text-[13px] font-bold text-foreground truncate">{item.merch_variants?.merch_products?.name}</span>
-                          <span className="text-[11px] text-muted-foreground">Qty: {item.quantity}</span>
-                        </div>
-                      </div>
-                      <span className="font-mono text-[14px] font-bold text-foreground">
-                        RM {((item.unit_price * item.quantity) / 100).toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-bold text-foreground truncate">{event.name}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {new Date(event.event_date).toLocaleDateString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', day: 'numeric', month: 'short', year: 'numeric' })}
+                    {' · '}
+                    {event.productCount} {event.productCount === 1 ? 'item' : 'items'}
+                  </p>
                 </div>
-                
-                <div className="p-4 bg-muted/50 border-t border-border/40 flex justify-between items-center">
-                  <span className="text-[12px] font-bold text-muted-foreground uppercase tracking-widest">Total Amount</span>
-                  <span className="font-mono text-[18px] font-extrabold text-primary">
-                    RM {(order.total_amount / 100).toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-card rounded-2xl border border-border/60 p-8 flex flex-col items-center text-center mt-4">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-              <ShoppingCart className="size-[32px] text-muted-foreground" />
+                <ChevronRight className="size-[20px] text-muted-foreground" />
+              </Link>
+            ))
+          ) : (
+            <div className="p-5 rounded-2xl bg-card border border-border/60 text-center">
+              <p className="text-[13px] font-bold text-foreground mb-1">No merch on sale</p>
+              <p className="text-[12px] text-muted-foreground">
+                Merch appears here for upcoming events you&apos;re registered for.
+              </p>
             </div>
-            <p className="text-[16px] font-bold text-foreground mb-2">No orders yet</p>
-            <p className="text-[13px] text-muted-foreground">
-              Purchase merchandise from your registered events
-            </p>
-          </div>
-        )}
+          )}
+        </section>
+
+        {/* FR-73: order history */}
+        <section className="flex flex-col gap-3">
+          <h2 className="text-[15px] font-bold text-foreground tracking-tight">Your orders</h2>
+          {orders.length === 0 ? (
+            <div className="bg-card rounded-2xl border border-border/60 p-8 flex flex-col items-center text-center">
+              <div className="w-14 h-14 bg-muted rounded-full flex items-center justify-center mb-3">
+                <ReceiptText className="size-[28px] text-muted-foreground" />
+              </div>
+              <p className="text-[14px] font-bold text-foreground mb-1">No orders yet</p>
+              <p className="text-[12px] text-muted-foreground">Orders you place will show up here with their status.</p>
+            </div>
+          ) : (
+            <>
+              {activeOrders.map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))}
+              {pastOrders.length > 0 && (
+                <>
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-2">Past orders</h3>
+                  {pastOrders.map((order) => (
+                    <OrderCard key={order.id} order={order} />
+                  ))}
+                </>
+              )}
+            </>
+          )}
+        </section>
       </div>
     </div>
+  )
+}
+
+function OrderCard({ order }: { order: RunnerMerchOrder }) {
+  const count = orderItemCount(order)
+  const names = order.merch_order_items.map((i) => i.product_name).filter(Boolean)
+  return (
+    <Link
+      href={`/runner/merch/orders/${order.id}`}
+      className="flex flex-col gap-3 p-4 rounded-2xl bg-card border border-border/60 active:scale-[0.98] transition-transform"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col min-w-0">
+          <span className="font-mono text-[14px] font-bold text-foreground">{order.order_number}</span>
+          <span className="text-[11px] text-muted-foreground truncate">
+            {order.events?.name} · {formatOrderDate(order.created_at)}
+          </span>
+        </div>
+        <OrderStatusChip status={order.status} />
+      </div>
+      <div className="flex items-end justify-between gap-3">
+        <span className="text-[12px] text-muted-foreground line-clamp-1 min-w-0">
+          {count} {count === 1 ? 'item' : 'items'}
+          {names.length > 0 ? ` · ${names.join(', ')}` : ''}
+        </span>
+        <span className="font-mono text-[15px] font-extrabold text-primary whitespace-nowrap">
+          {formatRM(Number(order.total_amount))}
+        </span>
+      </div>
+    </Link>
   )
 }

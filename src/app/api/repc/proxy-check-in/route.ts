@@ -3,6 +3,7 @@ import { fetchDjangoApi } from '@/lib/django'
 import { createClient } from '@/lib/supabase/server'
 import { getUserRole } from '@/lib/auth/requireRole'
 import {
+  REPC_CHECK_IN_RPC,
   normalizeRepcCheckInResult,
   type RepcCheckInResult,
   type RepcCheckInRpcRow,
@@ -54,6 +55,7 @@ function toApiResponse(
       shirt_size: result.shirtSize,
       remaining_qty: result.remainingQty,
     },
+    merch: result.merch ?? null,
     collector: {
       runner_id: collector.runner_id,
       bib: collector.bib_number,
@@ -191,7 +193,7 @@ export async function POST(request: Request) {
   const collectorProfile = getProfile(collectorRegistration as RegistrationWithProfile)
   const collectorLabel = `${collectorProfile?.full_name ?? 'Unknown collector'} (BIB ${collectorRegistration.bib_number})`
 
-  const { data, error } = await supabase.rpc('repc_check_in_registration', {
+  const { data, error } = await supabase.rpc(REPC_CHECK_IN_RPC, {
     p_event_id: eventId,
     p_runner_id: absentRegistration.runner_id,
     p_bib_number: absentRegistration.bib_number,

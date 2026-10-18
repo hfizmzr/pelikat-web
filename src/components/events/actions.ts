@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { fetchDjangoApi } from '@/lib/django'
 import {
+  REPC_CHECK_IN_RPC,
   normalizeRepcCheckInResult,
   type RepcCheckInResult,
   type RepcCheckInRpcRow,
@@ -368,7 +369,7 @@ export async function checkInRegistrationByBib(
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { data, error } = await supabase.rpc('repc_check_in_registration', {
+  const { data, error } = await supabase.rpc(REPC_CHECK_IN_RPC, {
     p_event_id: eventId,
     p_runner_id: registration.runner_id,
     p_bib_number: registration.bib_number,
@@ -378,7 +379,7 @@ export async function checkInRegistrationByBib(
   })
 
   if (error) {
-    console.error('repc_check_in_registration RPC error:', { message: error.message, eventId, bib: registration.bib_number })
+    console.error(`${REPC_CHECK_IN_RPC} RPC error:`, { message: error.message, eventId, bib: registration.bib_number })
     return {
       success: false,
       message: error.message,
@@ -391,12 +392,14 @@ export async function checkInRegistrationByBib(
     }
   }
 
+  const result = normalizeRepcCheckInResult((data?.[0] ?? null) as RepcCheckInRpcRow | null)
+
   revalidatePath(`/organizer/events/${eventId}`)
   revalidatePath(`/organizer/events/${eventId}/registrations`)
   revalidatePath(`/organizer/events/${eventId}/repc`)
   revalidatePath(`/organizer/events/${eventId}/checkin`)
 
-  return normalizeRepcCheckInResult((data?.[0] ?? null) as RepcCheckInRpcRow | null)
+  return result
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

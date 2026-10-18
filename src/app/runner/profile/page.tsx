@@ -1,10 +1,11 @@
 "use client";
 
-import { ArrowLeft, ChevronDown, CircleAlert, CircleCheck, Keyboard, LoaderCircle, Lock, ShieldCheck, TriangleAlert } from "lucide-react"
+import { ArrowLeft, ChevronDown, CircleAlert, CircleCheck, Keyboard, LoaderCircle, Lock, LogOut, ShieldCheck, TriangleAlert } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import DocumentCapture from "@/components/profile/document-capture";
 import { deleteRunnerAccount, storeEncryptedIc } from "@/lib/actions/account";
+import { logAudit } from "@/lib/audit";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -42,6 +43,8 @@ export default function RunnerProfilePage() {
   const [deleteStep, setDeleteStep] = useState<'idle' | 'confirm' | 'deleting'>('idle')
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [loggingOut, setLoggingOut] = useState(false)
+  const [logoutError, setLogoutError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -109,6 +112,25 @@ export default function RunnerProfilePage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError(null);
+
+    // Logging out must never be blocked by the audit write; just make a failed write visible.
+    const { error: auditError } = await logAudit(supabase, "user_logout");
+    if (auditError) console.error("user_logout audit insert failed:", auditError.message);
+
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      // Session may still be valid — stay here rather than pretend we logged out.
+      setLogoutError(error.message || "Failed to log out. Please try again.");
+      setLoggingOut(false);
+      return;
+    }
+    router.push("/login");
   };
 
   const handleSaveIc = async () => {
@@ -405,6 +427,19 @@ export default function RunnerProfilePage() {
 
         {saveError && (
           <p className="text-[12px] text-red-500 dark:text-red-300 mt-2 text-center">{saveError}</p>
+        )}
+
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="w-full py-3.5 mt-4 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+        >
+          {loggingOut ? <LoaderCircle className="size-[18px] animate-spin" /> : <LogOut className="size-[18px]" />}
+          Log out
+        </button>
+
+        {logoutError && (
+          <p className="text-[12px] text-red-500 dark:text-red-300 mt-2 text-center">{logoutError}</p>
         )}
 
         {/* Danger Zone */}

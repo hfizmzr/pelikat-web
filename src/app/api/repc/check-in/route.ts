@@ -3,6 +3,7 @@ import { fetchDjangoApi } from '@/lib/django'
 import { createClient } from '@/lib/supabase/server'
 import { getUserRole } from '@/lib/auth/requireRole'
 import {
+  REPC_CHECK_IN_RPC,
   normalizeRepcCheckInResult,
   type RepcCheckInResult,
   type RepcCheckInRpcRow,
@@ -29,6 +30,7 @@ function toApiResponse(result: RepcCheckInResult) {
       shirt_size: result.shirtSize,
       remaining_qty: result.remainingQty,
     },
+    merch: result.merch ?? null,
   }
 }
 
@@ -97,7 +99,7 @@ export async function POST(request: Request) {
     })
   }
 
-  const { data, error } = await supabase.rpc('repc_check_in_registration', {
+  const { data, error } = await supabase.rpc(REPC_CHECK_IN_RPC, {
     p_event_id: eventId,
     p_runner_id: verified.runner_id,
     p_bib_number: verified.bib_number,
@@ -107,7 +109,7 @@ export async function POST(request: Request) {
   })
 
   if (error) {
-    console.error('repc_check_in_registration RPC error:', { message: error.message, eventId, runnerId: verified.runner_id, bib: verified.bib_number })
+    console.error(`${REPC_CHECK_IN_RPC} RPC error:`, { message: error.message, eventId, runnerId: verified.runner_id, bib: verified.bib_number })
     return NextResponse.json({
       success: false,
       valid: false,
