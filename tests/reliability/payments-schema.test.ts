@@ -123,3 +123,52 @@ describe('Reliability: Payment Write Lockdown (Task: migration 060)', () => {
     )
   })
 })
+
+describe('Reliability: confirm_dummy_payment server-trust revision (migration 061)', () => {
+  const migration061 = read('supabase', 'migrations', '061_confirm_dummy_payment_server_trust.sql')
+
+  it('exists and replaces the 056 function body (create or replace, same 035 signature)', () => {
+    expect(migration061).toContain('create or replace function public.confirm_dummy_payment(\n p_registration_id uuid'.replace(' p_registration_id', '  p_registration_id'))
+    expect(migration061).toContain('returns boolean')
+  })
+
+  it('is security definer with empty search_path (byte-equivalent to 056 preamble)', () => {
+    expect(migration061).toMatch(/security\s+definer/i)
+    expect(migration061).toMatch(/set\s+search_path\s*=\s*''/)
+  })
+
+  it('does NOT check auth.uid() for ownership in the function body (app-side ownership)', () => {
+    // Extract the function body only ($$ .. $$), so ACL/header prose may mention auth.uid().
+    const body = migration061.split('$$')[1]
+    expect(body).not.toMatch(/auth\.uid\(\)/)
+    expect(body).not.toMatch(/runner_profiles/)
+    expect(body).not.toMatch(/runner_id\s+=\s+v_runner_id/)
+  })
+
+  it('retains row-lock, prefix-strip parse and 3-attempt retry markers from 056', () => {
+    expect(migration061).toContain('for update')
+    expect(migration061).toContain("regexp_replace(substr(bib_number, length(coalesce(v_cat.bib_prefix, '')) + 1), '\\D', '', 'g')")
+    expect(migration061).toContain('for v_attempt in 1..3 loop')
+    expect(migration061).toContain("payment_status = 'paid'")
+    expect(migration061).toContain("'payment_confirmed'")
+    expect(migration061).toMatch(/jsonb_build_object\(\s*'event_id',\s*v_reg\.event_id,\s*'bib_number',\s*v_bib\s*\)/)
+  })
+
+  it('re-asserts the 060 ACL contract (revoke public/anon/authenticated, grant service_role)', () => {
+    expect(migration061).toContain('revoke execute on function public.confirm_dummy_payment(uuid) from public')
+    expect(migration061).toContain('revoke execute on function public.confirm_dummy_payment(uuid) from anon')
+    expect(migration061).toContain('revoke execute on function public.confirm_dummy_payment(uuid) from authenticated')
+    expect(migration061).toMatch(/grant execute on function public\.confirm_dummy_payment\(uuid\) to service_role/)
+  })
+
+  it('documents the trust change on the function comment', () => {
+    expect(migration061).toContain(
+      "is 'mock-mode confirm; ownership enforced app-side; no auth.uid() check since 061 (service_role callers only)'"
+    )
+  })
+
+  it('header explains WHY ownership moved app-side (mock-only + caller-JWT pre-verify)', () => {
+    expect(migration061).toMatch(/PAYMENT_PROVIDER\s*=\s*'mock'/)
+    expect(migration061).toMatch(/server action/i)
+  })
+})
