@@ -51,7 +51,17 @@ export default async function RunnerDashboard() {
     .eq('user_id', user?.id)
     .single()
 
-  const [{ data: registrations }, { data: badges }] = await Promise.all([
+  const [totalRunDistance, { data: streakData }, { data: registrations }, { data: badges }] = await Promise.all([
+    supabase
+      .from('run_logs')
+      .select('distance_km')
+      .eq('runner_id', profile?.id)
+      .then(({ data }) => data?.reduce((acc, r) => acc + Number(r.distance_km || 0), 0) || 0),
+    supabase
+      .from('runner_streaks')
+      .select('current_streak, longest_streak')
+      .eq('runner_id', profile?.id)
+      .single(),
     supabase
       .from('registrations')
       .select('*, events(*), race_categories(*)')
@@ -70,19 +80,6 @@ export default async function RunnerDashboard() {
     .slice(0, 3) || []
 
   const nextEvent = upcomingEvents[0]
-
-  const [totalRunDistance, { data: streakData }] = await Promise.all([
-    supabase
-      .from('run_logs')
-      .select('distance_km')
-      .eq('runner_id', profile?.id)
-      .then(({ data }) => data?.reduce((acc, r) => acc + Number(r.distance_km || 0), 0) || 0),
-    supabase
-      .from('runner_streaks')
-      .select('current_streak, longest_streak')
-      .eq('runner_id', profile?.id)
-      .single(),
-  ])
 
   const currentStreak = streakData?.current_streak || 0
   const longestStreak = streakData?.longest_streak || 0
