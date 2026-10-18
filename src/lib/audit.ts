@@ -7,6 +7,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  *
  * The helper automatically pulls the current user's email/name from auth
  * and denormalizes it into the audit_log row for immutable history.
+ *
+ * Returns the insert error (if any) so callers can tell an unaudited action apart.
  */
 export async function logAudit(
   supabase: SupabaseClient,
@@ -16,7 +18,7 @@ export async function logAudit(
 ) {
   const { data: { user } } = await supabase.auth.getUser()
 
-  await supabase.from('audit_log').insert({
+  const { error } = await supabase.from('audit_log').insert({
     actor_id: user?.id || null,
     actor_email: user?.email || null,
     actor_name: (user?.user_metadata?.full_name as string) || (user?.user_metadata?.name as string) || null,
@@ -24,4 +26,6 @@ export async function logAudit(
     target_id: targetId || null,
     metadata: metadata || null,
   })
+
+  return { error }
 }

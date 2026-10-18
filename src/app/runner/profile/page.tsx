@@ -119,7 +119,10 @@ export default function RunnerProfilePage() {
     setLoggingOut(true);
     setLogoutError(null);
 
-    await logAudit(supabase, "user_logout");
+    // Logging out must never be blocked by the audit write; just make a failed write visible.
+    const { error: auditError } = await logAudit(supabase, "user_logout");
+    if (auditError) console.error("user_logout audit insert failed:", auditError.message);
+
     const { error } = await supabase.auth.signOut();
     if (error) {
       // Session may still be valid — stay here rather than pretend we logged out.
