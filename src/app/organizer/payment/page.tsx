@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { createCheckout, confirmPayment } from '@/lib/payments/mock'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -61,6 +62,24 @@ export default function OrganizerPaymentPage() {
       return
     }
 
+    // Mock gateway flow (PAYMENT_PROVIDER=mock) — swap point for the
+    // real provider. DB state update below is provider-agnostic.
+    let paymentReference: string
+    try {
+      const session = await createCheckout({
+        amount: SUBSCRIPTION_PRICE,
+        description: `Pelikat organizer subscription — ${organizer.name}`,
+        referenceId: organizer.id,
+        metadata: { type: 'organizer_subscription', slug: organizer.slug },
+      })
+      const confirmation = await confirmPayment(session)
+      paymentReference = confirmation.reference
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Payment failed. Please try again.')
+      setIsPaying(false)
+      return
+    }
+
     const oneYearFromNow = new Date()
     oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
 
@@ -83,6 +102,8 @@ export default function OrganizerPaymentPage() {
         organizer_name: organizer.name,
         amount: SUBSCRIPTION_PRICE,
         sub_expires_at: oneYearFromNow.toISOString(),
+        payment_provider: 'mock',
+        payment_reference: paymentReference,
       },
     })
 
@@ -92,7 +113,7 @@ export default function OrganizerPaymentPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30">
+      <div className="flex min-h-dvh items-center justify-center bg-muted/30">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
@@ -100,7 +121,7 @@ export default function OrganizerPaymentPage() {
 
   if (!organizer) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+      <div className="flex min-h-dvh items-center justify-center bg-muted/30 p-4">
         <Card className="w-full max-w-md">
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">Organizer not found</p>
@@ -115,7 +136,7 @@ export default function OrganizerPaymentPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+      <div className="flex min-h-dvh items-center justify-center bg-muted/30 p-4">
         <Card className="w-full max-w-md border-green-500/50 bg-green-500/5">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
@@ -153,7 +174,7 @@ export default function OrganizerPaymentPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <div className="flex min-h-dvh items-center justify-center bg-muted/30 p-4">
       <div className="w-full max-w-lg space-y-6">
         {/* Header */}
         <div className="text-center">

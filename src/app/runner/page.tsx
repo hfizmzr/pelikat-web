@@ -1,3 +1,5 @@
+import type { LucideIcon } from "lucide-react"
+import { Award, Bell, CalendarX, CheckCheck, Flame, Footprints, QrCode, ShoppingBag, Tag, Tags, Trophy } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -7,31 +9,31 @@ export const metadata: Metadata = {
   description: 'Your runner dashboard with events, badges, and stats',
 }
 
-function StatCard({ icon, label, value, sub, color }: { icon: string, label: string, value: string | number, sub?: string, color: 'primary' | 'secondary' | 'tertiary' | 'error' }) {
+function StatCard({ icon: Icon, label, value, sub, color }: { icon: LucideIcon, label: string, value: string | number, sub?: string, color: 'primary' | 'secondary' | 'tertiary' | 'error' }) {
   const colorMap = {
-    primary: { bg: 'bg-[#d0bcff]/10', text: 'text-[#d0bcff]' },
-    secondary: { bg: 'bg-[#4cd7f6]/10', text: 'text-[#4cd7f6]' },
-    tertiary: { bg: 'bg-[#4edea3]/10', text: 'text-[#4edea3]' },
-    error: { bg: 'bg-[#ffb4ab]/10', text: 'text-[#ffb4ab]' },
+    primary: { bg: 'bg-primary/10', text: 'text-primary' },
+    secondary: { bg: 'bg-primary/10', text: 'text-primary' },
+    tertiary: { bg: 'bg-success/10', text: 'text-success' },
+    error: { bg: 'bg-red-500/10 dark:bg-red-300/10', text: 'text-red-500 dark:text-red-300' },
   }
   const c = colorMap[color]
 
   return (
-    <div className="flex flex-col justify-between p-4 rounded-xl bg-[#1c1b1d] shadow-sm border border-[#353437]/40">
+    <div className="flex flex-col justify-between p-4 rounded-xl bg-card shadow-sm border border-border/40">
       <div className="flex items-center justify-between">
         <span className={`p-1.5 rounded-lg ${c.bg} ${c.text}`}>
-          <span className="material-symbols-outlined text-[20px]">{icon}</span>
+          <Icon className="size-[20px]" />
         </span>
       </div>
       <div className="mt-4">
-        <span className="block text-[10px] leading-[14px] tracking-[0.05em] text-[#cbc3d7] font-medium uppercase">
+        <span className="block text-[10px] leading-[14px] tracking-[0.05em] text-muted-foreground font-medium uppercase">
           {label}
         </span>
-        <p className="text-[24px] leading-[28px] tracking-[-0.01em] font-bold text-[#e5e1e4] mt-0.5">
+        <p className="text-[24px] leading-[28px] tracking-[-0.01em] font-bold text-foreground mt-0.5">
           {value}
         </p>
         {sub && (
-          <span className="block text-[11px] text-[#958ea0] mt-1">{sub}</span>
+          <span className="block text-[11px] text-muted-foreground mt-1">{sub}</span>
         )}
       </div>
     </div>
@@ -86,24 +88,24 @@ export default async function RunnerDashboard() {
   const longestStreak = streakData?.longest_streak || 0
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+    <div className="flex flex-col w-full min-h-full bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl px-5 pt-safe">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl px-5 pt-safe">
         <div className="h-16 flex items-center justify-between">
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="text-[18px] font-bold text-[#e5e1e4]">
+              <span className="text-[18px] font-bold text-foreground">
                 Hi, {profile?.full_name?.split(' ')[0] || 'Runner'}
               </span>
-              <span className="px-1.5 py-0.5 rounded-full bg-[#4edea3]/10 text-[#4edea3] text-[9px] font-bold tracking-wider uppercase">
+              <span className="px-1.5 py-0.5 rounded-full bg-success/10 text-success text-[9px] font-bold tracking-wider uppercase">
                 Pro
               </span>
             </div>
-            <p className="text-[11px] text-[#958ea0]">Ready for your next run?</p>
+            <p className="text-[11px] text-muted-foreground">Ready for your next run?</p>
           </div>
-          <button className="relative w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] hover:text-[#e5e1e4] transition-colors">
-            <span className="material-symbols-outlined text-[22px]">notifications</span>
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#ffb4ab] ring-2 ring-[#131315]" />
+          <button className="relative w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
+            <Bell className="size-[22px]" />
+            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-red-500 dark:bg-red-300 ring-2 ring-background" />
           </button>
         </div>
       </header>
@@ -114,36 +116,36 @@ export default async function RunnerDashboard() {
         {nextEvent ? (
           <section className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#cbc3d7]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Next Upcoming Event
               </span>
             </div>
-            <div className="relative overflow-hidden rounded-xl bg-[#1c1b1d] p-5 shadow-md border border-[#353437]/60">
-              <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-[#4cd7f6]/10 blur-2xl pointer-events-none" />
+            <div className="relative overflow-hidden rounded-xl bg-card p-5 shadow-md border border-border/60">
+              <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
               <div className="relative z-10 flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-wider text-[#4cd7f6] font-semibold">
+                <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">
                   {new Date(nextEvent.events?.event_date).toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </span>
-                <h1 className="text-[20px] leading-[26px] tracking-[-0.015em] text-[#e5e1e4] font-extrabold mb-2">
+                <h1 className="text-[20px] leading-[26px] tracking-[-0.015em] text-foreground font-extrabold mb-2">
                   {nextEvent.events?.name}
                 </h1>
-                <div className="flex items-center gap-4 text-[#cbc3d7] text-[11px]">
-                  <span className="inline-flex items-center gap-1.5 bg-[#201f22] px-2 py-1 rounded-md border border-[#353437]">
-                    <span className="material-symbols-outlined text-[14px] text-[#d0bcff]">tag</span>
+                <div className="flex items-center gap-4 text-muted-foreground text-[11px]">
+                  <span className="inline-flex items-center gap-1.5 bg-card px-2 py-1 rounded-md border border-border">
+                    <Tag className="size-[14px] text-primary" />
                     <span className="font-mono">{nextEvent.bib_number || 'TBA'}</span>
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px] text-[#4edea3]">category</span>
+                    <Tags className="size-[14px] text-success" />
                     {nextEvent.race_categories?.name}
                   </span>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-[#353437]/40 flex gap-2">
+              <div className="mt-4 pt-4 border-t border-border/40 flex gap-2">
                 <Link
                   href={`/runner/events/${nextEvent.events?.id}/bib`}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold active:scale-95 transition-transform"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold active:scale-95 transition-transform"
                 >
-                  <span className="material-symbols-outlined text-[16px]">qr_code_2</span>
+                  <QrCode className="size-[16px]" />
                   Digital BIB Pass
                 </Link>
                 <Link
@@ -157,28 +159,50 @@ export default async function RunnerDashboard() {
             </div>
           </section>
         ) : (
-          <section className="rounded-xl bg-[#1c1b1d] p-6 border border-[#353437]/40 text-center flex flex-col items-center">
-            <div className="w-12 h-12 bg-[#201f22] rounded-full flex items-center justify-center mb-3">
-              <span className="material-symbols-outlined text-[24px] text-[#958ea0]">event_busy</span>
+          <section className="rounded-xl bg-card p-6 border border-border/40 text-center flex flex-col items-center">
+            <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center mb-3">
+              <CalendarX className="size-[24px] text-muted-foreground" />
             </div>
-            <h3 className="text-[14px] font-bold text-[#e5e1e4] mb-1">No Upcoming Events</h3>
-            <p className="text-[12px] text-[#958ea0] mb-4">Discover your next race and start training.</p>
-            <Link href="/runner/events" className="px-5 py-2.5 bg-[#d0bcff] text-[#3c0091] text-[12px] font-bold rounded-xl active:scale-95 transition-transform">
+            <h3 className="text-[14px] font-bold text-foreground mb-1">No Upcoming Events</h3>
+            <p className="text-[12px] text-muted-foreground mb-4">Discover your next race and start training.</p>
+            <Link href="/runner/events" className="px-5 py-2.5 bg-primary text-primary-foreground text-[12px] font-bold rounded-xl active:scale-95 transition-transform">
               Explore Events
             </Link>
           </section>
         )}
 
+        {/* Quick Links — Leaderboard & Merch */}
+        <div className="grid grid-cols-2 gap-3">
+          <Link
+            href="/runner/leaderboard"
+            className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/40 active:scale-[0.98] transition-transform"
+          >
+            <span className="p-2 rounded-lg bg-primary/10 text-primary">
+              <Trophy className="size-[18px]" />
+            </span>
+            <span className="text-[13px] font-semibold text-foreground">Leaderboard</span>
+          </Link>
+          <Link
+            href="/runner/merch"
+            className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/40 active:scale-[0.98] transition-transform"
+          >
+            <span className="p-2 rounded-lg bg-primary/10 text-primary">
+              <ShoppingBag className="size-[18px]" />
+            </span>
+            <span className="text-[13px] font-semibold text-foreground">Merch Store</span>
+          </Link>
+        </div>
+
         {/* Stats Grid */}
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[15px] font-bold text-[#e5e1e4] tracking-tight">Your Stats</h2>
+            <h2 className="text-[15px] font-bold text-foreground tracking-tight">Your Stats</h2>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <StatCard icon="directions_run" label="Total Distance" value={`${totalRunDistance.toFixed(1)} km`} color="secondary" />
-            <StatCard icon="local_fire_department" label="Current Streak" value={`${currentStreak} days`} sub={`Best: ${longestStreak}`} color="error" />
-            <StatCard icon="workspace_premium" label="Badges Earned" value={badges?.length || 0} color="primary" />
-            <StatCard icon="done_all" label="Races Done" value={registrations?.filter(r => r.events?.status === 'closed').length || 0} color="tertiary" />
+            <StatCard icon={Footprints} label="Total Distance" value={`${totalRunDistance.toFixed(1)} km`} color="secondary" />
+            <StatCard icon={Flame} label="Current Streak" value={`${currentStreak} days`} sub={`Best: ${longestStreak}`} color="error" />
+            <StatCard icon={Award} label="Badges Earned" value={badges?.length || 0} color="primary" />
+            <StatCard icon={CheckCheck} label="Races Done" value={registrations?.filter(r => r.events?.status === 'closed').length || 0} color="tertiary" />
           </div>
         </section>
 
@@ -186,16 +210,16 @@ export default async function RunnerDashboard() {
         {badges && badges.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-[15px] font-bold text-[#e5e1e4] tracking-tight">Recent Achievements</h2>
-              <Link href="/runner/badges" className="text-[11px] font-semibold text-[#d0bcff]">View All</Link>
+              <h2 className="text-[15px] font-bold text-foreground tracking-tight">Recent Achievements</h2>
+              <Link href="/runner/badges" className="text-[11px] font-semibold text-primary">View All</Link>
             </div>
             <div className="flex overflow-x-auto gap-3 pb-2 -mx-5 px-5 snap-x hide-scrollbar">
               {badges.map(badge => (
-                <div key={badge.id} className="snap-start shrink-0 w-[120px] p-4 bg-[#1c1b1d] rounded-xl border border-[#353437]/40 flex flex-col items-center text-center">
-                  <div className="w-12 h-12 bg-[#4cd7f6]/10 text-[#4cd7f6] rounded-full flex items-center justify-center mb-2">
-                    <span className="material-symbols-outlined text-[24px]">workspace_premium</span>
+                <div key={badge.id} className="snap-start shrink-0 w-[120px] p-4 bg-card rounded-xl border border-border/40 flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-2">
+                    <Award className="size-[24px]" />
                   </div>
-                  <span className="text-[11px] font-bold text-[#e5e1e4] leading-tight capitalize">
+                  <span className="text-[11px] font-bold text-foreground leading-tight capitalize">
                     {badge.badge_key.replace(/_/g, ' ')}
                   </span>
                 </div>

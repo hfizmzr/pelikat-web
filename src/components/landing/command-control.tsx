@@ -9,12 +9,11 @@ export function CommandControl() {
           {/* Content */}
           <div>
             <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Command & Control
+              One dashboard for race control
             </h2>
             <p className="mt-6 text-base text-muted-foreground sm:text-lg">
-              A unified dashboard built for speed and precision. Manage
-              registrations, vendor payouts, and volunteer deployment from a
-              single interface.
+              Registrations, vendor payouts, and volunteer deployment on one
+              screen. The numbers update as runners check in.
             </p>
 
             {/* Feature List */}
@@ -24,12 +23,12 @@ export function CommandControl() {
                   <Database className="size-5" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground">
-                    Centralized Race Hub
-                  </h4>
+                  <h3 className="text-[15px] font-semibold text-foreground">
+                    One race data feed
+                  </h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Consolidate data from physical timing chips, manual
-                    registrations, and sponsor leads in real-time.
+                    Timing chips, manual entries, and sponsor leads land in the
+                    same feed as runners check in.
                   </p>
                 </div>
               </div>
@@ -38,12 +37,12 @@ export function CommandControl() {
                   <ShieldCheck className="size-5" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground">
-                    Fraud Prevention
-                  </h4>
+                  <h3 className="text-[15px] font-semibold text-foreground">
+                    Duplicate and bib-swap detection
+                  </h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Flag duplicate registrations and bib swapping automatically
-                    with our integrated identity verification system.
+                    Duplicate registrations and bib swaps are flagged
+                    automatically before check-in keys go out.
                   </p>
                 </div>
               </div>

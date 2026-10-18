@@ -13,7 +13,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(0.985 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.627 0.265 292);
+  --primary: oklch(0.51 0.16 190);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.92 0 0);
   --secondary-foreground: oklch(0.145 0 0);
@@ -25,23 +25,21 @@
   --destructive-foreground: oklch(0.577 0.245 27.325);
   --border: oklch(0.868 0 0);
   --input: oklch(0.868 0 0);
-  --ring: oklch(0.627 0.265 292);
-  --chart-1: oklch(0.627 0.265 292);
+  --ring: oklch(0.51 0.16 190);
+  --chart-1: oklch(0.58 0.14 190);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-4: oklch(0.58 0.13 250);
   --chart-5: oklch(0.645 0.246 16.439);
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.968 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.627 0.265 292);
+  --sidebar-primary: oklch(0.51 0.16 190);
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.92 0 0);
   --sidebar-accent-foreground: oklch(0.145 0 0);
   --sidebar-border: oklch(0.868 0 0);
-  --sidebar-ring: oklch(0.627 0.265 292);
-  --purple-gradient-start: oklch(0.7 0.25 292);
-  --purple-gradient-end: oklch(0.55 0.28 285);
+  --sidebar-ring: oklch(0.51 0.16 190);
   --success: oklch(0.7 0.2 145);
 }
 
@@ -53,76 +51,42 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.12 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.627 0.265 292);
-  --primary-foreground: oklch(1 0 0);
+  --primary: oklch(0.75 0.13 190);
+  --primary-foreground: oklch(0.15 0.04 190);
   --secondary: oklch(0.16 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.16 0 0);
   --muted-foreground: oklch(0.63 0 0);
-  --accent: oklch(0.627 0.265 292);
-  --accent-foreground: oklch(1 0 0);
+  --accent: oklch(0.28 0.03 190);
+  --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
   --border: oklch(0.22 0 0);
   --input: oklch(0.22 0 0);
-  --ring: oklch(0.627 0.265 292);
-  --chart-1: oklch(0.627 0.265 292);
+  --ring: oklch(0.75 0.13 190);
+  --chart-1: oklch(0.75 0.13 190);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-4: oklch(0.65 0.12 250);
   --chart-5: oklch(0.645 0.246 16.439);
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.1 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.627 0.265 292);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.75 0.13 190);
+  --sidebar-primary-foreground: oklch(0.15 0.04 190);
   --sidebar-accent: oklch(0.16 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.22 0 0);
-  --sidebar-ring: oklch(0.627 0.265 292);
-  
+  --sidebar-ring: oklch(0.75 0.13 190);
+
   /* Custom Obsidian tokens */
-  --purple-gradient-start: oklch(0.7 0.25 292);
-  --purple-gradient-end: oklch(0.55 0.28 285);
   --success: oklch(0.7 0.2 145);
 
-  /* ── Obsidian Velocity Admin Design System ── */
-  /* Material-You Dark Surface Hierarchy */
-  --ov-surface:               #131315;
-  --ov-surface-dim:           #131315;
-  --ov-surface-bright:        #39393b;
-  --ov-surface-lowest:        #0e0e10;
-  --ov-surface-low:           #1c1b1d;
-  --ov-surface-container:     #201f22;
-  --ov-surface-high:          #2a2a2c;
-  --ov-surface-highest:       #353437;
-  --ov-on-surface:            #e5e1e4;
-  --ov-on-surface-variant:    #cbc3d7;
-  --ov-outline:               #958ea0;
-  --ov-outline-variant:       #494454;
-  /* Primary (Electric Violet) */
-  --ov-primary:               #d0bcff;
-  --ov-on-primary:            #3c0091;
-  --ov-primary-container:     #a078ff;
-  --ov-on-primary-container:  #340080;
-  --ov-inverse-primary:       #6d3bd7;
-  /* Secondary (Cyber Cyan) */
-  --ov-secondary:             #4cd7f6;
-  --ov-on-secondary:          #003640;
-  --ov-secondary-container:   #03b5d3;
-  /* Tertiary (Cyber Emerald) */
-  --ov-tertiary:              #4edea3;
-  --ov-on-tertiary:           #003824;
-  --ov-tertiary-container:    #00a572;
-  /* Error */
-  --ov-error:                 #ffb4ab;
-  --ov-error-container:       #93000a;
-  --ov-on-error-container:    #ffdad6;
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: var(--font-geist);
+  --font-mono: var(--font-geist-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -151,6 +115,10 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* Radius ladder flattened: rounded-2xl and rounded-3xl render at the same
+     20px step so component rounding can't spike past the scale. */
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 8px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -162,8 +130,6 @@
 }
 
 @theme inline {
-  --color-purple-gradient-start: var(--purple-gradient-start);
-  --color-purple-gradient-end: var(--purple-gradient-end);
   --color-success: var(--success);
 }
 
@@ -177,23 +143,13 @@
 }
 
 @layer utilities {
-  .text-gradient-purple {
-    @apply bg-gradient-to-r from-purple-gradient-start to-purple-gradient-end bg-clip-text text-transparent;
-  }
-  
-  .bg-gradient-cta {
-    @apply bg-gradient-to-br from-[#7c3aed] via-[#8b5cf6] to-[#6d28d9];
-  }
-
-  /* Obsidian Velocity Admin Utilities */
-  .font-inter { font-family: 'Inter', sans-serif; }
-  .font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+  /* App utilities */
+  /* Legacy admin utility names now resolve to the single brand stack (Geist) —
+     ponytail: rename call sites to font-sans if these drift further. */
+  .font-inter, .font-jakarta { font-family: var(--font-sans); }
   .font-tabular { font-variant-numeric: tabular-nums; }
 
   /* Glow utilities */
-  .glow-primary  { box-shadow: 0 0 20px rgba(208, 188, 255, 0.3); }
-  .glow-tertiary { box-shadow: 0 0 12px rgba(78, 222, 163, 0.5); }
-  .glow-error    { box-shadow: 0 0 12px rgba(255, 180, 171, 0.4); }
 
   /* Admin scrollbar hide */
   .scrollbar-none { scrollbar-width: none; }

@@ -24,8 +24,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Settings, Trash2, Globe, EyeOff, XCircle, Loader2, Clock, Save } from 'lucide-react'
-import { deleteEvent, updateEventStatus, updateEventDates } from '@/components/events/actions'
+import { Settings, Trash2, Globe, EyeOff, XCircle, Loader2, Clock, Save, Trophy } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { deleteEvent, updateEventStatus, updateEventDates, setResultsPublished } from '@/components/events/actions'
 
 type EventStatus = 'draft' | 'published' | 'closed'
 
@@ -35,6 +36,7 @@ interface EventSettingsPanelProps {
   eventName: string
   regOpen: string | null
   regClose: string | null
+  resultsPublished: boolean
 }
 
 const STATUS_OPTIONS: { value: EventStatus; label: string; icon: React.ReactNode; description: string }[] = [
@@ -58,12 +60,15 @@ const STATUS_OPTIONS: { value: EventStatus; label: string; icon: React.ReactNode
   },
 ]
 
-export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen, regClose }: EventSettingsPanelProps) {
+export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen, regClose, resultsPublished }: EventSettingsPanelProps) {
   const [isPending, startTransition] = useTransition()
   const [isDeleting, startDeleting] = useTransition()
   const [open, setOpen] = useState(false)
   const [regOpenValue, setRegOpenValue] = useState(regOpen ?? '')
   const [regCloseValue, setRegCloseValue] = useState(regClose ?? '')
+  const [resultsPublishedValue, setResultsPublishedValue] = useState(resultsPublished)
+  const [savingResults, setSavingResults] = useState(false)
+  const [resultsError, setResultsError] = useState<string | null>(null)
   const [savingDates, setSavingDates] = useState(false)
 
   const handleStatusChange = (newStatus: EventStatus) => {
@@ -86,6 +91,23 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
       reg_close: regCloseValue || null,
     })
     setSavingDates(false)
+  }
+
+  const handleResultsToggle = (checked: boolean) => {
+    const previous = resultsPublishedValue
+    setResultsPublishedValue(checked)
+    setSavingResults(true)
+    setResultsError(null)
+    startTransition(async () => {
+      try {
+        await setResultsPublished(eventId, checked)
+      } catch {
+        setResultsPublishedValue(previous)
+        setResultsError('Failed to update results visibility. Please try again.')
+      } finally {
+        setSavingResults(false)
+      }
+    })
   }
 
   return (
@@ -197,6 +219,38 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
               </Button>
             </div>
           </div>
+          {/* ── Results Visibility (FR-69) ───────────────────── */}
+          <div className="space-y-3 pt-4 border-t border-border">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-muted-foreground" />
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Results Visibility
+              </h3>
+            </div>
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">Publish Results</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {resultsPublishedValue
+                    ? 'Runners can see the leaderboard and their rank.'
+                    : 'Runner leaderboard is hidden until you publish.'}
+                </p>
+              </div>
+              {resultsError && (
+                <p className="text-xs text-destructive w-full">{resultsError}</p>
+              )}
+              {savingResults ? (
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
+              ) : (
+                <Switch
+                  checked={resultsPublishedValue}
+                  onCheckedChange={handleResultsToggle}
+                  aria-label="Publish results"
+                />
+              )}
+            </div>
+          </div>
+
           <div className="space-y-3 pt-4 border-t border-border">
             <h3 className="text-sm font-semibold text-destructive uppercase tracking-wide">
               Danger Zone

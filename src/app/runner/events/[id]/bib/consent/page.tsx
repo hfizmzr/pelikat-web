@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowLeft, Check, CheckCheck, CircleAlert, CircleCheck, Clock, Copy, Info, LoaderCircle, Share2, X } from "lucide-react"
 import { use, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -121,8 +122,8 @@ export default function BibConsentPage({
 
   if (loading) {
     return (
-      <div className="flex flex-col w-full min-h-full bg-[#131315] items-center justify-center">
-        <span className="material-symbols-outlined text-[32px] text-[#cbc3d7] animate-spin">progress_activity</span>
+      <div className="flex flex-col w-full min-h-full bg-background items-center justify-center">
+        <LoaderCircle className="size-[32px] text-muted-foreground animate-spin" />
       </div>
     )
   }
@@ -131,15 +132,15 @@ export default function BibConsentPage({
   const canUseCurrentCode = consentStatus === 'active'
 
   return (
-    <div className="flex flex-col w-full min-h-full bg-[#131315]">
+    <div className="flex flex-col w-full min-h-full bg-background">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#23232b]">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
         <div className="flex items-center h-14 px-4 pt-safe">
-          <Link href={`/runner/events/${id}/bib`} className="w-10 h-10 flex items-center justify-center rounded-full text-[#cbc3d7] active:bg-[#1c1b1d] transition-colors -ml-2">
-            <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+          <Link href={`/runner/events/${id}/bib`} className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
+            <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
-            <h1 className="text-[16px] font-bold text-[#e5e1e4] leading-tight">
+            <h1 className="text-[16px] font-bold text-foreground leading-tight">
               Proxy Collection
             </h1>
           </div>
@@ -148,55 +149,59 @@ export default function BibConsentPage({
 
       <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto">
         <div className="flex flex-col text-center">
-          <h2 className="text-[20px] font-bold text-[#e5e1e4] mb-1">Generate Code</h2>
-          <p className="text-[13px] text-[#958ea0] leading-relaxed">
+          <h2 className="text-[20px] font-bold text-foreground mb-1">Generate Code</h2>
+          <p className="text-[13px] text-muted-foreground leading-relaxed">
             Share this code with the person collecting your race pack on your behalf. Valid for 24 hours.
           </p>
         </div>
 
         {error && (
-          <div className="p-3 rounded-lg bg-[#ffb4ab]/10 border border-[#ffb4ab]/20 text-[#ffb4ab] text-[12px] flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px]">error</span>
+          <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+            <CircleAlert className="size-[16px]" />
             {error}
           </div>
         )}
 
-        <section className="bg-[#1c1b1d] rounded-2xl border border-[#353437]/60 overflow-hidden flex flex-col p-5 gap-4">
+        <section className="bg-card rounded-2xl border border-border/60 overflow-hidden flex flex-col p-5 gap-4">
           
           {consentCode ? (
             <div className="flex flex-col gap-4">
               <div
                 className={`rounded-2xl p-6 flex flex-col items-center text-center border relative overflow-hidden ${
                   canUseCurrentCode
-                    ? 'border-[#4edea3]/30 bg-[#4edea3]/5'
-                    : 'bg-[#23232b] border-[#353437]/60'
+                    ? 'border-success/30 bg-success/5'
+                    : 'bg-muted border-border/60'
                 }`}
               >
                 {canUseCurrentCode && (
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#4edea3]/10 blur-2xl rounded-full -mt-4 -mr-4 pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-success/10 blur-2xl rounded-full -mt-4 -mr-4 pointer-events-none" />
                 )}
                 
                 <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase mb-4 ${
                   canUseCurrentCode 
-                    ? 'bg-[#4edea3]/10 text-[#4edea3] border border-[#4edea3]/20'
+                    ? 'bg-success/10 text-success border border-success/20'
                     : consentStatus === 'used'
-                      ? 'bg-[#d0bcff]/10 text-[#d0bcff] border border-[#d0bcff]/20'
-                      : 'bg-[#ffb4ab]/10 text-[#ffb4ab] border border-[#ffb4ab]/20'
+                      ? 'bg-primary/10 text-primary border border-primary/20'
+                      : 'bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 border border-red-500/30 dark:border-red-300/20'
                 }`}>
-                  <span className="material-symbols-outlined text-[14px]">
-                    {canUseCurrentCode ? 'check_circle' : consentStatus === 'used' ? 'done_all' : 'cancel'}
-                  </span>
+                  {canUseCurrentCode ? (
+                    <CircleCheck className="size-[14px]" />
+                  ) : consentStatus === 'used' ? (
+                    <CheckCheck className="size-[14px]" />
+                  ) : (
+                    <X className="size-[14px]" />
+                  )}
                   {consentStatus === 'active' ? 'Active' : consentStatus === 'used' ? 'Used' : 'Expired'}
                 </div>
                 
-                <p className="text-[12px] text-[#958ea0] tracking-widest uppercase mb-1">Your Consent Code</p>
-                <p className={`text-[42px] font-mono font-bold tracking-widest leading-none mb-3 ${canUseCurrentCode ? 'text-[#e5e1e4]' : 'text-[#958ea0]'}`}>
+                <p className="text-[12px] text-muted-foreground tracking-widest uppercase mb-1">Your Consent Code</p>
+                <p className={`text-[42px] font-mono font-bold tracking-widest leading-none mb-3 ${canUseCurrentCode ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {consentCode.code}
                 </p>
                 
                 {consentCode.expires_at && (
-                  <p className="text-[11px] text-[#958ea0] flex items-center justify-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">schedule</span>
+                  <p className="text-[11px] text-muted-foreground flex items-center justify-center gap-1">
+                    <Clock className="size-[14px]" />
                     Expires: {new Date(consentCode.expires_at).toLocaleString('en-MY', { 
                       month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
                     })}
@@ -209,30 +214,32 @@ export default function BibConsentPage({
                   <button 
                     onClick={handleCopy} 
                     disabled={!canUseCurrentCode}
-                    className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                    className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[18px]">
-                      {copied ? 'check' : 'content_copy'}
-                    </span>
+                    {copied ? (
+                      <Check className="size-[18px]" />
+                    ) : (
+                      <Copy className="size-[18px]" />
+                    )}
                     {copied ? 'Copied' : 'Copy'}
                   </button>
                   <button 
                     onClick={handleShare} 
                     disabled={!canUseCurrentCode}
-                    className="flex-1 py-3 rounded-xl bg-[#2a2a2c] text-[#e5e1e4] text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                    className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-[18px]">share</span>
+                    <Share2 className="size-[18px]" />
                     Share
                   </button>
                 </div>
                 <button 
                   onClick={handleGenerate} 
                   disabled={generating}
-                  className="w-full py-3.5 mt-2 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                  className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
                 >
                   {generating ? (
                     <>
-                      <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                      <LoaderCircle className="animate-spin size-[18px]" />
                       Generating...
                     </>
                   ) : (
@@ -241,9 +248,9 @@ export default function BibConsentPage({
                 </button>
               </div>
               
-              <div className="mt-2 p-4 bg-[#23232b] rounded-xl flex items-start gap-3 border border-[#353437]/40">
-                <span className="material-symbols-outlined text-[20px] text-[#4cd7f6] shrink-0">info</span>
-                <p className="text-[12px] text-[#cbc3d7] leading-relaxed">
+              <div className="mt-2 p-4 bg-muted rounded-xl flex items-start gap-3 border border-border/40">
+                <Info className="size-[20px] text-primary shrink-0" />
+                <p className="text-[12px] text-muted-foreground leading-relaxed">
                   {canUseCurrentCode
                     ? 'Give this active code to your proxy collector. They must show their own QR pass at the collection point.'
                     : 'This code is no longer valid. Please generate a new code if someone still needs to collect your pack.'}
@@ -252,29 +259,29 @@ export default function BibConsentPage({
             </div>
           ) : (
             <div className="flex flex-col gap-5">
-              <div className="bg-[#23232b] p-4 rounded-xl border border-[#353437]/60 flex flex-col gap-3">
+              <div className="bg-muted p-4 rounded-xl border border-border/60 flex flex-col gap-3">
                 <div className="flex justify-between items-center text-[13px]">
-                  <span className="text-[#958ea0]">Event</span>
-                  <span className="text-[#e5e1e4] font-medium max-w-[150px] truncate">{registration?.events?.name}</span>
+                  <span className="text-muted-foreground">Event</span>
+                  <span className="text-foreground font-medium max-w-[150px] truncate">{registration?.events?.name}</span>
                 </div>
                 <div className="flex justify-between items-center text-[13px]">
-                  <span className="text-[#958ea0]">BIB</span>
-                  <span className="font-mono text-[#e5e1e4] font-medium">{registration?.bib_number}</span>
+                  <span className="text-muted-foreground">BIB</span>
+                  <span className="font-mono text-foreground font-medium">{registration?.bib_number}</span>
                 </div>
                 <div className="flex justify-between items-center text-[13px]">
-                  <span className="text-[#958ea0]">Category</span>
-                  <span className="text-[#e5e1e4] font-medium">{registration?.race_categories?.name}</span>
+                  <span className="text-muted-foreground">Category</span>
+                  <span className="text-foreground font-medium">{registration?.race_categories?.name}</span>
                 </div>
               </div>
 
               <button 
                 onClick={handleGenerate} 
                 disabled={generating}
-                className="w-full py-3.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
               >
                 {generating ? (
                   <>
-                    <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                    <LoaderCircle className="animate-spin size-[18px]" />
                     Generating...
                   </>
                 ) : (

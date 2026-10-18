@@ -58,9 +58,10 @@ describe('Security: Service Role Key Exposure', () => {
       )
     })
     
-    // Only files in app/api/ should import it
+    // Only server-side files should import it: API routes and server actions
+    const serverDirs = [join('src', 'app', 'api'), join('src', 'lib', 'actions')]
     const nonApiImports = importingFiles.filter(
-      (f) => !f.includes(join('src', 'app', 'api'))
+      (f) => !serverDirs.some((dir) => f.includes(dir))
     )
     
     expect(nonApiImports).toHaveLength(0)

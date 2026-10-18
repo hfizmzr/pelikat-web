@@ -20,7 +20,16 @@ const eslintConfig = defineConfig([
     "graphify-out/**",
     "playwright-report/**",
     "test-results/**",
+    // Generated minified Serwist bundle — not human-editable source
+    "public/sw.js",
   ]),
+  // Source-parsing tests intentionally use require() to read repo files.
+  {
+    files: ["tests/**/*.ts", "tests/**/*.tsx"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
   {
     rules: {
       "react-hooks/set-state-in-effect": "warn",

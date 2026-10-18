@@ -157,7 +157,7 @@ function LoginForm() {
 
       {/* Register link */}
       <p className="text-sm text-center text-muted-foreground">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link href="/register" className="text-primary font-medium hover:underline underline-offset-2">
           Register now
         </Link>
@@ -189,7 +189,7 @@ export default function LoginPage() {
           Runners
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-[#34d399]" />
+          <div className="w-2 h-2 rounded-full bg-emerald-400" />
           Organizers
         </div>
         <div className="flex items-center gap-1.5">

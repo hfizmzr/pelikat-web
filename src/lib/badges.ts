@@ -8,6 +8,7 @@ interface AwardedBadge {
   name: string
   description: string
   icon: string
+  cert_url?: string
 }
 
 interface EvaluateResult {

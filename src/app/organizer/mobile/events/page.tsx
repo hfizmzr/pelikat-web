@@ -1,3 +1,4 @@
+import { Calendar, CalendarDays, CalendarX, MapPin, Plus, QrCode } from "lucide-react"
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import Link from 'next/link'
@@ -54,13 +55,13 @@ async function getOrganizerEvents() {
 
 function statusChip(status: string) {
   const map: Record<string, { label: string; cls: string }> = {
-    active: { label: 'Live', cls: 'bg-[#4edea3]/15 text-[#4edea3]' },
-    published: { label: 'Open', cls: 'bg-[#4cd7f6]/15 text-[#4cd7f6]' },
-    draft: { label: 'Draft', cls: 'bg-[#d0bcff]/15 text-[#d0bcff]' },
-    completed: { label: 'Done', cls: 'bg-[#958ea0]/15 text-[#958ea0]' },
-    cancelled: { label: 'Cancelled', cls: 'bg-[#ffb4ab]/15 text-[#ffb4ab]' },
+    active: { label: 'Live', cls: 'bg-success/15 text-success' },
+    published: { label: 'Open', cls: 'bg-primary/15 text-primary' },
+    draft: { label: 'Draft', cls: 'bg-primary/15 text-primary' },
+    completed: { label: 'Done', cls: 'bg-muted-foreground/15 text-muted-foreground' },
+    cancelled: { label: 'Cancelled', cls: 'bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300' },
   }
-  const s = map[status] || { label: status, cls: 'bg-[#353437] text-[#cbc3d7]' }
+  const s = map[status] || { label: status, cls: 'bg-accent text-muted-foreground' }
   return (
     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold leading-[14px] tracking-wider uppercase ${s.cls}`}>
       {s.label}
@@ -75,19 +76,19 @@ export default async function OrganizerMobileEventsPage() {
   const past = events.filter((e) => new Date(e.date) < now && e.status !== 'active')
 
   return (
-    <div className="flex flex-col w-full bg-[#131315] min-h-screen">
+    <div className="flex flex-col w-full bg-background min-h-dvh">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#131315]/90 backdrop-blur-xl border-b border-[#353437]/40 px-5 pt-safe">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/40 px-5 pt-safe">
         <div className="h-14 flex items-center justify-between">
           <div>
-            <span className="text-[16px] font-bold text-[#e5e1e4]">My Events</span>
-            <p className="text-[10px] text-[#958ea0]">{events.length} total • {upcoming.length} upcoming</p>
+            <span className="text-[16px] font-bold text-foreground">My Events</span>
+            <p className="text-[10px] text-muted-foreground">{events.length} total • {upcoming.length} upcoming</p>
           </div>
           <Link
             href="/organizer/mobile/events/new"
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#d0bcff] text-[#3c0091] text-[11px] font-bold active:scale-95 transition-transform"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold active:scale-95 transition-transform"
           >
-            <span className="material-symbols-outlined text-[14px]">add</span>
+            <Plus className="size-[14px]" />
             New
           </Link>
         </div>
@@ -98,27 +99,27 @@ export default async function OrganizerMobileEventsPage() {
         {/* Upcoming Events */}
         {upcoming.length > 0 && (
           <section>
-            <h2 className="text-[12px] font-bold text-[#cbc3d7] uppercase tracking-wider mb-3">
+            <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
               Upcoming & Active
             </h2>
             <div className="flex flex-col gap-3">
               {upcoming.map((event) => (
-                <div key={event.id} className="rounded-xl bg-[#1c1b1d] border border-[#353437]/40 overflow-hidden">
+                <div key={event.id} className="rounded-xl bg-card border border-border/40 overflow-hidden">
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="text-[15px] font-bold text-[#e5e1e4] flex-1 leading-snug">
+                      <h3 className="text-[15px] font-bold text-foreground flex-1 leading-snug">
                         {event.name}
                       </h3>
                       {statusChip(event.status)}
                     </div>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#cbc3d7] mb-3">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground mb-3">
                       <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px] text-[#d0bcff]">calendar_today</span>
+                        <Calendar className="size-[13px] text-primary" />
                         {new Date(event.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                       {event.location && (
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[13px] text-[#4edea3]">location_on</span>
+                          <MapPin className="size-[13px] text-success" />
                           {event.location}
                         </span>
                       )}
@@ -126,13 +127,13 @@ export default async function OrganizerMobileEventsPage() {
 
                     {/* Check-in progress */}
                     <div className="mb-3">
-                      <div className="flex justify-between text-[10px] text-[#958ea0] mb-1">
+                      <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
                         <span>{event.checkedIn} / {event.registered} checked in</span>
-                        <span className="text-[#4cd7f6] font-bold">{event.checkInPct}%</span>
+                        <span className="text-primary font-bold">{event.checkInPct}%</span>
                       </div>
-                      <div className="w-full bg-[#353437] rounded-full h-1.5 overflow-hidden">
+                      <div className="w-full bg-accent rounded-full h-1.5 overflow-hidden">
                         <div
-                          className="bg-[#d0bcff] h-full rounded-full"
+                          className="bg-primary h-full rounded-full"
                           style={{ width: `${event.checkInPct}%` }}
                         />
                       </div>
@@ -142,9 +143,9 @@ export default async function OrganizerMobileEventsPage() {
                     <div className="flex gap-2">
                       <Link
                         href={`/organizer/mobile/scanner`}
-                        className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-[#d0bcff] text-[#3c0091] text-[11px] font-bold active:scale-95 transition-transform"
+                        className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold active:scale-95 transition-transform"
                       >
-                        <span className="material-symbols-outlined text-[14px]">qr_code_scanner</span>
+                        <QrCode className="size-[14px]" />
                         Check-in
                       </Link>
                     </div>
@@ -158,21 +159,21 @@ export default async function OrganizerMobileEventsPage() {
         {/* Past Events */}
         {past.length > 0 && (
           <section>
-            <h2 className="text-[12px] font-bold text-[#cbc3d7] uppercase tracking-wider mb-3">
+            <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
               Past Events
             </h2>
             <div className="flex flex-col gap-2">
               {past.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-[#1c1b1d] border border-[#353437]/30"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/30"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-[#353437] flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[18px] text-[#958ea0]">event</span>
+                  <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center shrink-0">
+                    <CalendarDays className="size-[18px] text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-[#cbc3d7] truncate">{event.name}</p>
-                    <p className="text-[10px] text-[#958ea0]">
+                    <p className="text-[13px] font-medium text-muted-foreground truncate">{event.name}</p>
+                    <p className="text-[10px] text-muted-foreground">
                       {new Date(event.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })} • {event.registered} runners
                     </p>
                   </div>
@@ -184,13 +185,13 @@ export default async function OrganizerMobileEventsPage() {
         )}
 
         {events.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-[#958ea0]">
-            <span className="material-symbols-outlined text-[48px] mb-3">event_busy</span>
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+            <CalendarX className="size-[48px] mb-3" />
             <p className="text-[14px] font-medium">No events yet</p>
             <p className="text-[12px] mt-1">Create your first running event</p>
             <Link
               href="/organizer/mobile/events/new"
-              className="mt-4 px-5 py-2.5 rounded-xl bg-[#d0bcff] text-[#3c0091] text-[13px] font-bold"
+              className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold"
             >
               Create Event
             </Link>

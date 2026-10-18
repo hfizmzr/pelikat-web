@@ -1,5 +1,7 @@
 'use client'
 
+import type { LucideIcon } from "lucide-react"
+import { Badge, Calendar, Gauge, House, ShoppingBag } from "lucide-react"
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -8,12 +10,12 @@ import Link from 'next/link'
 
 function BottomNavLink({
   href,
-  icon,
+  icon: Icon,
   label,
   active,
 }: {
   href: string
-  icon: string
+  icon: LucideIcon
   label: string
   active: boolean
 }) {
@@ -22,16 +24,11 @@ function BottomNavLink({
       href={href}
       className={`flex flex-col items-center justify-center min-w-[54px] min-h-[44px] gap-0.5 transition-all active:scale-95 ${
         active
-          ? 'text-[#d0bcff] font-semibold'
-          : 'text-[#cbc3d7] hover:text-[#e5e1e4]'
+          ? 'text-primary font-semibold'
+          : 'text-muted-foreground hover:text-foreground'
       }`}
     >
-      <span
-        className="material-symbols-outlined text-[20px]"
-        style={active ? { fontVariationSettings: "'FILL' 1" } : {}}
-      >
-        {icon}
-      </span>
+      <Icon className="size-[20px]" />
       <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold">
         {label}
       </span>
@@ -40,11 +37,11 @@ function BottomNavLink({
 }
 
 const NAV_ITEMS = [
-  { href: '/organizer/mobile', icon: 'home', label: 'Home' },
-  { href: '/organizer/mobile/events', icon: 'calendar_today', label: 'Events' },
-  { href: '/organizer/mobile/scanner', icon: 'badge', label: 'BIB Pass' },
-  { href: '/organizer/mobile/console', icon: 'speed', label: 'Console' },
-  { href: '/organizer/mobile/merch', icon: 'shopping_bag', label: 'Merch' },
+  { href: '/organizer/mobile', icon: House, label: 'Home' },
+  { href: '/organizer/mobile/events', icon: Calendar, label: 'Events' },
+  { href: '/organizer/mobile/scanner', icon: Badge, label: 'BIB Pass' },
+  { href: '/organizer/mobile/console', icon: Gauge, label: 'Console' },
+  { href: '/organizer/mobile/merch', icon: ShoppingBag, label: 'Merch' },
 ] as const
 
 export default function OrganizerMobileLayout({
@@ -71,14 +68,14 @@ export default function OrganizerMobileLayout({
   }, [router, supabase])
 
   return (
-    <div className="min-h-screen bg-[#0e0e10] flex justify-center overflow-hidden">
-      <div className="flex flex-col w-full max-w-md h-[100dvh] bg-[#131315] overscroll-none select-none relative shadow-2xl border-x border-[#23232b]/30">
+    <div className="min-h-dvh bg-background flex justify-center overflow-hidden">
+      <div className="flex flex-col w-full max-w-md h-[100dvh] bg-background overscroll-none select-none relative shadow-2xl border-x border-muted/30">
         {/* Main scrollable content area - padded for bottom nav */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 pt-0">{children}</main>
 
         {/* Floating pill bottom nav */}
         <nav className="absolute bottom-0 inset-x-0 z-50 pb-safe pointer-events-none flex justify-center pb-3 px-4">
-          <div className="pointer-events-auto w-full bg-[#1c1b1d]/90 backdrop-blur-2xl rounded-full px-2 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-around border border-[#353437]/60">
+          <div className="pointer-events-auto w-full bg-card/90 backdrop-blur-2xl rounded-full px-2 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-around border border-border/60">
             {NAV_ITEMS.map((item) => {
               // Active if current path matches exactly or starts with (for sub-routes)
               const active =

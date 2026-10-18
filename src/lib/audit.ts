@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/client'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**

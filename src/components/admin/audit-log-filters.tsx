@@ -1,5 +1,6 @@
 'use client'
 
+import { Calendar as CalendarIcon, CalendarDays, Search, X } from "lucide-react"
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import {
@@ -68,9 +69,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
     <div className="flex flex-wrap items-center gap-3">
       {/* Search */}
       <div className="relative flex-1 min-w-[200px]">
-        <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#958ea0] text-[18px] pointer-events-none">
-          search
-        </span>
+        <Search className="absolute left-3 top-2.5 text-muted-foreground size-[18px] pointer-events-none" />
         <Input
           placeholder="Search by action, actor, or target…"
           value={search}
@@ -78,7 +77,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
             setSearch(e.target.value)
             emit({ search: e.target.value })
           }}
-          className="pl-9 bg-[#201f22] border-[#494454]/40 text-[#e5e1e4] placeholder:text-[#958ea0] focus:ring-1 focus:ring-[#d0bcff] focus:border-[#d0bcff] rounded-lg text-[13px]"
+          className="pl-9 bg-card border-border/40 text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
         />
       </div>
 
@@ -90,12 +89,12 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
           emit({ actionType: val })
         }}
       >
-        <SelectTrigger className="w-[150px] bg-[#201f22] border-[#494454]/40 text-[#e5e1e4] text-[13px] rounded-lg focus:ring-1 focus:ring-[#d0bcff]">
+        <SelectTrigger className="w-[150px] bg-card border-border/40 text-foreground text-[13px] rounded-lg focus:ring-1 focus:ring-primary">
           <SelectValue placeholder="Action type" />
         </SelectTrigger>
-        <SelectContent className="bg-[#201f22] border-[#494454]/40 text-[#e5e1e4]">
+        <SelectContent className="bg-card border-border/40 text-foreground">
           {ACTION_TYPES.map((t) => (
-            <SelectItem key={t.value} value={t.value} className="text-[13px] focus:bg-[#2a2a2c] focus:text-[#d0bcff]">
+            <SelectItem key={t.value} value={t.value} className="text-[13px] focus:bg-accent focus:text-primary">
               {t.label}
             </SelectItem>
           ))}
@@ -109,20 +108,20 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
             className={cn(
               'flex items-center gap-1.5 px-3 py-2 rounded-lg border text-[13px] font-inter transition-colors',
               startDate
-                ? 'bg-[#d0bcff]/10 border-[#d0bcff]/30 text-[#d0bcff]'
-                : 'bg-[#201f22] border-[#494454]/40 text-[#958ea0] hover:text-[#e5e1e4]'
+                ? 'bg-primary/10 border-primary/30 text-primary'
+                : 'bg-card border-border/40 text-muted-foreground hover:text-foreground'
             )}
           >
-            <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+            <CalendarIcon className="size-[16px]" />
             {startDate ? startDate.toLocaleDateString() : 'From'}
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 bg-[#201f22] border border-[#494454]/40 rounded-xl">
+        <PopoverContent className="w-auto p-0 bg-card border border-border/40 rounded-xl">
           <Calendar
             mode="single"
             selected={startDate}
             onSelect={(d) => { setStartDate(d); emit({ startDate: d }) }}
-            className="text-[#e5e1e4]"
+            className="text-foreground"
           />
         </PopoverContent>
       </Popover>
@@ -134,20 +133,20 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
             className={cn(
               'flex items-center gap-1.5 px-3 py-2 rounded-lg border text-[13px] font-inter transition-colors',
               endDate
-                ? 'bg-[#d0bcff]/10 border-[#d0bcff]/30 text-[#d0bcff]'
-                : 'bg-[#201f22] border-[#494454]/40 text-[#958ea0] hover:text-[#e5e1e4]'
+                ? 'bg-primary/10 border-primary/30 text-primary'
+                : 'bg-card border-border/40 text-muted-foreground hover:text-foreground'
             )}
           >
-            <span className="material-symbols-outlined text-[16px]">event</span>
+            <CalendarDays className="size-[16px]" />
             {endDate ? endDate.toLocaleDateString() : 'To'}
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 bg-[#201f22] border border-[#494454]/40 rounded-xl">
+        <PopoverContent className="w-auto p-0 bg-card border border-border/40 rounded-xl">
           <Calendar
             mode="single"
             selected={endDate}
             onSelect={(d) => { setEndDate(d); emit({ endDate: d }) }}
-            className="text-[#e5e1e4]"
+            className="text-foreground"
           />
         </PopoverContent>
       </Popover>
@@ -156,9 +155,9 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
       {hasFilters && (
         <button
           onClick={handleReset}
-          className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] text-[#ffb4ab] bg-[#93000a]/10 border border-[#ffb4ab]/20 hover:bg-[#93000a]/20 transition-colors font-inter"
+          className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] text-red-500 dark:text-red-300 bg-red-800/10 border border-red-500/30 dark:border-red-300/20 hover:bg-red-800/20 transition-colors font-inter"
         >
-          <span className="material-symbols-outlined text-[16px]">close</span>
+          <X className="size-[16px]" />
           Clear
         </button>
       )}
