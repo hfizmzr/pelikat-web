@@ -1,5 +1,5 @@
 -- ============================================================================
--- Migration 056 flow test: runner checkout → payment → ready → REPC collected,
+-- Migration 062 flow test: runner checkout → payment → ready → REPC collected,
 -- plus expiry, cancel and rejection cases.
 --
 -- Run in the Supabase SQL editor (or execute_sql with write access).

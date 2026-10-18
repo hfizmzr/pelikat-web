@@ -1,5 +1,5 @@
 -- ============================================================================
--- Merch Store demo products (run AFTER migration 056, in the Supabase SQL editor)
+-- Merch Store demo products (run AFTER migration 062, in the Supabase SQL editor)
 --
 -- Adds 3 products with variants — no orders — to an upcoming event so runners
 -- can test the store end to end. Defaults to "kl run" (Org A, 2027-06-15),

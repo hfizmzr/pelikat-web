@@ -1,5 +1,10 @@
 -- ============================================================================
--- 056 — Runner Merch Store (FR-69 … FR-73) + REPC merch hand-over
+-- 062 — Runner Merch Store (FR-69 … FR-73) + REPC merch hand-over
+--
+--  Renumbered from 056 when merging main (main has its own 056; 059–061 are
+--  taken by the HitPay migrations). Already applied to Supabase as
+--  056_merch_store_checkout (version 20261012162734); the file name changed,
+--  not the contents. Review fixes go in 063, not here.
 --
 --  • Orders: payment + stock-reservation columns
 --  • Order items: product name / variant label snapshot, so order history
