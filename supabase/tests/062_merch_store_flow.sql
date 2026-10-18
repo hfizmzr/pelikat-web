@@ -8,7 +8,7 @@
 -- message is the test report. Every line should read as expected; any line
 -- containing "FAIL" is a bug.
 --
--- Uses event "kl run" (29eab7c4-…), organizer Org A, and its two paid runners
+-- Uses event "kl run" (29eab7c4-…), whichever organizer currently owns it, and its two paid runners
 -- (hafiz amzar, Abu bin Runner). Creates temporary TEST products.
 -- Callers are impersonated by setting request.jwt.claims + SET LOCAL ROLE.
 -- ============================================================================
@@ -16,7 +16,8 @@
 do $test$
 declare
   v_event uuid := '29eab7c4-ee02-4ae2-97f1-445bbc4e3979';
-  v_org uuid := '50e7d6cd-9e04-4fec-803c-55968a23fbf7';
+  v_org uuid;
+  v_org_user uuid;
   v_hafiz_user uuid := '0b660aee-821f-4271-91ca-bf6e35761d84';
   v_hafiz uuid := '0e3a33a1-2da0-408e-93cc-af02e830533c';
   v_abu_user uuid := '3b97043b-76cc-488b-8d60-3f9e940ebdd1';
@@ -26,6 +27,10 @@ declare
   r record; v_a1 uuid; v_a2 uuid; v_b1 uuid; v_n int; v_s text; v_ok boolean;
 begin
   -- ── setup (as postgres) ──
+  -- Look the organizer up: the event has been transferred between organizers before
+  select organizer_id into v_org from public.events where id = v_event;
+  -- A real user of that organizer: REPC check-in records the staff user id (FK to auth.users)
+  select u.id into v_org_user from auth.users u where u.raw_app_meta_data ->> 'organizer_id' = v_org::text limit 1;
   insert into public.merch_products (event_id, organizer_id, name, price, low_stock_threshold)
     values (v_event, v_org, 'TEST Tee', 45, 1) returning id into v_tee;
   insert into public.merch_products (event_id, organizer_id, name, price)
@@ -90,7 +95,7 @@ begin
   reset role;
 
   select string_agg(format('%s %s=%s', p.name, coalesce(v.size, '-'), v.stock), ', ' order by p.name, v.size) into v_s
-    from public.merch_variants v join public.merch_products p on p.id = v.product_id where p.event_id = v_event;
+    from public.merch_variants v join public.merch_products p on p.id = v.product_id where p.event_id = v_event and p.name like 'TEST %';
   v_log := v_log || format(E'\n   stock: %s | first order: %s  [expect Cap=5, Tee L=0, Tee M=0 | cancelled/replaced]',
     v_s, (select status || '/' || cancel_reason from public.merch_orders where id = v_a1));
 
@@ -109,7 +114,7 @@ begin
   reset role;
 
   -- ── organizer (Org A) ──
-  perform set_config('request.jwt.claims', json_build_object('sub', gen_random_uuid(), 'role', 'authenticated',
+  perform set_config('request.jwt.claims', json_build_object('sub', v_org_user, 'role', 'authenticated',
     'app_metadata', json_build_object('organizer_id', v_org))::text, true);
   set local role authenticated;
   v_n := public.merch_update_order_status(array[v_a2], 'ready');
@@ -123,7 +128,7 @@ begin
 
   -- 063: hand-over refuses a runner who is not checked in (called as owner, like the wrapper does)
   update public.registrations set checked_in = false where event_id = v_event and runner_id = v_hafiz;
-  perform set_config('request.jwt.claims', json_build_object('sub', gen_random_uuid(), 'role', 'authenticated',
+  perform set_config('request.jwt.claims', json_build_object('sub', v_org_user, 'role', 'authenticated',
     'app_metadata', json_build_object('organizer_id', v_org))::text, true);
   begin perform public.merch_collect_for_runner(v_event, v_hafiz);
     v_log := v_log || E'\n15b hand-over before check-in: FAIL accepted';
@@ -175,7 +180,7 @@ begin
   reset role;
 
   -- ── organizer cancels a reserved pending order ──
-  perform set_config('request.jwt.claims', json_build_object('sub', gen_random_uuid(), 'role', 'authenticated',
+  perform set_config('request.jwt.claims', json_build_object('sub', v_org_user, 'role', 'authenticated',
     'app_metadata', json_build_object('organizer_id', v_org))::text, true);
   set local role authenticated;
   perform public.merch_update_order_status(array[v_b1], 'cancelled');
@@ -194,7 +199,7 @@ begin
   reset role;
 
   select string_agg(format('%s %s=%s', p.name, coalesce(v.size, '-'), v.stock), ', ' order by p.name, v.size) into v_s
-    from public.merch_variants v join public.merch_products p on p.id = v.product_id where p.event_id = v_event;
+    from public.merch_variants v join public.merch_products p on p.id = v.product_id where p.event_id = v_event and p.name like 'TEST %';
   v_log := v_log || E'\nFINAL stock: ' || v_s || '  [expect Cap=5, Tee L=0, Tee M=0]';
 
   raise exception 'TEST RESULTS (all changes rolled back):%', v_log;
