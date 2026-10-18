@@ -116,8 +116,13 @@ export default function PaymentPage() {
         email: contact.email,
         name: contact.name,
       })
-      setCheckout(res)
-      setPhase(res.qrCode ? 'qr_display' : 'redirecting')
+      if (res.ok) {
+        setCheckout(res)
+        setPhase(res.qrCode ? 'qr_display' : 'redirecting')
+      } else {
+        setFailureReason(res.error)
+        setPhase('failed')
+      }
     } catch (e) {
       setFailureReason(
         e instanceof Error ? e.message : 'Could not start the payment. Please try again.'

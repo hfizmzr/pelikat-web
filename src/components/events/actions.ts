@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { fetchDjangoApi } from '@/lib/django'
+import { DjangoApiError, fetchDjangoApi } from '@/lib/django'
 // Dummy confirmation writes financial rows, so it lives with the other
 // service-role-backed server actions live in lib/actions — re-exports are NOT
 // allowed here ("use server" files may only export async functions from this
@@ -33,10 +33,29 @@ interface DjangoCreatePayment {
   status: string
 }
 
-export interface HitpayCheckoutResult {
-  checkoutUrl: string
-  qrCode: string | null
-  providerRequestId: string
+export type HitpayCheckoutResult =
+  | {
+      ok: true
+      checkoutUrl: string
+      qrCode: string | null
+      providerRequestId: string
+    }
+  | { ok: false; error: string }
+
+const PAYMENT_METHODS_UNAVAILABLE =
+  'Payment methods are temporarily unavailable. Please try again shortly or contact support.'
+const CHECKOUT_GENERIC_ERROR =
+  'Could not start the payment. Please try again or contact support.'
+
+function checkoutErrorResult(e: unknown): HitpayCheckoutResult {
+  // Gateway rails/currency rejections (HitPay 422s surfaced by Django)
+  // are caged to a retryable, detail-free message; anything unexpected is
+  // logged server-side and mapped to the same happy-path-clean shape.
+  if (e instanceof DjangoApiError && /payment method|currency/i.test(e.message)) {
+    return { ok: false, error: PAYMENT_METHODS_UNAVAILABLE }
+  }
+  console.error('HitPay checkout failed:', e)
+  return { ok: false, error: CHECKOUT_GENERIC_ERROR }
 }
 
 function hitpayRedirectUrl(path: string): string {
@@ -52,79 +71,89 @@ export async function createHitpayCheckout(input: {
   email: string
   name: string
 }): Promise<HitpayCheckoutResult> {
-  const { supabase } = await requireAuth()
+  try {
+    const { supabase } = await requireAuth()
 
-  const { data: registration, error } = await supabase
-    .from('registrations')
-    .select('id, event_id, runner_id, race_categories(price)')
-    .eq('id', input.registrationId)
-    .single()
+    const { data: registration, error } = await supabase
+      .from('registrations')
+      .select('id, event_id, runner_id, race_categories(price)')
+      .eq('id', input.registrationId)
+      .single()
 
-  if (error || !registration) throw new Error('Registration not found')
+    if (error || !registration) throw new Error('Registration not found')
 
-  const category = Array.isArray(registration.race_categories)
-    ? registration.race_categories[0]
-    : registration.race_categories
+    const category = Array.isArray(registration.race_categories)
+      ? registration.race_categories[0]
+      : registration.race_categories
 
-  const result: DjangoCreatePayment = await fetchDjangoApi('/payments/create', {
-    method: 'POST',
-    body: JSON.stringify({
-      order_type: 'registration',
-      registration_id: registration.id,
-      reference_number: registration.id,
-      runner_id: registration.runner_id,
-      // Amount snapshot: race_categories.price read server-side, never
-      // taken from the client.
-      amount: Number(category?.price ?? 0),
-      email: input.email,
-      name: input.name,
-      purpose: 'Event registration',
-      redirect_url: hitpayRedirectUrl(
-        `/runner/events/${registration.event_id}/payment`
-      ),
-    }),
-  })
+    const result: DjangoCreatePayment = await fetchDjangoApi('/payments/create', {
+      method: 'POST',
+      body: JSON.stringify({
+        order_type: 'registration',
+        registration_id: registration.id,
+        reference_number: registration.id,
+        runner_id: registration.runner_id,
+        // Amount snapshot: race_categories.price read server-side, never
+        // taken from the client.
+        amount: Number(category?.price ?? 0),
+        email: input.email,
+        name: input.name,
+        purpose: 'Event registration',
+        redirect_url: hitpayRedirectUrl(
+          `/runner/events/${registration.event_id}/payment`
+        ),
+      }),
+    })
 
-  return {
-    checkoutUrl: result.checkout_url,
-    qrCode: result.qr_code ?? null,
-    providerRequestId: result.provider_request_id,
+    return {
+      ok: true,
+      checkoutUrl: result.checkout_url,
+      qrCode: result.qr_code ?? null,
+      providerRequestId: result.provider_request_id,
+    }
+  } catch (e) {
+    return checkoutErrorResult(e)
   }
 }
 
 export async function createHitpaySubscriptionCheckout(
   amount: number
 ): Promise<HitpayCheckoutResult> {
-  const { supabase, user } = await requireAuth()
+  try {
+    const { supabase, user } = await requireAuth()
 
-  const organizerId = user.app_metadata?.organizer_id
-  if (!organizerId) throw new Error('Organizer profile not found')
+    const organizerId = user.app_metadata?.organizer_id
+    if (!organizerId) throw new Error('Organizer profile not found')
 
-  const { data: organizer, error } = await supabase
-    .from('organizers')
-    .select('id, name, contact_email')
-    .eq('id', organizerId)
-    .single()
+    const { data: organizer, error } = await supabase
+      .from('organizers')
+      .select('id, name, contact_email')
+      .eq('id', organizerId)
+      .single()
 
-  if (error || !organizer) throw new Error('Organizer profile not found')
+    if (error || !organizer) throw new Error('Organizer profile not found')
 
-  const result: DjangoCreatePayment = await fetchDjangoApi('/payments/create', {
-    method: 'POST',
-    body: JSON.stringify({
-      order_type: 'organizer_subscription',
-      organizer_id: organizer.id,
-      amount,
-      email: organizer.contact_email ?? user.email,
-      name: organizer.name,
-      purpose: 'Organizer subscription',
-      redirect_url: hitpayRedirectUrl('/organizer/payment'),
-    }),
-  })
+    const result: DjangoCreatePayment = await fetchDjangoApi('/payments/create', {
+      method: 'POST',
+      body: JSON.stringify({
+        order_type: 'organizer_subscription',
+        organizer_id: organizer.id,
+        amount,
+        email: organizer.contact_email ?? user.email,
+        name: organizer.name,
+        purpose: 'Organizer subscription',
+        redirect_url: hitpayRedirectUrl('/organizer/payment'),
+      }),
+    })
 
-  return {
-    checkoutUrl: result.checkout_url,
-    qrCode: result.qr_code ?? null,
-    providerRequestId: result.provider_request_id,
+    return {
+      ok: true,
+      checkoutUrl: result.checkout_url,
+      qrCode: result.qr_code ?? null,
+      providerRequestId: result.provider_request_id,
+    }
+  } catch (e) {
+    return checkoutErrorResult(e)
   }
 }
 

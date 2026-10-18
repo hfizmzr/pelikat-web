@@ -9,7 +9,11 @@ const { fetchDjangoApi, requireAuth } = vi.hoisted(() => ({
   requireAuth: vi.fn(),
 }))
 
-vi.mock('@/lib/django', () => ({ fetchDjangoApi }))
+vi.mock('@/lib/django', async (importOriginal) => {
+  // Real module for DjangoApiError; only the network fn is stubbed.
+  const actual = await importOriginal<typeof import('@/lib/django')>()
+  return { ...actual, fetchDjangoApi }
+})
 vi.mock('@/lib/auth/requireUser', () => ({ requireAuth }))
 
 const mockSupabase = {
@@ -31,6 +35,7 @@ vi.mock('@/lib/supabase/service-role', () => ({
 // remains the sole payments BFF route.
 import { POST as refundPOST } from '@/app/api/payments/refund/route'
 import { createHitpayCheckout } from '@/components/events/actions'
+import { DjangoApiError } from '@/lib/django'
 import { getPaymentProvider, getServerPaymentProvider } from '@/lib/payments'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -127,6 +132,7 @@ describe('Integration: Payments BFF (Task 3)', () => {
       })
 
       expect(result).toEqual({
+        ok: true,
         checkoutUrl: DJANGO_CREATE.checkout_url,
         qrCode: null,
         providerRequestId: 'pr-1',
@@ -142,18 +148,41 @@ describe('Integration: Payments BFF (Task 3)', () => {
       )
     })
 
-    it('throws (never returns a fake checkout) when Django rejects', async () => {
+    it('returns a clean error result (never throws) when Django rejects', async () => {
       singleRow('registrations', REGISTRATION)
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
       fetchDjangoApi.mockRejectedValue(
         new Error('Django API error: Amount mismatch')
       )
-      await expect(
-        createHitpayCheckout({
-          registrationId: 'reg-uuid-1',
-          email: 'runner@example.com',
-          name: 'Runner One',
-        })
-      ).rejects.toThrow(/Amount mismatch/)
+      const result = await createHitpayCheckout({
+        registrationId: 'reg-uuid-1',
+        email: 'runner@example.com',
+        name: 'Runner One',
+      })
+      expect(result).toEqual({
+        ok: false,
+        error: 'Could not start the payment. Please try again or contact support.',
+      })
+      expect(consoleError).toHaveBeenCalled()
+      consoleError.mockRestore()
+    })
+
+    it('maps a HitPay 422 payment-method rejection to a runner-friendly error', async () => {
+      singleRow('registrations', REGISTRATION)
+      fetchDjangoApi.mockRejectedValue(
+        new DjangoApiError(
+          'Django API error: The selected payment method (fpx) is unavailable for your account or the currency is invalid'
+        )
+      )
+      const result = await createHitpayCheckout({
+        registrationId: 'reg-uuid-1',
+        email: 'runner@example.com',
+        name: 'Runner One',
+      })
+      expect(result).toEqual({
+        ok: false,
+        error: 'Payment methods are temporarily unavailable. Please try again shortly or contact support.',
+      })
     })
   })
 

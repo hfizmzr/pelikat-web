@@ -97,6 +97,7 @@ function renderPage(url = '/runner/events/evt-1/payment') {
 }
 
 const HITPAY_RESULT = {
+  ok: true as const,
   checkoutUrl: 'https://sandbox.hit-pay.com/checkout/abc123',
   qrCode:
     '00020101021226610014A0000006150001010658820102115904137560062205010301055204581253034585802MY5914PELIKAT RUN6009KUALA LUMPUR6215010310500553045A02',
@@ -119,7 +120,7 @@ afterEach(() => {
 async function enterHitpayQr() {
   vi.stubEnv('NEXT_PUBLIC_PAYMENT_PROVIDER', 'hitpay')
   createHitpayCheckout.mockResolvedValue(HITPAY_RESULT)
-  renderPage()
+renderPage()
   await screen.findByText('Complete Registration')
   fireEvent.click(screen.getByRole('button', { name: /pay rm 65/i }))
   await screen.findByRole('img', { name: /duitnow qr/i })
@@ -228,7 +229,7 @@ describe('Usability: Payments checkout (HitPay gateway)', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     vi.stubEnv('NEXT_PUBLIC_PAYMENT_PROVIDER', 'hitpay')
     createHitpayCheckout.mockResolvedValue(HITPAY_RESULT)
-    getPaymentStatus.mockResolvedValue({ status: 'pending', paymentRail: null })
+  getPaymentStatus.mockResolvedValue({ status: 'pending', paymentRail: null })
 
     renderPage()
     await screen.findByText('Complete Registration')
@@ -283,10 +284,27 @@ describe('Usability: Payments checkout (HitPay gateway)', () => {
     expect(createHitpayCheckout).not.toHaveBeenCalled()
   })
 
+  it('shows the failed state with a retry when the checkout action returns ok:false (422 rails)', async () => {
+    vi.stubEnv('NEXT_PUBLIC_PAYMENT_PROVIDER', 'hitpay')
+    createHitpayCheckout.mockResolvedValue({
+      ok: false,
+      error: 'Payment methods are temporarily unavailable. Please try again shortly or contact support.',
+    })
+    renderPage()
+    await screen.findByText('Complete Registration')
+    fireEvent.click(screen.getByRole('button', { name: /pay rm 65/i }))
+
+    expect(await screen.findByText(
+      /Payment methods are temporarily unavailable/i
+    )).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /try again|retry/i })).toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: /duitnow qr/i })).not.toBeInTheDocument()
+  })
+
   it('state changes are announced (aria-live polite region present)', async () => {
     vi.stubEnv('NEXT_PUBLIC_PAYMENT_PROVIDER', 'hitpay')
     createHitpayCheckout.mockResolvedValue(HITPAY_RESULT)
-    renderPage()
+  renderPage()
     await screen.findByText('Complete Registration')
 
     const live = screen.getByRole('status')

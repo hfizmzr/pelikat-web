@@ -85,7 +85,12 @@ export default function OrganizerPaymentPage() {
         const result = await createHitpaySubscriptionCheckout(
           SUBSCRIPTION_PRICE
         )
-        window.location.href = result.checkoutUrl
+        if (result.ok) {
+          window.location.href = result.checkoutUrl
+        } else {
+          setError(result.error)
+          setIsPaying(false)
+        }
       } catch (e) {
         setError(
           e instanceof Error ? e.message : 'Payment failed. Please try again.'
