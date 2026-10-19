@@ -1,10 +1,13 @@
 export class DjangoApiError extends Error {
   /** Field errors from Django's {message, errors} JSON envelope, if any. */
   readonly errors: unknown
-  constructor(message: string, errors?: unknown) {
+  /** HTTP status Django answered with (0/unknown when absent). */
+  readonly status: number
+  constructor(message: string, errors?: unknown, status?: number) {
     super(message)
     this.name = 'DjangoApiError'
     this.errors = errors
+    this.status = status ?? 0
   }
 }
 
@@ -39,7 +42,7 @@ export async function fetchDjangoApi(endpoint: string, options: RequestInit = {}
     } catch {
       // not JSON — keep the raw body as the message
     }
-    throw new DjangoApiError(`Django API error: ${message}`, errors)
+    throw new DjangoApiError(`Django API error: ${message}`, errors, response.status)
   }
 
   return response.json();

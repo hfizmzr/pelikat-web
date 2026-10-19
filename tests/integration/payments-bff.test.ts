@@ -286,6 +286,26 @@ describe('Integration: Payments BFF (Task 3)', () => {
         error: 'Payment methods are temporarily unavailable. Please try again shortly or contact support.',
       })
     })
+
+    it('maps a Django 409 (claim slot in_progress, migration 063) to a retry-friendly error', async () => {
+      singleRow('registrations', REGISTRATION)
+      fetchDjangoApi.mockRejectedValue(
+        new DjangoApiError(
+          'Django API error: Checkout already initializing; retry in a few seconds',
+          undefined,
+          409
+        )
+      )
+      const result = await createHitpayCheckout({
+        registrationId: 'reg-uuid-1',
+        email: 'runner@example.com',
+        name: 'Runner One',
+      })
+      expect(result).toEqual({
+        ok: false,
+        error: 'Your previous payment attempt is still being initialized — please retry in a few seconds.',
+      })
+    })
   })
 
   describe('provider gate', () => {

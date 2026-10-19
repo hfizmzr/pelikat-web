@@ -51,13 +51,24 @@ const CHECKOUT_GENERIC_ERROR =
   'Could not start the payment. Please try again or contact support.'
 const CATEGORY_PRICE_UNAVAILABLE =
   'This category does not currently have a registration fee. Please contact the organizer or try again shortly.'
+// Django 409 on /payments/create: migration 063 reports the claim slot as
+// still initializing (in-flight or crashed previous attempt).
+const CHECKOUT_INITIALIZING =
+  'Your previous payment attempt is still being initialized — please retry in a few seconds.'
 
 function checkoutErrorResult(e: unknown): { ok: false; error: string } {
   // Gateway rails/currency rejections (HitPay 422s surfaced by Django)
   // are caged to a retryable, detail-free message; anything unexpected is
   // logged server-side and mapped to the same happy-path-clean shape.
-  if (e instanceof DjangoApiError && /payment method|currency/i.test(e.message)) {
-    return { ok: false, error: PAYMENT_METHODS_UNAVAILABLE }
+  if (e instanceof DjangoApiError) {
+    // 061/063: another create call holds the claim slot — a retry in a few
+    // seconds gets the in-flight checkout; never show a generic failure.
+    if (e.status === 409) {
+      return { ok: false, error: CHECKOUT_INITIALIZING }
+    }
+    if (/payment method|currency/i.test(e.message)) {
+      return { ok: false, error: PAYMENT_METHODS_UNAVAILABLE }
+    }
   }
   console.error('HitPay checkout failed:', e)
   return { ok: false, error: CHECKOUT_GENERIC_ERROR }
