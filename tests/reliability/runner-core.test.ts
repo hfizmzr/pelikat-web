@@ -272,8 +272,11 @@ describe('Polish: E-Certificates & Re-Registration (Phase 5)', () => {
     expect(services).toContain('from apps.ecert.services import generate_cert')
     expect(services).toContain('_generate_milestone_cert')
     expect(services).toContain('entry["cert_url"] = cert_url')
-    // cert failures never block the badge award
-    expect(services).toContain('except Exception:\n                    pass')
+    // cert failures never block other badge rules; failed awards self-heal
+    // (cert generated before insert → failure retries next evaluation, e1a42f1)
+    expect(services).toContain('self-healing')
+    expect(services).toContain('except Exception:')
+    expect(services).toContain('logger.exception("Badge rule evaluation failed: %s", rule["badge_key"])')
   })
 
   it('badges page offers on-demand certificate download (FR-63)', () => {

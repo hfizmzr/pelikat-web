@@ -12,8 +12,8 @@ export async function redirectAfterLogin(
 ) {
   const role = getUserRole(user)
 
-  // Log the login event
-  await supabase.from('audit_log').insert({
+  // Log the login event (fire-and-forget: must not block the redirect)
+  supabase.from('audit_log').insert({
     actor_id: user.id,
     actor_email: user.email,
     actor_name: (user.user_metadata?.full_name as string) || (user.user_metadata?.name as string) || null,
@@ -22,7 +22,12 @@ export async function redirectAfterLogin(
       provider: user.app_metadata?.provider || 'email',
       role: user.app_metadata?.role || null,
     },
-  })
+  }).then(
+    result => {
+      if (result.error) console.error('audit_log insert failed', result.error)
+    },
+    error => console.error('audit_log insert failed', error)
+  )
 
   if (role === 'admin') {
     router.push('/admin')

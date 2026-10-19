@@ -1,7 +1,12 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { fetchDjangoApi } from '@/lib/django'
+import { DjangoApiError, fetchDjangoApi } from '@/lib/django'
+// Dummy confirmation writes financial rows, so it lives with the other
+// service-role-backed server actions live in lib/actions — re-exports are NOT
+// allowed here ("use server" files may only export async functions from this
+// module; a barreled re-export of another module's action throws a build
+// error), so call sites import them from their defining module directly.
 import {
   REPC_CHECK_IN_RPC,
   normalizeRepcCheckInResult,
@@ -16,14 +21,193 @@ import { redirect } from 'next/navigation'
 // Registration Actions
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function confirmDummyPayment(registrationId: string) {
+// ── HitPay checkout (server-side funnel via Django) ──────────────────────────
+// The browser never sees the HitPay API. Amount and reference come from
+// the server; confirmation happens only through the signed webhook in
+// Django — a redirect back from HitPay never marks anything paid.
+
+interface DjangoCreatePayment {
+  provider_request_id: string
+  checkout_url: string
+  qr_code: string | null
+  direct_link_url: string | null
+  status: string
+}
+
+export type HitpayCheckoutResult =
+  // ALREADY-PAD re-entry: the registration is paid — callers must render the
+  // confirmed state, never a new payment request (double-charge guard).
+  | { ok: true; alreadyPaid: true }
+  | {
+      ok: true
+      checkoutUrl: string
+      qrCode: string | null
+      providerRequestId: string
+    }
+  | { ok: false; error: string }
+
+const PAYMENT_METHODS_UNAVAILABLE =
+  'Payment methods are temporarily unavailable. Please try again shortly or contact support.'
+const CHECKOUT_GENERIC_ERROR =
+  'Could not start the payment. Please try again or contact support.'
+const CATEGORY_PRICE_UNAVAILABLE =
+  'This category does not currently have a registration fee. Please contact the organizer or try again shortly.'
+// Django 409 on /payments/create: migration 063 reports the claim slot as
+// still initializing (in-flight or crashed previous attempt).
+const CHECKOUT_INITIALIZING =
+  'Your previous payment attempt is still being initialized — please retry in a few seconds.'
+
+function checkoutErrorResult(e: unknown): { ok: false; error: string } {
+  // Gateway rails/currency rejections (HitPay 422s surfaced by Django)
+  // are caged to a retryable, detail-free message; anything unexpected is
+  // logged server-side and mapped to the same happy-path-clean shape.
+  if (e instanceof DjangoApiError) {
+    // 061/063: another create call holds the claim slot — a retry in a few
+    // seconds gets the in-flight checkout; never show a generic failure.
+    if (e.status === 409) {
+      return { ok: false, error: CHECKOUT_INITIALIZING }
+    }
+    if (/payment method|currency/i.test(e.message)) {
+      return { ok: false, error: PAYMENT_METHODS_UNAVAILABLE }
+    }
+  }
+  console.error('HitPay checkout failed:', e)
+  return { ok: false, error: CHECKOUT_GENERIC_ERROR }
+}
+
+function hitpayRedirectUrl(path: string): string {
+  const appUrl =
+    process.env.NEXT_PUBLIC_TUNNEL_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    'http://localhost:3000'
+  return `${appUrl}${path}`
+}
+
+export async function createHitpayCheckout(input: {
+  registrationId: string
+  email: string
+  name: string
+}): Promise<HitpayCheckoutResult> {
+  try {
+    const { supabase } = await requireAuth()
+
+    const { data: registration, error } = await supabase
+      .from('registrations')
+      .select('id, event_id, runner_id, payment_status, race_categories(price)')
+      .eq('id', input.registrationId)
+      .single()
+
+    if (error || !registration) throw new Error('Registration not found')
+
+    // ALREADY-PAD re-entry: never create a second checkout for a paid
+    // registration — the runner must see the confirmed state instead.
+    if (registration.payment_status === 'paid') {
+      return { ok: true, alreadyPaid: true }
+    }
+
+    const category = Array.isArray(registration.race_categories)
+      ? registration.race_categories[0]
+      : registration.race_categories
+
+    // No price → never start a checkout (price removed, or read raced).
+    // Django would 422; catching it here gives the runner a clear reason.
+    const price = category?.price
+    if (price == null || Number(price) <= 0) {
+      return { ok: false, error: CATEGORY_PRICE_UNAVAILABLE }
+    }
+
+    const result: DjangoCreatePayment = await fetchDjangoApi('/payments/create', {
+      method: 'POST',
+      body: JSON.stringify({
+        order_type: 'registration',
+        registration_id: registration.id,
+        reference_number: registration.id,
+        runner_id: registration.runner_id,
+        // Amount snapshot: race_categories.price read server-side, never
+        // taken from the client.
+        amount: Number(category?.price ?? 0),
+        email: input.email,
+        name: input.name,
+        purpose: 'Event registration',
+        redirect_url: hitpayRedirectUrl(
+          `/runner/events/${registration.event_id}/payment`
+        ),
+      }),
+    })
+
+    return {
+      ok: true,
+      checkoutUrl: result.checkout_url,
+      qrCode: result.qr_code ?? null,
+      providerRequestId: result.provider_request_id,
+    }
+  } catch (e) {
+    return checkoutErrorResult(e)
+  }
+}
+
+export async function createHitpaySubscriptionCheckout(
+  amount: number
+): Promise<Exclude<HitpayCheckoutResult, { ok: true; alreadyPaid: true }>> {
+  try {
+    const { supabase, user } = await requireAuth()
+
+    const organizerId = user.app_metadata?.organizer_id
+    if (!organizerId) throw new Error('Organizer profile not found')
+
+    const { data: organizer, error } = await supabase
+      .from('organizers')
+      .select('id, name, contact_email')
+      .eq('id', organizerId)
+      .single()
+
+    if (error || !organizer) throw new Error('Organizer profile not found')
+
+    const result: DjangoCreatePayment = await fetchDjangoApi('/payments/create', {
+      method: 'POST',
+      body: JSON.stringify({
+        order_type: 'organizer_subscription',
+        organizer_id: organizer.id,
+        amount,
+        email: organizer.contact_email ?? user.email,
+        name: organizer.name,
+        purpose: 'Organizer subscription',
+        redirect_url: hitpayRedirectUrl('/organizer/payment'),
+      }),
+    })
+
+    return {
+      ok: true,
+      checkoutUrl: result.checkout_url,
+      qrCode: result.qr_code ?? null,
+      providerRequestId: result.provider_request_id,
+    }
+  } catch (e) {
+    return checkoutErrorResult(e)
+  }
+}
+
+export async function getPaymentStatus(
+  registrationId: string
+): Promise<{ status: string; paymentRail: string | null }> {
   const { supabase } = await requireAuth()
 
-  const { error } = await supabase.rpc('confirm_dummy_payment', {
-    p_registration_id: registrationId,
-  })
+  const { data: registration } = await supabase
+    .from('registrations')
+    .select('id')
+    .eq('id', registrationId)
+    .single()
 
-  if (error) throw new Error(error.message)
+  if (!registration) throw new Error('Registration not found')
+
+  const result = await fetchDjangoApi(
+    `/payments/status?reference_number=${encodeURIComponent(registrationId)}`
+  )
+
+  return {
+    status: result.status,
+    paymentRail: result.payment_rail ?? null,
+  }
 }
 
 export async function cancelRegistration(eventId: string) {

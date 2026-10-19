@@ -33,26 +33,55 @@ export interface PaymentConfirmation {
   paidAt: string
 }
 
-export type PaymentProvider = 'mock'
+export type PaymentProvider = 'mock' | 'hitpay'
 
-export function getPaymentProvider(): PaymentProvider {
-  const provider =
-    process.env.NEXT_PUBLIC_PAYMENT_PROVIDER ??
-    process.env.PAYMENT_PROVIDER ??
-    'mock'
+/**
+ * ⚠ RELEASE CHECKLIST: NEXT_PUBLIC_PAYMENT_PROVIDER (client, build-time
+ * inlined) and PAYMENT_PROVIDER (server runtime) MUST be set to the same
+ * value in every deployed environment. Next.js cannot share a server env
+ * var with the browser bundle, so one deployment decision surfaces as two
+ * env vars — this gate suite is the only place that reads either.
+ */
+function parsePaymentProvider(
+  raw: string | undefined,
+  envVar: string
+): PaymentProvider {
+  const provider = raw ?? 'mock'
 
-  if (provider !== 'mock') {
+  if (provider !== 'mock' && provider !== 'hitpay') {
     throw new Error(
-      `Payment provider "${provider}" is not implemented yet. ` +
+      `Payment provider "${provider}" (via ${envVar}) is not implemented yet. ` +
         `Add lib/payments/${provider}.ts with createCheckout/confirmPayment ` +
-        `and register it in getPaymentProvider().`
+        `and register it in parsePaymentProvider().`
     )
   }
-  return 'mock'
+  return provider
+}
+
+/** Client gate — reads only the build-time literal NEXT_PUBLIC_PAYMENT_PROVIDER. */
+export function getPaymentProvider(): PaymentProvider {
+  return parsePaymentProvider(
+    process.env.NEXT_PUBLIC_PAYMENT_PROVIDER,
+    'NEXT_PUBLIC_PAYMENT_PROVIDER'
+  )
+}
+
+/**
+ * Server gate for 'use server' actions and route handlers — reads the
+ * server-runtime PAYMENT_PROVIDER env var explicitly. Never fall back to
+ * NEXT_PUBLIC here, and never call this from client code.
+ */
+export function getServerPaymentProvider(): PaymentProvider {
+  return parsePaymentProvider(process.env.PAYMENT_PROVIDER, 'PAYMENT_PROVIDER')
 }
 
 export async function createCheckout(input: CheckoutInput): Promise<CheckoutSession> {
-  getPaymentProvider()
+  if (getPaymentProvider() !== 'mock') {
+    throw new Error(
+      'createCheckout is the mock flow; the hitpay provider creates its ' +
+        'checkout server-side (Django /payments/create funnel).'
+    )
+  }
 
   const reference = `mock_${input.referenceId.slice(0, 8)}_${crypto.randomUUID().slice(0, 8)}`
 
@@ -68,7 +97,12 @@ export async function createCheckout(input: CheckoutInput): Promise<CheckoutSess
 export async function confirmPayment(
   session: Pick<CheckoutSession, 'reference'>
 ): Promise<PaymentConfirmation> {
-  getPaymentProvider()
+  if (getPaymentProvider() !== 'mock') {
+    throw new Error(
+      'confirmPayment is the mock flow; hitpay payments are confirmed ' +
+        'server-side via the signed webhook only.'
+    )
+  }
 
   return {
     provider: 'mock',

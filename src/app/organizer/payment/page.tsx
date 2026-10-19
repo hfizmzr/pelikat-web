@@ -3,7 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { createCheckout, confirmPayment } from '@/lib/payments/mock'
+import {
+  createCheckout,
+  confirmPayment,
+  getPaymentProvider,
+} from '@/lib/payments/mock'
+import { createHitpaySubscriptionCheckout } from '@/components/events/actions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -45,6 +50,15 @@ export default function OrganizerPaymentPage() {
 
       if (data) {
         setOrganizer(data)
+        // Returning from the HitPay hosted checkout: the signed webhook
+        // (not the redirect) extends sub_expires_at server-side. Show
+        // success only when the server-confirmed expiry is in the future.
+        if (
+          data.sub_expires_at &&
+          new Date(data.sub_expires_at) > new Date()
+        ) {
+          setSuccess(true)
+        }
       }
       setLoading(false)
     }
@@ -62,8 +76,34 @@ export default function OrganizerPaymentPage() {
       return
     }
 
+    // Real gateway flow (PAYMENT_PROVIDER=hitpay): create the payment
+    // request server-side, then send the organizer to the hosted
+    // checkout. Confirmation is webhook-driven — the redirect back
+    // here is never trusted (see loadOrganizer above).
+    if (getPaymentProvider() === 'hitpay') {
+      try {
+        const result = await createHitpaySubscriptionCheckout(
+          SUBSCRIPTION_PRICE
+        )
+        if (result.ok) {
+          window.location.href = result.checkoutUrl
+        } else {
+          setError(result.error)
+          setIsPaying(false)
+        }
+      } catch (e) {
+        setError(
+          e instanceof Error ? e.message : 'Payment failed. Please try again.'
+        )
+        setIsPaying(false)
+      }
+      return
+    }
+
     // Mock gateway flow (PAYMENT_PROVIDER=mock) — swap point for the
-    // real provider. DB state update below is provider-agnostic.
+    // real provider. Mock confirmation is local because there is no
+    // webhook in mock mode; DB state update only ever happens here,
+    // never on the hitpay path.
     let paymentReference: string
     try {
       const session = await createCheckout({
