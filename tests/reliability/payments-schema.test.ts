@@ -240,3 +240,62 @@ describe('Reliability: double-charge + refund hardening (migration 062)', () => 
     expect(migration062).toMatch(/DELETE the synthetic row/i)
   })
 })
+
+describe('Reliability: claim in-progress sentinel disambiguation (migration 063)', () => {
+  const migration063 = read('supabase', 'migrations', '063_payment_claim_in_progress.sql')
+
+  it('changes the signature to the tri-state returns table, provider_request_id first', () => {
+    expect(migration063).toContain(
+      'returns table(provider_request_id text, is_reservation boolean, in_progress boolean)'
+    )
+  })
+
+  it('is security definer with empty search_path and keeps the advisory lock FIRST', () => {
+    expect(migration063).toMatch(/security\s+definer/i)
+    expect(migration063).toMatch(/set\s+search_path\s*=\s*''/)
+    // Lock placement is unchanged from 062: before the reuse SELECT.
+    expect(migration063.indexOf('perform pg_advisory_xact_lock(')).toBeLessThan(
+      migration063.indexOf('into v_existing')
+    )
+  })
+
+  it('reuse SELECT excludes sentinel rows with the qualified NOT LIKE guard', () => {
+    expect(migration063).toContain("payments.provider_request_id not like 'pending:%'")
+  })
+
+  it('sentinel presence returns the tri-state row (null, false, true) without insert or raise', () => {
+    expect(migration063).toContain("payments.provider_request_id like 'pending:%'")
+    // Single exit: decisions go into variables, exactly ONE return query.
+    expect(migration063).toContain('v_req := null; v_isres := false; v_prog := true;')
+    expect(migration063.split('create or replace function')).toHaveLength(2)
+    // Body must not raise for the in-progress case (only the header validations do).
+    expect(migration063).not.toMatch(/raise exception '[^']*sentinel|^raise exception 'Reservation in progress'/m)
+  })
+
+  it('fresh path still mints the sentinel and returns is_reservation=true, in_progress=false', () => {
+    expect(migration063).toContain("'pending:' || gen_random_uuid()::text")
+    expect(migration063).toContain('v_req := v_new.provider_request_id; v_isres := true; v_prog := false;')
+    expect(migration063).toContain('v_req := v_existing.provider_request_id; v_isres := false; v_prog := false;')
+    // PL/pgSQL semantics guard: return query does NOT exit the function
+    expect(migration063).toMatch(/return query does\s*\n\s*--\s*NOT exit a PL\/pgSQL function/)
+  })
+
+  it('re-asserts the 062 ACL contract (revoke public/anon/authenticated, grant service_role)', () => {
+    expect(migration063).toContain('revoke execute on function public.claim_payment_slot(text, uuid, uuid, uuid, uuid, numeric, text) from public')
+    expect(migration063).toContain('revoke execute on function public.claim_payment_slot(text, uuid, uuid, uuid, uuid, numeric, text) from anon')
+    expect(migration063).toContain('revoke execute on function public.claim_payment_slot(text, uuid, uuid, uuid, uuid, numeric, text) from authenticated')
+    expect(migration063).toMatch(/grant execute on function public\.claim_payment_slot\(text, uuid, uuid, uuid, uuid, numeric, text\) to service_role;/)
+  })
+
+  it('documents the recovery runbook: sentinels are never TTL-reclaimed, operators delete confirmed-dead ones', () => {
+    expect(migration063).toMatch(/RECOVERY RUNBOOK/i)
+    expect(migration063).toMatch(/NEVER auto-reclaimed/)
+    expect(migration063).toMatch(/cannot distinguish a crash from an in-flight reservation/)
+    expect(migration063).toMatch(/delete from payments where provider_request_id = 'pending:<uuid>'/)
+    expect(migration063).toMatch(/ALWAYS safe to delete/i)
+  })
+
+  it('updates the function comment with the tri-state semantics', () => {
+    expect(migration063).toContain('in_progress=true ⇒ reservation already holds the sentinel')
+  })
+})
