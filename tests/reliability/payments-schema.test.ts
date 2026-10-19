@@ -172,3 +172,71 @@ describe('Reliability: confirm_dummy_payment server-trust revision (migration 06
     expect(migration061).toMatch(/server action/i)
   })
 })
+
+describe('Reliability: double-charge + refund hardening (migration 062)', () => {
+  const migration062 = read('supabase', 'migrations', '062_payment_double_charge_and_refund_hardening.sql')
+
+  it('adds the cumulative refunded_amount counter (A-4)', () => {
+    expect(migration062).toContain(
+      'add column if not exists refunded_amount numeric(10,2) not null default 0'
+    )
+  })
+
+  it('amends confirm_payment (same 059 signature) with the duplicate-charge branch (W-3)', () => {
+    expect(migration062).toContain(
+      'create or replace function public.confirm_payment(\n  p_provider_request_id text,\n  p_provider_payment_id text,\n  p_rail text\n) returns uuid'
+    )
+    expect(migration062).toContain("'payment_duplicate_detected'")
+  })
+
+  it('duplicate branch audits full metadata to identify + refund the duplicate', () => {
+    const body = migration062.split('$$')[1]?.split('$$')[0] ?? ''
+    // body = first $$ block (confirm_payment)
+    expect(body).toContain("jsonb_build_object(\n          'registration_id', v_reg.id")
+    expect(body).toContain("'provider_request_id', v_payment.provider_request_id")
+    expect(body).toContain("'provider_payment_id', coalesce(p_provider_payment_id, v_payment.provider_payment_id)")
+    expect(body).toContain("'amount', v_payment.amount")
+  })
+
+  it('duplicate branch keeps truth (second charge completes) and does NOT touch registrations/BIB', () => {
+    const body = migration062.split('$$')[1]?.split('$$')[0] ?? ''
+    // The UPDATE to completed happens BEFORE the already-paid branch.
+    expect(body.indexOf('set status = \'completed\'')).toBeLessThan(body.indexOf("payment_status = 'paid'"))
+    // Only the first-charge (else) path allocates a BIB.
+    expect(body).toContain('else')
+    expect(body).toContain('for v_attempt in 1..3 loop')
+    // confirm_dummy_payment (061) is NOT touched by 062.
+    expect(migration062).not.toContain('create or replace function public.confirm_dummy_payment')
+  })
+
+  it('claim_payment_slot exists with the exact coordinated signature + service_role-only grants (A-3)', () => {
+    expect(migration062).toContain(
+      'create or replace function public.claim_payment_slot(\n  p_order_type text,\n  p_registration_id uuid,\n  p_merch_order_id uuid,\n  p_organizer_id uuid,\n  p_runner_id uuid,\n  p_amount numeric,\n  p_currency text default \'MYR\'\n) returns table(provider_request_id text, is_reservation boolean)'
+    )
+    expect(migration062).toContain(
+      'revoke execute on function public.claim_payment_slot(text, uuid, uuid, uuid, uuid, numeric, text) from public'
+    )
+    expect(migration062).toContain(
+      'revoke execute on function public.claim_payment_slot(text, uuid, uuid, uuid, uuid, numeric, text) from anon'
+    )
+    expect(migration062).toContain(
+      'revoke execute on function public.claim_payment_slot(text, uuid, uuid, uuid, uuid, numeric, text) from authenticated'
+    )
+    expect(migration062).toContain(
+      'grant execute on function public.claim_payment_slot(text, uuid, uuid, uuid, uuid, numeric, text) to service_role'
+    )
+  })
+
+  it('claim is serialized by a transaction-scoped advisory lock and uses the documented sentinel', () => {
+    expect(migration062).toContain('pg_advisory_xact_lock(')
+    expect(migration062).toContain('hashtextextended(')
+    expect(migration062).toContain("'pending:' || gen_random_uuid()::text")
+  })
+
+  it('documents the claim → hitpay create → link/delete usage sequence', () => {
+    expect(migration062).toContain('is_reservation = false')
+    expect(migration062).toContain('is_reservation = true')
+    expect(migration062).toMatch(/GET the PR/i)
+    expect(migration062).toMatch(/DELETE the synthetic row/i)
+  })
+})
