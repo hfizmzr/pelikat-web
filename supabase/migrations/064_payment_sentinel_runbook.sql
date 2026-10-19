@@ -1,0 +1,46 @@
+-- ── PAYMENT SENTINEL RUNBOOK truth revision (064) ─────────────
+-- Comment-only migration. The claim_payment_slot body, signature,
+-- grants and tri-state semantics from 063 stand UNCHANGED — this
+-- file replaces the function COMMENT to walk back an over-broad
+-- claim in 063's runbook flagged by CodeRabbit (web#23):
+--   "stale sentinels from a create-never-left crash are ALWAYS
+--    safe to delete"
+--
+-- That is true ONLY for crashes BEFORE the HitPay create. A crash
+-- AFTER the create succeeded but BEFORE the real PR id was linked
+-- back to the payments row leaves an ORPHANED, still-OPEN HitPay
+-- Payment Request that our database knows nothing about. Deleting
+-- its sentinel row blind then means a second create → duplicate
+-- PR → double-charge exposure.
+--
+-- REVISED RECOVERY RUNBOOK for a 'pending:<uuid>' sentinel row:
+--
+--   (a) Pre-create crash (create request never left / errored):
+--       deletion SAFE — BUT only after a HitPay list/search check
+--       by reference_number confirms no orphan PR exists for the
+--       logical order. Preferred over delete-blind: the
+--       application layer first ADOPTS the orphan — it does a
+--       GET search by reference_number (the PR carries the
+--       registration_id / merch order / organizer context as its
+--       reference), relinks the real provider_request_id onto the
+--       sentinel row, and the checkout_url is reused with no new
+--       PR minted.
+--
+--   (b) Post-create crash (create succeeded, linking never ran):
+--       NEVER delete blind. The PR is still open at HitPay. It
+--       must be LINKED (adopted app-side via the reference_number
+--       search above) or CANCELLED (expired / voided / refunded
+--       at HitPay) before any payments row is removed.
+--
+--   (c) NEVER reclaim by age alone. Ages cannot distinguish a
+--       crash phase from an in-flight reservation, and auto-
+--       reclaim would race a live second HitPay create (063).
+--
+-- The application implements (a)'s adopt path as a GET search on
+-- reference_number immediately before any sentinel deletion.
+--
+-- 063's PL/pgSQL semantics notes remain accurate and are NOT
+-- restated here; see the 063 header.
+comment on function public.claim_payment_slot(
+  text, uuid, uuid, uuid, uuid, numeric, text
+) is 'serialized claim-or-reuse of the pending payments row (A-3; tri-state since 063: is_reservation=true ⇒ fresh sentinel ''pending:<uuid>''; in_progress=true ⇒ retry, reservation already holds the sentinel; both false ⇒ reuse a REAL provider_request_id). Sentinel recovery (064 revision of the 063 runbook): pre-create crashes are safe to delete ONLY after a HitPay search by reference_number confirms no orphan PR — the app''s preferred path is to ADOPT the orphan first (GET search by reference_number carrying the registration/merch/organizer context, then relink the real PR id). Post-create crashes must NEVER be deleted blind: the PR is still open at HitPay — link (adopt) or cancel via refund/void before row removal. Sentinels are never reclaimed by age alone (cannot distinguish crash phase from in-flight). service_role only';

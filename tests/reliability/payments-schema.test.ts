@@ -9,6 +9,11 @@ const here = dirname(fileURLToPath(import.meta.url))
 const read = (...parts: string[]) =>
   readFileSync(join(here, '..', '..', ...parts), 'utf-8')
 
+// Squash newlines + leading indentation into single spaces so body
+// assertions are NOT sensitive to odd indentation (CodeRabbit nitpick
+// on 063's ^-anchored /m regex, which silently missed indented text).
+const norm = (s: string) => s.replace(/\r?\n\s*/g, ' ').replace(/\r/g, '').trim()
+
 const migration = read('supabase', 'migrations', '059_hitpay_payments.sql')
 
 describe('Reliability: HitPay Payments Schema (Task 1)', () => {
@@ -263,13 +268,26 @@ describe('Reliability: claim in-progress sentinel disambiguation (migration 063)
     expect(migration063).toContain("payments.provider_request_id not like 'pending:%'")
   })
 
-  it('sentinel presence returns the tri-state row (null, false, true) without insert or raise', () => {
-    expect(migration063).toContain("payments.provider_request_id like 'pending:%'")
-    // Single exit: decisions go into variables, exactly ONE return query.
-    expect(migration063).toContain('v_req := null; v_isres := false; v_prog := true;')
+  it('single-exit body: exactly ONE tail return query, decisions via v_prog tri-state vars (062 fall-through guard)', () => {
+    // Guard against the 062 fall-through WITHOUT a brittle function-count
+    // assertion (which cannot see an extra `return query` a future
+    // regression could add): check the extracted body directly.
+    const body = norm(migration063.split('$$')[1] ?? '')
+    // Decisions land in the tri-state variables, not in early exits…
+    expect(body).toContain('v_req := null; v_isres := false; v_prog := true;')
+    expect(body).toContain('v_req := v_existing.provider_request_id; v_isres := false; v_prog := false;')
+    expect(body).toContain("v_req := v_new.provider_request_id; v_isres := true; v_prog := false;")
+    // …and there is EXACTLY ONE `return query`, at the very tail.
+    expect((body.match(/\breturn query\b/g) ?? []).length).toBe(1)
+    expect(body.endsWith('return query select v_req, v_isres, v_prog; end;')).toBe(true)
+    // Unanchored, indentation-agnostic raise check: the body raises ONLY
+    // the two input-validation exceptions — nothing about sentinels.
+    expect((norm(migration063).match(/raise\s+exception/gi) ?? []).length).toBe(2)
+    expect(body).toMatch(/raise\s+exception\s+'Invalid order type/i)
+    expect(body).toMatch(/raise\s+exception\s+'Invalid amount/i)
+    expect(body).not.toMatch(/raise\s+exception\s+'[^']*sentinel/i)
+    expect(body).not.toMatch(/raise\s+exception\s+'Reservation in progress'/i)
     expect(migration063.split('create or replace function')).toHaveLength(2)
-    // Body must not raise for the in-progress case (only the header validations do).
-    expect(migration063).not.toMatch(/raise exception '[^']*sentinel|^raise exception 'Reservation in progress'/m)
   })
 
   it('fresh path still mints the sentinel and returns is_reservation=true, in_progress=false', () => {
@@ -297,5 +315,48 @@ describe('Reliability: claim in-progress sentinel disambiguation (migration 063)
 
   it('updates the function comment with the tri-state semantics', () => {
     expect(migration063).toContain('in_progress=true ⇒ reservation already holds the sentinel')
+  })
+})
+
+describe('Reliability: sentinel runbook truth revision (migration 064)', () => {
+  const migration064 = read('supabase', 'migrations', '064_payment_sentinel_runbook.sql')
+  const migration063 = read('supabase', 'migrations', '063_payment_claim_in_progress.sql')
+
+  it('is comment-only: signature, grants and the 063 body are untouched', () => {
+    expect(migration064).toMatch(/comment on function public\.claim_payment_slot\(/i)
+    expect(migration064).not.toMatch(/\bcreate (or replace )?function\b/i)
+    expect(migration064).not.toMatch(/\bdrop function\b/i)
+    expect(migration064).not.toMatch(/\brevoke\b|\bgrant\b/i)
+    // Nothing is smuggled in a body: no $$ blocks at all.
+    expect(migration064.split('$$')).toHaveLength(1)
+  })
+
+  it('walks back the ALWAYS-safe-to-delete claim: adoption via reference_number search first', () => {
+    expect(migration064).not.toMatch(/ALWAYS safe to delete/i)
+    expect(migration064).toMatch(/NEVER delete blind/i)
+    expect(migration064).toMatch(/reference_number/i)
+    expect(migration064).toMatch(/adopt/i)
+  })
+
+  it('covers crash-phase distinction and the no-age-reclaim rule', () => {
+    expect(migration064).toMatch(/Pre-create crash/i)
+    expect(migration064).toMatch(/Post-create crash/i)
+    expect(migration064).toMatch(/still open at HitPay/i)
+    expect(migration064).toMatch(/refund\/void/i)
+    expect(migration064).toMatch(/NEVER reclaim by age alone/i)
+  })
+
+  it('documents that the app implements adopt-via-GET search on reference_number', () => {
+    expect(migration064).toMatch(/application implements/i)
+    expect(migration064).toMatch(/GET search by reference_number/i)
+  })
+
+  it('standalone guardrails: the 063 claim body is unchanged (single tail exit)', () => {
+    // 064 is comment-only, so the body can only live in 063; pin its shape
+    // here so any future edit to either file trips this test.
+    const body63 = norm(migration063.split('$$')[1] ?? '')
+    expect(body63.startsWith('declare')).toBe(true)
+    expect(body63.endsWith('return query select v_req, v_isres, v_prog; end;')).toBe(true)
+    expect((body63.match(/\breturn query\b/g) ?? []).length).toBe(1)
   })
 })
