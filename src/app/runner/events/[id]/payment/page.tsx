@@ -15,6 +15,7 @@ import {
   AwaitingState,
   ConfirmedState,
   PaymentErrorState,
+  StillConfirmingState,
   PayMethodCard,
 } from '@/components/payments/checkout-states'
 
@@ -25,6 +26,7 @@ type HitpayPhase =
   | 'redirecting'
   | 'awaiting'
   | 'confirmed'
+  | 'pending_still'
   | 'failed'
   | 'expired'
 
@@ -117,6 +119,13 @@ export default function PaymentPage() {
         name: contact.name,
       })
       if (res.ok) {
+        if ('alreadyPaid' in res) {
+          // ALREADY-PAD: registration is paid — render the confirmed state
+          // (the BIB effect below fetches it from the registration row),
+          // never a second checkout.
+          setPhase('confirmed')
+          return
+        }
         setCheckout(res)
         setPhase(res.qrCode ? 'qr_display' : 'redirecting')
       } else {
@@ -185,7 +194,26 @@ export default function PaymentPage() {
     const poll = setInterval(async () => {
       if (Date.now() - startedAt > MAX_WAIT_MS) {
         clearInterval(poll)
-        if (!cancelled) setPhase('expired')
+        // W-3-safe timeout: the checkout may still be settling at HitPay,
+        // so the 5-minute cap must NEVER flip to expired/retry. One final
+        // authoritative fetch decides the phase.
+        try {
+          const final = await getPaymentStatus(registrationId)
+          if (!cancelled) {
+            if (final?.status === 'completed' || final?.status === 'paid') {
+              setPhase('confirmed')
+            } else if (final?.status === 'failed') {
+              setFailureReason('The payment was not completed — no charge was made.')
+              setPhase('failed')
+            } else if (final?.status === 'expired' || final?.status === 'canceled') {
+              setPhase('expired')
+            } else {
+              setPhase('pending_still')
+            }
+          }
+        } catch {
+          if (!cancelled) setPhase('pending_still')
+        }
         return
       }
       try {
@@ -358,6 +386,8 @@ export default function PaymentPage() {
             {(phase === 'failed' || phase === 'expired') && (
               <PaymentErrorState kind={phase} reason={failureReason} onRetry={startCheckout} />
             )}
+
+            {phase === 'pending_still' && <StillConfirmingState />}
           </div>
         ) : (
           <>

@@ -34,6 +34,9 @@ interface DjangoCreatePayment {
 }
 
 export type HitpayCheckoutResult =
+  // ALREADY-PAD re-entry: the registration is paid — callers must render the
+  // confirmed state, never a new payment request (double-charge guard).
+  | { ok: true; alreadyPaid: true }
   | {
       ok: true
       checkoutUrl: string
@@ -46,8 +49,10 @@ const PAYMENT_METHODS_UNAVAILABLE =
   'Payment methods are temporarily unavailable. Please try again shortly or contact support.'
 const CHECKOUT_GENERIC_ERROR =
   'Could not start the payment. Please try again or contact support.'
+const CATEGORY_PRICE_UNAVAILABLE =
+  'This category does not currently have a registration fee. Please contact the organizer or try again shortly.'
 
-function checkoutErrorResult(e: unknown): HitpayCheckoutResult {
+function checkoutErrorResult(e: unknown): { ok: false; error: string } {
   // Gateway rails/currency rejections (HitPay 422s surfaced by Django)
   // are caged to a retryable, detail-free message; anything unexpected is
   // logged server-side and mapped to the same happy-path-clean shape.
@@ -76,15 +81,28 @@ export async function createHitpayCheckout(input: {
 
     const { data: registration, error } = await supabase
       .from('registrations')
-      .select('id, event_id, runner_id, race_categories(price)')
+      .select('id, event_id, runner_id, payment_status, race_categories(price)')
       .eq('id', input.registrationId)
       .single()
 
     if (error || !registration) throw new Error('Registration not found')
 
+    // ALREADY-PAD re-entry: never create a second checkout for a paid
+    // registration — the runner must see the confirmed state instead.
+    if (registration.payment_status === 'paid') {
+      return { ok: true, alreadyPaid: true }
+    }
+
     const category = Array.isArray(registration.race_categories)
       ? registration.race_categories[0]
       : registration.race_categories
+
+    // No price → never start a checkout (price removed, or read raced).
+    // Django would 422; catching it here gives the runner a clear reason.
+    const price = category?.price
+    if (price == null || Number(price) <= 0) {
+      return { ok: false, error: CATEGORY_PRICE_UNAVAILABLE }
+    }
 
     const result: DjangoCreatePayment = await fetchDjangoApi('/payments/create', {
       method: 'POST',
@@ -118,7 +136,7 @@ export async function createHitpayCheckout(input: {
 
 export async function createHitpaySubscriptionCheckout(
   amount: number
-): Promise<HitpayCheckoutResult> {
+): Promise<Exclude<HitpayCheckoutResult, { ok: true; alreadyPaid: true }>> {
   try {
     const { supabase, user } = await requireAuth()
 

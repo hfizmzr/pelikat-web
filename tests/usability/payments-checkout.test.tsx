@@ -244,13 +244,55 @@ describe('Usability: Payments checkout (HitPay gateway)', () => {
     })
     expect(getPaymentStatus.mock.calls.length).toBeGreaterThan(callsBefore)
 
-    // Cap: 5 minutes of polling → expired state with retry
+    // Cap: 5 minutes → ONE final authoritative fetch; still pending → the
+    // neutral still-confirming phase (never expired/retry — W-3-safe).
     expect(screen.queryByText(/expired|timed out/i)).not.toBeInTheDocument()
     await act(async () => {
       await vi.advanceTimersByTimeAsync(5 * 60 * 1000)
     })
-    expect(await screen.findByRole('heading', { name: /expired|timed out/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /try again|retry/i })).toBeInTheDocument()
+    const final = getPaymentStatus.mock.calls.length
+    expect(final).toBeGreaterThan(callsBefore)
+    expect(await screen.findByRole('heading', { name: /still confirming/i })).toBeInTheDocument()
+    expect(screen.getByText(/do NOT pay again/i)).toBeInTheDocument()
+    // No retry CTA on the still-confirming phase (retry ⇒ double charge risk)
+    expect(screen.queryByRole('button', { name: /try again|retry|pay rm/i })).not.toBeInTheDocument()
+  })
+
+  it('poll-timeout resolves to confirmed when the final fetch reports completion', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    vi.stubEnv('NEXT_PUBLIC_PAYMENT_PROVIDER', 'hitpay')
+    createHitpayCheckout.mockResolvedValue(HITPAY_RESULT)
+    getPaymentStatus.mockResolvedValue({ status: 'pending', paymentRail: null })
+
+    renderPage()
+    await screen.findByText('Complete Registration')
+    fireEvent.click(screen.getByRole('button', { name: /pay rm 65/i }))
+    await screen.findByRole('img', { name: /duitnow qr/i })
+    fireEvent.click(screen.getByRole('button', { name: /i'?ve paid/i }))
+    await screen.findByText(/confirming your payment/i)
+
+    getPaymentStatus.mockResolvedValue({ status: 'completed', paymentRail: 'fpx' })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000)
+    })
+    await waitFor(() =>
+      expect(screen.getByText(/payment successful/i)).toBeInTheDocument()
+    )
+  })
+
+  it('already-paid registrations never create a second checkout: tapping pay shows the confirmed state', async () => {
+    vi.stubEnv('NEXT_PUBLIC_PAYMENT_PROVIDER', 'hitpay')
+    h.registration = { ...h.registration, bib_number: '0042', payment_status: 'paid' }
+    createHitpayCheckout.mockResolvedValue({ ok: true, alreadyPaid: true })
+    renderPage()
+    await screen.findByText('Complete Registration')
+
+    // tapping pay again (server already reports paid via this device race)
+    fireEvent.click(screen.getByRole('button', { name: /pay rm 65/i }))
+    // The confirmed effect refetches bib from the registration row.
+    expect(await screen.findByText(/payment successful/i)).toBeInTheDocument()
+    expect(screen.getAllByText('0042').length).toBeGreaterThan(0)
+    expect(screen.queryByRole('img', { name: /duitnow qr/i })).not.toBeInTheDocument()
   })
 
   it('mock provider path still works: Confirm Payment → dummy confirm → success', async () => {

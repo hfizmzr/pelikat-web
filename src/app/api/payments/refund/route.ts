@@ -1,20 +1,23 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { requireAuth } from '@/lib/auth/requireUser'
 import { fetchDjangoApi } from '@/lib/django'
 
-// Organizer-initiated refunds. Ownership is enforced by RLS: selecting
-// the payments row with the organizer's session returns it only when
-// organizer_id matches get_my_organizer_id().
+// Organizer-initiated refunds (CWE-285 hardening). Authentication is via
+// requireAuth(); authorization is app-enforced with an explicit
+// `.eq('organizer_id', caller)` filter — Django is trust-of-internal and
+// carries no caller identity, so RLS-scope alone cannot distinguish a
+// paying runner from the owning organizer. Runner calls with a
+// provider_request_id resolve to 403 before anything reaches Django.
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
+  const { supabase, user } = await requireAuth()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const organizerId = user?.app_metadata?.organizer_id
+  if (!organizerId) {
+    return NextResponse.json(
+      { error: 'Only organizers can request refunds' },
+      { status: 403 }
+    )
   }
 
   const input = await request.json().catch(() => null)
@@ -25,11 +28,25 @@ export async function POST(request: Request) {
     )
   }
 
+  // Schema-validate the client amount before forwarding (Django remains the
+  // authority on the remaining-balance logic; this only gates garbage).
+  const amount = input.amount
+  if (
+    amount !== undefined &&
+    (!Number.isFinite(Number(amount)) || Number(amount) <= 0)
+  ) {
+    return NextResponse.json(
+      { error: 'Refund amount must be a positive number' },
+      { status: 400 }
+    )
+  }
+
   const { data: payment } = await supabase
     .from('payments')
-    .select('id')
+    .select('id, organizer_id')
     .eq('provider_request_id', input.provider_request_id)
-    .single()
+    .eq('organizer_id', organizerId)
+    .maybeSingle()
 
   if (!payment) {
     return NextResponse.json(
@@ -43,7 +60,7 @@ export async function POST(request: Request) {
       method: 'POST',
       body: JSON.stringify({
         provider_request_id: input.provider_request_id,
-        amount: input.amount,
+        amount,
       }),
     })
     return NextResponse.json(data)

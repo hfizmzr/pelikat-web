@@ -145,6 +145,27 @@ export function PaymentErrorState({
   )
 }
 
+/**
+ * Poll-timeout neutral state (W-3-safe): the HitPay checkout may still be
+ * settling server-side — retrying would risk a double charge. NO retry CTA.
+ */
+export function StillConfirmingState() {
+  return (
+    <StateCard className="min-h-[168px] justify-center">
+      <Hourglass className="size-[40px] text-muted-foreground" aria-hidden="true" />
+      <div>
+        <h3 className="text-[15px] font-bold text-foreground">
+          Still confirming your payment
+        </h3>
+        <p className="text-[12px] text-muted-foreground mt-1">
+          We&apos;re still confirming your payment. Please check back in a few
+          minutes — do NOT pay again while it is confirming.
+        </p>
+      </div>
+    </StateCard>
+  )
+}
+
 /** Idle entry card for the HitPay flow: what you pay and how. */
 export function PayMethodCard({ amount, onStart }: { amount: number; onStart: () => void }) {
   return (

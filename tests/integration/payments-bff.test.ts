@@ -42,7 +42,24 @@ const here = dirname(fileURLToPath(import.meta.url))
 const read = (...parts: string[]) =>
   readFileSync(join(here, '..', '..', ...parts), 'utf-8')
 
-const RUNNER_USER = { id: 'user-1' }
+const RUNNER_USER = { id: 'user-1', app_metadata: {} }
+const ORGANIZER_USER = {
+  id: 'user-org',
+  app_metadata: { organizer_id: 'org-1' },
+}
+
+function maybeRow(table: string, data: unknown) {
+  const builder = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn(async () => ({ data, error: null })),
+  }
+  mockSupabase.from.mockImplementation((t: string) => {
+    expect(t).toBe(table)
+    return builder
+  })
+  return builder
+}
 
 function singleRow(table: string, data: unknown) {
   mockSupabase.from.mockImplementation((t: string) => {
@@ -62,6 +79,7 @@ const REGISTRATION = {
   id: 'reg-uuid-1',
   event_id: 'event-uuid-1',
   runner_id: 'runner-uuid-1',
+  payment_status: 'pending',
   race_categories: { price: 50 },
 }
 
@@ -90,8 +108,12 @@ afterEach(() => {
 
 describe('Integration: Payments BFF (Task 3)', () => {
   describe('POST /api/payments/refund', () => {
-    it('forwards the refund for a payment the organizer owns (RLS-scoped)', async () => {
-      singleRow('payments', { id: 'pay-row-1' })
+    it('forwards the refund for a payment whose organizer_id matches the caller (app-enforced, CWE-285)', async () => {
+      requireAuth.mockResolvedValue({
+        supabase: mockSupabase,
+        user: ORGANIZER_USER,
+      })
+      maybeRow('payments', { id: 'pay-row-1' })
       fetchDjangoApi.mockResolvedValue({ status: 'refunded' })
 
       const response = await refundPOST(
@@ -106,8 +128,30 @@ describe('Integration: Payments BFF (Task 3)', () => {
       expect(JSON.parse(options.body).provider_request_id).toBe('pr-1')
     })
 
-    it('403s when RLS hides the payment (not the organizer\'s)', async () => {
-      singleRow('payments', null)
+    it('403s a paying runner even with a valid provider_request_id', async () => {
+      // RUNNER_USER has no app_metadata.organizer_id — the explicit
+      // organizer gate must short-circuit before any Django call.
+      requireAuth.mockResolvedValue({
+        supabase: mockSupabase,
+        user: RUNNER_USER,
+      })
+      fetchDjangoApi.mockClear()
+      const response = await refundPOST(
+        new Request('http://localhost/api/payments/refund', {
+          method: 'POST',
+          body: JSON.stringify({ provider_request_id: 'pr-runner-owns' }),
+        })
+      )
+      expect(response.status).toBe(403)
+      expect(fetchDjangoApi).not.toHaveBeenCalled()
+    })
+
+    it('403s an organizer whose organizer_id does not own the payment (explicit eq filter)', async () => {
+      requireAuth.mockResolvedValue({
+        supabase: mockSupabase,
+        user: ORGANIZER_USER,
+      })
+      const builder = maybeRow('payments', null)
       const response = await refundPOST(
         new Request('http://localhost/api/payments/refund', {
           method: 'POST',
@@ -116,10 +160,68 @@ describe('Integration: Payments BFF (Task 3)', () => {
       )
       expect(response.status).toBe(403)
       expect(fetchDjangoApi).not.toHaveBeenCalled()
+      // Ownership filter is app-enforced, not just RLS.
+      const eqArgs = builder.eq?.mock?.calls ?? []
+      expect(eqArgs).toContainEqual(['organizer_id', 'org-1'])
+    })
+
+    it('400s a non-positive / non-finite client amount', async () => {
+      requireAuth.mockResolvedValue({
+        supabase: mockSupabase,
+        user: ORGANIZER_USER,
+      })
+      maybeRow('payments', { id: 'pay-row-1' })
+      for (const bad of [0, -3.5, 'abc', 'NaN', Number.POSITIVE_INFINITY]) {
+        const response = await refundPOST(
+          new Request('http://localhost/api/payments/refund', {
+            method: 'POST',
+            body: JSON.stringify({ provider_request_id: 'pr-1', amount: bad }),
+          })
+        )
+        expect(response.status).toBe(400)
+      }
+      expect(fetchDjangoApi).not.toHaveBeenCalled()
+    })
+
+    it('400s when provider_request_id is missing', async () => {
+      requireAuth.mockResolvedValue({
+        supabase: mockSupabase,
+        user: ORGANIZER_USER,
+      })
+      const response = await refundPOST(
+        new Request('http://localhost/api/payments/refund', {
+          method: 'POST',
+          body: JSON.stringify({}),
+        })
+      )
+      expect(response.status).toBe(400)
     })
   })
 
   describe('createHitpayCheckout server action', () => {
+    it('returns alreadyPaid for a paid registration without calling Django', async () => {
+      singleRow('registrations', { ...REGISTRATION, payment_status: 'paid' })
+      const result = await createHitpayCheckout({
+        registrationId: 'reg-uuid-1',
+        email: 'runner@example.com',
+        name: 'Runner One',
+      })
+      expect(result).toEqual({ ok: true, alreadyPaid: true })
+      expect(fetchDjangoApi).not.toHaveBeenCalled()
+    })
+
+    it('rejects a zero/missing category price before Django is called', async () => {
+      singleRow('registrations', { ...REGISTRATION, race_categories: { price: 0 } })
+      const result = await createHitpayCheckout({
+        registrationId: 'reg-uuid-1',
+        email: 'runner@example.com',
+        name: 'Runner One',
+      })
+      expect(result.ok).toBe(false)
+      expect((result as { error: string }).error).toMatch(/registration fee/i)
+      expect(fetchDjangoApi).not.toHaveBeenCalled()
+    })
+
     it('builds the Django payload with amount snapshot and app redirect_url', async () => {
       process.env.NEXT_PUBLIC_APP_URL = 'https://app.example.com'
       singleRow('registrations', REGISTRATION)
