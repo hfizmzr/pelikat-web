@@ -1,0 +1,65 @@
+-- ── PAYMENT SENTINEL RUNBOOK precision (065) ─────────────
+-- Comment-only migration. The claim_payment_slot body, signature,
+-- grants and tri-state semantics from 063 stand UNCHANGED — this
+-- file replaces the function COMMENT to fold two reviewer WARNs
+-- from the sentinel-recovery gate into the 064 runbook text:
+--
+-- WARN 1 — the adoption lookup in 064 says "GET search by
+-- reference_number" but that is UNDER-SPECIFIED: a reference_number
+-- search only covers orders that carry one, i.e. order_type
+-- registration and merch. Organizer subscription orders mint PRs
+-- with NO reference number, so their adoption lookup is a different
+-- API call: the HitPay GET payment_requests list filtered with the
+-- exact-bracket metadata filter
+--     metadata[pelikat_order]='organizer_subscription:<target_id>'
+-- (no reference_number parameter). The full truth:
+--   * order_type registration | merch  → search=<reference_number>
+--   * order_type organizer_subscription
+--       → metadata[pelikat_order]='organizer_subscription:<target_id>'
+-- Live round-trip of the metadata filter verified 2026-10-19:
+-- probe returned exactly 1 hit for the true target, 0 for an
+-- unrelated target.
+--
+-- WARN 2 — PRE-METADATA COHORT WARNING. PRs minted BEFORE the
+-- pelikat_order metadata pair was added to the minting code carry
+-- no metadata at all, so the metadata lookup misses them, the
+-- strict matcher returns 0 candidates, and the runbook falls
+-- through to the delete + fresh-create path. That is SAFE for a
+-- pre-create crash, but for a POST-CREATE orphan it would leave
+-- the real PR unlinked at HitPay — reachable only through webhook,
+-- manual redelivery or manual reconciliation. Sentinels OLDER
+-- THAN THE METADATA CHANGE are that cohort: ops must prefer
+-- HitPay-dashboard reconciliation for those old sentinels until
+-- re-minted PRs carry metadata.
+--
+-- Everything else from 064 stays verbatim:
+--
+-- REVISED RECOVERY RUNBOOK for a 'pending:<uuid>' sentinel row:
+--
+--   (a) Pre-create crash (create request never left / errored):
+--       deletion SAFE — BUT only after a HitPay list/search check
+--       confirms no orphan PR exists for the logical order (per
+--       the order-type-specific lookup in WARN 1). Preferred over
+--       delete-blind: the application layer first ADOPTS the
+--       orphan — it does the GET search above, relinks the real
+--       provider_request_id onto the sentinel row, and the
+--       checkout_url is reused with no new PR minted.
+--
+--   (b) Post-create crash (create succeeded, linking never ran):
+--       NEVER delete blind. The PR is still open at HitPay. It
+--       must be LINKED (adopted app-side via the lookup above) or
+--       CANCELLED (expired / voided / refunded at HitPay) before
+--       any payments row is removed.
+--
+--   (c) NEVER reclaim by age alone. Ages cannot distinguish a
+--       crash phase from an in-flight reservation, and auto-
+--       reclaim would race a live second HitPay create (063).
+--
+-- The application implements (a)'s adopt path as the order-type-
+-- specific GET search immediately before any sentinel deletion.
+--
+-- 063's PL/pgSQL semantics notes remain accurate and are NOT
+-- restated here; see the 063 header.
+comment on function public.claim_payment_slot(
+  text, uuid, uuid, uuid, uuid, numeric, text
+) is 'serialized claim-or-reuse of the pending payments row (A-3; tri-state since 063: is_reservation=true ⇒ fresh sentinel ''pending:<uuid>''; in_progress=true ⇒ retry, reservation already holds the sentinel; both false ⇒ reuse a REAL provider_request_id). Sentinel recovery (065 revision of the 064 runbook): pre-create crashes are safe to delete ONLY after a HitPay check confirms no orphan PR — the app''s preferred path is to ADOPT the orphan first, with an ORDER-TYPE-SPECIFIC lookup: search=<reference_number> for order_type registration/merch, and the exact-bracket metadata filter metadata[pelikat_order]=''organizer_subscription:<target_id>'' for organizer_subscription (which mints no reference number; filter round-trip verified 2026-10-19), then relink the real PR id. PRE-METADATA COHORT: PRs minted before the pelikat_order metadata addition carry no metadata → metadata lookup misses them → strict matcher returns 0 candidates → delete+fresh-create path — safe for pre-create crashes, but a post-create orphan would be left unlinked (reachable only via webhook/redelivery/reconcile), so for sentinels older than the metadata change ops must prefer HitPay-dashboard reconciliation until re-minted PRs carry metadata. Post-create crashes must NEVER be deleted blind: the PR is still open at HitPay — link (adopt) or cancel via refund/void before row removal. Sentinels are never reclaimed by age alone (cannot distinguish crash phase from in-flight). service_role only';

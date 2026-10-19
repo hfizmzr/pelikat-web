@@ -360,3 +360,33 @@ describe('Reliability: sentinel runbook truth revision (migration 064)', () => {
     expect((body63.match(/\breturn query\b/g) ?? []).length).toBe(1)
   })
 })
+
+describe('Reliability: sentinel runbook precision (migration 065)', () => {
+  const migration065 = read('supabase', 'migrations', '065_payment_sentinel_runbook_metadata_precision.sql')
+
+  it('revises the adoption lookup: order-type-specific, incl. organizer_subscription metadata filter', () => {
+    expect(migration065).toMatch(/comment on function public\.claim_payment_slot\(/i)
+    expect(migration065).toMatch(/search=<reference_number>/)
+    expect(migration065).toMatch(/metadata\[pelikat_order\]=''organizer_subscription:<target_id>''/)
+    expect(migration065).toMatch(/which mints no reference number/)
+    expect(migration065).toMatch(/round-trip verified 2026-10-19/)
+  })
+
+  it('warns about the pre-metadata cohort and prescribes dashboard reconciliation', () => {
+    expect(migration065).toMatch(/PRE-METADATA COHORT/)
+    expect(migration065).toMatch(/carry no metadata/)
+    expect(migration065).toMatch(/0 candidates/)
+    expect(migration065).toMatch(/prefer HitPay-dashboard reconciliation/)
+    expect(migration065).toMatch(/older than the metadata change/)
+  })
+
+  it('keeps the 064 invariants verbatim and stays comment-only', () => {
+    expect(migration065).toMatch(/ADOPT the orphan/i)
+    expect(migration065).toMatch(/NEVER delete blind/)
+    expect(migration065).toMatch(/NEVER reclaim by age alone/)
+    expect(migration065).not.toMatch(/\bcreate (or replace )?function\b/i)
+    expect(migration065).not.toMatch(/\bdrop function\b/i)
+    expect(migration065).not.toMatch(/\brevoke\b|\bgrant\b/i)
+    expect(migration065.split('$$')).toHaveLength(1)
+  })
+})
