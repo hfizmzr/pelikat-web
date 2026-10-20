@@ -32,6 +32,15 @@ describe('Reliability: Virtual Events Schema (067)', () => {
     expect(migration).toContain('return null;')
   })
 
+  it('both allocate_bib and confirm_dummy_payment strip bib_prefix before digit parse', () => {
+    // Prefix "21K" + BIB "21K0001" must parse as 1, not 210001 (which
+    // would false-trigger 'Category is full' and leave guests bib-less).
+    expect(migration).toContain(
+      "nullif(regexp_replace(substr(bib_number, length(coalesce(v_cat.bib_prefix, '')) + 1), '\\D', '', 'g'), '')::int"
+    )
+    expect(migration).not.toContain("regexp_replace(bib_number")
+  })
+
   it('confirm_dummy_payment keeps NO inline auth.uid() ownership check', () => {
     // Ownership moved app-side (src/lib/actions/payments.ts) when main
     // switched to service-role-only execution; the merged body must not
@@ -92,5 +101,26 @@ describe('Reliability: Virtual runner UI', () => {
     expect(paymentPage).toContain('eventType={registration.events?.event_type}')
     // The page fetches events stacked so event_type is present.
     expect(paymentPage).toContain("select('*, events(*), race_categories(*)')")
+  })
+})
+
+describe('Reliability: Virtual certificate authorization', () => {
+  // Slice the virtual cert function (last export in cert.ts).
+  const certTs = read('src', 'lib', 'actions', 'cert.ts')
+  const virtualFn = certTs.slice(certTs.indexOf('generateVirtualEventCertificate'))
+
+  it('generateVirtualEventCertificate requires a CONFIRMED registration owned by the caller (CWE-862)', () => {
+    // Pending-payment runners must not mint an e-cert by logging distance.
+    expect(virtualFn).toContain('.eq(\'runner_id\', profile.id)')
+    expect(virtualFn).toContain('isConfirmedStatus(reg.payment_status)')
+    expect(virtualFn).toContain('You need a confirmed registration for this event')
+    expect(certTs).toContain("from '@/lib/registration-status'")
+  })
+
+  it('physical badge path stays gated by owner-only runner_badges RLS (earned row required)', () => {
+    const badgeFn = certTs.slice(certTs.indexOf('generateBadgeCertificate'), certTs.indexOf('generateVirtualEventCertificate'))
+    // The badge itself is earned state; no run_logs-computed completion here.
+    expect(badgeFn).toContain("from('runner_badges')")
+    expect(badgeFn).toContain("it hasn't been earned yet")
   })
 })

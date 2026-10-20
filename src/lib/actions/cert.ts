@@ -2,6 +2,7 @@
 
 import { fetchDjangoApi } from '@/lib/django'
 import { requireAuth } from '@/lib/auth/requireUser'
+import { isConfirmedStatus } from '@/lib/registration-status'
 
 interface CertResult {
   cert_url: string
@@ -103,6 +104,20 @@ export async function generateVirtualEventCertificate(input: { eventId: string }
     .single()
 
   if (!profile) throw new Error('Runner profile not found')
+
+  // Authorization (CWE-862): completion is computed from run_logs, so an
+  // explicit ownership + confirmed-registration gate is required here —
+  // a pending-payment runner must not be able to mint an e-cert.
+  const { data: reg } = await supabase
+    .from('registrations')
+    .select('payment_status')
+    .eq('event_id', input.eventId)
+    .eq('runner_id', profile.id)
+    .maybeSingle()
+
+  if (!reg || !isConfirmedStatus(reg.payment_status)) {
+    throw new Error('You need a confirmed registration for this event')
+  }
 
   const { data: logs } = await supabase
     .from('run_logs')

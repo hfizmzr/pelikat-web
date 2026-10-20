@@ -56,8 +56,10 @@ begin
   v_width := length(v_last_number::text);
 
   for v_attempt in 1..3 loop
+    // Strip the category's bib_prefix before parsing digits: a numeric
+    // prefix (bib_prefix is free text) would otherwise inflate v_next_number.
     select coalesce(max(
-      nullif(regexp_replace(bib_number, '\D', '', 'g'), '')::int
+      nullif(regexp_replace(substr(bib_number, length(coalesce(v_cat.bib_prefix, '')) + 1), '\D', '', 'g'), '')::int
     ), v_cat.bib_start - 1) + 1
     into v_next_number
     from public.registrations

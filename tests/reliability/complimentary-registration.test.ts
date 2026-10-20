@@ -39,6 +39,23 @@ describe('Reliability: Complimentary Registrations (066)', () => {
   it('organizer RPC writes a complimentary_registrations_added audit row', () => {
     expect(migration).toContain("'complimentary_registrations_added'")
   })
+
+  it('email-less guests are inserted with NULL (not \'\') guest_email', () => {
+    // '' would collide with other '' rows on the partial unique index
+    // (event_id, lower(guest_email)) WHERE runner_id IS NULL and roll
+    // back the whole CSV import — normalize on insert.
+    expect(migration).toContain(
+      "case when v_profile_id is null then nullif(v_email, '') else null end"
+    )
+  })
+
+  it('allocate_bib strips bib_prefix before digit parse (CodeRabbit fix 2)', () => {
+    // Patched in place; 067's copy of allocate_bib carries the same fix.
+    expect(migration).toContain(
+      "nullif(regexp_replace(substr(bib_number, length(coalesce(v_cat.bib_prefix, '')) + 1), '\\D', '', 'g'), '')::int"
+    )
+    expect(migration).not.toContain("regexp_replace(bib_number")
+  })
 })
 
 describe('Reliability: confirmed predicate (paid OR waived)', () => {
