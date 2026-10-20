@@ -96,7 +96,7 @@ All runners have DOB, phone, emergency contact and `pdpa_agreed = true`.
 | runner_streaks         | 6    | fixed up after the trigger collapses historical logs (consistent with run_logs) |
 | runner_badges          | 13   | `finisher_e_cert` entitlements (= physical e-cert), VIP + milestone badges |
 | photo_tags             | 8    | all 4 statuses (auto / review / discarded / confirmed), confidences, batch ids |
-| audit_log              | 14   | business events only (never logins) + automatic trigger noise (see below) |
+| audit_log              | ~144  | on a FRESH wipe+seed: 14 business events (never logins) + ~130 automatic `INSERT <table>` trigger rows from the 11 audited tables (see below). Seed-only re-runs see far less |
 | platform_settings      | 6    | same keys migration 053 pre-seeds (upsert, never overwrites admin edits) |
 
 ## 5. Known gaps & notes
