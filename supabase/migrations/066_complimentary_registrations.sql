@@ -167,7 +167,7 @@ begin
     raise exception 'Role must be runner, pacer, or vip';
   end if;
 
-  select get_my_organizer_id() into v_organizer_id;
+  select public.get_my_organizer_id() into v_organizer_id;
 
   if not exists (
     select 1 from public.events
