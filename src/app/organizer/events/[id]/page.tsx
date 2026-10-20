@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt, BarChart3 } from 'lucide-react'
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt, BarChart3, ClipboardList } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { EventSettingsPanel } from '@/components/events/event-settings-panel'
@@ -195,6 +195,12 @@ export default async function OrganizerEventDetailPage({
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
+                <Link href={`/organizer/events/${eventDetail.id}/registrations`} className="block">
+                  <Button variant="outline" className="w-full justify-start">
+                    <ClipboardList className="mr-2 h-4 w-4" />
+                    Registrations &amp; Guests
+                  </Button>
+                </Link>
                 <Link href={`/organizer/events/${eventDetail.id}/checkin`} className="block">
                   <Button variant="outline" className="w-full justify-start">
                     <Users className="mr-2 h-4 w-4" />
