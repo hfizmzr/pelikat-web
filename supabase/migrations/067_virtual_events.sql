@@ -88,9 +88,16 @@ begin
 end;
 $$;
 
--- ── PAYMENT CONFIRMATION: no bib for virtual events ───────────
--- Same as 056 but the bib allocation step is skipped when the event
--- is virtual — payment still marks the registration paid.
+-- ── PAYMENT CONFIRMATION: server-trusted caller + virtual skip ─
+-- Renumbered from the branch's 061 to 067 (collision with main's
+-- HitPay migrations). The body is main's newest confirm_dummy_payment
+-- (from 061_confirm_dummy_payment_server_trust.sql) verbatim —
+-- service-role only, ownership enforced app-side in src/lib/actions/
+-- payments.ts, FOR UPDATE row lock, bib_prefix-strip digit parse,
+-- 3-attempt BIB retry, atomic payment_status='paid' + BIB assignment,
+-- audit_log entry with NULL actor (service_role JWTs carry no sub) —
+-- with one early-return branch: virtual events mark the registration
+-- paid and audit payment_confirmed with NO bib allocation.
 create or replace function public.confirm_dummy_payment(
   p_registration_id uuid
 ) returns boolean
@@ -99,29 +106,18 @@ create or replace function public.confirm_dummy_payment(
   set search_path = ''
   as $$
 declare
-  v_runner_id uuid;
   v_reg record;
   v_cat record;
   v_event_type text;
-  v_user_email text;
   v_last_number int;
   v_next_number int;
   v_width int;
   v_bib text;
   v_attempt int;
 begin
-  select id into v_runner_id
-  from public.runner_profiles
-  where user_id = auth.uid();
-
-  if v_runner_id is null then
-    raise exception 'Runner profile not found';
-  end if;
-
   select * into v_reg
   from public.registrations
   where id = p_registration_id
-    and runner_id = v_runner_id
   for update;
 
   if not found then
@@ -137,23 +133,23 @@ begin
   where id = v_reg.event_id;
 
   if v_event_type = 'virtual' then
+    -- Virtual runs have no physical bib: mark paid, audit, done.
     update public.registrations
     set payment_status = 'paid'
     where id = p_registration_id;
 
-    select email into v_user_email
-    from auth.users where id = auth.uid();
-
+    -- No JWT sub on service_role callers: actor identity is NULL in
+    -- mock mode (see migration header).
     insert into public.audit_log (actor_id, action, target_id, metadata, actor_email)
     values (
-      auth.uid(),
+      null,
       'payment_confirmed',
       p_registration_id,
       jsonb_build_object(
         'event_id', v_reg.event_id,
         'bib_number', null
       ),
-      v_user_email
+      null
     );
 
     return true;
@@ -170,8 +166,10 @@ begin
   v_width := length(v_last_number::text);
 
   for v_attempt in 1..3 loop
+    -- Strip the category's bib_prefix before parsing digits: a numeric
+    -- prefix (bib_prefix is free text) would otherwise inflate v_next_number.
     select coalesce(max(
-      nullif(regexp_replace(bib_number, '\D', '', 'g'), '')::int
+      nullif(regexp_replace(substr(bib_number, length(coalesce(v_cat.bib_prefix, '')) + 1), '\D', '', 'g'), '')::int
     ), v_cat.bib_start - 1) + 1
     into v_next_number
     from public.registrations
@@ -199,21 +197,29 @@ begin
     end;
   end loop;
 
-  select email into v_user_email
-  from auth.users where id = auth.uid();
-
+  -- No JWT sub on service_role callers: actor identity is NULL in
+  -- mock mode (see migration header).
   insert into public.audit_log (actor_id, action, target_id, metadata, actor_email)
   values (
-    auth.uid(),
+    null,
     'payment_confirmed',
     p_registration_id,
     jsonb_build_object(
       'event_id', v_reg.event_id,
       'bib_number', v_bib
     ),
-    v_user_email
+    null
   );
 
   return true;
 end;
 $$;
+
+-- ── ACLs (belt-and-braces; same as main's 060/061) ───────────
+revoke execute on function public.confirm_dummy_payment(uuid) from public;
+revoke execute on function public.confirm_dummy_payment(uuid) from anon;
+revoke execute on function public.confirm_dummy_payment(uuid) from authenticated;
+grant execute on function public.confirm_dummy_payment(uuid) to service_role;
+
+comment on function public.confirm_dummy_payment(uuid)
+  is 'mock-mode confirm; ownership enforced app-side; no auth.uid() check since main''s 061 (service_role callers only); virtual events confirm with no BIB since 067';
