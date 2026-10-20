@@ -15,6 +15,7 @@ type Registration = {
   checked_in: boolean
   payment_status: string
   guest_name: string | null
+  guest_phone: string | null
   registration_role: string
   runner_profiles: { full_name: string; phone: string } | null
   race_categories: { name: string } | null
@@ -40,7 +41,7 @@ export function RegistrationsClient({
         reg.bib_number?.toLowerCase().includes(query) ||
         (reg.guest_name || reg.runner_profiles?.full_name || '').toLowerCase().includes(query) ||
         (reg.race_categories?.name || '').toLowerCase().includes(query) ||
-        (reg.runner_profiles?.phone || '').includes(query)
+        (reg.guest_phone || reg.runner_profiles?.phone || '').includes(query)
 
       const matchesFilter =
         statusFilter === 'all' ||
@@ -162,7 +163,7 @@ export function RegistrationsClient({
                       </span>
                     </TableCell>
                     <TableCell>{reg.race_categories?.name || '-'}</TableCell>
-                    <TableCell>{reg.runner_profiles?.phone || '-'}</TableCell>
+                    <TableCell>{reg.guest_phone || reg.runner_profiles?.phone || '-'}</TableCell>
                     <TableCell>
                       <Badge
                         variant={reg.payment_status === 'paid' ? 'default' : 'secondary'}

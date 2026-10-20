@@ -39,6 +39,41 @@ describe('Reliability: Virtual Events Schema (067)', () => {
     expect(migration).toContain('grant execute on function public.allocate_bib(uuid) to service_role')
   })
 
+  it('create wizard collects + persists target_distance_km for virtual events', () => {
+    for (const page of ['src/app/organizer/events/new/page.tsx', 'src/app/organizer/mobile/events/new/page.tsx']) {
+      const createPage = read(...page.split('/'))
+      // Required numeric input, shown only for virtual.
+      expect(createPage).toContain("formData.event_type === 'virtual' && (")
+      expect(createPage).toContain('Target Distance (KM)')
+      expect(createPage).toContain('min="0.1"')
+      // Server-side validation + INSERT persistence.
+      expect(createPage).toContain('Target distance is required for virtual runs')
+      expect(createPage).toContain("target_distance_km: formData.event_type === 'virtual' ? Number(formData.target_km) : null")
+    }
+  })
+
+  it('log_run grew an additive p_event_id param with a confirmed-registration guard (068)', () => {
+    const logRun = read('supabase', 'migrations', '068_log_run_event_id.sql')
+    // Backward-compatible: trailing DEFAULT NULL param, same returns.
+    expect(logRun).toContain('p_event_id uuid default null')
+    expect(logRun).toContain('returns public.run_logs')
+    expect(logRun).toContain('set search_path = \'\'')
+    // Event-linked runs require a confirmed registration (paid|waived).
+    expect(logRun).toContain("r.payment_status in ('paid', 'waived')")
+    expect(logRun).toContain("raise exception 'No confirmed registration for this event'")
+    // Stores event_id only via the provided param.
+    expect(logRun).toContain('p_event_id,')
+  })
+
+  it('run-log event param flow: CTA carries ?event=, page passes p_event_id, shows linked context', () => {
+    const runLogPage = read('src', 'app', 'runner', 'run-log', 'page.tsx')
+    expect(runLogPage).toContain("new URLSearchParams(window.location.search).get('event')")
+    expect(runLogPage).toContain('p_event_id: linkedEventId')
+    expect(runLogPage).toContain('linked event progress')
+    const eventPage = read('src', 'app', 'runner', 'events', '[id]', 'page.tsx')
+    expect(eventPage).toContain('href={`/runner/run-log?event=${event.id}`}')
+  })
+
   it('PL/pgSQL bodies use -- comments only (no // lines)', () => {
     expect(migration).not.toMatch(/^\s*\/\//m)
   })
@@ -74,6 +109,10 @@ describe('Reliability: Virtual Events Schema (067)', () => {
     // The virtual audit writes a NULL actor, matching main's
     // server-trust contract (service_role JWTs carry no sub).
     expect(confirmFn).toContain('values (\n      null,')
+    // Guard covers BOTH branches: paid AND waived are confirmed and the
+    // mock flow must never overwrite a waived registration to 'paid'.
+    expect(confirmFn).toContain("if v_reg.payment_status in ('paid','waived') then")
+    expect(confirmFn).not.toContain("if v_reg.payment_status = 'paid' then")
   })
 
   it('physical path is main\'s newest body: prefix-strip digit parse + 3-attempt retry', () => {
@@ -95,7 +134,8 @@ describe('Reliability: Virtual runner UI', () => {
     expect(runnerDetail).toContain('targetKm')
     // Certificate CTA appears when target is reached; Log a Run CTA for virtual.
     expect(runnerDetail).toContain('isVirtual && targetKm > 0 && loggedKm >= targetKm')
-    expect(runnerDetail).toContain("href=\"/runner/run-log\"")
+    // Log a Run CTA for virtual.
+    expect(runnerDetail).toContain("href={`/runner/run-log?event=${event.id}`}")
     expect(runnerDetail).toContain('VirtualCertificateButton')
   })
 

@@ -195,12 +195,12 @@ export default async function OrganizerEventDetailPage({
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Link href={`/organizer/events/${eventDetail.id}/registrations`} className="block">
-                  <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" asChild>
+                  <Link href={`/organizer/events/${eventDetail.id}/registrations`}>
                     <ClipboardList className="mr-2 h-4 w-4" />
                     Registrations &amp; Guests
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
                 <Link href={`/organizer/events/${eventDetail.id}/checkin`} className="block">
                   <Button variant="outline" className="w-full justify-start">
                     <Users className="mr-2 h-4 w-4" />

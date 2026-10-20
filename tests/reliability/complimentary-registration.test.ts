@@ -73,6 +73,10 @@ describe('Reliability: Complimentary Registrations (066)', () => {
   it('PL/pgSQL bodies use -- comments only (no // lines)', () => {
     expect(migration).not.toMatch(/^\s*\/\//m)
   })
+
+  it('claim_guest_registrations only auto-claims CONFIRMED emails (CWE-287)', () => {
+    expect(migration).toContain('email_confirmed_at is not null')
+  })
 })
 
 describe('Reliability: confirmed predicate (paid OR waived)', () => {
@@ -131,5 +135,29 @@ describe('Reliability: organizer status filter', () => {
     // Filter union + matching branch.
     expect(client).toContain("'paid' | 'pending' | 'waived'")
     expect(client).toContain("(statusFilter === 'waived' && reg.payment_status === 'waived')")
+  })
+
+  it('waived renders as a success (confirmed) badge in organizer tables', () => {
+    const runnersPage = read('src', 'app', 'organizer', 'runners', 'page.tsx')
+    expect(runnersPage).toContain("waived: 'text-success bg-success/15'")
+    const orgDashboard = read('src', 'app', 'organizer', 'page.tsx')
+    expect(orgDashboard).toContain("reg.payment_status === 'paid' || reg.payment_status === 'waived'")
+  })
+
+  it('phone columns fall back to guest_phone before the profile phone', () => {
+    const client = read('src', 'components', 'events', 'registrations-client.tsx')
+    expect(client).toContain('reg.guest_phone || reg.runner_profiles?.phone ||')
+    const actionsCsv = read('src', 'components', 'events', 'actions.ts')
+    expect(actionsCsv).toContain('guest_phone: string | null')
+    expect(actionsCsv).toContain('reg.guest_phone || reg.runner_profiles?.phone ||')
+  })
+
+  it('partial import successes surface even when a batch RPC fails', () => {
+    const guests = read('src', 'components', 'events', 'complimentary-guests-client.tsx')
+    expect(guests).toContain('failedBatchGuests')
+    // setResults runs unconditionally, before the lastError early return.
+    expect(guests.indexOf('setResults(allResults)')).toBeLessThan(guests.indexOf('if (lastError)'))
+    // Retry keeps only the failed batches' rows.
+    expect(guests).toContain('setImportedRows(failedBatchGuests)')
   })
 })

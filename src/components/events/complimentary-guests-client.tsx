@@ -149,6 +149,10 @@ export function ComplimentaryGuestsClient({
     // selected category/role when the column is empty or unrecognized.
     const grouped = new Map<string, GuestRow[]>()
     const allSkippedRows: { name: string; email: string; reason: string }[] = []
+    // Rows whose batch RPC failed — kept for retry (resubmitting only
+    // the failed batches avoids the already-added "Already in this
+    // event" false positives from successful batches).
+    const failedBatchGuests: GuestRow[] = []
     for (const g of importedRows) {
       const catName = g.category.toLowerCase()
       const match = catName
@@ -177,6 +181,7 @@ export function ComplimentaryGuestsClient({
       )
       if (rpcError) {
         lastError = rpcError.message
+        failedBatchGuests.push(...guestsInGroup)
         continue
       }
       const res = data as RpcResult
@@ -187,12 +192,16 @@ export function ComplimentaryGuestsClient({
       allResults.skipped.push({ name: g.name, email: g.email, reason: `Unknown category` })
     }
     setBusy(false)
+    // Partial successes must surface: set results regardless of batch errors.
+    setResults(allResults)
     if (lastError) {
       setError(lastError)
+      // Keep only the rows whose batches failed, so retrying doesn't
+      // resubmit already-added successful rows.
+      setImportedRows(failedBatchGuests)
       router.refresh()
       return
     }
-    setResults(allResults)
     setImportedRows(null)
     if (fileRef.current) fileRef.current.value = ''
     router.refresh()

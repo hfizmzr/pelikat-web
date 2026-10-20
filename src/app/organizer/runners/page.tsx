@@ -32,6 +32,7 @@ export default async function OrganizerRunnersPage() {
 
   const statusColor: Record<string, string> = {
     paid: 'text-success bg-success/15',
+    waived: 'text-success bg-success/15',
     pending: 'text-primary bg-primary/15',
     failed: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/15',
     refunded: 'text-muted-foreground bg-accent',

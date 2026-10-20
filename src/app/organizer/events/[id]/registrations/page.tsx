@@ -31,7 +31,7 @@ export default async function OrganizerEventRegistrationsPage({
 
   const { data: registrations } = await supabase
     .from('registrations')
-    .select('id, bib_number, checked_in, payment_status, guest_name, registration_role, runner_profiles(full_name, phone), race_categories(name)')
+    .select('id, bib_number, checked_in, payment_status, guest_name, guest_phone, registration_role, runner_profiles(full_name, phone), race_categories(name)')
     .eq('event_id', id)
     .order('created_at', { ascending: false })
 
@@ -44,6 +44,7 @@ export default async function OrganizerEventRegistrationsPage({
       checked_in: (reg.checked_in ?? false) as boolean,
       payment_status: (reg.payment_status ?? 'pending') as string,
       guest_name: (reg.guest_name ?? null) as string | null,
+      guest_phone: (reg.guest_phone ?? null) as string | null,
       registration_role: (reg.registration_role ?? 'runner') as string,
       runner_profiles: runner ? { full_name: runner.full_name ?? '', phone: runner.phone ?? '' } : null,
       race_categories: cat ? { name: cat.name ?? '' } : null,

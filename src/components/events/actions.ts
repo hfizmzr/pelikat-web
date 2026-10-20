@@ -265,6 +265,7 @@ export async function exportRegistrationsCsv(
     checked_in: boolean
     payment_status: string
     guest_name: string | null
+    guest_phone: string | null
     registration_role: string
     runner_profiles: { full_name: string; phone: string } | null
     race_categories: { name: string } | null
@@ -281,7 +282,7 @@ export async function exportRegistrationsCsv(
     reg.guest_name || reg.runner_profiles?.full_name || '',
     reg.registration_role,
     reg.race_categories?.name || '',
-    reg.runner_profiles?.phone || '',
+    reg.guest_phone || reg.runner_profiles?.phone || '',
     reg.payment_status,
     reg.checked_in ? 'Yes' : 'No',
   ])

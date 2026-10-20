@@ -352,7 +352,7 @@ export default async function OrganizerDashboard() {
                         {new Date(reg.created_at).toLocaleDateString('en-MY')}
                       </span>
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                        reg.payment_status === 'paid'
+                        reg.payment_status === 'paid' || reg.payment_status === 'waived'
                           ? 'bg-success/15 text-success'
                           : reg.payment_status === 'pending'
                           ? 'bg-primary/15 text-primary'
