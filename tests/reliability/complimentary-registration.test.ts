@@ -122,3 +122,14 @@ describe('Reliability: CSV export guest columns', () => {
     expect(actions).toContain('bib_number: string | null')
   })
 })
+
+describe('Reliability: organizer status filter', () => {
+  it("'Waived' filter option matches waived registrations (existing options/order kept)", () => {
+    const client = read('src', 'components', 'events', 'registrations-client.tsx')
+    // Option renders after Pending (existing order preserved).
+    expect(client).toContain('<option value="pending">Pending</option>\n                <option value="waived">Waived</option>')
+    // Filter union + matching branch.
+    expect(client).toContain("'paid' | 'pending' | 'waived'")
+    expect(client).toContain("(statusFilter === 'waived' && reg.payment_status === 'waived')")
+  })
+})

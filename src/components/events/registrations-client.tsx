@@ -30,7 +30,7 @@ export function RegistrationsClient({
   stats: { total: number; checkedIn: number; paid: number }
 }) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'checked_in' | 'not_checked' | 'paid' | 'pending'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'checked_in' | 'not_checked' | 'paid' | 'pending' | 'waived'>('all')
 
   const filtered = useMemo(() => {
     return registrations.filter((reg) => {
@@ -47,7 +47,8 @@ export function RegistrationsClient({
         (statusFilter === 'checked_in' && reg.checked_in) ||
         (statusFilter === 'not_checked' && !reg.checked_in) ||
         (statusFilter === 'paid' && reg.payment_status === 'paid') ||
-        (statusFilter === 'pending' && reg.payment_status === 'pending')
+        (statusFilter === 'pending' && reg.payment_status === 'pending') ||
+        (statusFilter === 'waived' && reg.payment_status === 'waived')
 
       return matchesSearch && matchesFilter
     })
@@ -130,6 +131,7 @@ export function RegistrationsClient({
                 <option value="not_checked">Not Checked</option>
                 <option value="paid">Paid</option>
                 <option value="pending">Pending</option>
+                <option value="waived">Waived</option>
               </select>
             </div>
           </div>
