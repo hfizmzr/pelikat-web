@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { DjangoApiError, fetchDjangoApi } from '@/lib/django'
+import { isConfirmedStatus } from '@/lib/registration-status'
 // Dummy confirmation writes financial rows, so it lives with the other
 // service-role-backed server actions live in lib/actions — re-exports are NOT
 // allowed here ("use server" files may only export async functions from this
@@ -101,7 +102,9 @@ export async function createHitpayCheckout(input: {
 
     // ALREADY-PAD re-entry: never create a second checkout for a paid
     // registration — the runner must see the confirmed state instead.
-    if (registration.payment_status === 'paid') {
+    // Waived (complimentary) registrations are confirmed without a
+    // charge and must never enter a checkout at all.
+    if (isConfirmedStatus(registration.payment_status)) {
       return { ok: true, alreadyPaid: true }
     }
 
@@ -258,9 +261,12 @@ export async function generateConsentCode(registrationId: string) {
 
 export async function exportRegistrationsCsv(
   registrations: {
-    bib_number: string
+    bib_number: string | null
     checked_in: boolean
     payment_status: string
+    guest_name: string | null
+    guest_phone: string | null
+    registration_role: string
     runner_profiles: { full_name: string; phone: string } | null
     race_categories: { name: string } | null
   }[]
@@ -270,12 +276,13 @@ export async function exportRegistrationsCsv(
   const { user } = await requireAuth()
   void user
 
-  const headers = ['BIB', 'Name', 'Category', 'Phone', 'Payment', 'Checked In']
+  const headers = ['BIB', 'Name', 'Role', 'Category', 'Phone', 'Payment', 'Checked In']
   const rows = registrations.map((reg) => [
-    reg.bib_number,
-    reg.runner_profiles?.full_name || '',
+    reg.bib_number ?? '',
+    reg.guest_name || reg.runner_profiles?.full_name || '',
+    reg.registration_role,
     reg.race_categories?.name || '',
-    reg.runner_profiles?.phone || '',
+    reg.guest_phone || reg.runner_profiles?.phone || '',
     reg.payment_status,
     reg.checked_in ? 'Yes' : 'No',
   ])

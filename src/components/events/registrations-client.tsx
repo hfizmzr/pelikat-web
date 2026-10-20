@@ -11,9 +11,12 @@ import { exportRegistrationsCsv } from '@/components/events/actions'
 
 type Registration = {
   id: string
-  bib_number: string
+  bib_number: string | null
   checked_in: boolean
   payment_status: string
+  guest_name: string | null
+  guest_phone: string | null
+  registration_role: string
   runner_profiles: { full_name: string; phone: string } | null
   race_categories: { name: string } | null
 }
@@ -28,24 +31,25 @@ export function RegistrationsClient({
   stats: { total: number; checkedIn: number; paid: number }
 }) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'checked_in' | 'not_checked' | 'paid' | 'pending'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'checked_in' | 'not_checked' | 'paid' | 'pending' | 'waived'>('all')
 
   const filtered = useMemo(() => {
     return registrations.filter((reg) => {
       const query = searchQuery.toLowerCase()
       const matchesSearch =
         !query ||
-        reg.bib_number.toLowerCase().includes(query) ||
-        (reg.runner_profiles?.full_name || '').toLowerCase().includes(query) ||
+        reg.bib_number?.toLowerCase().includes(query) ||
+        (reg.guest_name || reg.runner_profiles?.full_name || '').toLowerCase().includes(query) ||
         (reg.race_categories?.name || '').toLowerCase().includes(query) ||
-        (reg.runner_profiles?.phone || '').includes(query)
+        (reg.guest_phone || reg.runner_profiles?.phone || '').includes(query)
 
       const matchesFilter =
         statusFilter === 'all' ||
         (statusFilter === 'checked_in' && reg.checked_in) ||
         (statusFilter === 'not_checked' && !reg.checked_in) ||
         (statusFilter === 'paid' && reg.payment_status === 'paid') ||
-        (statusFilter === 'pending' && reg.payment_status === 'pending')
+        (statusFilter === 'pending' && reg.payment_status === 'pending') ||
+        (statusFilter === 'waived' && reg.payment_status === 'waived')
 
       return matchesSearch && matchesFilter
     })
@@ -93,7 +97,7 @@ export function RegistrationsClient({
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Paid</CardTitle>
+            <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.paid}</div>
@@ -128,6 +132,7 @@ export function RegistrationsClient({
                 <option value="not_checked">Not Checked</option>
                 <option value="paid">Paid</option>
                 <option value="pending">Pending</option>
+                <option value="waived">Waived</option>
               </select>
             </div>
           </div>
@@ -148,12 +153,17 @@ export function RegistrationsClient({
               <TableBody>
                 {filtered.map((reg) => (
                   <TableRow key={reg.id}>
-                    <TableCell className="font-mono">{reg.bib_number}</TableCell>
+                    <TableCell className="font-mono">{reg.bib_number || 'TBA'}</TableCell>
                     <TableCell className="font-medium">
-                      {reg.runner_profiles?.full_name || 'Unknown'}
+                      <span className="inline-flex items-center gap-2">
+                        {reg.guest_name || reg.runner_profiles?.full_name || 'Unknown'}
+                        {reg.registration_role !== 'runner' && (
+                          <Badge variant="outline" className="capitalize">{reg.registration_role}</Badge>
+                        )}
+                      </span>
                     </TableCell>
                     <TableCell>{reg.race_categories?.name || '-'}</TableCell>
-                    <TableCell>{reg.runner_profiles?.phone || '-'}</TableCell>
+                    <TableCell>{reg.guest_phone || reg.runner_profiles?.phone || '-'}</TableCell>
                     <TableCell>
                       <Badge
                         variant={reg.payment_status === 'paid' ? 'default' : 'secondary'}

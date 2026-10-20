@@ -5,13 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, MapPin, Ticket, CheckCircle, Clock, CreditCard } from 'lucide-react'
+import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
 
 interface RegisteredEvent {
   id: string
   event_id: string
   bib_number: string
-  payment_status: 'pending' | 'paid' | 'refunded'
+  payment_status: 'pending' | 'paid' | 'refunded' | 'waived'
   checked_in: boolean
   events: { name: string; event_date: string; location?: string; status: string }
   race_categories: { name: string }
@@ -134,15 +135,17 @@ export default function RegisteredEventsSection({ registrations }: Props) {
 
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge
-                      variant={reg.payment_status === 'paid' ? 'default' : reg.payment_status === 'refunded' ? 'outline' : 'secondary'}
+                      variant={isConfirmedStatus(reg.payment_status) ? 'default' : reg.payment_status === 'refunded' ? 'outline' : 'secondary'}
                       className="gap-1"
                     >
                       <CreditCard className="h-3 w-3" />
                       {reg.payment_status === 'paid'
                         ? 'Paid'
-                        : reg.payment_status === 'refunded'
-                          ? 'Refunded'
-                          : 'Pending'}
+                        : reg.payment_status === 'waived'
+                          ? 'Waived'
+                          : reg.payment_status === 'refunded'
+                            ? 'Refunded'
+                            : 'Pending'}
                     </Badge>
                     {reg.checked_in ? (
                       <Badge variant="default" className="gap-1">

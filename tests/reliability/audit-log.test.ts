@@ -42,4 +42,23 @@ describe('Reliability: Audit Log', () => {
     expect(content).toContain('user?.id || null')
     expect(content).toContain('user?.email || null')
   })
+
+  it('auth lifecycle events (login/logout) are NOT audited — business events only', () => {
+    // The branch removed user_login (redirectAfterLogin.ts) and
+    // user_logout (runner/profile/page.tsx) audit writes: session
+    // lifecycle is not a business event.
+    const profilePage = readFileSync(
+      join(process.cwd(), 'src', 'app', 'runner', 'profile', 'page.tsx'),
+      'utf-8'
+    )
+    expect(profilePage).not.toContain("'user_logout'")
+    expect(profilePage).not.toContain('"user_logout"')
+
+    const redirectAfterLogin = readFileSync(
+      join(process.cwd(), 'src', 'lib', 'auth', 'redirectAfterLogin.ts'),
+      'utf-8'
+    )
+    expect(redirectAfterLogin).not.toContain("'user_login'")
+    expect(redirectAfterLogin).not.toContain("audit_log")
+  })
 })

@@ -74,6 +74,8 @@ export default async function OrganizerAnalyticsPage() {
     const paid = eventRegs.filter((r) => r.payment_status === 'paid')
     const checkedIn = eventRegs.filter((r) => r.checked_in)
     const revenue = paid.reduce((sum, r) => sum + Number(r.race_categories?.price ?? 0), 0)
+    // Note: `paid` here is revenue-classified (paid-only, excludes
+    // waived complimentary rows) because it feeds revenue math below.
     return { name: event.name, total: eventRegs.length, paid: paid.length, checkedIn: checkedIn.length, revenue }
   })
 

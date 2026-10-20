@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react"
-import { Award, Bell, CalendarX, CheckCheck, Flame, Footprints, QrCode, ShoppingBag, Tag, Tags, Trophy } from "lucide-react"
+import { Award, Bell, Calendar, CalendarX, CheckCheck, Flame, Footprints, ShoppingBag, Tag, Tags, Trophy } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -139,11 +139,11 @@ export default async function RunnerDashboard() {
               </div>
               <div className="mt-4 pt-4 border-t border-border/40 flex gap-2">
                 <Link
-                  href={`/runner/events/${nextEvent.events?.id}/bib`}
+                  href={`/runner/events/${nextEvent.events?.id}`}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold active:scale-95 transition-transform"
                 >
-                  <QrCode className="size-[16px]" />
-                  Digital BIB Pass
+                  <Calendar className="size-[16px]" />
+                  View Event Details
                 </Link>
                 <Link
                   href="/runner/merch"

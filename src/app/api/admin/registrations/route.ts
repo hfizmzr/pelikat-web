@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     { data: eventsList },
   ] = await Promise.all([
     supabaseAdmin.from('registrations').select('id', { count: 'exact', head: true }),
-    supabaseAdmin.from('registrations').select('id', { count: 'exact', head: true }).eq('payment_status', 'paid'),
+    supabaseAdmin.from('registrations').select('id', { count: 'exact', head: true }).in('payment_status', ['paid', 'waived']),
     supabaseAdmin.from('registrations').select('id', { count: 'exact', head: true }).eq('checked_in', true),
     supabaseAdmin.from('registrations').select('id', { count: 'exact', head: true }).eq('payment_status', 'pending'),
     supabaseAdmin.from('events').select('id, name').order('name'),

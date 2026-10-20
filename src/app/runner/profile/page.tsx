@@ -5,10 +5,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import DocumentCapture from "@/components/profile/document-capture";
 import { deleteRunnerAccount, storeEncryptedIc } from "@/lib/actions/account";
-import { logAudit } from "@/lib/audit";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+
 
 export default function RunnerProfilePage() {
   const { user } = useAuth();
@@ -118,10 +118,6 @@ export default function RunnerProfilePage() {
     if (loggingOut) return;
     setLoggingOut(true);
     setLogoutError(null);
-
-    // Logging out must never be blocked by the audit write; just make a failed write visible.
-    const { error: auditError } = await logAudit(supabase, "user_logout");
-    if (auditError) console.error("user_logout audit insert failed:", auditError.message);
 
     const { error } = await supabase.auth.signOut();
     if (error) {

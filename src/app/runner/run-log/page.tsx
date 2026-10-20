@@ -31,6 +31,7 @@ interface AwardedBadge {
 interface RunLogEntry {
   id: string
   runner_id: string
+  event_id: string | null
   distance_km: number
   duration_sec: number
   pace_min_km: number
@@ -69,6 +70,11 @@ export default function RunnerRunLogPage() {
   })
   const [logError, setLogError] = useState<string | null>(null)
 
+  // Virtual-event linking: "Log a Run" on the event detail page links
+  // here with ?event=<id> — the run then counts toward that event's
+  // progress bar / e-cert (068 log_run p_event_id).
+  const [linkedEventId, setLinkedEventId] = useState<string | null>(null)
+
   const gpsTrackDataRef = useRef<GpsPoint[]>([])
 
   useEffect(() => {
@@ -78,6 +84,8 @@ export default function RunnerRunLogPage() {
         .select('id')
         .eq('user_id', user?.id)
         .single()
+
+      setLinkedEventId(new URLSearchParams(window.location.search).get('event'))
 
       if (profile) {
         setProfile(profile as RunnerProfile)
@@ -150,6 +158,7 @@ export default function RunnerRunLogPage() {
       p_distance_km: parseFloat(newRun.distance_km),
       p_duration_sec: durationSec,
       p_gps_data: gpsTrackDataRef.current.length > 0 ? gpsTrackDataRef.current : null,
+      p_event_id: linkedEventId,
     })
 
     if (error) {
@@ -249,12 +258,16 @@ export default function RunnerRunLogPage() {
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden flex flex-col">
           <div className="p-4 border-b border-border/60">
             <h2 className="text-[14px] font-bold text-foreground">Log a Run</h2>
-            <p className="text-[12px] text-muted-foreground">Add your virtual run activity</p>
+            {linkedEventId ? (
+              <p className="text-[12px] text-success">This run counts toward your linked event progress</p>
+            ) : (
+              <p className="text-[12px] text-muted-foreground">Add your virtual run activity</p>
+            )}
           </div>
           
           <div className="p-5 flex flex-col gap-4">
-            <Link 
-              href="/runner/run-log/track"
+            <Link
+              href={linkedEventId ? `/runner/run-log/track?event=${linkedEventId}` : "/runner/run-log/track"}
               className="w-full py-3.5 rounded-xl border border-success/40 bg-success/5 text-success text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
               <Satellite className="size-[18px]" />

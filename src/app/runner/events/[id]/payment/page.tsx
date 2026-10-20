@@ -62,7 +62,7 @@ export default function PaymentPage() {
     bib_number: string
     payment_status: string
     checked_in: boolean
-    events: { name: string; event_date: string; location?: string }
+    events: { name: string; event_date: string; location?: string; event_type?: string }
     race_categories: { name: string; price: number }
   } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -363,7 +363,6 @@ export default function PaymentPage() {
         {isHitpay ? (
           <div ref={stateRegionRef} tabIndex={-1} role="status" aria-live="polite" className="flex flex-col rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
             {phase === 'idle' && <PayMethodCard amount={amount} onStart={startCheckout} />}
-
             {phase === 'creating' && <CreatingState />}
 
             {phase === 'qr_display' && checkout?.qrCode && (
@@ -381,7 +380,7 @@ export default function PaymentPage() {
 
             {phase === 'awaiting' && <AwaitingState />}
 
-            {phase === 'confirmed' && <ConfirmedState bibNumber={bibNumber} eventId={id} />}
+            {phase === 'confirmed' && <ConfirmedState bibNumber={bibNumber} eventId={id} eventType={registration.events?.event_type} />}
 
             {(phase === 'failed' || phase === 'expired') && (
               <PaymentErrorState kind={phase} reason={failureReason} onRetry={startCheckout} />
@@ -392,7 +391,7 @@ export default function PaymentPage() {
         ) : (
           <>
             {phase === 'confirmed' ? (
-              <ConfirmedState bibNumber={bibNumber} eventId={id} />
+              <ConfirmedState bibNumber={bibNumber} eventId={id} eventType={registration.events?.event_type} />
             ) : (
               <section className="bg-card rounded-2xl border border-border/60 p-5 flex flex-col gap-4">
                 <div className="flex items-start gap-3">

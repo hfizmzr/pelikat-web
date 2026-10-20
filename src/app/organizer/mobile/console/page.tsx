@@ -1,6 +1,7 @@
 import { Banknote, Calendar, ChevronRight, ClipboardList, Gauge, MapPin, QrCode, Tags, Trophy, UserPlus, Users } from "lucide-react"
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
 
 async function getActiveEventOpsData() {
@@ -52,7 +53,7 @@ async function getActiveEventOpsData() {
 
   const totalRegs = regs.length
   const checkedIn = regs.filter((r) => r.checked_in).length
-  const paid = regs.filter((r) => r.payment_status === 'paid').length
+  const paid = regs.filter((r) => isConfirmedStatus(r.payment_status)).length
   const pending = regs.filter((r) => r.payment_status === 'pending').length
   const checkInRate = totalRegs > 0 ? Math.round((checkedIn / totalRegs) * 100) : 0
 
@@ -192,7 +193,7 @@ export default async function OrganizerMobileConsolePage() {
               },
               {
                 icon: Banknote,
-                label: 'Confirmed Paid',
+                label: 'Confirmed',
                 value: paid.toLocaleString(),
                 badge: totalRegs > 0 ? `${Math.round((paid / totalRegs) * 100)}%` : '0%',
                 color: { bg: 'bg-primary/10', text: 'text-primary', badge: 'bg-primary/10 text-primary', bar: 'bg-primary' },
