@@ -16,6 +16,7 @@ interface FormData {
   event_date: string
   event_type: 'physical' | 'virtual'
   location: string
+  target_km: string
   status: string
   reg_open: string
   reg_close: string
@@ -24,6 +25,7 @@ interface FormData {
 interface FormErrors {
   name?: string
   event_date?: string
+  target_km?: string
 }
 
 function createEmptyInventory(): Record<ShirtSize, string> {
@@ -45,13 +47,16 @@ export default function NewEventPage() {
   const [shirtInventory, setShirtInventory] = useState<Record<ShirtSize, string>>(createEmptyInventory)
   const [formData, setFormData] = useState<FormData>({
     name: '', description: '', event_date: '', event_type: 'physical', location: '',
-    status: 'draft', reg_open: '', reg_close: '',
+    target_km: '', status: 'draft', reg_open: '', reg_close: '',
   })
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {}
     if (!formData.name.trim()) newErrors.name = 'Event name is required'
     if (!formData.event_date) newErrors.event_date = 'Event date is required'
+    if (formData.event_type === 'virtual' && (!formData.target_km || Number(formData.target_km) <= 0)) {
+      newErrors.target_km = 'Target distance is required for virtual runs (KM, min 0.1)'
+    }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -74,6 +79,7 @@ export default function NewEventPage() {
           description: formData.description.trim() || null,
           event_date: formData.event_date,
           event_type: formData.event_type,
+          target_distance_km: formData.event_type === 'virtual' ? Number(formData.target_km) : null,
           location: formData.event_type === 'virtual' ? null : (formData.location.trim() || null),
           status: formData.status,
           reg_open: formData.reg_open || null,
@@ -175,6 +181,22 @@ export default function NewEventPage() {
                   <option value="virtual">Virtual Run</option>
                 </select>
               </div>
+
+              {formData.event_type === 'virtual' && (
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Target Distance (KM)</label>
+                  <input
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    placeholder="e.g., 21.1"
+                    value={formData.target_km}
+                    onChange={(e) => setFormData(prev => ({ ...prev, target_km: e.target.value }))}
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-border focus:outline-none focus:border-primary/50 transition-colors"
+                  />
+                  {errors.target_km && <p className="text-[12px] text-red-500 dark:text-red-300 mt-1">{errors.target_km}</p>}
+                </div>
+              )}
 
               {formData.event_type === 'physical' && (
                 <div className="flex flex-col gap-2">

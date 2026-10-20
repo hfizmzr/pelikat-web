@@ -235,7 +235,7 @@ export default async function RunnerEventDetailPage({
 
                 {isVirtual && (
                   <Link
-                    href="/runner/run-log"
+                    href={`/runner/run-log?event=${event.id}`}
                     className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                   >
                     <Footprints className="size-[18px]" />
