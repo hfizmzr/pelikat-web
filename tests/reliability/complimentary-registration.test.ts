@@ -56,6 +56,23 @@ describe('Reliability: Complimentary Registrations (066)', () => {
     )
     expect(migration).not.toContain("regexp_replace(bib_number")
   })
+
+  it('function ACLs: allocate_bib internal-only, organizer RPC authenticated-only', () => {
+    expect(migration).toContain(
+      'revoke execute on function public.allocate_bib(uuid) from public, anon, authenticated'
+    )
+    expect(migration).toContain('grant execute on function public.allocate_bib(uuid) to service_role')
+    expect(migration).toContain(
+      'revoke execute on function public.organizer_add_complimentary_registrations(uuid, uuid, text, jsonb) from anon, public'
+    )
+    expect(migration).toContain(
+      'grant execute on function public.organizer_add_complimentary_registrations(uuid, uuid, text, jsonb) to authenticated'
+    )
+  })
+
+  it('PL/pgSQL bodies use -- comments only (no // lines)', () => {
+    expect(migration).not.toMatch(/^\s*\/\//m)
+  })
 })
 
 describe('Reliability: confirmed predicate (paid OR waived)', () => {

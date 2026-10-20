@@ -100,8 +100,8 @@ begin
   v_width := length(v_last_number::text);
 
   for v_attempt in 1..3 loop
-    // Strip the category's bib_prefix before parsing digits: a numeric
-    // prefix (bib_prefix is free text) would otherwise inflate v_next_number.
+    -- Strip the category's bib_prefix before parsing digits: a numeric
+    -- prefix (bib_prefix is free text) would otherwise inflate v_next_number.
     select coalesce(max(
       nullif(regexp_replace(substr(bib_number, length(coalesce(v_cat.bib_prefix, '')) + 1), '\D', '', 'g'), '')::int
     ), v_cat.bib_start - 1) + 1
@@ -133,6 +133,12 @@ begin
   return v_bib;
 end;
 $$;
+
+-- ── ACLs ─────────────────────────────────────────────────────
+-- Internal-only: allocate_bib is called by the definer functions
+-- here and in 067, never by clients.
+revoke execute on function public.allocate_bib(uuid) from public, anon, authenticated;
+grant execute on function public.allocate_bib(uuid) to service_role;
 
 -- ── ORGANIZER COMPLIMENTARY REGISTRATION RPC ──────────────────
 -- One call for single-add (frontend wraps rows as a 1-element array)
@@ -293,3 +299,9 @@ begin
   return jsonb_build_object('added', v_so_far, 'skipped', v_skipped);
 end;
 $$;
+
+-- ── ACLs (organizer RPC) ─────────────────────────────────────
+-- Callers are authenticated organizers; authz is enforced in-body
+-- via get_my_organizer_id() + event ownership check.
+revoke execute on function public.organizer_add_complimentary_registrations(uuid, uuid, text, jsonb) from anon, public;
+grant execute on function public.organizer_add_complimentary_registrations(uuid, uuid, text, jsonb) to authenticated;

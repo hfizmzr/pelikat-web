@@ -56,8 +56,8 @@ begin
   v_width := length(v_last_number::text);
 
   for v_attempt in 1..3 loop
-    // Strip the category's bib_prefix before parsing digits: a numeric
-    // prefix (bib_prefix is free text) would otherwise inflate v_next_number.
+    -- Strip the category's bib_prefix before parsing digits: a numeric
+    -- prefix (bib_prefix is free text) would otherwise inflate v_next_number.
     select coalesce(max(
       nullif(regexp_replace(substr(bib_number, length(coalesce(v_cat.bib_prefix, '')) + 1), '\D', '', 'g'), '')::int
     ), v_cat.bib_start - 1) + 1
@@ -89,6 +89,12 @@ begin
   return v_bib;
 end;
 $$;
+
+-- ── ACLs ─────────────────────────────────────────────────────
+-- Internal-only: allocate_bib is called by the definer functions
+-- below (066) and confirm_dummy_payment (067), never by clients.
+revoke execute on function public.allocate_bib(uuid) from public, anon, authenticated;
+grant execute on function public.allocate_bib(uuid) to service_role;
 
 -- ── PAYMENT CONFIRMATION: server-trusted caller + virtual skip ─
 -- Renumbered from the branch's 061 to 067 (collision with main's

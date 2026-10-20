@@ -32,6 +32,17 @@ describe('Reliability: Virtual Events Schema (067)', () => {
     expect(migration).toContain('return null;')
   })
 
+  it('allocate_bib is internal-only (ACL hygiene)', () => {
+    expect(migration).toContain(
+      'revoke execute on function public.allocate_bib(uuid) from public, anon, authenticated'
+    )
+    expect(migration).toContain('grant execute on function public.allocate_bib(uuid) to service_role')
+  })
+
+  it('PL/pgSQL bodies use -- comments only (no // lines)', () => {
+    expect(migration).not.toMatch(/^\s*\/\//m)
+  })
+
   it('both allocate_bib and confirm_dummy_payment strip bib_prefix before digit parse', () => {
     // Prefix "21K" + BIB "21K0001" must parse as 1, not 210001 (which
     // would false-trigger 'Category is full' and leave guests bib-less).
