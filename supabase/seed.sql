@@ -169,62 +169,62 @@ on conflict do nothing;
 -- ════════════════════════════════════════════════════════════════════════════
 insert into auth.identities
   (id, user_id, provider_id, provider, identity_data,
-   last_sign_in_at, created_at, updated_at, email)
+   last_sign_in_at, created_at, updated_at)
 values
   ('d0e5e000-0000-4000-8000-0000000000a1', 'd0e5e000-0000-4000-8000-0000000000a1', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000a1', 'email', 'admin1@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'admin1@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000a2', 'd0e5e000-0000-4000-8000-0000000000a2', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000a2', 'email', 'admin2@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'admin2@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000a3', 'd0e5e000-0000-4000-8000-0000000000a3', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000a3', 'email', 'admin3@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'admin3@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000b1', 'd0e5e000-0000-4000-8000-0000000000b1', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000b1', 'email', 'klcityrunners@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'klcityrunners@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000b2', 'd0e5e000-0000-4000-8000-0000000000b2', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000b2', 'email', 'penangpacers@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'penangpacers@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000b3', 'd0e5e000-0000-4000-8000-0000000000b3', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000b3', 'email', 'jbultras@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'jbultras@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000b4', 'd0e5e000-0000-4000-8000-0000000000b4', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000b4', 'email', 'borneotrailcrew@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'borneotrailcrew@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000b5', 'd0e5e000-0000-4000-8000-0000000000b5', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000b5', 'email', 'putrajayastriders@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'putrajayastriders@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000c1', 'd0e5e000-0000-4000-8000-0000000000c1', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000c1', 'email', 'runner1@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'runner1@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000c2', 'd0e5e000-0000-4000-8000-0000000000c2', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000c2', 'email', 'runner2@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'runner2@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000c3', 'd0e5e000-0000-4000-8000-0000000000c3', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000c3', 'email', 'runner3@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'runner3@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000c4', 'd0e5e000-0000-4000-8000-0000000000c4', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000c4', 'email', 'runner4@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'runner4@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000c5', 'd0e5e000-0000-4000-8000-0000000000c5', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000c5', 'email', 'runner5@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'runner5@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000c6', 'd0e5e000-0000-4000-8000-0000000000c6', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000c6', 'email', 'runner6@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'runner6@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000c7', 'd0e5e000-0000-4000-8000-0000000000c7', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000c7', 'email', 'runner7@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'runner7@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000c8', 'd0e5e000-0000-4000-8000-0000000000c8', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000c8', 'email', 'runner8@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'runner8@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000c9', 'd0e5e000-0000-4000-8000-0000000000c9', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000c9', 'email', 'runner9@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'runner9@pelikat.test'),
+   now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000ca', 'd0e5e000-0000-4000-8000-0000000000ca', 'email', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000ca', 'email', 'runner10@pelikat.test', 'email_verified', true),
-   now(), now(), now(), 'runner10@pelikat.test')
+   now(), now(), now())
 on conflict do nothing;
 
 -- ════════════════════════════════════════════════════════════════════════════
@@ -837,7 +837,7 @@ values
   ('d0e5e000-0000-4000-8000-0000000000d8', 'd0e5e000-0000-4000-8000-000000000058', 'd0e5e000-0000-4000-8000-000000000022',  8.0, 2900, 6.04, now() - interval '37 days'),
   ('d0e5e000-0000-4000-8000-0000000000d9', 'd0e5e000-0000-4000-8000-000000000058', 'd0e5e000-0000-4000-8000-000000000022', 10.0, 3550, 5.92, now() - interval '30 days'),
   ('d0e5e000-0000-4000-8000-0000000000da', 'd0e5e000-0000-4000-8000-000000000058', 'd0e5e000-0000-4000-8000-000000000022',  7.0, 2500, 5.95, now() - interval '23 days'),
-  ('d0e5e000-0000-4000-8000-0000000000db', 'd0e5e000-0000-4000-8000-000000000058', 'd0e5e000-0000-4000-8000-000000000022', 12.1, 4300, 5.91, now() - interval '21 days'),
+  ('d0e5e000-0000-4000-8000-0000000000db', 'd0e5e000-0000-4000-8000-000000000058', 'd0e5e000-0000-4000-8000-000000000022', 12.1, 4300, 5.92, now() - interval '21 days'),
   -- E5 Virtual 60K (active)
   ('d0e5e000-0000-4000-8000-0000000000dc', 'd0e5e000-0000-4000-8000-000000000051', 'd0e5e000-0000-4000-8000-000000000025', 15.0, 5400, 6.00, now() - interval '10 days'),
   ('d0e5e000-0000-4000-8000-0000000000dd', 'd0e5e000-0000-4000-8000-000000000052', 'd0e5e000-0000-4000-8000-000000000025', 18.0, 6300, 5.83, now() - interval '12 days'),
@@ -847,7 +847,7 @@ values
   -- E6 Virtual 21.1K (active)
   ('d0e5e000-0000-4000-8000-0000000000e1', 'd0e5e000-0000-4000-8000-000000000055', 'd0e5e000-0000-4000-8000-000000000026',  5.3, 2000, 6.29, now() - interval '8 days'),
   ('d0e5e000-0000-4000-8000-0000000000e2', 'd0e5e000-0000-4000-8000-000000000058', 'd0e5e000-0000-4000-8000-000000000026', 12.7, 4600, 6.04, now() - interval '7 days'),
-  ('d0e5e000-0000-4000-8000-0000000000e3', 'd0e5e000-0000-4000-8000-000000000059', 'd0e5e000-0000-4000-8000-000000000026', 10.6, 3700, 5.83, now() - interval '9 days'),
+  ('d0e5e000-0000-4000-8000-0000000000e3', 'd0e5e000-0000-4000-8000-000000000059', 'd0e5e000-0000-4000-8000-000000000026', 10.6, 3700, 5.82, now() - interval '9 days'),
   ('d0e5e000-0000-4000-8000-0000000000e4', 'd0e5e000-0000-4000-8000-000000000059', 'd0e5e000-0000-4000-8000-000000000026', 10.5, 3600, 5.71, now() - interval '3 days'),
   -- generic runs (event_id NULL) — recent, streak-friendly
   ('d0e5e000-0000-4000-8000-0000000000e5', 'd0e5e000-0000-4000-8000-000000000051', null,  5.0, 1800, 6.00, now() - interval '4 days'),
@@ -876,12 +876,12 @@ on conflict do nothing;
 -- ════════════════════════════════════════════════════════════════════════════
 insert into public.runner_streaks (runner_id, current_streak, longest_streak, last_run_date, updated_at)
 values
-  ('d0e5e000-0000-4000-8000-000000000051', 3,  9,  current_date,      now()),           -- r1 ran d0,d1,d2 (gap d3)
-  ('d0e5e000-0000-4000-8000-000000000052', 1,  6,  current_date - 1,  now()),           -- r2 last run yesterday
-  ('d0e5e000-0000-4000-8000-000000000053', 0,  5,  current_date - 6,  now()),           -- r3 last run 6 days ago (E5)
+  ('d0e5e000-0000-4000-8000-000000000051', 3,  3,  current_date,      now()),           -- r1 longest = d0,d1,d2 (gap d3)
+  ('d0e5e000-0000-4000-8000-000000000052', 1,  1,  current_date - 1,  now()),           -- r2 last run yesterday; no back-to-back runs
+  ('d0e5e000-0000-4000-8000-000000000053', 0,  1,  current_date - 6,  now()),           -- r3 last run 6 days ago (E5); no back-to-back runs
   ('d0e5e000-0000-4000-8000-000000000055', 3,  3,  current_date,      now()),           -- r5 daily 3-day streak
-  ('d0e5e000-0000-4000-8000-000000000058', 0,  4,  current_date - 7,  now()),           -- r8 single virtual log
-  ('d0e5e000-0000-4000-8000-000000000059', 6, 30,  current_date,      now())            -- r9 ran d0..d5 straight; 30-day historic best
+  ('d0e5e000-0000-4000-8000-000000000058', 0,  1,  current_date - 7,  now()),           -- r8 no back-to-back runs
+  ('d0e5e000-0000-4000-8000-000000000059', 6,  6,  current_date,      now())            -- r9 ran d0..d5 straight
 on conflict (runner_id) do update set
   current_streak = excluded.current_streak,
   longest_streak = excluded.longest_streak,
