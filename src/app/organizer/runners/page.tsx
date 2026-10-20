@@ -1,5 +1,6 @@
 import { Badge, CircleCheck, Clock, Download, MoreHorizontal, Search, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
+import { isConfirmedStatus } from '@/lib/registration-status'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export default async function OrganizerRunnersPage() {
     .limit(100)
 
   const total = registrations?.length || 0
-  const paid = registrations?.filter(r => r.payment_status === 'paid').length || 0
+  const paid = registrations?.filter(r => isConfirmedStatus(r.payment_status)).length || 0
   const pending = registrations?.filter(r => r.payment_status === 'pending').length || 0
   const withBib = registrations?.filter(r => r.bib_number).length || 0
 
@@ -66,7 +67,7 @@ export default async function OrganizerRunnersPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: 'Total Runners', value: total, icon: Users, color: 'text-primary' },
-            { label: 'Confirmed Paid', value: paid, icon: CircleCheck, color: 'text-success' },
+            { label: 'Confirmed', value: paid, icon: CircleCheck, color: 'text-success' },
             { label: 'Pending Payment', value: pending, icon: Clock, color: 'text-primary' },
             { label: 'BIBs Assigned', value: withBib, icon: Badge, color: 'text-primary' },
           ].map(s => (

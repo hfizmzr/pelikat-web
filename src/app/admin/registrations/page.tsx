@@ -23,7 +23,7 @@ import { toast } from 'sonner'
 interface Registration {
   id: string
   bib_number: string
-  payment_status: 'paid' | 'pending' | 'refunded'
+  payment_status: 'paid' | 'pending' | 'refunded' | 'waived'
   checked_in: boolean
   checked_in_at: string | null
   created_at: string
@@ -203,7 +203,7 @@ export default function AdminRegistrationsPage() {
 
   const metricCards = [
     { label: 'Total Registrations', value: metrics.total.toLocaleString(), icon: Users, color: 'text-primary', bg: 'bg-primary/20' },
-    { label: 'Paid Athletes', value: metrics.paid.toLocaleString(), icon: Banknote, color: 'text-success', bg: 'bg-success/20' },
+    { label: 'Confirmed Athletes', value: metrics.paid.toLocaleString(), icon: Banknote, color: 'text-success', bg: 'bg-success/20' },
     { label: 'Checked In', value: `${metrics.checkedIn.toLocaleString()} (${checkInRate}%)`, icon: UserPlus, color: 'text-primary', bg: 'bg-primary/20' },
     { label: 'Pending Payment', value: metrics.pending.toLocaleString(), icon: Clock, color: 'text-red-500 dark:text-red-300', bg: 'bg-red-500/10 dark:bg-red-300/20' },
   ]
@@ -432,7 +432,7 @@ export default function AdminRegistrationsPage() {
                     {/* Payment */}
                     <td className="py-3.5 px-5">
                       <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
-                        reg.payment_status === 'paid'
+                        reg.payment_status === 'paid' || reg.payment_status === 'waived'
                           ? 'text-success bg-success/10 border-success/20'
                           : reg.payment_status === 'refunded'
                             ? 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20'

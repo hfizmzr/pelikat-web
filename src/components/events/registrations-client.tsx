@@ -95,7 +95,7 @@ export function RegistrationsClient({
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Paid</CardTitle>
+            <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.paid}</div>

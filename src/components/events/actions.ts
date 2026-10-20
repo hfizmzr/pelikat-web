@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { DjangoApiError, fetchDjangoApi } from '@/lib/django'
+import { isConfirmedStatus } from '@/lib/registration-status'
 // Dummy confirmation writes financial rows, so it lives with the other
 // service-role-backed server actions live in lib/actions — re-exports are NOT
 // allowed here ("use server" files may only export async functions from this
@@ -101,7 +102,9 @@ export async function createHitpayCheckout(input: {
 
     // ALREADY-PAD re-entry: never create a second checkout for a paid
     // registration — the runner must see the confirmed state instead.
-    if (registration.payment_status === 'paid') {
+    // Waived (complimentary) registrations are confirmed without a
+    // charge and must never enter a checkout at all.
+    if (isConfirmedStatus(registration.payment_status)) {
       return { ok: true, alreadyPaid: true }
     }
 

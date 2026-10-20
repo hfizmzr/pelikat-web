@@ -1,5 +1,6 @@
 import { ArrowLeft, CircleCheck, CreditCard, Footprints, Images, MapPin, QrCode, ShoppingBag, Trophy } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
+import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { RunnerRegistrationActions } from '@/components/events/runner-registration-actions'
@@ -211,7 +212,7 @@ export default async function RunnerEventDetailPage({
                   </Link>
                 )}
 
-                {registration.payment_status !== 'paid' && (
+                {!isConfirmedStatus(registration.payment_status) && (
                   <Link
                     href={`/runner/events/${event.id}/payment`}
                     className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"

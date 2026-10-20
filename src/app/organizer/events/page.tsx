@@ -1,5 +1,6 @@
 import { ArrowRight, Badge, Banknote, Calendar, CalendarClock, CircleCheck, CirclePlus, ClipboardCheck, Flag, MapPin, QrCode, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
+import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
@@ -48,7 +49,7 @@ export default async function OrganizerEventsPage() {
 
   const EventCard = ({ event }: { event: NonNullable<typeof events>[0] }) => {
     const regs = event.registrations || []
-    const paid = regs.filter((r: { payment_status: string }) => r.payment_status === 'paid').length
+    const paid = regs.filter((r: { payment_status: string }) => isConfirmedStatus(r.payment_status)).length
     const checkedIn = regs.filter((r: { checked_in: boolean }) => r.checked_in).length
     const cats = event.race_categories || []
     const totalCap = cats.reduce((a: number, c: { max_slots?: number | null }) => a + (c.max_slots || 0), 0)
@@ -90,7 +91,7 @@ export default async function OrganizerEventsPage() {
           <div className="grid grid-cols-3 gap-2 mb-4">
             {[
               { icon: Badge, label: 'Registered', value: regs.length },
-              { icon: Banknote, label: 'Paid', value: paid },
+              { icon: Banknote, label: 'Confirmed', value: paid },
               { icon: ClipboardCheck, label: 'Checked In', value: checkedIn },
             ].map(stat => (
               <div key={stat.label} className="bg-card rounded-lg p-2.5 flex flex-col gap-0.5">

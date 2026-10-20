@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { MerchVariant } from '@/lib/merch'
+import { isConfirmedStatus } from '@/lib/registration-status'
 
 export type StoreProduct = {
   id: string
@@ -72,7 +73,7 @@ export async function getRunnerStoreData(supabase: SupabaseClient, eventId: stri
   return {
     event,
     registered: !!registration,
-    registrationPaid: registration?.payment_status === 'paid',
+    registrationPaid: isConfirmedStatus(registration?.payment_status),
     salesClosed: !!event && event.event_date < malaysiaToday(),
     products: ((products ?? []) as StoreProduct[]).map((p) => ({
       ...p,

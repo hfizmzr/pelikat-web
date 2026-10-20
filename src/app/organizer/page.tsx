@@ -1,5 +1,6 @@
 import { ArrowRight, Badge, Calendar, CalendarClock, CircleCheck, CirclePlus, ExternalLink, Flag, MapPin, Plus, QrCode, Search, SlidersHorizontal, TrendingUp, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
+import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
@@ -45,7 +46,7 @@ export default async function OrganizerDashboard() {
 
   // Aggregate stats
   const allRegs = events?.flatMap(e => e.registrations || []) || []
-  const confirmedRunners = allRegs.filter(r => r.payment_status === 'paid').length
+  const confirmedRunners = allRegs.filter(r => isConfirmedStatus(r.payment_status)).length
   const checkedIn = allRegs.filter(r => r.checked_in).length
   const totalRunners = allRegs.length
   const repcRate = totalRunners > 0 ? Math.round((checkedIn / totalRunners) * 100) : 0
@@ -190,7 +191,7 @@ export default async function OrganizerDashboard() {
               <div className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-foreground">{confirmedRunners.toLocaleString()}</div>
               <div className="flex items-center gap-1.5 text-success text-[10px] leading-[14px] font-semibold mt-1">
                 <TrendingUp className="size-[16px]" />
-                <span>{totalRunners > 0 ? `${Math.round((confirmedRunners / Math.max(totalRunners, 1)) * 100)}% paid` : 'No registrations'}</span>
+                <span>{totalRunners > 0 ? `${Math.round((confirmedRunners / Math.max(totalRunners, 1)) * 100)}% confirmed` : 'No registrations'}</span>
                 <span className="text-muted-foreground ml-1">• {totalRunners} total</span>
               </div>
             </div>
@@ -445,7 +446,7 @@ export default async function OrganizerDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {events.map((event) => {
                 const regs = event.registrations || []
-                const paid = regs.filter((r: { payment_status: string }) => r.payment_status === 'paid').length
+                const paid = regs.filter((r: { payment_status: string }) => isConfirmedStatus(r.payment_status)).length
                 const catCount = (event.race_categories || []).length
 
                 return (
@@ -483,7 +484,7 @@ export default async function OrganizerDashboard() {
                             </span>
                           </div>
                           <span className="text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground">
-                            {paid} paid
+                            {paid} confirmed
                           </span>
                         </div>
                       </div>

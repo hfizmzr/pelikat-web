@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { isConfirmedStatus } from '@/lib/registration-status'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft } from 'lucide-react'
@@ -91,7 +92,7 @@ export default async function OrganizerEventAnalyticsPage({
   const total = registrations.length
   const checkedIn = registrations.filter((r) => r.checked_in).length
   const checkInRate = total > 0 ? Math.round((checkedIn / total) * 100) : 0
-  const paid = registrations.filter((r) => r.payment_status === 'paid').length
+  const paid = registrations.filter((r) => isConfirmedStatus(r.payment_status)).length
   const priceById = new Map(raceCategories.map((c) => [c.id, Number(c.price ?? 0)]))
   // Revenue counts only paid registrations (registrations has no recorded
   // payment-amount column, so category price is used for paid rows).
@@ -126,7 +127,7 @@ export default async function OrganizerEventAnalyticsPage({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{total}</div>
-            <p className="text-xs text-muted-foreground mt-1">{paid} paid</p>
+            <p className="text-xs text-muted-foreground mt-1">{paid} confirmed</p>
           </CardContent>
         </Card>
         <Card className="border-border">

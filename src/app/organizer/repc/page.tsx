@@ -1,5 +1,6 @@
 import { CircleCheck, Clock, MapPin, QrCode } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
+import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
@@ -27,7 +28,7 @@ export default async function OrganizerRepcPage() {
   const now = new Date()
   const activeEvents = events?.filter(e => new Date(e.event_date) >= now) || []
 
-  const totalPaid = events?.flatMap(e => e.registrations || []).filter(r => r.payment_status === 'paid').length || 0
+  const totalPaid = events?.flatMap(e => e.registrations || []).filter(r => isConfirmedStatus(r.payment_status)).length || 0
   const totalCheckedIn = events?.flatMap(e => e.registrations || []).filter(r => r.checked_in).length || 0
   const overallRate = totalPaid > 0 ? Math.round((totalCheckedIn / totalPaid) * 100) : 0
 
@@ -106,7 +107,7 @@ export default async function OrganizerRepcPage() {
             <div className="flex flex-col gap-3">
               {activeEvents.map(event => {
                 const regs = event.registrations || []
-                const paid = regs.filter(r => r.payment_status === 'paid').length
+                const paid = regs.filter(r => isConfirmedStatus(r.payment_status)).length
                 const collected = regs.filter(r => r.checked_in).length
                 const rate = paid > 0 ? Math.round((collected / paid) * 100) : 0
 

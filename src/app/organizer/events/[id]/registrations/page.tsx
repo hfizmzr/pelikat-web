@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { isConfirmedStatus } from '@/lib/registration-status'
 import { notFound } from 'next/navigation'
 import { RegistrationsClient } from '@/components/events/registrations-client'
 import { ComplimentaryGuestsClient } from '@/components/events/complimentary-guests-client'
@@ -52,7 +53,7 @@ export default async function OrganizerEventRegistrationsPage({
   const stats = {
     total: rows.length,
     checkedIn: rows.filter(r => r.checked_in).length,
-    paid: rows.filter(r => r.payment_status === 'paid').length,
+    paid: rows.filter(r => isConfirmedStatus(r.payment_status)).length,
   }
 
   return (

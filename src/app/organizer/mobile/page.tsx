@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react"
 import { Bell, Calendar, CalendarCheck, Gauge, Lock, MapPin, QrCode, ShieldCheck, ShoppingBag, Terminal, UserPlus, Users } from "lucide-react"
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
 
 async function getOrganizerDashboardData() {
@@ -44,7 +45,7 @@ async function getOrganizerDashboardData() {
   const allRegs = (events || []).flatMap((e) => e.registrations || [])
   const totalRunners = allRegs.length
   const checkedIn = allRegs.filter((r) => r.checked_in).length
-  const confirmedRunners = allRegs.filter((r) => r.payment_status === 'paid').length
+  const confirmedRunners = allRegs.filter((r) => isConfirmedStatus(r.payment_status)).length
 
   // Find the next upcoming event
   const nextEvent = upcomingEvents[0]
