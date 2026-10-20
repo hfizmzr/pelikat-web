@@ -41,6 +41,11 @@ function formatTime(secs: number) {
 }
 
 export default function RunnerTracker() {
+  // Event linking: propagate the ?event= param (virtual-run progress)
+  // through to the run-log page's save path. Component is client-only
+  // (dynamic ssr:false), so reading the URL in the initializer is safe.
+  const [eventParam] = useState(() => new URLSearchParams(window.location.search).get('event'))
+  const runLogHref = eventParam ? `/runner/run-log?event=${eventParam}` : '/runner/run-log'
   const [state, setState] = useState<TrackerState>("idle")
   const [elapsed, setElapsed] = useState(0)
   const [gpsDistance, setGpsDistance] = useState(0)
@@ -133,8 +138,8 @@ export default function RunnerTracker() {
     }
 
     localStorage.setItem("tracker_result", JSON.stringify(result))
-    window.location.href = "/runner/run-log"
-  }, [elapsed, gpsDistance, clearTimers])
+    window.location.href = runLogHref
+  }, [elapsed, gpsDistance, clearTimers, runLogHref])
 
   const pace =
     elapsed > 0 && gpsDistance > 0
@@ -145,7 +150,7 @@ export default function RunnerTracker() {
     <div className="fixed inset-0 bg-background flex flex-col z-50">
       <div className="flex items-center justify-between p-4 pt-safe">
         <Link
-          href="/runner/run-log"
+          href={runLogHref}
           className="w-10 h-10 flex items-center justify-center rounded-full bg-card text-muted-foreground active:scale-95 transition-transform"
         >
           <X className="size-[24px]" />

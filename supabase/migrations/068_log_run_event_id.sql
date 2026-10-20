@@ -11,6 +11,14 @@
 -- distance must not be attachable to arbitrary events, since the
 -- virtual-event progress bar and e-cert path sum run_logs by
 -- (event_id, runner_id).
+--
+-- Hygiene: drop 048/062's 3-arg log_run signature first. Fresh
+-- environments applying 048→068 sequentially would otherwise keep a
+-- shadow 3-arg overload; leaving both resolves overload ambiguity by
+-- arg-name/position at call time. No live dev action needed (already
+-- dropped manually there).
+
+drop function if exists public.log_run(numeric, integer, jsonb);
 
 create or replace function public.log_run(
   p_distance_km numeric,

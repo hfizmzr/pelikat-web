@@ -266,8 +266,8 @@ export default function RunnerRunLogPage() {
           </div>
           
           <div className="p-5 flex flex-col gap-4">
-            <Link 
-              href="/runner/run-log/track"
+            <Link
+              href={linkedEventId ? `/runner/run-log/track?event=${linkedEventId}` : "/runner/run-log/track"}
               className="w-full py-3.5 rounded-xl border border-success/40 bg-success/5 text-success text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
               <Satellite className="size-[18px]" />

@@ -54,6 +54,8 @@ describe('Reliability: Virtual Events Schema (067)', () => {
 
   it('log_run grew an additive p_event_id param with a confirmed-registration guard (068)', () => {
     const logRun = read('supabase', 'migrations', '068_log_run_event_id.sql')
+    // Hygiene: the stale 3-arg overload is dropped before the replace.
+    expect(logRun).toContain('drop function if exists public.log_run(numeric, integer, jsonb);')
     // Backward-compatible: trailing DEFAULT NULL param, same returns.
     expect(logRun).toContain('p_event_id uuid default null')
     expect(logRun).toContain('returns public.run_logs')
@@ -70,6 +72,13 @@ describe('Reliability: Virtual Events Schema (067)', () => {
     expect(runLogPage).toContain("new URLSearchParams(window.location.search).get('event')")
     expect(runLogPage).toContain('p_event_id: linkedEventId')
     expect(runLogPage).toContain('linked event progress')
+    // GPS flow propagates the event param too (tracker link + tracker's
+    // redirect/exit funnel through the run-log page's ?event= read).
+    expect(runLogPage).toContain('`/runner/run-log/track?event=${linkedEventId}`')
+    const tracker = read('src', 'components', 'gamification', 'runner-tracker.tsx')
+    expect(tracker).toContain("new URLSearchParams(window.location.search).get('event')")
+    expect(tracker).toContain('window.location.href = runLogHref')
+    expect(tracker).toContain('href={runLogHref}')
     const eventPage = read('src', 'app', 'runner', 'events', '[id]', 'page.tsx')
     expect(eventPage).toContain('href={`/runner/run-log?event=${event.id}`}')
   })
