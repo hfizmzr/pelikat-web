@@ -132,7 +132,10 @@ begin
     raise exception 'Registration not found or not yours';
   end if;
 
-  if v_reg.payment_status = 'paid' then
+  -- Both paid AND waived are already-confirmed states: a waived
+  -- (complimentary) registration is not payable and must never be
+  -- overwritten to 'paid' through the mock payment flow.
+  if v_reg.payment_status in ('paid','waived') then
     raise exception 'Payment already confirmed';
   end if;
 

@@ -33,9 +33,13 @@ as $$
 declare
   v_user_email text;
 begin
+  -- Only confirmed emails claim guest rows (CWE-287): dev allows signup
+  -- without a confirmed email, and an unconfirmed address must not
+  -- auto-claim someone's invitation.
   select email into v_user_email
   from auth.users
-  where id = new.user_id;
+  where id = new.user_id
+    and email_confirmed_at is not null;
 
   if v_user_email is null then
     return new;
