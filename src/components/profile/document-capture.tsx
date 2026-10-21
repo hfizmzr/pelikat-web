@@ -127,7 +127,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
     setWarnings([])
 
     try {
-      await deleteDocument(currentDocument.path)
+      await deleteDocument()
       setHasDocument(false)
       setNeedsReview(false)
       setPreviewUrl(null)

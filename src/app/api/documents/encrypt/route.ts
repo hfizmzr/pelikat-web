@@ -1,14 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-
-// Fail fast at module load — no insecure fallback keys in any environment.
-function requireEnv(name: 'DJANGO_URL' | 'INTERNAL_API_KEY'): string {
-  const value = process.env[name]
-  if (!value) throw new Error('INTERNAL_API_KEY / DJANGO_URL not configured')
-  return value
-}
-const djangoUrl = requireEnv('DJANGO_URL')
-const internalKey = requireEnv('INTERNAL_API_KEY')
+import { getDjangoConfig } from '@/lib/django'
 
 /** Contract (pelikat-api /ai/documents/encrypt, 201):
  * {status:'ok', document_path, document_mime, uploaded_at,
@@ -65,9 +57,10 @@ export async function POST(request: Request) {
 
   let djangoResponse: Response
   try {
+    const { djangoUrl, internalApiKey } = getDjangoConfig()
     djangoResponse = await fetch(`${djangoUrl}/ai/documents/encrypt`, {
       method: 'POST',
-      headers: { 'X-Internal-Key': internalKey },
+      headers: { 'X-Internal-Key': internalApiKey },
       body: djangoFormData,
     })
   } catch {

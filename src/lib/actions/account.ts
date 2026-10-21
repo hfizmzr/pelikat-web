@@ -60,8 +60,23 @@ export async function storeEncryptedIc(
   }
 }
 
-export async function deleteDocument(storagePath: string | null) {
+export async function deleteDocument() {
   const { supabase, user } = await requireAuth()
+
+  // The encrypted_path is resolved from the runner's own profile row —
+  // never trusted from a client argument (the component's prop can be
+  // stale/absent after the first upload because the encrypt route does not
+  // return the path, and a client-supplied path would be attacker-chosen).
+  // Django still enforces the user_id prefix (403 on IDOR/traversal).
+  const { data: profile, error: profileError } = await supabase
+    .from('runner_profiles')
+    .select('ic_document_path')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (profileError) throw new Error(profileError.message)
+
+  const storagePath = profile?.ic_document_path ?? null
 
   if (storagePath) {
     await fetchDjangoApi('/ai/documents/delete', {
