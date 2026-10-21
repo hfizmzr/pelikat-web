@@ -11,9 +11,16 @@ export class DjangoApiError extends Error {
   }
 }
 
+// Fail fast at module load — no insecure fallback keys in any environment.
+function requireEnv(name: 'DJANGO_URL' | 'INTERNAL_API_KEY'): string {
+  const value = process.env[name]
+  if (!value) throw new Error('INTERNAL_API_KEY / DJANGO_URL not configured')
+  return value
+}
+const djangoUrl = requireEnv('DJANGO_URL')
+const internalApiKey = requireEnv('INTERNAL_API_KEY')
+
 export async function fetchDjangoApi(endpoint: string, options: RequestInit = {}) {
-  const djangoUrl = process.env.DJANGO_URL || 'http://localhost:8000';
-  const internalApiKey = process.env.INTERNAL_API_KEY || 'dummy-internal-api-key-12345';
   
   const headers = {
     'Content-Type': 'application/json',

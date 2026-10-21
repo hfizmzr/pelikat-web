@@ -82,12 +82,13 @@ describe('Security: Service Role Key Exposure', () => {
     }
   })
 
-  it('django.ts internal API key uses env var, not hardcoded in production', () => {
+  it('django.ts internal API key uses env var with no hardcoded fallback', () => {
     const djangoPath = join(srcDir, 'lib', 'django.ts')
     const content = readFileSync(djangoPath, 'utf-8')
-    
-    expect(content).toContain('process.env.INTERNAL_API_KEY')
-    // The fallback is a dummy value for development only
-    expect(content).toContain('dummy-internal-api-key-12345')
+
+    // No insecure fallback — the module must fail fast when env vars are missing.
+    expect(content).not.toContain('dummy-internal-api-key-12345')
+    expect(content).toContain("throw new Error('INTERNAL_API_KEY / DJANGO_URL not configured')")
+    expect(content).toContain("process.env[name]")
   })
 })

@@ -2,7 +2,7 @@
 
 import { Badge, Camera, CircleAlert, CloudUpload, FolderOpen, LoaderCircle, ShieldCheck, Trash2, TriangleAlert } from "lucide-react"
 import { useState, useRef, useCallback } from 'react'
-import { storeEncryptedDocument, deleteDocument } from '@/lib/actions/account'
+import { deleteDocument } from '@/lib/actions/account'
 
 interface Props {
   userId: string
@@ -11,6 +11,8 @@ interface Props {
     mime: string | null
   }
 }
+
+const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024
 
 export default function DocumentCapture({ currentDocument }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -21,7 +23,8 @@ export default function DocumentCapture({ currentDocument }: Props) {
   const [encrypting, setEncrypting] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [warning, setWarning] = useState<string | null>(null)
+  const [warnings, setWarnings] = useState<string[]>([])
+  const [needsReview, setNeedsReview] = useState(false)
   const [hasDocument, setHasDocument] = useState(!!currentDocument.path)
 
   const resizeImage = useCallback(
@@ -62,7 +65,14 @@ export default function DocumentCapture({ currentDocument }: Props) {
   const handleFile = useCallback(
     async (file: File) => {
       setError(null)
-      setWarning(null)
+      setWarnings([])
+      setNeedsReview(false)
+      if (file.size > MAX_DOCUMENT_BYTES) {
+        setError(
+          `File is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). The maximum size is 10MB.`
+        )
+        return
+      }
       setRawFile(file)
       setPreviewUrl(URL.createObjectURL(file))
     },
@@ -74,7 +84,8 @@ export default function DocumentCapture({ currentDocument }: Props) {
 
     setEncrypting(true)
     setError(null)
-    setWarning(null)
+    setWarnings([])
+    setNeedsReview(false)
 
     try {
       const resized = await resizeImage(rawFile)
@@ -93,14 +104,13 @@ export default function DocumentCapture({ currentDocument }: Props) {
         throw new Error(result.error || 'Upload failed')
       }
 
-      await storeEncryptedDocument({
-        encrypted_path: result.encrypted_path,
-        ic_encrypted: result.ic_encrypted,
-      })
-
-      if (result.warning) {
-        setWarning(result.warning)
-      }
+      // The route records document_path/mime/uploaded_at/ic_encrypted on the
+      // runner's profile server-side — no client-supplied bucket fields.
+      const resultWarnings: string[] = Array.isArray(result.warnings)
+        ? result.warnings
+        : []
+      setWarnings(resultWarnings)
+      setNeedsReview(result.needs_review === true)
 
       setHasDocument(true)
       setRawFile(null)
@@ -114,11 +124,12 @@ export default function DocumentCapture({ currentDocument }: Props) {
   const handleDelete = async () => {
     setDeleting(true)
     setError(null)
-    setWarning(null)
+    setWarnings([])
 
     try {
       await deleteDocument(currentDocument.path)
       setHasDocument(false)
+      setNeedsReview(false)
       setPreviewUrl(null)
       setRawFile(null)
     } catch (err) {
@@ -136,8 +147,9 @@ export default function DocumentCapture({ currentDocument }: Props) {
           Identification Document
         </h3>
         <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">
-          Upload a photo of your IC or Passport for identity verification.
-          Your document is validated, encrypted, and stored securely.
+          Document Pre-Check (for Race Insurance &amp; REPC). Upload a photo of
+          your IC or Passport. Details are pre-checked automatically — values
+          are pre-checked, not officially verified.
         </p>
       </div>
 
@@ -149,12 +161,22 @@ export default function DocumentCapture({ currentDocument }: Props) {
               Document securely stored
             </div>
             
-            {warning && (
-              <div className="flex items-center gap-2 rounded-xl bg-amber-500/10 dark:bg-amber-500 dark:bg-amber-400/10 border border-amber-500/30 dark:border-amber-500 dark:border-amber-400/20 px-4 py-3 text-[13px] text-amber-500 dark:text-amber-400">
-                <TriangleAlert className="size-[18px]" />
-                {warning}
+            {needsReview && (
+              <div className="flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-[13px] text-amber-500 dark:text-amber-400 font-medium">
+                <TriangleAlert className="size-[18px] shrink-0" />
+                Document needs review
               </div>
             )}
+
+            {warnings.map((w) => (
+              <div
+                key={w}
+                className="flex items-start gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-[13px] text-amber-500 dark:text-amber-400"
+              >
+                <TriangleAlert className="size-[18px] shrink-0" />
+                <span>{w}</span>
+              </div>
+            ))}
             
             <button
               onClick={handleDelete}
@@ -264,7 +286,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
 
             <p className="text-[11px] text-muted-foreground text-center">
               Accepted formats: JPEG, PNG, WebP. Max 10MB.<br/>
-              Image will be resized and validated before storage.
+              Image will be resized and pre-checked before storage.
             </p>
           </div>
         )}

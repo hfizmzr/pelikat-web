@@ -2,51 +2,27 @@
 
 import { fetchDjangoApi } from '@/lib/django'
 import { requireAuth } from '@/lib/auth/requireUser'
+import { validateIdentityInput } from '@/lib/nric'
 import { supabaseAdmin } from '@/lib/supabase/service-role'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-export async function storeEncryptedDocument(result: {
-  encrypted_path: string
-  ic_encrypted?: string
-}) {
-  const { supabase, user } = await requireAuth()
-
-  const updateData: Record<string, string> = {
-    ic_document_path: result.encrypted_path,
-    ic_document_mime: 'image/jpeg',
-    ic_document_uploaded_at: new Date().toISOString(),
-  }
-
-  if (result.ic_encrypted) {
-    updateData.ic_encrypted = result.ic_encrypted
-  }
-
-  const { error } = await supabase
-    .from('runner_profiles')
-    .update(updateData)
-    .eq('user_id', user.id)
-
-  if (error) throw new Error(error.message)
-
-  revalidatePath('/runner/profile')
-}
-
 export async function storeEncryptedIc(icNumber: string) {
   const { supabase, user } = await requireAuth()
 
-  const trimmed = icNumber.trim()
-  const isNric = /^\d{6}-\d{2}-\d{4}$/.test(trimmed)
-  const isPassport = /^[A-Za-z0-9]{5,15}$/.test(trimmed)
-  if (!isNric && !isPassport) {
-    throw new Error('Enter your IC as 000000-00-0000 or a passport number (letters and digits only).')
+  // Mirror of the backend validation (light pre-check; Django is the authority).
+  // No client-settable document-path/ciphertext fields are accepted here —
+  // ic_encrypted is written only from the Django response.
+  const check = validateIdentityInput(icNumber)
+  if (!check.valid) {
+    throw new Error(check.error)
   }
 
   const result: { ic_encrypted: string } = await fetchDjangoApi(
     '/ai/documents/encrypt-ic',
     {
       method: 'POST',
-      body: JSON.stringify({ ic_number: trimmed, user_id: user.id }),
+      body: JSON.stringify({ ic_number: icNumber.trim(), user_id: user.id }),
     }
   )
 
@@ -66,7 +42,7 @@ export async function deleteDocument(storagePath: string | null) {
   if (storagePath) {
     await fetchDjangoApi('/ai/documents/delete', {
       method: 'POST',
-      body: JSON.stringify({ encrypted_path: storagePath }),
+      body: JSON.stringify({ user_id: user.id, encrypted_path: storagePath }),
     })
   }
 
@@ -100,7 +76,10 @@ export async function deleteRunnerAccount() {
   if (profile.ic_document_path) {
     await fetchDjangoApi('/ai/documents/delete', {
       method: 'POST',
-      body: JSON.stringify({ encrypted_path: profile.ic_document_path }),
+      body: JSON.stringify({
+        user_id: user.id,
+        encrypted_path: profile.ic_document_path,
+      }),
     })
   }
 

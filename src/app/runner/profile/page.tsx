@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import DocumentCapture from "@/components/profile/document-capture";
 import { deleteRunnerAccount, storeEncryptedIc } from "@/lib/actions/account";
+import { validateIdentityInput } from "@/lib/nric";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -131,11 +132,15 @@ export default function RunnerProfilePage() {
 
   const handleSaveIc = async () => {
     const ic = icInput.trim();
-    const isNric = /^\d{6}-\d{2}-\d{4}$/.test(ic);
-    const isPassport = /^[A-Za-z0-9]{5,15}$/.test(ic);
 
-    if (!isNric && !isPassport) {
-      setIcError("Enter your IC as 000000-00-0000 or a passport number (letters and digits only).");
+    // Light UX mirror of the backend rules (src/lib/nric.ts).
+    if (/\s/.test(ic)) {
+      setIcError("Remove spaces — enter NRIC as 000000-00-0000 or a passport number.");
+      return;
+    }
+    const check = validateIdentityInput(ic);
+    if (!check.valid) {
+      setIcError(check.error);
       return;
     }
 

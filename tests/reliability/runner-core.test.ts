@@ -72,7 +72,9 @@ describe('Reliability: Runner Core Loop (Phase 1)', () => {
     const page = read('src', 'app', 'runner', 'profile', 'page.tsx')
     expect(page).toContain('emergency_contact_name')
     expect(page).toContain('storeEncryptedIc')
-    expect(page).toContain('/^\\d{6}-\\d{2}-\\d{4}$/')
+    // Canonical identity validation lives in src/lib/nric.ts (backend mirror)
+    const nric = read('src', 'lib', 'nric.ts')
+    expect(nric).toContain('/^\\d{6}-\\d{2}-\\d{4}$/')
 
     const actions = read('src', 'lib', 'actions', 'account.ts')
     expect(actions).toContain('/ai/documents/encrypt-ic')
