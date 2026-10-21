@@ -5,7 +5,10 @@ running-event platform. It seeds 3 admins, 5 organizers (one per lifecycle
 state), 10 runners, 10 events (past / active / future × physical / virtual),
 42 registrations, payments & webhooks, REPC kit collection, a merch store,
 run logs, streaks, badges, photo tags and audit entries — with **fixed UUIDs**
-so re-running it is an exact no-op.
+so re-runs are **state-idempotent**: every insert/upsert converges to the same
+dataset. A re-run is NOT an exact no-op — the seed.sql §9 `event_shirt_inventory`
+upsert re-writes rows and therefore adds a few audit-trigger rows on every run
+(see §5 "Known gaps & notes" → "Audit-trigger noise" for the source).
 
 ---
 
@@ -33,7 +36,7 @@ Safe against an already-seeded database: every insert uses fixed UUIDs with
 `runner_streaks`, `platform_settings`). Must run as the `postgres` superuser
 (bypasses RLS — `payments` / `webhook_events` are FORCE-RLS'd).
 
-## Cloud A2 variant (hosted project uge​xrrslijmwtieevjbs — PRESERVES your personal admin logins)
+## Cloud A2 variant (hosted project ugexrrslijmwtieevjbs — PRESERVES your personal admin logins)
 
 On 2026-10-20 a wipe-and-seed was executed against the **hosted cloud project**
 `ugexrrslijmwtieevjbs` to bring its data in line with this seeder. What was run,
@@ -53,7 +56,19 @@ preserved in the @db-specialist orchestrator session of 2026-10-20.
 
 ## 3. Credentials
 
-Password for **every** seeded account: **`Pelikat!2026`**
+Password for **every** seeded account: — see local seeding secret (below)
+
+> **Credential handling.** The shared password for the seeded `@pelikat.test`
+> accounts applies ONLY to freshly seeded **local** environments created by
+> `supabase db reset` + `supabase/seed.sql` in this repo — it is deliberately
+> NOT documented as a published value here; obtain it from the team's private
+> credential store, not from any file in the repo. On the hosted project
+> (`ugexrrslijmwtieevjbs`) the 18 seeded `@pelikat.test` accounts had their
+> passwords ROTATED to unknown values immediately after the 2026-10-20 cloud
+> seeding, so the historical password no longer unlocks anything there (the
+> preserved `@gmail.com` Google admin logins were unaffected). If local
+> passwords ever need changing, rotate them per-project via the usual Supabase
+> dashboard / SQL flow.
 
 ### Admins (`raw_app_meta_data: {"role":"admin"}`)
 
@@ -67,11 +82,11 @@ Password for **every** seeded account: **`Pelikat!2026`**
 
 | Email                        | Password      | Organizer           | State                                          |
 |------------------------------|---------------|---------------------|------------------------------------------------|
-| klcityrunners@pelikat.test   | Pelikat!2026  | KL City Runners     | active, approved, subscription paid (+155 d)    |
-| penangpacers@pelikat.test    | Pelikat!2026  | Penang Pacers       | active, approved, subscription expires in 12 d  |
-| jbultras@pelikat.test        | Pelikat!2026  | JB Ultras           | **pending approval** (approved_at NULL)         |
-| borneotrailcrew@pelikat.test | Pelikat!2026  | Borneo Trail Crew   | **rejected** (rejected_at set, inactive)        |
-| putrajayastriders@pelikat.test | Pelikat!2026 | Putrajaya Striders | **inactive** — lapsed subscription (65 d ago)   |
+| klcityrunners@pelikat.test   | (local seed secret — not published here)  | KL City Runners     | active, approved, subscription paid (+155 d)    |
+| penangpacers@pelikat.test    | (local seed secret — not published here)  | Penang Pacers       | active, approved, subscription expires in 12 d  |
+| jbultras@pelikat.test        | (local seed secret — not published here)  | JB Ultras           | **pending approval** (approved_at NULL)         |
+| borneotrailcrew@pelikat.test | (local seed secret — not published here)  | Borneo Trail Crew   | **rejected** (rejected_at set, inactive)        |
+| putrajayastriders@pelikat.test | (local seed secret — not published here) | Putrajaya Striders | **inactive** — lapsed subscription (65 d ago)   |
 
 ### Runners (`{"role":"runner"}`, complete runner_profiles)
 
@@ -95,7 +110,7 @@ All runners have DOB, phone, emergency contact and `pdpa_agreed = true`.
 | Table                  | Rows | Highlights                                                              |
 |------------------------|------|-------------------------------------------------------------------------|
 | storage.buckets        | 7    | race-photos, certificates, receipts, photo-gallery, avatars, ic-documents, merch-images |
-| auth.users / identities| 18   | 3 admin + 5 organizer + 10 runner, email-confirmed, `Pelikat!2026`      |
+| auth.users / identities| 18   | 3 admin + 5 organizer + 10 runner, email-confirmed; shared local seed password (not published here)      |
 | organizers             | 5    | one per lifecycle state (active / expiring / pending / rejected / inactive) |
 | events                 | 10   | 2 past (closed; 1 physical with results published, 1 virtual) · 4 active (2 physical, 2 virtual) · 4 future published (2 physical, 2 virtual) — dates via `now()::date` arithmetic, never stale |
 | race_categories        | 19   | paid HitPay tiers, early-bird vs standard (shared prefix, offset bib_start), free/RM0, VIP, pacer categories |
