@@ -40,6 +40,8 @@ export default function RunnerProfilePage() {
   const [icSaving, setIcSaving] = useState(false);
   const [icError, setIcError] = useState<string | null>(null);
   const [icSaved, setIcSaved] = useState(false);
+  const [icNeedsReview, setIcNeedsReview] = useState(false);
+  const [icWarnings, setIcWarnings] = useState<string[]>([]);
 
   const [deleteStep, setDeleteStep] = useState<'idle' | 'confirm' | 'deleting'>('idle')
   const [deleteConfirm, setDeleteConfirm] = useState('')
@@ -147,12 +149,23 @@ export default function RunnerProfilePage() {
     setIcSaving(true);
     setIcError(null);
     setIcSaved(false);
+    setIcNeedsReview(false);
+    setIcWarnings([]);
 
     try {
-      await storeEncryptedIc(ic);
+      // Pass the form DOB/gender when available so Django can cross-check the
+      // NRIC (DOB mismatch is a hard reject; gender mismatch a warning).
+      const { needs_review, warnings } = await storeEncryptedIc(
+        ic,
+        formData.dob || formData.gender
+          ? { dob: formData.dob || undefined, gender: formData.gender || undefined }
+          : undefined
+      );
       setProfile({ ...profile, ic_encrypted: "stored" });
       setIcInput("");
       setIcSaved(true);
+      setIcNeedsReview(needs_review);
+      setIcWarnings(warnings);
     } catch (err) {
       setIcError(err instanceof Error ? err.message : "Failed to save IC number");
     } finally {
@@ -394,10 +407,27 @@ export default function RunnerProfilePage() {
                 </button>
 
                 {icSaved && (
-                  <div className="flex items-center gap-2 rounded-xl bg-success/10 border border-success/20 px-4 py-3 text-[13px] text-success font-medium">
-                    <CircleCheck className="size-[18px]" />
-                    IC number saved securely
-                  </div>
+                  <>
+                    <div className="flex items-center gap-2 rounded-xl bg-success/10 border border-success/20 px-4 py-3 text-[13px] text-success font-medium">
+                      <CircleCheck className="size-[18px]" />
+                      IC number saved securely
+                    </div>
+                    {icNeedsReview && (
+                      <div className="flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-[13px] text-amber-500 dark:text-amber-400 font-medium">
+                        <TriangleAlert className="size-[18px] shrink-0" />
+                        IC number needs review
+                      </div>
+                    )}
+                    {icWarnings.map((w) => (
+                      <div
+                        key={w}
+                        className="flex items-start gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-[13px] text-amber-500 dark:text-amber-400"
+                      >
+                        <TriangleAlert className="size-[18px] shrink-0" />
+                        <span>{w}</span>
+                      </div>
+                    ))}
+                  </>
                 )}
 
                 {icError && (

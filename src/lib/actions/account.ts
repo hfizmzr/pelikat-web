@@ -7,7 +7,10 @@ import { supabaseAdmin } from '@/lib/supabase/service-role'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-export async function storeEncryptedIc(icNumber: string) {
+export async function storeEncryptedIc(
+  icNumber: string,
+  profile?: { dob?: string | null; gender?: string | null }
+) {
   const { supabase, user } = await requireAuth()
 
   // Mirror of the backend validation (light pre-check; Django is the authority).
@@ -18,13 +21,28 @@ export async function storeEncryptedIc(icNumber: string) {
     throw new Error(check.error)
   }
 
-  const result: { ic_encrypted: string } = await fetchDjangoApi(
-    '/ai/documents/encrypt-ic',
-    {
-      method: 'POST',
-      body: JSON.stringify({ ic_number: icNumber.trim(), user_id: user.id }),
-    }
-  )
+  // Django encrypt-ic contract (201): {"status":"ok","ic_encrypted":...,
+  // "needs_review":bool,"warnings":[...]}. Optional dob/gender enable the
+  // backend NRIC cross-check (DOB mismatch is a hard 422; gender mismatch a
+  // needs_review warning).
+  const result: {
+    ic_encrypted?: unknown
+    needs_review?: unknown
+    warnings?: unknown
+  } = await fetchDjangoApi('/ai/documents/encrypt-ic', {
+    method: 'POST',
+    body: JSON.stringify({
+      ic_number: icNumber.trim(),
+      user_id: user.id,
+      ...(profile?.dob ? { dob: profile.dob } : {}),
+      ...(profile?.gender ? { gender: profile.gender } : {}),
+    }),
+  })
+
+  // Shape-verify before writing: never store a missing/undefined ciphertext.
+  if (typeof result.ic_encrypted !== 'string' || !result.ic_encrypted) {
+    throw new Error('Document processing service returned an unexpected response')
+  }
 
   const { error } = await supabase
     .from('runner_profiles')
@@ -34,6 +52,12 @@ export async function storeEncryptedIc(icNumber: string) {
   if (error) throw new Error(error.message)
 
   revalidatePath('/runner/profile')
+  return {
+    needs_review: result.needs_review === true,
+    warnings: Array.isArray(result.warnings)
+      ? result.warnings.filter((w): w is string => typeof w === 'string')
+      : [],
+  }
 }
 
 export async function deleteDocument(storagePath: string | null) {
