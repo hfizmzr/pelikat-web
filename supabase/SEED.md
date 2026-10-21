@@ -33,6 +33,24 @@ Safe against an already-seeded database: every insert uses fixed UUIDs with
 `runner_streaks`, `platform_settings`). Must run as the `postgres` superuser
 (bypasses RLS — `payments` / `webhook_events` are FORCE-RLS'd).
 
+## Cloud A2 variant (hosted project uge​xrrslijmwtieevjbs — PRESERVES your personal admin logins)
+
+On 2026-10-20 a wipe-and-seed was executed against the **hosted cloud project**
+`ugexrrslijmwtieevjbs` to bring its data in line with this seeder. What was run,
+in a single transaction: `begin; set local role postgres;` → `TRUNCATE` all 20
+public tables (`RESTRICT`) → `delete from auth.users where id <> <two preserved
+admin uuids>` (identities/sessions cascade) → `set local role postgres; \i supabase/seed.sql`
+→ verification batch → a 17-identity corrective (`provider_id` forced to the user
+UUID / `identity_data.sub`, after GoTrue's UNIQUE `(provider_id, provider)` index
+was found to skip conflicting rows) → verify `identities_total = 20`,
+`unloggable_seed_users = 0`, all seed-matrix counts **PASS**. Purpose: restore the
+full seed matrix while preserving the `hafizisamzar@gmail.com` /
+`abdul.hafiz170022@gmail.com` Google admin logins and all 153 storage blobs.
+⚠ This documents WHAT WAS RUN, not a command to run blindly — what gets wiped
+depends entirely on which users you choose to preserve per run, and a backup
+(`supabase db dump` / REST export) **must exist first**. Full staged block
+preserved in the @db-specialist orchestrator session of 2026-10-20.
+
 ## 3. Credentials
 
 Password for **every** seeded account: **`Pelikat!2026`**
