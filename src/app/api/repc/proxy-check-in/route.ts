@@ -25,7 +25,7 @@ type RegistrationWithProfile = {
   id: string
   runner_id: string
   bib_number: string
-  runner_profiles: RunnerProfile | RunnerProfile[] | null
+  runner_profiles_safe: RunnerProfile[] | null
 }
 
 type ConsentCodeRecord = {
@@ -33,7 +33,7 @@ type ConsentCodeRecord = {
 }
 
 function getProfile(registration: RegistrationWithProfile) {
-  const profile = registration.runner_profiles
+  const profile = registration.runner_profiles_safe
   return Array.isArray(profile) ? profile[0] : profile
 }
 
@@ -133,7 +133,7 @@ export async function POST(request: Request) {
 
   const { data: collectorRegistration, error: collectorError } = await supabase
     .from('registrations')
-    .select('id, runner_id, bib_number, runner_profiles(full_name)')
+    .select('id, runner_id, bib_number, runner_profiles_safe(full_name)')
     .eq('event_id', eventId)
     .eq('runner_id', verifiedCollector.runner_id)
     .eq('bib_number', verifiedCollector.bib_number)

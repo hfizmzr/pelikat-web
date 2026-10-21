@@ -54,7 +54,10 @@ export default async function OrganizerEventLeaderboardPage({
       .limit(20),
     supabase
       .from('run_logs')
-      .select('*, runner_profiles(full_name)')
+      // Organizer embed via the 069 safe view (full-row runner_profiles
+      // reads are no longer organizer-readable); view embeds can come
+      // back as array or object, normalized at render time below.
+      .select('*, runner_profiles_safe(full_name)')
       .eq('event_id', id)
       .order('logged_at', { ascending: false })
       .limit(10),
@@ -161,10 +164,13 @@ export default async function OrganizerEventLeaderboardPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {runLogs.map((log) => (
+                {runLogs.map((log) => {
+                  const embedded = log.runner_profiles_safe
+                  const profile = Array.isArray(embedded) ? embedded[0] : embedded
+                  return (
                   <TableRow key={log.id}>
                     <TableCell className="font-medium">
-                      {log.runner_profiles?.full_name || 'Unknown'}
+                      {profile?.full_name || 'Unknown'}
                     </TableCell>
                     <TableCell>{log.distance_km} KM</TableCell>
                     <TableCell>{Math.floor(log.duration_sec / 60)}m {log.duration_sec % 60}s</TableCell>
@@ -172,7 +178,8 @@ export default async function OrganizerEventLeaderboardPage({
                       {new Date(log.logged_at).toLocaleString()}
                     </TableCell>
                   </TableRow>
-                ))}
+                  )
+                })}
               </TableBody>
             </Table>
           ) : (
