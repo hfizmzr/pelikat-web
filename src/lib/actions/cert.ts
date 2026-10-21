@@ -59,7 +59,7 @@ export async function generateBadgeCertificate(input: {
   }
 
   const { data: profile } = await supabase
-    .from('runner_profiles')
+    .from('runner_profiles_safe') // organizer-safe view: no IC/document/phone/dob columns
     .select('full_name')
     .eq('id', input.runnerId)
     .single()

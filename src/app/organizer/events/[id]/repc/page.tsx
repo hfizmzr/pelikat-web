@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, ClipboardCheck, QrCode, Shirt, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { RepcInventoryForm } from '@/components/events/repc-inventory-form'
+import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -80,12 +81,22 @@ export default async function OrganizerEventRepcPage({
       .order('size', { ascending: true }),
     supabase
       .from('registrations')
-      .select('id, checked_in, runner_profiles(t_shirt_size)')
+      .select('id, checked_in, runner_id')
       .eq('event_id', id),
   ])
 
+  // Re-attach runner data via the organizer-safe view (raw
+  // runner_profiles rows / embeds are no longer organizer-readable)
+  const profileById = await getSafeRunnerProfiles(
+    supabase,
+    (registrations ?? []).map(reg => (reg as { runner_id?: string | null }).runner_id)
+  )
+
   const inventoryRows = (inventory ?? []) as InventoryRecord[]
-  const registrationRows = (registrations ?? []) as RegistrationWithProfile[]
+  const registrationRows = (registrations ?? []).map((reg) => ({
+    ...reg,
+    runner_profiles: profileById.get((reg as { runner_id?: string | null }).runner_id ?? '') ?? null,
+  })) as RegistrationWithProfile[]
 
   const inventoryBySize = new Map(
     inventoryRows.map((row) => [

@@ -7,6 +7,7 @@ import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt, BarChart3, ClipboardL
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { EventSettingsPanel } from '@/components/events/event-settings-panel'
+import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -70,7 +71,7 @@ export default async function OrganizerEventDetailPage({
     .select(`
       *,
       race_categories(*),
-      registrations(*, runner_profiles(*), race_categories(*))
+      registrations(*, race_categories(*))
     `)
     .eq('id', id)
     .single()
@@ -79,7 +80,21 @@ export default async function OrganizerEventDetailPage({
     notFound()
   }
 
-  const eventDetail = event as EventDetail
+  // Re-attach runner names via the organizer-safe view (raw
+  // runner_profiles rows / embeds are no longer organizer-readable).
+  const profileById = await getSafeRunnerProfiles(
+    supabase,
+    ((event.registrations ?? []) as { runner_id?: string | null }[]).map(reg => reg.runner_id)
+  )
+  const eventWithProfiles = {
+    ...event,
+    registrations: ((event.registrations ?? []) as unknown as { runner_id?: string | null }[]).map((reg) => ({
+      ...reg,
+      runner_profiles: profileById.get((reg as { runner_id?: string }).runner_id ?? '') ?? null,
+    })),
+  }
+
+  const eventDetail = eventWithProfiles as EventDetail
   const raceCategories = eventDetail.race_categories ?? []
   const registrations = eventDetail.registrations ?? []
 

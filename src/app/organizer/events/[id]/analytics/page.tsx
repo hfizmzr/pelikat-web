@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import CategoryBreakdownChart, { type CategoryStat } from '@/components/organizer/category-breakdown-chart'
+import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -40,7 +41,7 @@ export default async function OrganizerEventAnalyticsPage({
     while (true) {
       const { data, error } = await supabase
         .from('registrations')
-        .select('id, checked_in, payment_status, runner_profiles(gender), race_categories(id)')
+        .select('id, checked_in, payment_status, runner_id, race_categories(id)')
         .eq('event_id', id)
         .range(from, from + PAGE - 1)
       if (error) throw new Error(error.message)
@@ -66,7 +67,16 @@ export default async function OrganizerEventAnalyticsPage({
     notFound()
   }
 
-  const registrations = regsData as unknown as Registration[]
+  // Re-attach runner gender via the organizer-safe view (raw
+  // runner_profiles rows / embeds are no longer organizer-readable)
+  const profileById = await getSafeRunnerProfiles(
+    supabase,
+    regsData.map(reg => (reg as { runner_id?: string | null }).runner_id)
+  )
+  const registrations = (regsData as unknown as Registration[]).map((reg) => ({
+    ...reg,
+    runner_profiles: { gender: profileById.get((reg as unknown as { runner_id?: string }).runner_id ?? '')?.gender ?? null },
+  }))
   const raceCategories = (event.race_categories ?? []) as { id: string; name: string | null; price: number | null }[]
 
   // FR-33: registration counts by race category and gender
