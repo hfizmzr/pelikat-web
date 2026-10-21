@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/service-role'
 import { getDjangoConfig } from '@/lib/django'
 
 /** Contract (pelikat-api /ai/documents/encrypt, 201):
@@ -119,7 +120,9 @@ export async function POST(request: Request) {
     updateData.ic_encrypted = encrypted.nric_encrypted
   }
 
-  const { error } = await supabase
+  // Migration 070: runner_profiles IC columns are service-written only —
+  // the DB trigger reverts them for every non-service-role caller.
+  const { error } = await supabaseAdmin
     .from('runner_profiles')
     .update(updateData)
     .eq('user_id', user.id)

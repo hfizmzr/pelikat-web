@@ -11,7 +11,9 @@ export async function storeEncryptedIc(
   icNumber: string,
   profile?: { dob?: string | null; gender?: string | null }
 ) {
-  const { supabase, user } = await requireAuth()
+  // The user-scoped client is not needed here: the profile write goes
+  // through supabaseAdmin (migration 070 — IC columns are service-written).
+  const { user } = await requireAuth()
 
   // Mirror of the backend validation (light pre-check; Django is the authority).
   // No client-settable document-path/ciphertext fields are accepted here —
@@ -44,7 +46,9 @@ export async function storeEncryptedIc(
     throw new Error('Document processing service returned an unexpected response')
   }
 
-  const { error } = await supabase
+  // Migration 070: ic_encrypted is service-written only — the DB trigger
+  // reverts it for every non-service-role caller.
+  const { error } = await supabaseAdmin
     .from('runner_profiles')
     .update({ ic_encrypted: result.ic_encrypted })
     .eq('user_id', user.id)
@@ -85,7 +89,8 @@ export async function deleteDocument() {
     })
   }
 
-  const { error } = await supabase
+  // Migration 070: IC document columns are service-written only.
+  const { error } = await supabaseAdmin
     .from('runner_profiles')
     .update({
       ic_document_path: null,

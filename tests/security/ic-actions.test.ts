@@ -21,10 +21,6 @@ vi.mock('@/lib/auth/requireUser', () => ({
   requireAuth: async () => ({
     supabase: {
       from: () => ({
-        update: (data: Record<string, string>) => {
-          mocks.withArgs = data
-          return { eq: () => Promise.resolve({ error: null }) }
-        },
         select: () => ({
           eq: () => ({
             maybeSingle: async () => ({ data: mocks.select() }),
@@ -44,8 +40,17 @@ vi.mock('next/cache', () => ({
   revalidatePath: () => {},
 }))
 
+// Migration 070: profile writes go through the service-role client.
 vi.mock('@/lib/supabase/service-role', () => ({
-  supabaseAdmin: { auth: { admin: {} } },
+  supabaseAdmin: {
+    auth: { admin: {} },
+    from: () => ({
+      update: (data: Record<string, string>) => {
+        mocks.withArgs = data
+        return { eq: () => Promise.resolve({ error: null }) }
+      },
+    }),
+  },
 }))
 
 const { storeEncryptedIc, deleteDocument } = await import('@/lib/actions/account')

@@ -21,6 +21,12 @@ const DOTTED_FAKE = {
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({
     auth: { getUser: () => Promise.resolve({ data: { user: { id: 'user-1' } } }) },
+  })),
+}))
+
+// Migration 070: the profile write goes through the service-role client.
+vi.mock('@/lib/supabase/service-role', () => ({
+  supabaseAdmin: {
     from: () => ({
       update: (data: Record<string, string>) => {
         DOTTED_FAKE.lastUpdate = data
@@ -29,7 +35,7 @@ vi.mock('@/lib/supabase/server', () => ({
         }
       },
     }),
-  })),
+  },
 }))
 
 const djangoReply = (body: unknown, status = 201) =>
