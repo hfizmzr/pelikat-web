@@ -143,23 +143,17 @@ revoke execute on function public.pdpa_delete_expired_ic_documents()
   from public, anon, authenticated, service_role;
 
 -- Base URL moved out of the function body into the vault, alongside the
--- service key. One-time bootstrap with the current project URL (public
--- value, not a credential).
-do $$
-begin
-  if not exists (select 1 from vault.secrets where name = 'pdpa-storage-base-url') then
-    perform vault.create_secret(
-      'https://ugexrrslijmwtieevjbs.supabase.co',
-      'pdpa-storage-base-url',
-      'Storage API base URL used by the PDPA ic-documents retention job'
-    );
-  end if;
-end;
-$$;
+-- service key. PER-ENVIRONMENT SETUP (run out-of-band, in each environment
+-- that must run retention — NEVER bootstrap a shared migration with one
+-- project's URL, other environments would send their key to that host):
+--
+--   select vault.create_secret('<storage-url>', 'pdpa-storage-base-url',
+--          'Storage API base URL used by the PDPA ic-documents retention job');
+--
+-- Until the secret is set, the function no-ops with a NOTICE (safe skip).
 
 -- Same behaviour as 069, with the URL resolved from the vault.
--- Rollback reference: 069's definition (hardcoded
--- 'https://ugexrrslijmwtieevjbs.supabase.co' in the URL literal).
+-- Rollback reference: 069's definition (hardcoded URL in the function body).
 create or replace function public.pdpa_delete_expired_ic_documents()
 returns integer
 language plpgsql
@@ -212,6 +206,15 @@ begin
       )
     );
     v_count := v_count + 1;
+
+    -- Track the async request so pdpa_confirm_ic_retention() can clear the
+    -- profile's IC pointers once the deletion is CONFIRMED (200/404).
+    -- Django's document_path shape is always '<user_id>/<ts>.enc' (pelikat-api
+    -- apps/documents), so the first path segment is the profile's user_id.
+    if v_object.name ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/' then
+      insert into public.pdpa_ic_retention_queue (request_id, object_path, user_id)
+      values (v_id, v_object.name, (split_part(v_object.name, '/', 1))::uuid);
+    end if;
   end loop;
 
   return v_count;
@@ -220,6 +223,85 @@ $$;
 
 comment on function public.pdpa_delete_expired_ic_documents() is
   'PDPA 365d retention: fire-and-forget Storage-API deletes for expired ic-documents objects; requires vault secrets pdpa-storage-service-key and pdpa-storage-base-url';
+
+-- ──────────────────────────────────────────────────────────────────
+-- 3. CONFIRMATION PASS: clear runner_profiles IC pointers only after the
+--    Storage-API delete is confirmed (pg_net is async — the delete run
+--    must never treat a queued request as success).
+-- ──────────────────────────────────────────────────────────────────
+create table if not exists public.pdpa_ic_retention_queue (
+  request_id  bigint primary key,          -- net.http_delete request id
+  object_path text not null,               -- storage object name
+  user_id     uuid not null,               -- first path segment (Django writes <user_id>/<ts>.enc)
+  queued_at   timestamptz not null default now()
+);
+
+alter table public.pdpa_ic_retention_queue enable row level security;
+revoke all on public.pdpa_ic_retention_queue from anon, authenticated;
+
+-- Rollback reference (clear-on-confirm):
+--   drop function public.pdpa_confirm_ic_retention();
+--   drop table public.pdpa_ic_retention_queue;
+revoke execute on function public.pdpa_confirm_ic_retention()
+  from public, anon, authenticated, service_role;
+create or replace function public.pdpa_confirm_ic_retention()
+returns integer
+language plpgsql
+security definer
+set search_path = public, net
+as $$
+declare
+  v_q      record;
+  v_count  int := 0;
+begin
+  -- Confirmed deletions (2xx, or 404 = already gone): clear the matching
+  -- profile IC pointers so the gate (ic_document_path) closes for real.
+  for v_q in
+    select q.request_id, q.object_path
+      from public.pdpa_ic_retention_queue q
+      join net._http_response r on r.id = q.request_id
+     where r.status_code between 200 and 299 or r.status_code = 404
+  loop
+    update public.runner_profiles
+       set ic_document_path         = null,
+           ic_document_mime         = null,
+           ic_document_uploaded_at  = null
+     where ic_document_path = v_q.object_path;
+    v_count := v_count + 1;
+  end loop;
+
+  -- Drop processed entries (failures included — a failed object still exists,
+  -- so the next daily run re-queues it and a fresh confirmation is required).
+  delete from public.pdpa_ic_retention_queue q
+   using net._http_response r
+   where r.id = q.request_id;
+
+  -- Stale entries with no recorded response after 7 days: drop them; the
+  -- next run re-queues the delete (the object presumably still exists).
+  delete from public.pdpa_ic_retention_queue
+   where queued_at < now() - interval '7 days';
+
+  return v_count;
+end;
+$$;
+
+comment on function public.pdpa_confirm_ic_retention() is
+  'PDPA retention confirmation: clear runner_profiles IC columns for ic-documents objects whose Storage-API delete was confirmed (2xx/404); entries older than 7d are dropped and re-queued by the next delete run';
+
+-- Confirmation cron: run well after the delete pass (03:23 UTC), same
+-- ownership pattern. Idempotent.
+do $$
+begin
+  if exists (select 1 from cron.job where jobname = 'pdpa-ic-retention-confirm') then
+    perform cron.unschedule('pdpa-ic-retention-confirm');
+  end if;
+  perform cron.schedule(
+    'pdpa-ic-retention-confirm',
+    '53 3 * * *',
+    'select public.pdpa_confirm_ic_retention()'
+  );
+end;
+$$;
 
 -- Cron job already registered by 069 ('pdpa-ic-retention-cleanup',
 -- 23 3 * * *, username postgres) and the command is unchanged — no reschedule.

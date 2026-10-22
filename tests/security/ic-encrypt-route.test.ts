@@ -16,6 +16,8 @@ import { POST } from '@/app/api/documents/encrypt/route'
 
 const DOTTED_FAKE = {
   update: vi.fn(),
+  profile: { id: 'profile-1' } as Record<string, string> | null,
+  zeroRows: false,
 }
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -28,10 +30,21 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('@/lib/supabase/service-role', () => ({
   supabaseAdmin: {
     from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: () => Promise.resolve({ data: DOTTED_FAKE.profile, error: null }),
+        }),
+      }),
       update: (data: Record<string, string>) => {
         DOTTED_FAKE.lastUpdate = data
         return {
-          eq: () => Promise.resolve({ error: null }),
+          eq: () => ({
+            select: () =>
+              Promise.resolve({
+                data: DOTTED_FAKE.zeroRows ? [] : [{ id: 'profile-1' }],
+                error: null,
+              }),
+          }),
         }
       },
     }),
@@ -72,6 +85,8 @@ const validReply = {
 describe('POST /api/documents/encrypt (Django contract mapping)', () => {
   beforeEach(() => {
     DOTTED_FAKE.update = vi.fn()
+    DOTTED_FAKE.profile = { id: 'profile-1' }
+    DOTTED_FAKE.zeroRows = false
     DOTTED_FAKE.lastUpdate = undefined as Record<string, string> | undefined
     delete DOTTED_FAKE.lastUpdate
   })
@@ -126,7 +141,7 @@ describe('POST /api/documents/encrypt (Django contract mapping)', () => {
     const res = await POST(multipartRequest())
     expect(res.status).toBe(502)
     expect(await res.json()).toEqual({ error: 'Document processing service error' })
-    expect(DOTTED_FAKE.update).not.toHaveBeenCalled()
+    expect(DOTTED_FAKE.lastUpdate).toBeUndefined()
   })
 
   it('rejects non-ok status before any DB write', async () => {
@@ -135,7 +150,26 @@ describe('POST /api/documents/encrypt (Django contract mapping)', () => {
 
     const res = await POST(multipartRequest())
     expect(res.status).toBe(502)
-    expect(DOTTED_FAKE.update).not.toHaveBeenCalled()
+    expect(DOTTED_FAKE.lastUpdate).toBeUndefined()
+  })
+
+  it('returns 502 without DB writes when no runner_profiles row exists yet', async () => {
+    DOTTED_FAKE.profile = null
+    vi.stubGlobal('fetch', vi.fn(async () => djangoReply({ ...validReply })))
+
+    const res = await POST(multipartRequest())
+    expect(res.status).toBe(409)
+    expect(await res.json()).toEqual({ error: 'Save your profile first' })
+    expect(DOTTED_FAKE.lastUpdate).toBeUndefined()
+  })
+
+  it('returns 502 when the profile UPDATE matches zero rows', async () => {
+    DOTTED_FAKE.zeroRows = true
+    vi.stubGlobal('fetch', vi.fn(async () => djangoReply({ ...validReply })))
+
+    const res = await POST(multipartRequest())
+    expect(res.status).toBe(502)
+    expect(await res.json()).toEqual({ error: 'Failed to record document' })
   })
 
   it('maps Django error statuses to generic client messages', async () => {

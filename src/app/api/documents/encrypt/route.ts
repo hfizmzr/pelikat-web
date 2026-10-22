@@ -45,6 +45,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // The profile row must exist before we accept a document for it: the
+  // write below is a record-keeping UPDATE, and zero matched rows would
+  // otherwise be reported as success.
+  const { data: profile, error: profileError } = await supabaseAdmin
+    .from('runner_profiles')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (profileError) {
+    return NextResponse.json({ error: 'Failed to load profile' }, { status: 502 })
+  }
+  if (!profile) {
+    return NextResponse.json(
+      { error: 'Save your profile first' },
+      { status: 409 }
+    )
+  }
+
   const formData = await request.formData()
   const file = formData.get('document')
 
@@ -122,12 +141,13 @@ export async function POST(request: Request) {
 
   // Migration 070: runner_profiles IC columns are service-written only —
   // the DB trigger reverts them for every non-service-role caller.
-  const { error } = await supabaseAdmin
+  const { data: updated, error } = await supabaseAdmin
     .from('runner_profiles')
     .update(updateData)
     .eq('user_id', user.id)
+    .select('id')
 
-  if (error) {
+  if (error || !updated || updated.length === 0) {
     return NextResponse.json({ error: 'Failed to record document' }, { status: 502 })
   }
 

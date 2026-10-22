@@ -69,6 +69,7 @@ drop policy if exists "Runners can upload avatar 1oj01fe_0" on storage.objects;
 drop policy if exists "Runners can upload avatar 1oj01fe_1" on storage.objects;
 drop policy if exists "Runners can upload avatar 1oj01fe_2" on storage.objects;
 
+drop policy if exists "runner owns avatar objects" on storage.objects;
 create policy "runner owns avatar objects" on storage.objects
   for select to authenticated
   using (
@@ -76,6 +77,7 @@ create policy "runner owns avatar objects" on storage.objects
     and (storage.foldername(name))[1] = (select auth.uid())::text
   );
 
+drop policy if exists "runner can insert avatar objects" on storage.objects;
 create policy "runner can insert avatar objects" on storage.objects
   for insert to authenticated
   with check (
@@ -83,6 +85,7 @@ create policy "runner can insert avatar objects" on storage.objects
     and (storage.foldername(name))[1] = (select auth.uid())::text
   );
 
+drop policy if exists "runner can update avatar objects" on storage.objects;
 create policy "runner can update avatar objects" on storage.objects
   for update to authenticated
   using (

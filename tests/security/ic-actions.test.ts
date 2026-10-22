@@ -15,6 +15,7 @@ const mocks = {
   update: vi.fn(),
   withArgs: undefined as Record<string, string> | undefined,
   select: vi.fn(),
+  updatedRows: [{ id: 'profile-1' }] as unknown[] | [],
 }
 
 vi.mock('@/lib/auth/requireUser', () => ({
@@ -47,7 +48,11 @@ vi.mock('@/lib/supabase/service-role', () => ({
     from: () => ({
       update: (data: Record<string, string>) => {
         mocks.withArgs = data
-        return { eq: () => Promise.resolve({ error: null }) }
+        return {
+          eq: () => ({
+            select: () => Promise.resolve({ data: mocks.updatedRows, error: null }),
+          }),
+        }
       },
     }),
   },
@@ -59,6 +64,7 @@ describe('storeEncryptedIc', () => {
   beforeEach(() => {
     mocks.fetchDjangoApi = vi.fn()
     mocks.withArgs = undefined
+    mocks.updatedRows = [{ id: 'profile-1' }]
   })
 
   it('encrypts and writes the Django ic_encrypted ciphertext; returns review info', async () => {
@@ -114,6 +120,20 @@ describe('storeEncryptedIc', () => {
     mocks.fetchDjangoApi.mockResolvedValue({ status: 'ok' })
     await expect(storeEncryptedIc('A1234567')).rejects.toThrow(/unexpected response/i)
     expect(mocks.withArgs).toBeUndefined()
+  })
+
+  it('throws when the profile UPDATE matches zero rows (no saved profile)', async () => {
+    mocks.updatedRows = []
+    mocks.fetchDjangoApi.mockResolvedValue({
+      status: 'ok',
+      ic_encrypted: '{v2}',
+      needs_review: false,
+      warnings: [],
+    })
+
+    await expect(storeEncryptedIc('A1234567')).rejects.toThrow(
+      /save your profile before adding your ic\/passport/i
+    )
   })
 })
 

@@ -48,12 +48,16 @@ export async function storeEncryptedIc(
 
   // Migration 070: ic_encrypted is service-written only — the DB trigger
   // reverts it for every non-service-role caller.
-  const { error } = await supabaseAdmin
+  const { data: updated, error } = await supabaseAdmin
     .from('runner_profiles')
     .update({ ic_encrypted: result.ic_encrypted })
     .eq('user_id', user.id)
+    .select('id')
 
   if (error) throw new Error(error.message)
+  if (!updated || updated.length === 0) {
+    throw new Error('Save your profile before adding your IC/Passport number.')
+  }
 
   revalidatePath('/runner/profile')
   return {
