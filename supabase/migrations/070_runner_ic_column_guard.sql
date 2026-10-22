@@ -242,8 +242,6 @@ revoke all on public.pdpa_ic_retention_queue from anon, authenticated;
 -- Rollback reference (clear-on-confirm):
 --   drop function public.pdpa_confirm_ic_retention();
 --   drop table public.pdpa_ic_retention_queue;
-revoke execute on function public.pdpa_confirm_ic_retention()
-  from public, anon, authenticated, service_role;
 create or replace function public.pdpa_confirm_ic_retention()
 returns integer
 language plpgsql
@@ -284,6 +282,9 @@ begin
   return v_count;
 end;
 $$;
+
+revoke execute on function public.pdpa_confirm_ic_retention()
+  from public, anon, authenticated, service_role;
 
 comment on function public.pdpa_confirm_ic_retention() is
   'PDPA retention confirmation: clear runner_profiles IC columns for ic-documents objects whose Storage-API delete was confirmed (2xx/404); entries older than 7d are dropped and re-queued by the next delete run';
