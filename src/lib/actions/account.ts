@@ -2,75 +2,99 @@
 
 import { fetchDjangoApi } from '@/lib/django'
 import { requireAuth } from '@/lib/auth/requireUser'
+import { validateIdentityInput } from '@/lib/nric'
 import { supabaseAdmin } from '@/lib/supabase/service-role'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-export async function storeEncryptedDocument(result: {
-  encrypted_path: string
-  ic_encrypted?: string
-}) {
-  const { supabase, user } = await requireAuth()
+export async function storeEncryptedIc(
+  icNumber: string,
+  profile?: { dob?: string | null; gender?: string | null }
+) {
+  // The user-scoped client is not needed here: the profile write goes
+  // through supabaseAdmin (migration 070 — IC columns are service-written).
+  const { user } = await requireAuth()
 
-  const updateData: Record<string, string> = {
-    ic_document_path: result.encrypted_path,
-    ic_document_mime: 'image/jpeg',
-    ic_document_uploaded_at: new Date().toISOString(),
+  // Mirror of the backend validation (light pre-check; Django is the authority).
+  // No client-settable document-path/ciphertext fields are accepted here —
+  // ic_encrypted is written only from the Django response.
+  const check = validateIdentityInput(icNumber)
+  if (!check.valid) {
+    throw new Error(check.error)
   }
 
-  if (result.ic_encrypted) {
-    updateData.ic_encrypted = result.ic_encrypted
+  // Django encrypt-ic contract (201): {"status":"ok","ic_encrypted":...,
+  // "needs_review":bool,"warnings":[...]}. Optional dob/gender enable the
+  // backend NRIC cross-check (DOB mismatch is a hard 422; gender mismatch a
+  // needs_review warning).
+  const result: {
+    ic_encrypted?: unknown
+    needs_review?: unknown
+    warnings?: unknown
+  } = await fetchDjangoApi('/ai/documents/encrypt-ic', {
+    method: 'POST',
+    body: JSON.stringify({
+      ic_number: icNumber.trim(),
+      user_id: user.id,
+      ...(profile?.dob ? { dob: profile.dob } : {}),
+      ...(profile?.gender ? { gender: profile.gender } : {}),
+    }),
+  })
+
+  // Shape-verify before writing: never store a missing/undefined ciphertext.
+  if (typeof result.ic_encrypted !== 'string' || !result.ic_encrypted) {
+    throw new Error('Document processing service returned an unexpected response')
   }
 
-  const { error } = await supabase
-    .from('runner_profiles')
-    .update(updateData)
-    .eq('user_id', user.id)
-
-  if (error) throw new Error(error.message)
-
-  revalidatePath('/runner/profile')
-}
-
-export async function storeEncryptedIc(icNumber: string) {
-  const { supabase, user } = await requireAuth()
-
-  const trimmed = icNumber.trim()
-  const isNric = /^\d{6}-\d{2}-\d{4}$/.test(trimmed)
-  const isPassport = /^[A-Za-z0-9]{5,15}$/.test(trimmed)
-  if (!isNric && !isPassport) {
-    throw new Error('Enter your IC as 000000-00-0000 or a passport number (letters and digits only).')
-  }
-
-  const result: { ic_encrypted: string } = await fetchDjangoApi(
-    '/ai/documents/encrypt-ic',
-    {
-      method: 'POST',
-      body: JSON.stringify({ ic_number: trimmed, user_id: user.id }),
-    }
-  )
-
-  const { error } = await supabase
+  // Migration 070: ic_encrypted is service-written only — the DB trigger
+  // reverts it for every non-service-role caller.
+  const { data: updated, error } = await supabaseAdmin
     .from('runner_profiles')
     .update({ ic_encrypted: result.ic_encrypted })
     .eq('user_id', user.id)
+    .select('id')
 
   if (error) throw new Error(error.message)
+  if (!updated || updated.length === 0) {
+    throw new Error('Save your profile before adding your IC/Passport number.')
+  }
 
   revalidatePath('/runner/profile')
+  return {
+    needs_review: result.needs_review === true,
+    warnings: Array.isArray(result.warnings)
+      ? result.warnings.filter((w): w is string => typeof w === 'string')
+      : [],
+  }
 }
 
-export async function deleteDocument(storagePath: string | null) {
+export async function deleteDocument() {
   const { supabase, user } = await requireAuth()
+
+  // The encrypted_path is resolved from the runner's own profile row —
+  // never trusted from a client argument (the component's prop can be
+  // stale/absent after the first upload because the encrypt route does not
+  // return the path, and a client-supplied path would be attacker-chosen).
+  // Django still enforces the user_id prefix (403 on IDOR/traversal).
+  const { data: profile, error: profileError } = await supabase
+    .from('runner_profiles')
+    .select('ic_document_path')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (profileError) throw new Error(profileError.message)
+
+  const storagePath = profile?.ic_document_path ?? null
 
   if (storagePath) {
     await fetchDjangoApi('/ai/documents/delete', {
       method: 'POST',
-      body: JSON.stringify({ encrypted_path: storagePath }),
+      body: JSON.stringify({ user_id: user.id, encrypted_path: storagePath }),
     })
   }
 
-  const { error } = await supabase
+  // Migration 070: IC document columns are service-written only.
+  const { error } = await supabaseAdmin
     .from('runner_profiles')
     .update({
       ic_document_path: null,
@@ -100,7 +124,10 @@ export async function deleteRunnerAccount() {
   if (profile.ic_document_path) {
     await fetchDjangoApi('/ai/documents/delete', {
       method: 'POST',
-      body: JSON.stringify({ encrypted_path: profile.ic_document_path }),
+      body: JSON.stringify({
+        user_id: user.id,
+        encrypted_path: profile.ic_document_path,
+      }),
     })
   }
 

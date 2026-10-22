@@ -1,6 +1,7 @@
 import { Badge, CircleCheck, Clock, Download, MoreHorizontal, Search, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import { isConfirmedStatus } from '@/lib/registration-status'
+import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -16,14 +17,28 @@ export default async function OrganizerRunnersPage() {
   const { data: registrations } = await supabase
     .from('registrations')
     .select(`
-      id, bib_number, payment_status, checked_in, created_at,
-      runner_profiles(id, full_name, email, gender, phone),
+      id, bib_number, payment_status, checked_in, created_at, runner_id,
       events(id, name, event_date),
       race_categories(id, name, bib_prefix)
     `)
     .eq('organizer_id', organizerId)
     .order('created_at', { ascending: false })
     .limit(100)
+
+  // Re-attach runner names via the organizer-safe view (raw
+  // runner_profiles rows / embeds are no longer organizer-readable)
+  const profileById = await getSafeRunnerProfiles(
+    supabase,
+    (registrations ?? []).map(reg => (reg as { runner_id?: string | null }).runner_id)
+  )
+  const registrationsWithProfiles = (registrations ?? []).map((reg) => ({
+    ...reg,
+    runner_profiles: {
+      ...(profileById.get((reg as { runner_id?: string | null }).runner_id ?? '') ?? null),
+      // raw view has no email column; column was already always null before
+      email: null as string | null,
+    },
+  }))
 
   const total = registrations?.length || 0
   const paid = registrations?.filter(r => isConfirmedStatus(r.payment_status)).length || 0
@@ -110,9 +125,9 @@ export default async function OrganizerRunnersPage() {
             <div className="text-right">Actions</div>
           </div>
 
-          {registrations && registrations.length > 0 ? (
+          {registrationsWithProfiles.length > 0 ? (
             <div className="divide-y divide-muted">
-              {registrations.map((reg, i) => (
+              {registrationsWithProfiles.map((reg, i) => (
                 <div key={reg.id} className="grid grid-cols-[auto_1fr_1fr_auto_auto_auto] gap-0 items-center px-5 py-3 hover:bg-card transition-colors">
                   <div className="pr-4 text-[12px] text-muted-foreground font-mono">{i + 1}</div>
                   <div className="flex items-center gap-2.5">

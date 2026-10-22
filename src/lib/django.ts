@@ -11,10 +11,28 @@ export class DjangoApiError extends Error {
   }
 }
 
+// Env values are resolved at REQUEST time, not module load: `next build`
+// evaluates imported modules while collecting page data and the Docker
+// builder stage runs without DJANGO_URL / INTERNAL_API_KEY (runtime-only
+// env_file). There are still no fallback keys anywhere — a missing config
+// fails the individual request (and any real fetch) loudly instead of
+// breaking `pnpm run build`.
+export function requireEnv(name: 'DJANGO_URL' | 'INTERNAL_API_KEY'): string {
+  const value = process.env[name]
+  if (!value) throw new Error('INTERNAL_API_KEY / DJANGO_URL not configured')
+  return value
+}
+
+export function getDjangoConfig() {
+  return {
+    djangoUrl: requireEnv('DJANGO_URL'),
+    internalApiKey: requireEnv('INTERNAL_API_KEY'),
+  }
+}
+
 export async function fetchDjangoApi(endpoint: string, options: RequestInit = {}) {
-  const djangoUrl = process.env.DJANGO_URL || 'http://localhost:8000';
-  const internalApiKey = process.env.INTERNAL_API_KEY || 'dummy-internal-api-key-12345';
-  
+
+  const { djangoUrl, internalApiKey } = getDjangoConfig();
   const headers = {
     'Content-Type': 'application/json',
     'X-Internal-Key': internalApiKey,

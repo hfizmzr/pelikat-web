@@ -3,6 +3,7 @@ import { isConfirmedStatus } from '@/lib/registration-status'
 import { notFound } from 'next/navigation'
 import { RegistrationsClient } from '@/components/events/registrations-client'
 import { ComplimentaryGuestsClient } from '@/components/events/complimentary-guests-client'
+import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -31,12 +32,20 @@ export default async function OrganizerEventRegistrationsPage({
 
   const { data: registrations } = await supabase
     .from('registrations')
-    .select('id, bib_number, checked_in, payment_status, guest_name, guest_phone, registration_role, runner_profiles(full_name, phone), race_categories(name)')
+    .select('id, bib_number, checked_in, payment_status, guest_name, guest_phone, registration_role, runner_id, race_categories(name)')
     .eq('event_id', id)
     .order('created_at', { ascending: false })
 
+  // Re-attach runner names via the organizer-safe view (raw
+  // runner_profiles rows / embeds are no longer organizer-readable;
+  // phone is excluded from the view, so the phone column now shows '-').
+  const profileById = await getSafeRunnerProfiles(
+    supabase,
+    (registrations ?? []).map(reg => reg.runner_id as string | null)
+  )
+
   const rows = (registrations ?? []).map((reg) => {
-    const runner = Array.isArray(reg.runner_profiles) ? reg.runner_profiles[0] : reg.runner_profiles
+    const runner = profileById.get((reg.runner_id as string) ?? '')
     const cat = Array.isArray(reg.race_categories) ? reg.race_categories[0] : reg.race_categories
     return {
       id: reg.id as string,
@@ -46,7 +55,7 @@ export default async function OrganizerEventRegistrationsPage({
       guest_name: (reg.guest_name ?? null) as string | null,
       guest_phone: (reg.guest_phone ?? null) as string | null,
       registration_role: (reg.registration_role ?? 'runner') as string,
-      runner_profiles: runner ? { full_name: runner.full_name ?? '', phone: runner.phone ?? '' } : null,
+      runner_profiles: runner ? { full_name: runner.full_name ?? '', phone: '' } : null,
       race_categories: cat ? { name: cat.name ?? '' } : null,
     }
   })

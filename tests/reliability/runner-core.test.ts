@@ -16,7 +16,9 @@ describe('Reliability: Runner Core Loop (Phase 1)', () => {
     const proxy = read('src', 'proxy.ts')
 
     expect(proxy).toContain("pathname !== '/runner/profile'")
-    expect(proxy).toContain("select('full_name, dob, gender, phone, pdpa_agreed, ic_encrypted')")
+    expect(proxy).toContain(
+      "'full_name, dob, gender, phone, pdpa_agreed, ic_encrypted, ic_document_path'"
+    )
     expect(proxy).toContain('pdpa_agreed')
     expect(proxy).toContain('ic_encrypted')
     expect(proxy).toContain("new URL('/runner/profile', request.url)")
@@ -72,7 +74,9 @@ describe('Reliability: Runner Core Loop (Phase 1)', () => {
     const page = read('src', 'app', 'runner', 'profile', 'page.tsx')
     expect(page).toContain('emergency_contact_name')
     expect(page).toContain('storeEncryptedIc')
-    expect(page).toContain('/^\\d{6}-\\d{2}-\\d{4}$/')
+    // Canonical identity validation lives in src/lib/nric.ts (backend mirror)
+    const nric = read('src', 'lib', 'nric.ts')
+    expect(nric).toContain('/^\\d{6}-\\d{2}-\\d{4}$/')
 
     const actions = read('src', 'lib', 'actions', 'account.ts')
     expect(actions).toContain('/ai/documents/encrypt-ic')
@@ -102,7 +106,7 @@ describe('Polish: Registration & Emails (Phase 2)', () => {
 
     const page = read('src', 'app', 'runner', 'events', '[id]', 'page.tsx')
     expect(page).toContain(
-      "select('id, t_shirt_size, full_name, emergency_contact_name, emergency_contact_phone, dob, gender, phone, ic_encrypted')"
+      "select('id, t_shirt_size, full_name, emergency_contact_name, emergency_contact_phone, dob, gender, phone, ic_encrypted, ic_document_path')"
     )
     expect(page).toContain('tShirtSize: profile?.t_shirt_size ?? null')
   })
@@ -316,6 +320,8 @@ describe('Polish: E-Certificates & Re-Registration (Phase 5)', () => {
     expect(actions).toContain('/runner/profile')
 
     const page = read('src', 'app', 'runner', 'events', '[id]', 'page.tsx')
-    expect(page).toContain('icOnFile: !!profile?.ic_encrypted')
+    expect(page).toContain(
+      'icOnFile: !!(profile?.ic_encrypted || profile?.ic_document_path)'
+    )
   })
 })

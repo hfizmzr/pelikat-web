@@ -64,9 +64,22 @@ export async function proxy(request: NextRequest) {
     if (pathname !== '/runner/profile') {
       const { data: profile } = await supabase
         .from('runner_profiles')
-        .select('full_name, dob, gender, phone, pdpa_agreed, ic_encrypted')
+        .select(
+          'full_name, dob, gender, phone, pdpa_agreed, ic_encrypted, ic_document_path'
+        )
         .eq('user_id', user.id)
         .maybeSingle()
+
+      // IC requirement is satisfied by EITHER server-written column:
+      //  - ic_encrypted: manual IC entry (Django encrypt-ic ciphertext), or
+      //    OCR with a verified NRIC.
+      //  - ic_document_path: encrypted IC/passport document stored by the
+      //    Django pipeline even when no NRIC could be extracted from it
+      //    (needs_review) — without this, such runners would be permanently
+      //    gated with no manual review console.
+      // Both are written only server-side (route.ts / server actions).
+      const icEvidence =
+        !!profile?.ic_encrypted || !!profile?.ic_document_path
 
       const complete =
         !!profile &&
@@ -75,7 +88,7 @@ export async function proxy(request: NextRequest) {
         !!profile.gender &&
         !!profile.phone &&
         !!profile.pdpa_agreed &&
-        !!profile.ic_encrypted
+        icEvidence
 
       if (!complete) {
         return NextResponse.redirect(new URL('/runner/profile', request.url))

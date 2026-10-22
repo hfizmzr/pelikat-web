@@ -38,7 +38,7 @@ export default async function RunnerEventDetailPage({
   const [{ data: profile }, { data: event }] = await Promise.all([
     supabase
       .from('runner_profiles')
-      .select('id, t_shirt_size, full_name, emergency_contact_name, emergency_contact_phone, dob, gender, phone, ic_encrypted')
+      .select('id, t_shirt_size, full_name, emergency_contact_name, emergency_contact_phone, dob, gender, phone, ic_encrypted, ic_document_path')
       .eq('user_id', user?.id)
       .single(),
     supabase
@@ -282,7 +282,7 @@ export default async function RunnerEventDetailPage({
                 dob: profile?.dob ?? null,
                 gender: profile?.gender ?? null,
                 phone: profile?.phone ?? null,
-                icOnFile: !!profile?.ic_encrypted,
+                icOnFile: !!(profile?.ic_encrypted || profile?.ic_document_path),
               }}
               eventSummary={{
                 name: event.name,

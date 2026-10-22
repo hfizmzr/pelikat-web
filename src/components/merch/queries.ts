@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { OrderRow } from '@/components/merch/order-table'
+import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
 import {
   MERCH_SOLD_STATUSES,
   variantLabel,
@@ -50,7 +51,7 @@ export async function getMerchHubData(supabase: SupabaseClient, eventId: string)
     supabase
       .from('merch_orders')
       .select(
-        'id, order_number, status, total_amount, created_at, ready_at, collected_at, runner_id, runner_profiles(full_name, phone), merch_order_items(quantity, unit_price, merch_variants(size, color, merch_products(name)))'
+        'id, order_number, status, total_amount, created_at, ready_at, collected_at, runner_id, merch_order_items(quantity, unit_price, merch_variants(size, color, merch_products(name)))'
       )
       .eq('event_id', eventId)
       .order('created_at', { ascending: false }),
@@ -74,7 +75,17 @@ export async function getMerchHubData(supabase: SupabaseClient, eventId: string)
     ])
   )
 
-  const rawOrders = (ordersRes.data ?? []) as unknown as MerchOrder[]
+  // Re-attach runner names via the organizer-safe view (raw
+  // runner_profiles rows / embeds are no longer organizer-readable)
+  const profileById = await getSafeRunnerProfiles(
+    supabase,
+    ((ordersRes.data ?? []) as { runner_id: string | null }[]).map(o => o.runner_id),
+  )
+
+  const rawOrders = ((ordersRes.data ?? []) as unknown as MerchOrder[]).map((o) => ({
+    ...o,
+    runner_profiles: profileById.get(o.runner_id ?? '') ?? null,
+  }))
   const orders: OrderRow[] = rawOrders.map((o) => ({
     id: o.id,
     orderNumber: o.order_number,

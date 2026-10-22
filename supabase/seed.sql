@@ -376,6 +376,11 @@ on conflict do nothing;
 -- §7 RUNNER PROFILES  (one per runner auth user; ★ user_id unique anchor)
 --    Inserted BEFORE registrations so the claim_guest_registrations trigger
 --    fires on an empty registrations table (no accidental auto-claims).
+--    NOTE (migration 070): ic_encrypted / ic_document_* are deliberately NOT
+--    seeded — no ic-documents objects are seeded either, so the ic-doc proxy
+--    gate stays consistently closed. Do not add fake IC columns here: the
+--    070 guard silently NULLs them on non-privileged INSERT, and a seeded
+--    ic_document_path without a real .enc object would break the proxy flow.
 -- ════════════════════════════════════════════════════════════════════════════
 insert into public.runner_profiles
   (id, user_id, full_name, phone, dob, gender, t_shirt_size, pdpa_agreed,

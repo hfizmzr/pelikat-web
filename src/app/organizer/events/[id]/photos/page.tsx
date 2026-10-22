@@ -468,7 +468,7 @@ export default async function OrganizerEventPhotosPage({
 
   const { data: runners } = runnerIds.length > 0
     ? await supabase
-      .from('runner_profiles')
+      .from('runner_profiles_safe')
       .select('id, full_name')
       .in('id', runnerIds)
     : { data: [] }

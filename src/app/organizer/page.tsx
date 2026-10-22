@@ -1,6 +1,7 @@
 import { ArrowRight, Badge, Calendar, CalendarClock, CircleCheck, CirclePlus, ExternalLink, Flag, MapPin, Plus, QrCode, Search, SlidersHorizontal, TrendingUp, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import { isConfirmedStatus } from '@/lib/registration-status'
+import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
@@ -29,8 +30,7 @@ export default async function OrganizerDashboard() {
     supabase
       .from('registrations')
       .select(`
-        id, payment_status, created_at,
-        runner_profiles(full_name),
+        id, payment_status, created_at, runner_id,
         events(name),
         race_categories(name)
       `)
@@ -43,6 +43,17 @@ export default async function OrganizerDashboard() {
       .eq('id', organizerId)
       .maybeSingle(),
   ])
+
+  // Re-attach runner names via the organizer-safe view (raw
+  // runner_profiles rows / embeds are no longer organizer-readable)
+  const recentProfileById = await getSafeRunnerProfiles(
+    supabase,
+    (recentRegistrations ?? []).map(reg => (reg as { runner_id?: string | null }).runner_id)
+  )
+  const recentRegistrationsWithProfiles = (recentRegistrations ?? []).map((reg) => ({
+    ...reg,
+    runner_profiles: recentProfileById.get((reg as { runner_id?: string | null }).runner_id ?? '') ?? null,
+  }))
 
   // Aggregate stats
   const allRegs = events?.flatMap(e => e.registrations || []) || []
@@ -327,9 +338,9 @@ export default async function OrganizerDashboard() {
           </div>
 
           <div className="bg-card rounded-xl border border-muted shadow-sm overflow-hidden">
-            {recentRegistrations && recentRegistrations.length > 0 ? (
+            {recentRegistrationsWithProfiles.length > 0 ? (
               <div className="divide-y divide-muted">
-                {recentRegistrations.map((reg) => (
+                {recentRegistrationsWithProfiles.map((reg) => (
                   <div key={reg.id} className="flex items-center justify-between px-6 py-3 hover:bg-card transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[12px] font-bold shrink-0">

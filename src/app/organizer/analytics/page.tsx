@@ -2,6 +2,7 @@ import { Banknote, ClipboardCheck, Flag, LoaderCircle, TrendingUp, Users } from 
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import OrganizerAnalyticsCharts, { type AnalyticsData } from '@/components/organizer/analytics-charts'
+import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -55,10 +56,22 @@ export default async function OrganizerAnalyticsPage() {
         *,
         events(name),
         race_categories(name, price),
-        runner_profiles(gender, dob, t_shirt_size)
+        runner_id
       `)
       .eq('organizer_id', organizerId),
   ])
+
+  // Re-attach runner demographics via the organizer-safe view (raw
+  // runner_profiles rows / embeds are no longer organizer-readable).
+  // DOB is excluded from the view; age groups become 'Unknown'.
+  const profileById = await getSafeRunnerProfiles(
+    supabase,
+    (registrations ?? []).map(reg => (reg as { runner_id?: string | null }).runner_id)
+  )
+  const registrationsWithProfiles = (registrations ?? []).map((reg) => ({
+    ...reg,
+    runner_profiles: profileById.get((reg as { runner_id?: string | null }).runner_id ?? '') ?? null,
+  }))
 
   const totalEvents = events?.length ?? 0
   const totalRegistrations = registrations?.length ?? 0
@@ -83,7 +96,7 @@ export default async function OrganizerAnalyticsPage() {
   const ageMap: Record<string, number> = {}
   const shirtMap: Record<string, number> = {}
 
-  for (const reg of registrations ?? []) {
+  for (const reg of registrationsWithProfiles) {
     const profile = reg.runner_profiles as { gender: string | null; dob: string | null; t_shirt_size: string | null } | null
     const gender = profile?.gender ?? 'Unknown'
     genderMap[gender] = (genderMap[gender] ?? 0) + 1
