@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/service-role'
+import { profileIcBlockReason } from '@/lib/profile-validation'
 import { getDjangoConfig } from '@/lib/django'
 
 /** Contract (pelikat-api /ai/documents/encrypt, 201):
@@ -47,10 +48,12 @@ export async function POST(request: Request) {
 
   // The profile row must exist before we accept a document for it: the
   // write below is a record-keeping UPDATE, and zero matched rows would
-  // otherwise be reported as success.
+  // otherwise be reported as success. Also rejects incomplete profiles —
+  // an IC must not land in storage for an unnamed/unconsented runner
+  // (mirrors migration 072; the DB CHECK remains the final authority).
   const { data: profile, error: profileError } = await supabaseAdmin
     .from('runner_profiles')
-    .select('id')
+    .select('id, full_name, dob, gender, pdpa_agreed')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -62,6 +65,10 @@ export async function POST(request: Request) {
       { error: 'Save your profile first' },
       { status: 409 }
     )
+  }
+  const blockReason = profileIcBlockReason(profile)
+  if (blockReason) {
+    return NextResponse.json({ error: blockReason }, { status: 409 })
   }
 
   const formData = await request.formData()
