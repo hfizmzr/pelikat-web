@@ -6,6 +6,8 @@ import { deleteDocument } from '@/lib/actions/account'
 
 interface Props {
   userId: string
+  /** Non-empty when the profile preconditions fail — upload is blocked. */
+  uploadBlocked?: string | null
   currentDocument: {
     path: string | null
     mime: string | null
@@ -14,7 +16,7 @@ interface Props {
 
 const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024
 
-export default function DocumentCapture({ currentDocument }: Props) {
+export default function DocumentCapture({ currentDocument, uploadBlocked = null }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -64,6 +66,10 @@ export default function DocumentCapture({ currentDocument }: Props) {
 
   const handleFile = useCallback(
     async (file: File) => {
+      if (uploadBlocked) {
+        setError(uploadBlocked)
+        return
+      }
       setError(null)
       setWarnings([])
       setNeedsReview(false)
@@ -76,11 +82,15 @@ export default function DocumentCapture({ currentDocument }: Props) {
       setRawFile(file)
       setPreviewUrl(URL.createObjectURL(file))
     },
-    []
+    [uploadBlocked]
   )
 
   const handleUpload = async () => {
     if (!rawFile) return
+    if (uploadBlocked) {
+      setError(uploadBlocked)
+      return
+    }
 
     setEncrypting(true)
     setError(null)
@@ -211,7 +221,7 @@ export default function DocumentCapture({ currentDocument }: Props) {
             <div className="flex gap-2">
               <button 
                 onClick={handleUpload} 
-                disabled={encrypting}
+                disabled={encrypting || !!uploadBlocked}
                 className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
               >
                 {encrypting ? (
@@ -244,7 +254,8 @@ export default function DocumentCapture({ currentDocument }: Props) {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="py-3.5 px-2 rounded-xl border border-border text-muted-foreground bg-muted text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
+                disabled={!!uploadBlocked}
+                className="py-3.5 px-2 rounded-xl border border-border text-muted-foreground bg-muted text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform disabled:opacity-50"
               >
                 <FolderOpen className="size-[24px]" />
                 Upload File
@@ -252,12 +263,19 @@ export default function DocumentCapture({ currentDocument }: Props) {
               
               <button
                 onClick={() => cameraInputRef.current?.click()}
-                className="py-3.5 px-2 rounded-xl border border-border text-muted-foreground bg-muted text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
+                disabled={!!uploadBlocked}
+                className="py-3.5 px-2 rounded-xl border border-border text-muted-foreground bg-muted text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform disabled:opacity-50"
               >
                 <Camera className="size-[24px]" />
                 Take Photo
               </button>
             </div>
+
+            {uploadBlocked && (
+              <p className="text-[12px] text-muted-foreground text-center">
+                {uploadBlocked}
+              </p>
+            )}
 
             <input
               ref={fileInputRef}

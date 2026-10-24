@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import DocumentCapture from "@/components/profile/document-capture";
 import { deleteRunnerAccount, storeEncryptedIc } from "@/lib/actions/account";
+import { profileIcBlockReason, profileSaveErrors } from "@/lib/profile-validation";
 import { validateIdentityInput } from "@/lib/nric";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -25,6 +26,7 @@ export default function RunnerProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ full_name?: string; pdpa?: string }>({});
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -34,6 +36,16 @@ export default function RunnerProfilePage() {
     t_shirt_size: "",
     emergency_contact_name: "",
     emergency_contact_phone: "",
+  });
+
+  // IC/document paths are blocked until the in-progress profile passes the
+  // same preconditions the save applies to — no IC should land in storage
+  // for an unnamed runner (mirrors migration 072).
+  const icBlockReason = profileIcBlockReason({
+    full_name: formData.full_name,
+    dob: formData.dob,
+    gender: formData.gender,
+    pdpa_agreed: profile?.pdpa_agreed,
   });
 
   const [icInput, setIcInput] = useState("");
@@ -83,24 +95,37 @@ export default function RunnerProfilePage() {
   ) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
     if (saveError) setSaveError(null);
+    if (key === "full_name") setFieldErrors((prev) => ({ ...prev, full_name: undefined }));
+  };
+
+  const pdpaChecked = profile?.pdpa_agreed === true;
+
+  const validateSave = () => {
+    const errors = profileSaveErrors(formData.full_name, pdpaChecked);
+    setFieldErrors(errors);
+    return Object.values(errors).filter(Boolean).length === 0;
   };
 
   const handleSave = async () => {
     if (saving) return;
+    if (!validateSave()) {
+      setSaveError("Please fix the highlighted fields before saving.");
+      return;
+    }
     setSaving(true);
     setSaveError(null);
 
     try {
       const { error } = await supabase.from("runner_profiles").upsert({
         user_id: user?.id,
-        full_name: formData.full_name,
+        full_name: formData.full_name.trim(),
         phone: formData.phone,
         dob: formData.dob,
         gender: formData.gender,
         t_shirt_size: formData.t_shirt_size,
         emergency_contact_name: formData.emergency_contact_name,
         emergency_contact_phone: formData.emergency_contact_phone,
-        pdpa_agreed: profile?.pdpa_agreed || false,
+        pdpa_agreed: pdpaChecked,
       }, { onConflict: "user_id" });
 
       if (error) {
@@ -133,6 +158,10 @@ export default function RunnerProfilePage() {
   };
 
   const handleSaveIc = async () => {
+    if (icBlockReason) {
+      setIcError(icBlockReason);
+      return;
+    }
     const ic = icInput.trim();
 
     // Light UX mirror of the backend rules (src/lib/nric.ts).
@@ -215,6 +244,9 @@ export default function RunnerProfilePage() {
                 onChange={(e) => updateField("full_name", e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
               />
+              {fieldErrors.full_name && (
+                <p className="text-[12px] text-red-500 dark:text-red-300 ml-1">{fieldErrors.full_name}</p>
+              )}
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="phone" className="text-[12px] font-bold text-muted-foreground ml-1">Phone Number</label>
@@ -334,6 +366,7 @@ export default function RunnerProfilePage() {
                 onChange={(e) => {
                   const checked = e.target.checked
                   setProfile({ ...profile, pdpa_agreed: checked })
+                  if (checked) setFieldErrors((prev) => ({ ...prev, pdpa: undefined }))
                 }}
                 className="w-5 h-5 rounded border-border bg-muted text-primary focus:ring-primary/50"
               />
@@ -342,10 +375,14 @@ export default function RunnerProfilePage() {
               I consent to the collection and processing of my personal data in accordance with PDPA
             </label>
           </div>
+          {fieldErrors.pdpa && (
+            <p className="text-[12px] text-red-500 dark:text-red-300 mt-2">{fieldErrors.pdpa}</p>
+          )}
         </section>
 
         <DocumentCapture
           userId={user?.id || ""}
+          uploadBlocked={icBlockReason}
           currentDocument={{
             path: profile?.ic_document_path || null,
             mime: profile?.ic_document_mime || null,
@@ -372,6 +409,10 @@ export default function RunnerProfilePage() {
               </div>
             ) : (
               <>
+                {icBlockReason ? (
+                  <p className="text-[12px] text-muted-foreground">{icBlockReason}</p>
+                ) : null}
+
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="ic_number" className="text-[12px] font-bold text-muted-foreground ml-1">IC / Passport Number</label>
                   <input
@@ -390,7 +431,7 @@ export default function RunnerProfilePage() {
 
                 <button
                   onClick={handleSaveIc}
-                  disabled={icSaving || !icInput.trim()}
+                  disabled={icSaving || !icInput.trim() || !!icBlockReason}
                   className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
                 >
                   {icSaving ? (
