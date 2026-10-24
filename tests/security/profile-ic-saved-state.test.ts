@@ -34,6 +34,17 @@ describe("IC gate derives from saved snapshot (not live form state)", () => {
     // The old bug: live form fields fed the gate directly.
     expect(blockReasonSource).not.toMatch(/full_name: formData\./)
     expect(blockReasonSource).not.toMatch(/dob: formData\./)
+    // Live consent must not leak into the gate either.
+    expect(blockReasonSource).not.toContain("profile?.pdpa_agreed")
+  })
+
+  it("NRIC cross-check sends the SAVED dob/gender, not unsaved edits", () => {
+    const crossCheckSource = page.slice(
+      page.indexOf("storeEncryptedIc("),
+      page.indexOf("setProfile(", page.indexOf("storeEncryptedIc("))
+    )
+    expect(crossCheckSource).not.toMatch(/formData\.(dob|gender)/)
+    expect(crossCheckSource).toMatch(/lastSavedProfile\?\.dob/)
   })
 
   it("uses save-first wording for an incomplete SAVED profile", () => {

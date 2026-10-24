@@ -211,12 +211,12 @@ export default function RunnerProfilePage() {
     setIcWarnings([]);
 
     try {
-      // Pass the form DOB/gender when available so Django can cross-check the
-      // NRIC (DOB mismatch is a hard reject; gender mismatch a warning).
+      // Cross-check against the SAVED dob/gender (the DB row), not unsaved
+      // edits — matches what Django validates against the stored profile.
       const { needs_review, warnings } = await storeEncryptedIc(
         ic,
-        formData.dob || formData.gender
-          ? { dob: formData.dob || undefined, gender: formData.gender || undefined }
+        lastSavedProfile?.dob || lastSavedProfile?.gender
+          ? { dob: lastSavedProfile?.dob || undefined, gender: lastSavedProfile?.gender || undefined }
           : undefined
       );
       setProfile({ ...profile, ic_encrypted: "stored" });
