@@ -24,7 +24,10 @@ export function profileSaveErrors(
   const pdpa = isPdpaAgreed(pdpaAgreed)
     ? undefined
     : "You must agree to the PDPA consent before saving your profile."
-  return { full_name, pdpa }
+  return {
+    ...(full_name ? { full_name } : {}),
+    ...(pdpa ? { pdpa } : {}),
+  }
 }
 
 function isPdpaAgreed(v: boolean | null | undefined): boolean {

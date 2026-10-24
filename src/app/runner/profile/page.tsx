@@ -103,7 +103,7 @@ export default function RunnerProfilePage() {
   const validateSave = () => {
     const errors = profileSaveErrors(formData.full_name, pdpaChecked);
     setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.values(errors).filter(Boolean).length === 0;
   };
 
   const handleSave = async () => {
