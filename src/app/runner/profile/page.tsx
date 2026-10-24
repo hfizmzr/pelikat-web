@@ -38,15 +38,28 @@ export default function RunnerProfilePage() {
     emergency_contact_phone: "",
   });
 
-  // IC/document paths are blocked until the in-progress profile passes the
-  // same preconditions the save applies to — no IC should land in storage
-  // for an unnamed runner (mirrors migration 072).
-  const icBlockReason = profileIcBlockReason({
-    full_name: formData.full_name,
-    dob: formData.dob,
-    gender: formData.gender,
-    pdpa_agreed: profile?.pdpa_agreed,
+  // IC/document paths are blocked until the SAVED profile passes the same
+  // preconditions the save applies to — the server (`storeEncryptedIc`)
+  // validates the DB row, so the gate must reflect that row, not unsaved
+  // in-progress edits (mirrors migration 072).
+  const [lastSavedProfile, setLastSavedProfile] = useState<{
+    full_name: string
+    dob: string
+    gender: string
+    pdpa_agreed: boolean | null
+  } | null>(null);
+  const savedIncomplete = profileIcBlockReason({
+    full_name: lastSavedProfile?.full_name,
+    dob: lastSavedProfile?.dob,
+    gender: lastSavedProfile?.gender,
+    pdpa_agreed: lastSavedProfile?.pdpa_agreed,
   });
+  const icBlockReason =
+    lastSavedProfile === null
+      ? null // fetchProfile still running; don't block prematurely.
+      : savedIncomplete
+        ? "Save your profile before uploading your document."
+        : null;
 
   const [icInput, setIcInput] = useState("");
   const [icSaving, setIcSaving] = useState(false);
@@ -80,6 +93,14 @@ export default function RunnerProfilePage() {
           emergency_contact_name: data.emergency_contact_name || "",
           emergency_contact_phone: data.emergency_contact_phone || "",
         });
+        setLastSavedProfile({
+          full_name: data.full_name || "",
+          dob: data.dob || "",
+          gender: data.gender || "",
+          pdpa_agreed: data.pdpa_agreed ?? null,
+        });
+      } else {
+        setLastSavedProfile({ full_name: "", dob: "", gender: "", pdpa_agreed: null });
       }
       setLoading(false);
     };
@@ -132,6 +153,14 @@ export default function RunnerProfilePage() {
         setSaveError(error.message);
         return;
       }
+      // The DB row is now authoritative — refresh the IC-gate snapshot so
+      // the gate reflects what storeEncryptedIc will validate.
+      setLastSavedProfile({
+        full_name: formData.full_name.trim(),
+        dob: formData.dob,
+        gender: formData.gender,
+        pdpa_agreed: pdpaChecked,
+      });
       // Navigate so the proxy profile gate re-evaluates — router.refresh()
       // doesn't re-run the middleware/proxy on the client.
       router.push("/runner");
