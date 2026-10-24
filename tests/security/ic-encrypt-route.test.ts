@@ -85,7 +85,13 @@ const validReply = {
 describe('POST /api/documents/encrypt (Django contract mapping)', () => {
   beforeEach(() => {
     DOTTED_FAKE.update = vi.fn()
-    DOTTED_FAKE.profile = { id: 'profile-1' }
+    DOTTED_FAKE.profile = {
+      id: 'profile-1',
+      full_name: 'Test Runner',
+      dob: '1990-01-01',
+      gender: 'M',
+      pdpa_agreed: true,
+    }
     DOTTED_FAKE.zeroRows = false
     DOTTED_FAKE.lastUpdate = undefined as Record<string, string> | undefined
     delete DOTTED_FAKE.lastUpdate

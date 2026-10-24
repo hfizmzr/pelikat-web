@@ -3,6 +3,7 @@
 import { fetchDjangoApi } from '@/lib/django'
 import { requireAuth } from '@/lib/auth/requireUser'
 import { validateIdentityInput } from '@/lib/nric'
+import { profileIcBlockReason } from '@/lib/profile-validation'
 import { supabaseAdmin } from '@/lib/supabase/service-role'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -13,7 +14,7 @@ export async function storeEncryptedIc(
 ) {
   // The user-scoped client is not needed here: the profile write goes
   // through supabaseAdmin (migration 070 — IC columns are service-written).
-  const { user } = await requireAuth()
+  const { supabase, user } = await requireAuth()
 
   // Mirror of the backend validation (light pre-check; Django is the authority).
   // No client-settable document-path/ciphertext fields are accepted here —
@@ -22,6 +23,23 @@ export async function storeEncryptedIc(
   if (!check.valid) {
     throw new Error(check.error)
   }
+
+  // Backend authority (mirrors migration 072 + upload-block UX): an IC is
+  // only stored for a named, consented runner. Never trust client state —
+  // read the profile row from the DB.
+  const { data: savedProfile, error: profileError } = await supabase
+    .from('runner_profiles')
+    .select('full_name, dob, gender, pdpa_agreed')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (profileError) throw new Error(profileError.message)
+  if (savedProfile) {
+    const blockReason = profileIcBlockReason(savedProfile)
+    if (blockReason) throw new Error(blockReason)
+  }
+  // No profile row yet: the update below matches zero rows and surfaces
+  // the existing "Save your profile first" message.
 
   // Django encrypt-ic contract (201): {"status":"ok","ic_encrypted":...,
   // "needs_review":bool,"warnings":[...]}. Optional dob/gender enable the
