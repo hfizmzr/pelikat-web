@@ -525,7 +525,7 @@ export default async function OrganizerDashboard() {
       {/* Footer */}
       <footer className="mt-12 border-t border-muted py-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-muted-foreground text-[12px] leading-[16px]">
-          <div>Pelikat Batik Running Platform © {new Date().getFullYear()}. Enterprise Event Operations.</div>
+          <div>Pelikat Batik Running Platform © {new Date().getFullYear()}. Professional Event Operations.</div>
           <div className="flex items-center gap-6">
             {['Organizer Helpdesk', 'API & Webhooks', 'Event Terms', 'Support'].map(l => (
               <span key={l} className="hover:text-foreground transition-colors cursor-pointer">{l}</span>

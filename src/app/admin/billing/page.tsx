@@ -26,7 +26,7 @@ interface InvoiceTransaction {
 }
 
 function exportBillingToCSV(invoices: InvoiceTransaction[]) {
-  const headers = ['Transaction ID', 'Tenant', 'Description', 'Plan/Type', 'Amount', 'Date', 'Status']
+  const headers = ['Transaction ID', 'Tenant', 'Description', 'Type', 'Amount', 'Date', 'Status']
   const rows = invoices.map((inv) => [
     inv.id,
     inv.tenant,
@@ -126,7 +126,7 @@ export default function AdminBillingPage() {
             <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Finance & Escrow</span>
           </div>
           <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Billing & Platform Revenue</h1>
-          <p className="text-[13px] text-muted-foreground">Tenant SaaS subscriptions, escrow balances, and participant checkout transaction reconciliation</p>
+          <p className="text-[13px] text-muted-foreground">Organizer subscriptions, escrow balances, and participant checkout transaction reconciliation</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -184,7 +184,7 @@ export default function AdminBillingPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border/30">
-                {['Tenant / Account', 'Description', 'Tier / Type', 'Settlement Amount', 'Date', 'Status'].map((h) => (
+                {['Tenant / Account', 'Description', 'Type', 'Settlement Amount', 'Date', 'Status'].map((h) => (
                   <th key={h} className="py-3 px-5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{h}</th>
                 ))}
               </tr>

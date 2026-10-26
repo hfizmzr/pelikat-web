@@ -95,7 +95,7 @@ export default async function RunnerDashboard() {
                 Hi, {profile?.full_name?.split(' ')[0] || 'Runner'}
               </span>
               <span className="px-1.5 py-0.5 rounded-full bg-success/10 text-success text-[9px] font-bold tracking-wider uppercase">
-                Pro
+                Free
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground">Ready for your next run?</p>

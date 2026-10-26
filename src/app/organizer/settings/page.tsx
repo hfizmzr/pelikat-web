@@ -129,17 +129,17 @@ export default function OrganizerSettingsPage() {
     },
     {
       id: 'subscription',
-      label: 'Subscription & Billing',
-      description: 'Manage your organizer subscription plan',
+      label: 'Organizer Subscription',
+      description: 'Your single-tier organizer subscription and billing status',
       icon: CreditCard,
       content: (
         <div className="flex flex-col gap-4">
           <div className="p-4 bg-card rounded-xl border border-primary/20">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[14px] font-semibold text-foreground">Current Plan</span>
-              <span className="px-2.5 py-1 rounded-full bg-primary/15 text-primary text-[10px] font-semibold border border-primary/20">Enterprise SLA</span>
+              <span className="text-[14px] font-semibold text-foreground">Organizer Subscription</span>
+              <span className="px-2.5 py-1 rounded-full bg-primary/15 text-primary text-[10px] font-semibold border border-primary/20">Single Tier</span>
             </div>
-            <p className="text-[12px] text-muted-foreground">Your subscription grants access to unlimited events, priority support, and advanced analytics.</p>
+            <p className="text-[12px] text-muted-foreground">Your subscription grants access to unlimited events, priority support, and advanced analytics. Runner accounts are always free — runners pay only per event registration or merch order.</p>
           </div>
           <div className="flex gap-2">
             <button className="px-4 py-2.5 bg-card hover:bg-card text-foreground text-[14px] font-medium rounded-lg border border-muted transition-colors">
