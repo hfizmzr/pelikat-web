@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
 import { AdminSidebar, AdminMobileNav } from '@/components/layout/admin-sidebar'
+import { Toaster } from '@/components/ui/sonner'
 import Link from 'next/link'
 
 export default function AdminLayout({
@@ -94,6 +95,8 @@ export default function AdminLayout({
           {children}
         </main>
       </div>
+
+      <Toaster richColors position="bottom-right" />
     </div>
   )
 }
