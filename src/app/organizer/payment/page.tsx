@@ -30,8 +30,12 @@ export default function OrganizerPaymentPage() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-
-  const SUBSCRIPTION_PRICE = 99
+  // DB-configured single-tier price (public config endpoint, always fresh).
+  const [price, setPrice] = useState<{
+    amount: number
+    period: string
+    durationDays: number
+  } | null>(null)
 
   useEffect(() => {
     async function loadOrganizer() {
@@ -40,6 +44,23 @@ export default function OrganizerPaymentPage() {
       if (!user?.app_metadata?.organizer_id) {
         router.push('/')
         return
+      }
+
+      // Price comes from the config row (public read, always fresh), not a
+      // hardcoded constant; the amount actually charged is snapped
+      // server-side inside createHitpaySubscriptionCheckout.
+      const [priceRes] = await Promise.all([
+        fetch('/api/subscription/price').catch(() => null),
+      ])
+      if (priceRes?.ok) {
+        const data = await priceRes.json().catch(() => null)
+        if (data?.amount > 0) {
+          setPrice({
+            amount: data.amount,
+            period: data.period ?? 'year',
+            durationDays: data.durationDays ?? 365,
+          })
+        }
       }
 
       const { data } = await supabase
@@ -82,9 +103,7 @@ export default function OrganizerPaymentPage() {
     // here is never trusted (see loadOrganizer above).
     if (getPaymentProvider() === 'hitpay') {
       try {
-        const result = await createHitpaySubscriptionCheckout(
-          SUBSCRIPTION_PRICE
-        )
+        const result = await createHitpaySubscriptionCheckout()
         if (result.ok) {
           window.location.href = result.checkoutUrl
         } else {
@@ -104,10 +123,16 @@ export default function OrganizerPaymentPage() {
     // real provider. Mock confirmation is local because there is no
     // webhook in mock mode; DB state update only ever happens here,
     // never on the hitpay path.
+    if (!price) {
+      setError('Subscription pricing is temporarily unavailable. Please try again shortly.')
+      setIsPaying(false)
+      return
+    }
+
     let paymentReference: string
     try {
       const session = await createCheckout({
-        amount: SUBSCRIPTION_PRICE,
+        amount: price.amount,
         description: `Pelikat organizer subscription — ${organizer.name}`,
         referenceId: organizer.id,
         metadata: { type: 'organizer_subscription', slug: organizer.slug },
@@ -120,12 +145,13 @@ export default function OrganizerPaymentPage() {
       return
     }
 
-    const oneYearFromNow = new Date()
-    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+    const subExpiresAt = new Date(
+      Date.now() + price.durationDays * 24 * 60 * 60 * 1000
+    )
 
     const { error: updateError } = await supabase
       .from('organizers')
-      .update({ sub_expires_at: oneYearFromNow.toISOString() })
+      .update({ sub_expires_at: subExpiresAt.toISOString() })
       .eq('id', organizer.id)
 
     if (updateError) {
@@ -140,8 +166,8 @@ export default function OrganizerPaymentPage() {
       target_id: organizer.id,
       metadata: {
         organizer_name: organizer.name,
-        amount: SUBSCRIPTION_PRICE,
-        sub_expires_at: oneYearFromNow.toISOString(),
+        amount: price.amount,
+        sub_expires_at: subExpiresAt.toISOString(),
         payment_provider: 'mock',
         payment_reference: paymentReference,
       },
@@ -195,7 +221,7 @@ export default function OrganizerPaymentPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Amount Paid</span>
-                <span className="font-medium">RM {SUBSCRIPTION_PRICE}</span>
+                <span className="font-medium">RM {(price?.amount ?? 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Valid Until</span>
@@ -248,7 +274,7 @@ export default function OrganizerPaymentPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Plan</span>
-                <span className="font-medium">Organizer Annual</span>
+                <span className="font-medium">Organizer Subscription</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Status</span>
@@ -259,7 +285,9 @@ export default function OrganizerPaymentPage() {
             <div className="border-t pt-4">
               <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>
-                <span>RM {SUBSCRIPTION_PRICE} / year</span>
+                <span>
+                  RM {(price?.amount ?? 0).toFixed(2)} / {price?.period ?? 'year'}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -313,18 +341,23 @@ export default function OrganizerPaymentPage() {
             <Button
               className="w-full"
               onClick={handlePayment}
-              disabled={isPaying}
+              disabled={isPaying || !price}
             >
               {isPaying ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <CreditCard className="mr-2 h-4 w-4" />
               )}
-              {isPaying ? 'Processing...' : `Pay RM ${SUBSCRIPTION_PRICE}`}
+              {isPaying
+                ? 'Processing...'
+                : `Pay RM ${(price?.amount ?? 0).toFixed(2)}`}
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
-              Clicking Pay will activate a 1-year subscription for demonstration purposes.
+              Clicking Pay will activate your {' '}
+              {price ? price.durationDays : ''}-day subscription for demonstration
+              purposes. Runner accounts are always free — runners pay only per
+              event registration or merch order.
             </p>
           </CardContent>
         </Card>

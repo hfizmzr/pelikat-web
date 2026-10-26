@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, Camera, QrCode, BarChart3, LayoutDashboard } from "lucide-react"
+import { CheckCircle, Camera, QrCode, BarChart3, LayoutDashboard, Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import ApplyForm from "@/components/organizer/apply-form"
 
@@ -15,6 +15,25 @@ const features = [
 
 export default function OrganizerApplyPage() {
   const [showForm, setShowForm] = useState(false)
+  // DB-configured price (public config endpoint). Runner accounts are
+  // always free — only organizers pay the single subscription tier.
+  const [price, setPrice] = useState<{
+    amount: number
+    period: string
+  } | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/subscription/price')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.amount > 0) {
+          setPrice({ amount: data.amount, period: data.period ?? 'year' })
+        }
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
 
   if (showForm) {
     return <ApplyForm />
@@ -44,13 +63,15 @@ export default function OrganizerApplyPage() {
           <div className="max-w-md mx-auto">
             <Card className="border-primary/30 bg-card">
               <CardHeader className="text-center pb-2">
-                <CardTitle className="text-2xl font-bold">Yearly Subscription</CardTitle>
+                <CardTitle className="text-2xl font-bold">Organizer Subscription</CardTitle>
                 <CardDescription>One tier. Everything included.</CardDescription>
               </CardHeader>
               <CardContent className="text-center space-y-6">
                 <div>
-                  <span className="text-5xl font-bold text-foreground">RM 99</span>
-                  <span className="text-muted-foreground">/year</span>
+                  <span className="text-5xl font-bold text-foreground">
+                    RM {price ? price.amount.toFixed(2) : <Loader2 className="mx-auto size-9 animate-spin text-muted-foreground" />}
+                  </span>
+                  <span className="text-muted-foreground">/{price?.period ?? 'year'}</span>
                 </div>
                 <ul className="space-y-3 text-left">
                   {[
@@ -70,6 +91,10 @@ export default function OrganizerApplyPage() {
                 <Button size="lg" className="w-full bg-primary text-primary-foreground hover:brightness-95" onClick={() => setShowForm(true)}>
                   Apply Now
                 </Button>
+                <p className="text-xs text-muted-foreground">
+                  Runner accounts are always free — runners pay only per event registration or merch order.
+                  The single subscription tier applies to organizers only.
+                </p>
               </CardContent>
             </Card>
           </div>
