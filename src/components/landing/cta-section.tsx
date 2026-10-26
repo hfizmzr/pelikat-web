@@ -1,30 +1,35 @@
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { ArrowRight } from "lucide-react"
+import { cn } from "@/lib/utils"
+import styles from "./landing.module.css"
 
 export function CTASection() {
   return (
-    <section className="w-full py-20 sm:py-24 lg:py-32">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-2xl bg-primary px-6 py-16 text-center sm:px-12 sm:py-20">
-          <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl">
-            <span className="text-balance">Planning your next race?</span>
-          </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-pretty text-base text-primary-foreground/80 sm:text-lg">
-            Bring every part of your event onto one platform, from first
-            registration to finisher photos. We handle the infrastructure; you
-            run the race.
-          </p>
+    <section className={cn(styles.section, "relative isolate overflow-x-clip")} aria-labelledby="cta-title">
+      {/* Open band, no card: the grid and glow fade out on every side. */}
+      <div className={styles.ctaBg} aria-hidden="true">
+        <div className={styles.ctaGrid} />
+        <div
+          className={styles.glow}
+          style={{ left: "50%", top: "58%", width: "min(900px, 140vw)", height: 380, transform: "translate(-50%, -50%)" }}
+        />
+      </div>
 
-          {/* CTA Buttons */}
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button
-              asChild
-              size="lg"
-              className="bg-background text-foreground hover:bg-background/90"
-            >
-              <Link href="/organizer/apply">Get Started</Link>
-            </Button>
-          </div>
+      <div className={cn(styles.container, "relative text-center")} data-reveal="">
+        <h2 id="cta-title" className={cn(styles.h2, "mx-auto max-w-[18ch]")}>
+          Ready for your next race morning?
+        </h2>
+        <p className={cn(styles.lead, "mx-auto mt-4 max-w-[48ch]")}>
+          Apply with your organizer details and first event. Once you&apos;re
+          approved and subscribed, publish it and entries open.
+        </p>
+        <div className="mt-9 mx-auto flex max-w-[360px] flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center">
+          <Link href="/organizer/apply" className={cn(styles.btn, styles.btnPrimary)}>
+            Apply as organizer <ArrowRight className="size-4" />
+          </Link>
+          <Link href="/login" className={cn(styles.btn, styles.btnGhost)}>
+            Log in
+          </Link>
         </div>
       </div>
     </section>
