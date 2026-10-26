@@ -1003,7 +1003,9 @@ values
   ('feature_virtual_run',      'true'::jsonb),
   ('feature_photo_ai',         'true'::jsonb),
   ('feature_repc_collection',  'true'::jsonb),
-  ('maintenance_mode',         'false'::jsonb)
+  ('maintenance_mode',         'false'::jsonb),
+  ('organizer_subscription_price',
+   '{"amount": 99.00, "currency": "MYR", "period": "year", "duration_days": 365}'::jsonb)
 on conflict (key) do nothing;
 
 commit;
