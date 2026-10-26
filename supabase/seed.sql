@@ -97,81 +97,99 @@ on conflict (id) do nothing;
 -- ── Admins ──────────────────────────────────────────────────────────────────
 insert into auth.users
   (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-   raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+   raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+   -- ★ GoTrue scan-shape cols: GoTrue-created real users keep token columns as
+   -- '' (never NULL); seeding them NULL breaks GoTrue's duplicate-email scan
+   -- ('converting NULL to string is unsupported'). See migrations 074 + 075.
+   confirmation_token, recovery_token, email_change_token_new, email_change,
+   email_change_token_current, phone_change_token, phone_change,
+   reauthentication_token)
 values
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000a1', 'authenticated', 'authenticated',
    'admin1@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"admin"}', '{"full_name":"Pelikat Admin Satu"}', now() - interval '300 days', now() - interval '300 days'),
+   '{"role":"admin"}', '{"full_name":"Pelikat Admin Satu"}', now() - interval '300 days', now() - interval '300 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000a2', 'authenticated', 'authenticated',
    'admin2@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"admin"}', '{"full_name":"Pelikat Admin Dua"}', now() - interval '290 days', now() - interval '290 days'),
+   '{"role":"admin"}', '{"full_name":"Pelikat Admin Dua"}', now() - interval '290 days', now() - interval '290 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000a3', 'authenticated', 'authenticated',
    'admin3@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"admin"}', '{"full_name":"Pelikat Admin Tiga"}', now() - interval '280 days', now() - interval '280 days')
+   '{"role":"admin"}', '{"full_name":"Pelikat Admin Tiga"}', now() - interval '280 days', now() - interval '280 days', '', '', '', '', '', '', '', '')
 on conflict do nothing;
 
 -- ── Organizer identities (login email == organizers.contact_email) ─────────
 insert into auth.users
   (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-   raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+   raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+   -- ★ GoTrue scan-shape cols: GoTrue-created real users keep token columns as
+   -- '' (never NULL); seeding them NULL breaks GoTrue's duplicate-email scan
+   -- ('converting NULL to string is unsupported'). See migrations 074 + 075.
+   confirmation_token, recovery_token, email_change_token_new, email_change,
+   email_change_token_current, phone_change_token, phone_change,
+   reauthentication_token)
 values
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000b1', 'authenticated', 'authenticated',
    'klcityrunners@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
    '{"role":"organizer","organizer_id":"d0e5e000-0000-4000-8000-000000000011"}',
-   '{"full_name":"KL City Runners"}', now() - interval '270 days', now() - interval '270 days'),
+   '{"full_name":"KL City Runners"}', now() - interval '270 days', now() - interval '270 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000b2', 'authenticated', 'authenticated',
    'penangpacers@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
    '{"role":"organizer","organizer_id":"d0e5e000-0000-4000-8000-000000000012"}',
-   '{"full_name":"Penang Pacers"}', now() - interval '200 days', now() - interval '200 days'),
+   '{"full_name":"Penang Pacers"}', now() - interval '200 days', now() - interval '200 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000b3', 'authenticated', 'authenticated',
    'jbultras@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
    '{"role":"organizer","organizer_id":"d0e5e000-0000-4000-8000-000000000013"}',
-   '{"full_name":"JB Ultras"}', now() - interval '30 days', now() - interval '30 days'),
+   '{"full_name":"JB Ultras"}', now() - interval '30 days', now() - interval '30 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000b4', 'authenticated', 'authenticated',
    'borneotrailcrew@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
    '{"role":"organizer","organizer_id":"d0e5e000-0000-4000-8000-000000000014"}',
-   '{"full_name":"Borneo Trail Crew"}', now() - interval '40 days', now() - interval '40 days'),
+   '{"full_name":"Borneo Trail Crew"}', now() - interval '40 days', now() - interval '40 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000b5', 'authenticated', 'authenticated',
    'putrajayastriders@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
    '{"role":"organizer","organizer_id":"d0e5e000-0000-4000-8000-000000000015"}',
-   '{"full_name":"Putrajaya Striders"}', now() - interval '420 days', now() - interval '420 days')
+   '{"full_name":"Putrajaya Striders"}', now() - interval '420 days', now() - interval '420 days', '', '', '', '', '', '', '', '')
 on conflict do nothing;
 
 -- ── Runners ─────────────────────────────────────────────────────────────────
 insert into auth.users
   (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-   raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+   raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+   -- ★ GoTrue scan-shape cols: GoTrue-created real users keep token columns as
+   -- '' (never NULL); seeding them NULL breaks GoTrue's duplicate-email scan
+   -- ('converting NULL to string is unsupported'). See migrations 074 + 075.
+   confirmation_token, recovery_token, email_change_token_new, email_change,
+   email_change_token_current, phone_change_token, phone_change,
+   reauthentication_token)
 values
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000c1', 'authenticated', 'authenticated',
    'runner1@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"runner"}', '{"full_name":"Adam Faizal bin Harun"}', now() - interval '250 days', now() - interval '250 days'),
+   '{"role":"runner"}', '{"full_name":"Adam Faizal bin Harun"}', now() - interval '250 days', now() - interval '250 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000c2', 'authenticated', 'authenticated',
    'runner2@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"runner"}', '{"full_name":"Nurul Aisyah binti Zulkifli"}', now() - interval '240 days', now() - interval '240 days'),
+   '{"role":"runner"}', '{"full_name":"Nurul Aisyah binti Zulkifli"}', now() - interval '240 days', now() - interval '240 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000c3', 'authenticated', 'authenticated',
    'runner3@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"runner"}', '{"full_name":"Tan Wei Ming"}', now() - interval '230 days', now() - interval '230 days'),
+   '{"role":"runner"}', '{"full_name":"Tan Wei Ming"}', now() - interval '230 days', now() - interval '230 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000c4', 'authenticated', 'authenticated',
    'runner4@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"runner"}', '{"full_name":"Priya Darshini"}', now() - interval '220 days', now() - interval '220 days'),
+   '{"role":"runner"}', '{"full_name":"Priya Darshini"}', now() - interval '220 days', now() - interval '220 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000c5', 'authenticated', 'authenticated',
    'runner5@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"runner"}', '{"full_name":"Muhammad Hafiz bin Roslan"}', now() - interval '210 days', now() - interval '210 days'),
+   '{"role":"runner"}', '{"full_name":"Muhammad Hafiz bin Roslan"}', now() - interval '210 days', now() - interval '210 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000c6', 'authenticated', 'authenticated',
    'runner6@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"runner"}', '{"full_name":"Lim Siew Ling"}', now() - interval '200 days', now() - interval '200 days'),
+   '{"role":"runner"}', '{"full_name":"Lim Siew Ling"}', now() - interval '200 days', now() - interval '200 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000c7', 'authenticated', 'authenticated',
    'runner7@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"runner"}', '{"full_name":"Ahmad Zulkarnain bin Omar"}', now() - interval '190 days', now() - interval '190 days'),
+   '{"role":"runner"}', '{"full_name":"Ahmad Zulkarnain bin Omar"}', now() - interval '190 days', now() - interval '190 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000c8', 'authenticated', 'authenticated',
    'runner8@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"runner"}', '{"full_name":"Chloe Wong Mei Ling"}', now() - interval '180 days', now() - interval '180 days'),
+   '{"role":"runner"}', '{"full_name":"Chloe Wong Mei Ling"}', now() - interval '180 days', now() - interval '180 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000c9', 'authenticated', 'authenticated',
    'runner9@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"runner"}', '{"full_name":"Gopal Krishnan"}', now() - interval '170 days', now() - interval '170 days'),
+   '{"role":"runner"}', '{"full_name":"Gopal Krishnan"}', now() - interval '170 days', now() - interval '170 days', '', '', '', '', '', '', '', ''),
   ('d0e5e000-0000-4000-8000-0000000000ca', 'authenticated', 'authenticated',
    'runner10@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
-   '{"role":"runner"}', '{"full_name":"Farah Nadia binti Ahmad"}', now() - interval '160 days', now() - interval '160 days')
+   '{"role":"runner"}', '{"full_name":"Farah Nadia binti Ahmad"}', now() - interval '160 days', now() - interval '160 days', '', '', '', '', '', '', '', '')
 on conflict do nothing;
 
 -- ════════════════════════════════════════════════════════════════════════════
