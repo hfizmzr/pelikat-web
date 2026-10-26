@@ -132,8 +132,25 @@ export async function POST(request: Request) {
     const existing = await findUserByEmail(email)
 
     // Idempotency: an admin that already exists and already has the role
-    // returns the current state without any duplicate action.
+    // returns the current state without a duplicate grant. In invite mode
+    // the resend IS the action: the admin's password-less account may still
+    // be waiting on the invite that failed earlier, so re-send it.
     if (existing && getUserRole(existing) === 'admin') {
+      if (mode === 'invite') {
+        const { error: inviteError } =
+          await supabaseAdmin.auth.admin.inviteUserByEmail(email)
+        if (inviteError) {
+          return NextResponse.json(
+            { success: false, error: `Invite resend failed: ${inviteError.message}` },
+            { status: 500 }
+          )
+        }
+        return NextResponse.json({
+          success: true,
+          alreadyAdmin: true,
+          message: `${email} is already an admin. Invitation resent.`,
+        })
+      }
       return NextResponse.json({
         success: true,
         alreadyAdmin: true,
@@ -187,25 +204,28 @@ export async function POST(request: Request) {
       )
     }
 
-    const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-      email
-    )
-    if (inviteError) {
-      // The user exists with the admin role but no invite was delivered —
-      // surface it so the caller can resend rather than silent partial state.
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Admin user created, but the invitation email failed: ${inviteError.message}`,
-        },
-        { status: 500 }
-      )
-    }
-
+    // The role grant is the audited fact — write it now, before the invite
+    // attempt. If the email send fails below, the admin must still have a
+    // trail (an unaudited admin is untraceable); the failed resend is
+    // recoverable via a retry, which hits the already-admin invite path.
     await logAudit(supabase, 'admin_role_granted', data.user.id, {
       target_email: email,
       mode,
     })
+
+    const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+      email
+    )
+    if (inviteError) {
+      // The admin WAS created and audited — only the email failed. Keep the
+      // response shape (success/alreadyAdmin/message) so the caller can
+      // surface the partial state; a retry re-sends the invite.
+      return NextResponse.json({
+        success: true,
+        alreadyAdmin: true,
+        message: `Admin user created for ${email}, but the invitation email failed: ${inviteError.message}. Retry to resend the invitation.`,
+      })
+    }
 
     return NextResponse.json({
       success: true,

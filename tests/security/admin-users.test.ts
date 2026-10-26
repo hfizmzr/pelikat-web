@@ -163,14 +163,56 @@ describe('Security: /api/admin/users — POST grant', () => {
     expect(auditInsert.insert).not.toHaveBeenCalled()
   })
 
-  it('is idempotent: granting an already-admin returns the existing state with no duplicate action', async () => {
-    const response = await usersPOST(req('POST', { email: 'root@pelikat.com', mode: 'invite' }))
+  it('is idempotent: granting an already-admin via promote returns the existing state with no duplicate action', async () => {
+    const response = await usersPOST(req('POST', { email: 'root@pelikat.com', mode: 'promote' }))
     expect(response.status).toBe(200)
     expect((await response.json()).alreadyAdmin).toBe(true)
     expect(supabaseAdmin.auth.admin.updateUserById).not.toHaveBeenCalled()
     expect(supabaseAdmin.auth.admin.createUser).not.toHaveBeenCalled()
     expect(supabaseAdmin.auth.admin.inviteUserByEmail).not.toHaveBeenCalled()
     expect(auditInsert.insert).not.toHaveBeenCalled()
+  })
+
+  it('invite-mode retry on an already-admin re-sends the invitation (resend is the recovery path)', async () => {
+    supabaseAdmin.auth.admin.inviteUserByEmail.mockResolvedValue({
+      data: { user: adminUser },
+      error: null,
+    })
+    const response = await usersPOST(req('POST', { email: 'root@pelikat.com', mode: 'invite' }))
+    expect(response.status).toBe(200)
+    expect((await response.json()).alreadyAdmin).toBe(true)
+    expect(supabaseAdmin.auth.admin.inviteUserByEmail).toHaveBeenCalledWith('root@pelikat.com')
+    expect(supabaseAdmin.auth.admin.updateUserById).not.toHaveBeenCalled()
+    expect(auditInsert.insert).not.toHaveBeenCalled()
+  })
+
+  it('invite of a new user audits admin_role_granted even when the invite email fails', async () => {
+    supabaseAdmin.auth.admin.listUsers.mockResolvedValue({
+      data: { users: [] },
+      error: null,
+    })
+    supabaseAdmin.auth.admin.createUser.mockResolvedValue({
+      data: { user: authUser({ id: 'new-admin-2', email: 'fresh2@pelikat.com', app_metadata: { role: 'admin' } }) },
+      error: null,
+    })
+    supabaseAdmin.auth.admin.inviteUserByEmail.mockResolvedValue({
+      data: null,
+      error: { message: 'SMTP unavailable' },
+    })
+
+    const response = await usersPOST(req('POST', { email: 'fresh2@pelikat.com', mode: 'invite' }))
+    expect(response.status).toBe(200)
+    const json = await response.json()
+    expect(json.success).toBe(true)
+    expect(json.alreadyAdmin).toBe(true)
+    expect(json.message).toMatch(/invitation email failed: SMTP unavailable/i)
+
+    // The role grant is the audited fact — it must fire before/at creation,
+    // not only on successful email delivery.
+    expect(auditInsert.insert).toHaveBeenCalledTimes(1)
+    expect(auditInsert.insert.mock.calls[0][0].action).toBe('admin_role_granted')
+    expect(auditInsert.insert.mock.calls[0][0].target_id).toBe('new-admin-2')
+    expect(auditInsert.insert.mock.calls[0][0].metadata.mode).toBe('invite')
   })
 
   it("invite of a new email creates the user with the admin role then sends the invite, audited once", async () => {
