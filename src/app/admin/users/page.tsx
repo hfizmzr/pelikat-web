@@ -35,7 +35,6 @@ export default function AdminUsersPage() {
   const [revoking, setRevoking] = useState(false)
 
   const fetchUsers = useCallback(async () => {
-    setLoading(true)
     try {
       const res = await fetch('/api/admin/users')
       const json = await res.json()
@@ -52,8 +51,14 @@ export default function AdminUsersPage() {
   }, [])
 
   useEffect(() => {
-    fetchUsers()
-    createClient().auth.getUser().then(({ data }) => setSelfId(data.user?.id ?? null))
+    // Async inner loader mirroring the admin organizers page effect shape
+    // (first setState happens only after awaits — no cascading render).
+    async function loadUsers() {
+      await fetchUsers()
+      const { data } = await createClient().auth.getUser()
+      setSelfId(data.user?.id ?? null)
+    }
+    loadUsers()
   }, [fetchUsers])
 
   const grant = async (mode: 'promote' | 'invite') => {
@@ -128,7 +133,7 @@ export default function AdminUsersPage() {
           onClick={() => fetchUsers()}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
         >
-          <RefreshCw className={`size-[16px] ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className="size-[16px]" />
           <span>Refresh</span>
         </button>
       </div>
