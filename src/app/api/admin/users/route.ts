@@ -133,10 +133,11 @@ export async function POST(request: Request) {
 
     // Idempotency: an admin that already exists and already has the role
     // returns the current state without a duplicate grant. In invite mode
-    // the resend IS the action: the admin's password-less account may still
-    // be waiting on the invite that failed earlier, so re-send it.
+    // the resend IS the action — but only while the password-less account
+    // is still waiting on the invite (unconfirmed email); a confirmed
+    // admin is fully set up and must not get point-loop invites.
     if (existing && getUserRole(existing) === 'admin') {
-      if (mode === 'invite') {
+      if (mode === 'invite' && !existing.email_confirmed_at) {
         const { error: inviteError } =
           await supabaseAdmin.auth.admin.inviteUserByEmail(email)
         if (inviteError) {
@@ -148,7 +149,7 @@ export async function POST(request: Request) {
         return NextResponse.json({
           success: true,
           alreadyAdmin: true,
-          message: `${email} is already an admin. Invitation resent.`,
+          message: `${email} is already an admin (email unconfirmed). Invitation resent.`,
         })
       }
       return NextResponse.json({

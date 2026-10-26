@@ -186,6 +186,48 @@ describe('Security: /api/admin/users — POST grant', () => {
     expect(auditInsert.insert).not.toHaveBeenCalled()
   })
 
+  it('invite-mode retry on an unconfirmed already-admin re-sends the invitation (resend is the recovery path)', async () => {
+    supabaseAdmin.auth.admin.listUsers.mockResolvedValue({
+      data: {
+        users: [
+          { ...adminUser, email_confirmed_at: null, last_sign_in_at: null },
+        ],
+      },
+      error: null,
+    })
+    supabaseAdmin.auth.admin.inviteUserByEmail.mockResolvedValue({
+      data: { user: adminUser },
+      error: null,
+    })
+    const response = await usersPOST(req('POST', { email: 'root@pelikat.com', mode: 'invite' }))
+    expect(response.status).toBe(200)
+    expect((await response.json()).alreadyAdmin).toBe(true)
+    expect(supabaseAdmin.auth.admin.inviteUserByEmail).toHaveBeenCalledWith('root@pelikat.com')
+    expect(supabaseAdmin.auth.admin.updateUserById).not.toHaveBeenCalled()
+    expect(auditInsert.insert).not.toHaveBeenCalled()
+  })
+
+  it('invite-mode retry on a confirmed already-admin makes no invite call and returns a clean alreadyAdmin 200', async () => {
+    supabaseAdmin.auth.admin.listUsers.mockResolvedValue({
+      data: {
+        users: [
+          {
+            ...adminUser,
+            email_confirmed_at: '2025-06-02T00:00:00Z',
+            created_at: '2025-06-01T00:00:00Z',
+          },
+        ],
+      },
+      error: null,
+    })
+    const response = await usersPOST(req('POST', { email: 'root@pelikat.com', mode: 'invite' }))
+    expect(response.status).toBe(200)
+    expect((await response.json())).toMatchObject({ success: true, alreadyAdmin: true })
+    expect(supabaseAdmin.auth.admin.inviteUserByEmail).not.toHaveBeenCalled()
+    expect(supabaseAdmin.auth.admin.updateUserById).not.toHaveBeenCalled()
+    expect(auditInsert.insert).not.toHaveBeenCalled()
+  })
+
   it('invite of a new user audits admin_role_granted even when the invite email fails', async () => {
     supabaseAdmin.auth.admin.listUsers.mockResolvedValue({
       data: { users: [] },
