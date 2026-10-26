@@ -86,11 +86,10 @@ export async function PATCH(request: Request) {
         )
       }
 
-      const { error } = await supabase
+      const { error, count } = await supabase
         .from('platform_settings')
-        .upsert(
+        .update(
           {
-            key,
             value: {
               amount: Number(amount.toFixed(2)),
               currency: 'MYR',
@@ -102,8 +101,9 @@ export async function PATCH(request: Request) {
             },
             updated_by: user.user.id,
           },
-          { onConflict: 'key' }
+          { count: 'exact' }
         )
+        .eq('key', key)
 
       if (error) {
         return NextResponse.json(
@@ -111,22 +111,40 @@ export async function PATCH(request: Request) {
           { status: 500 }
         )
       }
+
+      if (!count) {
+        // All platform_settings rows are seeded by migrations; 0 rows
+        // updated means an unknown key (upsert is not an option: RLS
+        // grants only SELECT + UPDATE — migration 073 — so an INSERT
+        // would always be denied).
+        return NextResponse.json(
+          { success: false, error: `Unknown setting key: ${key}` },
+          { status: 404 }
+        )
+      }
     } else {
-      const { error } = await supabase
+      const { error, count } = await supabase
         .from('platform_settings')
-        .upsert(
+        .update(
           {
-            key,
             value,
             updated_by: user.user.id,
           },
-          { onConflict: 'key' }
+          { count: 'exact' }
         )
+        .eq('key', key)
 
       if (error) {
         return NextResponse.json(
           { success: false, error: error.message },
           { status: 500 }
+        )
+      }
+
+      if (!count) {
+        return NextResponse.json(
+          { success: false, error: `Unknown setting key: ${key}` },
+          { status: 404 }
         )
       }
     }
