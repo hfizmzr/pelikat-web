@@ -35,6 +35,7 @@ const governanceNav: NavItem[] = [
   { title: 'Audit & Compliance', href: '/admin/audit-logs', icon: ShieldCheck },
   { title: 'Billing & Escrow', href: '/admin/billing', icon: Wallet },
   { title: 'Feature Flags', href: '/admin/settings', icon: ToggleRight },
+  { title: 'Admin Users', href: '/admin/users', icon: Users },
   { title: 'Security & IAM', href: '/admin/security', icon: Lock },
 ]
 

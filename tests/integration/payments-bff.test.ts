@@ -15,6 +15,9 @@ vi.mock('@/lib/django', async (importOriginal) => {
   return { ...actual, fetchDjangoApi }
 })
 vi.mock('@/lib/auth/requireUser', () => ({ requireAuth }))
+// actions.ts now pulls @/lib/subscription (server-only import); jsdom test
+// env is not a server runtime — neutralize the guard to keep it loadable.
+vi.mock('server-only', () => ({}))
 
 const mockSupabase = {
   auth: { getUser: vi.fn() },

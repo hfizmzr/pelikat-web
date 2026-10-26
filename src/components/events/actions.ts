@@ -15,6 +15,7 @@ import {
   type RepcCheckInRpcRow,
 } from '@/lib/repc'
 import { requireAuth } from '@/lib/auth/requireUser'
+import { getOrganizerSubscriptionPrice } from '@/lib/subscription'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -150,7 +151,6 @@ export async function createHitpayCheckout(input: {
 }
 
 export async function createHitpaySubscriptionCheckout(
-  amount: number
 ): Promise<Exclude<HitpayCheckoutResult, { ok: true; alreadyPaid: true }>> {
   try {
     const { supabase, user } = await requireAuth()
@@ -166,12 +166,16 @@ export async function createHitpaySubscriptionCheckout(
 
     if (error || !organizer) throw new Error('Organizer profile not found')
 
+    // Amount snapshot: the DB-configured price is read server-side —
+    // never taken from the caller (client-supplied money is untrusted).
+    const price = await getOrganizerSubscriptionPrice(supabase)
+
     const result: DjangoCreatePayment = await fetchDjangoApi('/payments/create', {
       method: 'POST',
       body: JSON.stringify({
         order_type: 'organizer_subscription',
         organizer_id: organizer.id,
-        amount,
+        amount: price.amount,
         email: organizer.contact_email ?? user.email,
         name: organizer.name,
         purpose: 'Organizer subscription',

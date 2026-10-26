@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/service-role'
 import { getUserRole } from '@/lib/auth/requireRole'
+import { getOrganizerSubscriptionPrice, formatMYR } from '@/lib/subscription'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -22,11 +23,13 @@ export async function GET() {
     .select('id, name, slug, is_active, sub_expires_at, created_at')
     .order('created_at', { ascending: false })
 
+  // Real DB-configured organizer subscription price (admin-configurable).
+  const subPrice = await getOrganizerSubscriptionPrice()
+
   const activeOrganizers = organizers?.filter((o) => o.is_active) ?? []
   const totalOrganizers = organizers?.length ?? 0
-  // Standard tenant platform license estimate (RM 199/month per active organizer)
-  const tenantPlanRate = 199
-  const mrr = activeOrganizers.length * tenantPlanRate
+  // Monthly-recurring estimate: annual subscription price amortized over 12.
+  const mrr = (activeOrganizers.length * subPrice.amount) / 12
 
   // 2. Fetch paid registrations with categories to calculate GPV (Gross Platform Volume) and escrow
   const { data: paidRegs } = await supabaseAdmin
@@ -73,15 +76,15 @@ export async function GET() {
     }
   })
 
-  // Add organizer tenant invoices
+  // Add organizer tenant invoices (real DB-configured subscription price)
   for (const org of (organizers || []).slice(0, 5)) {
     transactions.unshift({
       id: `sub-${org.id}`,
       tenant: org.name,
-      description: `Tenant Platform SaaS License (Monthly)`,
-      plan: 'Organizer Pro',
-      amount: `RM ${tenantPlanRate}.00`,
-      rawAmount: tenantPlanRate,
+      description: `Organizer Subscription (${subPrice.period})`,
+      plan: 'Organizer Subscription',
+      amount: formatMYR(subPrice.amount),
+      rawAmount: subPrice.amount,
       date: new Date(org.created_at).toISOString().slice(0, 10),
       status: org.is_active ? 'paid' : 'overdue',
     })
