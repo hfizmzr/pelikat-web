@@ -6,7 +6,7 @@ export function StepsSection({ priceLabel }: { priceLabel: string }) {
   const steps = [
     {
       title: "Apply and subscribe",
-      body: `Send your organizer details and first event. Once approved, one subscription of ${priceLabel} covers the year.`,
+      body: `Send your organizer details and first event. Once approved, one subscription at ${priceLabel} covers every feature.`,
     },
     {
       title: "Publish your event",

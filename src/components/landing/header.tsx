@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useEffect, useState, useSyncExternalStore } from "react"
 import { Menu, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { Logo, navLinks } from "./nav"
 import styles from "./landing.module.css"
@@ -43,12 +43,12 @@ export function Header() {
       <div className={cn(styles.container, "flex h-16 items-center justify-between gap-6")}>
         <Logo />
 
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
+        <nav className="hidden items-center gap-8 lg:flex" aria-label="Main navigation">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className={cn(styles.link, "rounded-lg px-3 py-2 text-[14px] font-medium text-[var(--muted)]")}
+              className={cn(styles.link, "py-2 text-[14px] font-medium text-[var(--muted)]")}
             >
               {link.label}
             </a>
@@ -74,7 +74,7 @@ export function Header() {
             <SheetTrigger asChild>
               <button
                 type="button"
-                className="inline-flex size-11 touch-manipulation items-center justify-center rounded-[10px] hover:bg-[var(--surface-3)]"
+                className="inline-flex h-11 w-11 touch-manipulation items-center justify-center rounded-[10px] hover:bg-[var(--surface-3)]"
                 aria-label="Open menu"
               >
                 <Menu className="size-5" />
@@ -82,21 +82,29 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] bg-background pb-[env(safe-area-inset-bottom)]">
               <SheetTitle className="sr-only">Navigation menu</SheetTitle>
-              <nav className="flex flex-col gap-1 px-6 pt-16" aria-label="Mobile navigation">
+              {/* SheetClose so tapping a link dismisses the menu; otherwise a
+                  hash link only scrolls the page behind the open sheet. */}
+              <nav className="flex flex-col gap-4 px-6 pt-16" aria-label="Mobile navigation">
                 {navLinks.map((link) => (
-                  <a key={link.href} href={link.href} className="rounded-lg py-3 text-[17px] font-medium">
-                    {link.label}
-                  </a>
+                  <SheetClose asChild key={link.href}>
+                    <a href={link.href} className="rounded-lg py-3 text-[17px] font-medium">
+                      {link.label}
+                    </a>
+                  </SheetClose>
                 ))}
-                <Link href="/register" className="rounded-lg py-3 text-[17px] font-medium">
-                  Create runner account
-                </Link>
-                <Link
-                  href="/organizer/apply"
-                  className="mt-4 inline-flex min-h-12 items-center justify-center rounded-xl bg-primary px-5 font-semibold text-primary-foreground"
-                >
-                  Apply as organizer
-                </Link>
+                <SheetClose asChild>
+                  <Link href="/register" className="rounded-lg py-3 text-[17px] font-medium">
+                    Create runner account
+                  </Link>
+                </SheetClose>
+                <SheetClose asChild>
+                  <Link
+                    href="/organizer/apply"
+                    className="mt-4 inline-flex min-h-12 items-center justify-center rounded-xl bg-primary px-5 font-semibold text-primary-foreground"
+                  >
+                    Apply as organizer
+                  </Link>
+                </SheetClose>
               </nav>
             </SheetContent>
           </Sheet>
