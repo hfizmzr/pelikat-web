@@ -81,15 +81,25 @@ on conflict (id) do nothing;
 --    organizer {"role":"organizer","organizer_id":"<organizers.id>"},
 --    runner {"role":"runner"}.
 --    email_confirmed_at is always set (guest auto-claim trigger requires it).
---    No on_auth_user_created trigger exists — profiles are seeded explicitly.
+-- ★ instance_id: hosted GoTrue filters instance_id = '00000000-…' on every
+--    lookup, so every seeded auth.users row MUST include it explicitly.
+--    (Pre-074 seed omitted it → 18 NULL rows invisible to hosted GoTrue;
+--    migration 074_fix_seed_users_instance_id stamps them.)
+--    Trigger note: hosted dev has a Dashboard-created Auth webhook
+--    (on_auth_user_created → edge function of the same name, repo-tracked
+--    in supabase/functions/on-auth-user-created, deployed v8/v16). Local
+--    environments differ (trigger not in repo migrations); the seeding below
+--    is explicit precisely so it works in both. Seeding does not drop or
+--    bypass the webhook — know that hosted runs will also fire profiles
+--    upserts via the function, idempotent on conflict.
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- ── Admins ──────────────────────────────────────────────────────────────────
 insert into auth.users
-  (id, aud, role, email, encrypted_password, email_confirmed_at,
+  (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
    raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values
-  ('d0e5e000-0000-4000-8000-0000000000a1', 'authenticated', 'authenticated',
+  ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000a1', 'authenticated', 'authenticated',
    'admin1@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
    '{"role":"admin"}', '{"full_name":"Pelikat Admin Satu"}', now() - interval '300 days', now() - interval '300 days'),
   ('d0e5e000-0000-4000-8000-0000000000a2', 'authenticated', 'authenticated',
@@ -102,10 +112,10 @@ on conflict do nothing;
 
 -- ── Organizer identities (login email == organizers.contact_email) ─────────
 insert into auth.users
-  (id, aud, role, email, encrypted_password, email_confirmed_at,
+  (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
    raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values
-  ('d0e5e000-0000-4000-8000-0000000000b1', 'authenticated', 'authenticated',
+  ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000b1', 'authenticated', 'authenticated',
    'klcityrunners@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
    '{"role":"organizer","organizer_id":"d0e5e000-0000-4000-8000-000000000011"}',
    '{"full_name":"KL City Runners"}', now() - interval '270 days', now() - interval '270 days'),
@@ -129,10 +139,10 @@ on conflict do nothing;
 
 -- ── Runners ─────────────────────────────────────────────────────────────────
 insert into auth.users
-  (id, aud, role, email, encrypted_password, email_confirmed_at,
+  (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
    raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values
-  ('d0e5e000-0000-4000-8000-0000000000c1', 'authenticated', 'authenticated',
+  ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000c1', 'authenticated', 'authenticated',
    'runner1@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
    '{"role":"runner"}', '{"full_name":"Adam Faizal bin Harun"}', now() - interval '250 days', now() - interval '250 days'),
   ('d0e5e000-0000-4000-8000-0000000000c2', 'authenticated', 'authenticated',
