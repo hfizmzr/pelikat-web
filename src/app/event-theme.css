@@ -1,0 +1,43 @@
+/*
+ * Event Themes P1 — whitelist stylesheet (spec §5.3).
+ *
+ * HARD BOUNDARY: maps ONLY the 7 brand tokens (via the private --et-*
+ * intermediates emitted by buildStyleVars) plus the heading font rule.
+ * Platform tokens outside this list are structurally unreachable inside
+ * .event-theme — the core design system cannot break even if JSONB
+ * validation is bypassed. Do not add mappings here; the test
+ * tests/theme/css.test.ts asserts this file stays whitelisted.
+ *
+ * Platform tokens live in globals.css (:root/.dark); they inherit into
+ * .event-theme untouched. Only the 7 brand tokens are remapped.
+ */
+.event-theme {
+  --primary: var(--et-primary);
+  --primary-foreground: var(--et-primary-fg);
+  --secondary: var(--et-secondary);
+  --secondary-foreground: var(--et-secondary-fg);
+  --accent: var(--et-accent);
+  --accent-foreground: var(--et-accent-fg);
+  --ring: var(--et-ring);
+}
+
+.dark .event-theme {
+  --primary: var(--et-primary-dark);
+  --primary-foreground: var(--et-primary-fg-dark);
+  --secondary: var(--et-secondary-dark);
+  --secondary-foreground: var(--et-secondary-fg-dark);
+  --accent: var(--et-accent-dark);
+  --accent-foreground: var(--et-accent-fg-dark);
+  --ring: var(--et-ring-dark);
+}
+
+/* Themed headings: the var (when set by buildStyleVars) already carries the
+   full stack ending in Geist; unset → platform sans (= Geist). */
+.event-theme h1,
+.event-theme h2,
+.event-theme h3,
+.event-theme h4,
+.event-theme h5,
+.event-theme h6 {
+  font-family: var(--et-font-heading, var(--font-sans));
+}
