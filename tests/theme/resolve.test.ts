@@ -166,13 +166,16 @@ describe('getResolvedTheme', () => {
   it('contrast precheck: primary <3:1 vs platform background degrades; ring only warns', async () => {
     const resolved = await getResolvedTheme(
       fakeSupabase({ id: PRESET_ID, tokens: BATIK }),
-      eventRow({ colors: { primary: '#909090', ring: '#909090' } }),
+      eventRow({ colors: { primary: '#949494', ring: '#949494' } }),
     )
-    // ~2.9:1 vs the light platform background → primary degrades to platform
+    // 2.91:1 vs the light platform background (#fafafa, color.ts
+    // PLATFORM_BG_HEX). #909090 was the original probe but sits at 3.06:1 vs
+    // the true background — inside the 3.0–3.06 band where the old #f4f4f4
+    // proxy disagreed with the save-gate; #949494 degrades under both.
     expect(resolved.primary.light).toBe(PLATFORM.primaryLight)
     expect(resolved.warnings.some((w) => w.includes('colors.primary') && w.includes('contrast'))).toBe(true)
     // ring keeps the themed color, warning only
-    expect(resolved.ring.light).toBe(oklchToString(hexToOklch('#909090')))
+    expect(resolved.ring.light).toBe(oklchToString(hexToOklch('#949494')))
     expect(resolved.warnings.some((w) => w.includes('colors.ring'))).toBe(true)
   })
 
@@ -181,8 +184,8 @@ describe('getResolvedTheme', () => {
       fakeSupabase({ id: PRESET_ID, tokens: BATIK }),
       eventRow({ colors: { primary: '#777777', secondary: '#3E2C23' } }),
     )
-    // mid-tone: passes the 3:1 fill-vs-background gate (4.07:1) but white text
-    // on it is <4.5:1 → pickForeground returns the dark fg companion
+    // mid-tone: passes the 3:1 fill-vs-background gate (4.29:1 vs #fafafa) but
+    // white text on it is <4.5:1 → pickForeground returns the dark fg companion
     expect(resolved.primary.fgLight).toBe('oklch(0.145 0 0)')
     // carried requirement (Task 6 review): dark fg is the platform constant,
     // NOT pickForeground of the dark oklch string (parseHex is HEX-only)

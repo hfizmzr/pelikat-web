@@ -15,6 +15,7 @@ import {
   contrastRatio,
   pickForeground,
   deriveDarkVariant,
+  PLATFORM_BG_HEX,
 } from './color'
 import { LABEL_KEYS, resolveLabels } from './labels'
 import type { BrandSlot, ResolvedTheme, ThemeTokens } from './types'
@@ -23,13 +24,6 @@ import type { BrandSlot, ResolvedTheme, ThemeTokens } from './types'
 // color.ts's own regex is looser (`#` optional) and private; resolve validates
 // the stored contract verbatim.
 const HEX_RE = /^#[0-9a-fA-F]{6}$/
-
-// Platform light --background from globals.css is oklch(0.985 0 0) ≈ #f4f4f4
-// (luminance delta <0.1%); WCAG math in color.ts is HEX-only, so the precheck
-// measures against this HEX proxy. Dark variants (L ∈ [0.68, 0.82]) trivially
-// clear 3:1 against the dark background (oklch(0.07 0 0)), so light-mode is
-// the only side that needs the gate.
-const PLATFORM_BG_HEX = '#f4f4f4'
 
 // Platform dark foreground — assigned DIRECTLY to fgDark for themed slots.
 // Carried requirement (Task 6 review): never call pickForeground on an oklch
@@ -118,7 +112,11 @@ export function mergeThemeConfig(preset: ThemeTokens, override: ThemeTokens | nu
   const merged: Record<string, unknown> = {}
   for (const section of SECTION_KEYS) {
     // Section-level null in the override = reset-to-platform for the whole
-    // section (spec §4.3 jsonb_strip_nulls semantics; DB allows {"colors": null}).
+    // section (spec §4.3 jsonb_strip_nulls semantics). Read-side leniency
+    // only: 076's write validator rejects explicit JSON nulls (jsonb_typeof
+    // 'null' is neither 'object' nor 'string' — verified against the live
+    // 076 function), so such rows can only exist hand-crafted; merge degrades
+    // them to platform instead of throwing.
     if (over[section] === null) continue
     const keys = subKeysFor(section)
     const out: Record<string, unknown> = knownSection(base[section], keys)
@@ -246,6 +244,10 @@ async function resolveTheme(supabase: SupabaseClient, eventRow: EventThemeInput)
     // Contrast precheck (spec §5.5 semantics): primary/secondary/accent
     // <3:1 vs the platform background degrade to platform (a bypassed
     // #FFD700-class fill renders nothing readable); ring only warns.
+    // PLATFORM_BG_HEX is color.ts's shared constant — the SAME decision the
+    // validate.ts save-gate applies (Task 7 carried requirement). Dark
+    // variants (L ∈ [0.68, 0.82]) trivially clear 3:1 against the dark
+    // background (oklch(0.07 0 0)), so light-mode is the only side gated.
     const ratio = contrastRatio(raw, PLATFORM_BG_HEX)
     if (ratio < 3 && role !== 'ring') {
       warnings.push(`colors.${role}: contrast ${ratio.toFixed(2)}:1 vs platform background < 3:1 — using platform color`)

@@ -100,6 +100,16 @@ export function contrastRatio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05)
 }
 
+// ── Platform background — ONE shared decision for both 3:1 gates ─────────
+// The platform light --background is oklch(0.985 0 0) (globals.css :root), a
+// neutral gray whose sRGB hex is exactly #fafafa (Y = 0.985³ → 250/255). WCAG
+// math here is HEX-only, so the save-gate (validate.ts) and the resolve
+// degrade-precheck both measure against this single constant. (The earlier
+// resolve-side proxy #f4f4f4 drifted by ΔY = 0.051 and flipped verdicts in the
+// 3.0–3.06:1 band — e.g. #909090 blocked at save, kept at render. Do not
+// reintroduce a second constant; globals.css is the source of truth.)
+export const PLATFORM_BG_HEX = '#fafafa'
+
 const WHITE = '#ffffff'
 const DARK_FOREGROUND = 'oklch(0.145 0 0)'
 
