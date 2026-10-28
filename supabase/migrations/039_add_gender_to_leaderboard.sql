@@ -1,4 +1,9 @@
 -- Recreate leaderboard_virtual with gender column from runner_profiles
+-- NOTE: gender is inserted before event_id here, which create-or-replace
+-- cannot do (a view's existing column names are immutable; only end-appends
+-- are allowed — SQLSTATE 42P16 on fresh replay). Drop first so the final
+-- shape matches the cloud schema exactly.
+drop view leaderboard_virtual;
 create or replace view leaderboard_virtual as
 select
     rp.full_name,
