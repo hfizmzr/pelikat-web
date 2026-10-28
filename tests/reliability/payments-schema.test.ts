@@ -179,7 +179,7 @@ describe('Reliability: confirm_dummy_payment server-trust revision (migration 06
 })
 
 describe('Reliability: double-charge + refund hardening (migration 062)', () => {
-  const migration062 = read('supabase', 'migrations', '062_payment_double_charge_and_refund_hardening.sql')
+  const migration062 = read('supabase', 'migrations', '0625_payment_double_charge_and_refund_hardening.sql')
 
   it('adds the cumulative refunded_amount counter (A-4)', () => {
     expect(migration062).toContain(
@@ -247,7 +247,7 @@ describe('Reliability: double-charge + refund hardening (migration 062)', () => 
 })
 
 describe('Reliability: claim in-progress sentinel disambiguation (migration 063)', () => {
-  const migration063 = read('supabase', 'migrations', '063_payment_claim_in_progress.sql')
+  const migration063 = read('supabase', 'migrations', '0635_payment_claim_in_progress.sql')
 
   it('changes the signature to the tri-state returns table, provider_request_id first', () => {
     expect(migration063).toContain(
@@ -320,7 +320,7 @@ describe('Reliability: claim in-progress sentinel disambiguation (migration 063)
 
 describe('Reliability: sentinel runbook truth revision (migration 064)', () => {
   const migration064 = read('supabase', 'migrations', '064_payment_sentinel_runbook.sql')
-  const migration063 = read('supabase', 'migrations', '063_payment_claim_in_progress.sql')
+  const migration063 = read('supabase', 'migrations', '0635_payment_claim_in_progress.sql')
 
   it('is comment-only: signature, grants and the 063 body are untouched', () => {
     expect(migration064).toMatch(/comment on function public\.claim_payment_slot\(/i)
