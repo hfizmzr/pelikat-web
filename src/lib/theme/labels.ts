@@ -29,8 +29,9 @@ const FALLBACKS: Record<LabelKey, string> = {
   certificate_label: 'Certificate',
 }
 
-/** UI cap (Global Constraints) — DB allows 64, the UI shows 40. */
-const LABEL_MAX = 40
+/** UI cap (Global Constraints) — DB allows 64, the UI shows 40. Exported for
+ * the Task 13 editor's live 40-char cap (reviewer-approved carry). */
+export const LABEL_MAX = 40
 
 /**
  * Trim, collapse whitespace, strip HTML markup + stray angle brackets +

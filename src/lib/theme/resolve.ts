@@ -177,41 +177,27 @@ export async function getResolvedTheme(
   }
 }
 
-async function resolveTheme(supabase: SupabaseClient, eventRow: EventThemeInput): Promise<ResolvedTheme> {
+/**
+ * Pure derivation half of the resolver — preset tokens ⊕ override config →
+ * ResolvedTheme, NO database access. Isomorphic: getResolvedTheme wraps it
+ * with the preset load (below); the editor's live preview (Task 13) calls it
+ * directly with client-side draft state. Never throws on malformed input —
+ * garbage degrades to platform defaults with warnings (spec §5.5).
+ */
+export function deriveTheme(
+  presetTokens: ThemeTokens,
+  rawConfig: ThemeTokens | null,
+  presetId: string | null,
+): ResolvedTheme {
   const warnings: string[] = []
   const overridden: string[] = []
 
   // theme_config is hand-craftable JSONB — never trust its shape (Review
   // Focus #3). Merge runs on allowlisted projections only.
-  if (eventRow.theme_config != null && !isPlainObject(eventRow.theme_config)) {
+  let config: ThemeTokens | null = rawConfig
+  if (rawConfig !== null && !isPlainObject(rawConfig)) {
     warnings.push('theme_config: not an object — ignored')
-  }
-  const config = isPlainObject(eventRow.theme_config) ? (eventRow.theme_config as ThemeTokens) : null
-
-  const presetId =
-    typeof eventRow.theme_preset_id === 'string' && eventRow.theme_preset_id.length > 0
-      ? eventRow.theme_preset_id
-      : null
-  let presetTokens: ThemeTokens = {}
-  let loadedId: string | null = null
-  if (presetId !== null) {
-    try {
-      const { data, error } = await supabase
-        .from('theme_presets')
-        .select('id, tokens')
-        .eq('id', presetId)
-        .maybeSingle()
-      if (error || !isPlainObject(data)) {
-        warnings.push(`theme preset ${presetId} not found — using platform theme`)
-      } else {
-        loadedId = typeof data.id === 'string' ? data.id : null
-        // data is the DB row { id, tokens } — project the tokens blob through
-        // the same known-keys guard (malformed preset tokens degrade, never throw).
-        presetTokens = mergeThemeConfig(data.tokens as ThemeTokens, null)
-      }
-    } catch (err) {
-      warnings.push(`theme preset ${presetId} lookup failed (${String(err)}) — using platform theme`)
-    }
+    config = null
   }
 
   const merged = mergeThemeConfig(presetTokens, config)
@@ -306,6 +292,41 @@ async function resolveTheme(supabase: SupabaseClient, eventRow: EventThemeInput)
     fonts: { heading: font('heading_font_url'), body: font('body_font_url') },
     labels,
     warnings,
-    source: { presetId: loadedId, overriddenKeys: overridden },
+    source: { presetId, overriddenKeys: overridden },
   }
+}
+
+async function resolveTheme(supabase: SupabaseClient, eventRow: EventThemeInput): Promise<ResolvedTheme> {
+  const loadWarnings: string[] = []
+
+  const presetId =
+    typeof eventRow.theme_preset_id === 'string' && eventRow.theme_preset_id.length > 0
+      ? eventRow.theme_preset_id
+      : null
+  let presetTokens: ThemeTokens = {}
+  let loadedId: string | null = null
+  if (presetId !== null) {
+    try {
+      const { data, error } = await supabase
+        .from('theme_presets')
+        .select('id, tokens')
+        .eq('id', presetId)
+        .maybeSingle()
+      if (error || !isPlainObject(data)) {
+        loadWarnings.push(`theme preset ${presetId} not found — using platform theme`)
+      } else {
+        loadedId = typeof data.id === 'string' ? data.id : null
+        // data is the DB row { id, tokens } — project the tokens blob through
+        // the same known-keys guard (malformed preset tokens degrade, never throw).
+        presetTokens = mergeThemeConfig(data.tokens as ThemeTokens, null)
+      }
+    } catch (err) {
+      loadWarnings.push(`theme preset ${presetId} lookup failed (${String(err)}) — using platform theme`)
+    }
+  }
+
+  // config shape-guards + warnings live inside deriveTheme; the theme_config
+  // value is handed over raw (garbage → platform + warning, never a throw).
+  const derived = deriveTheme(presetTokens, (eventRow.theme_config ?? null) as ThemeTokens | null, loadedId)
+  return { ...derived, warnings: [...loadWarnings, ...derived.warnings] }
 }

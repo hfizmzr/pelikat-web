@@ -16,6 +16,8 @@ import {
 } from '@/lib/repc'
 import { requireAuth } from '@/lib/auth/requireUser'
 import { getOrganizerSubscriptionPrice } from '@/lib/subscription'
+import { validateThemeConfig } from '@/lib/theme/validate'
+import type { ThemeTokens } from '@/lib/theme/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -351,6 +353,86 @@ export async function updateEventDates(
   if (error) throw new Error(error.message)
 
   revalidatePath(`/organizer/events/${eventId}`)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Theme Actions (Event Themes P1 — Task 13)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type SaveEventThemeResult =
+  | { ok: true; warnings: string[] }
+  | { ok: false; error: string }
+
+/**
+ * Write an event's theme (both columns: `theme_preset_id` + `theme_config`).
+ *
+ * Server-side guarantees (carried requirements):
+ *  - ownership: the 077 anti-IDOR trigger bypasses postgres/service_role and
+ *    the BFF path has no DB-level ownership check — the event must belong to
+ *    the caller's organizer BEFORE anything is written;
+ *  - preset reference: system OR owned by the caller's organizer (same
+ *    trigger-bypass rationale, defense in depth);
+ *  - validation: validateThemeConfig re-runs HERE — client validation is UX
+ *    only (Task 9). Hard-blocks on `errors` (only the primary <3:1 rule);
+ *    warnings ride along as structured strings (render as text children).
+ *
+ * Reset semantics (Task 3/9 carries): per-key reset = the draft omits the
+ * key (JSON nulls are rejected at every level); full reset = null/null.
+ */
+export async function saveEventTheme(
+  eventId: string,
+  input: { theme_preset_id: string | null; theme_config: ThemeTokens | null }
+): Promise<SaveEventThemeResult> {
+  const { supabase, user } = await requireAuth()
+
+  const organizerId = user.app_metadata?.organizer_id
+  if (!organizerId) return { ok: false, error: 'Organizer profile not found' }
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, organizer_id')
+    .eq('id', eventId)
+    .single()
+
+  if (!event || event.organizer_id !== organizerId) {
+    return { ok: false, error: 'You can only theme events you organize.' }
+  }
+
+  const presetId = input.theme_preset_id || null
+  if (presetId !== null) {
+    const { data: preset } = await supabase
+      .from('theme_presets')
+      .select('id, kind, organizer_id')
+      .eq('id', presetId)
+      .maybeSingle()
+
+    const permitted =
+      preset != null &&
+      ((preset.kind === 'system' && preset.organizer_id === null) ||
+        (preset.kind === 'organizer' && preset.organizer_id === organizerId))
+
+    if (!permitted) return { ok: false, error: 'Unknown or not permitted theme preset.' }
+  }
+
+  const validation = validateThemeConfig(input.theme_config)
+  if (!validation.ok) {
+    return { ok: false, error: validation.errors.join(' · ') }
+  }
+
+  const { error } = await supabase
+    .from('events')
+    .update({ theme_preset_id: presetId, theme_config: input.theme_config })
+    .eq('id', eventId)
+
+  if (error) return { ok: false, error: error.message }
+
+  // Organizer view + every themed runner consumer (runner event page and the
+  // single-event leaderboard, Task 12).
+  revalidatePath(`/organizer/events/${eventId}`)
+  revalidatePath(`/runner/events/${eventId}`)
+  revalidatePath('/runner/leaderboard')
+
+  return { ok: true, warnings: validation.warnings }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
