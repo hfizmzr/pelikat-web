@@ -46,9 +46,14 @@ export function EventPageTabs({
 
   // Real navigation (route links, tab close) with an unsaved draft —
   // browser-native confirm; in-app tab switches use the AlertDialog below.
+  // `returnValue = ''` is required for Chrome's dialog and some Safari
+  // versions ignore preventDefault() alone (Task 14 hardening).
   useEffect(() => {
     if (!dirty) return
-    const handler = (e: BeforeUnloadEvent) => e.preventDefault()
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
   }, [dirty])

@@ -106,11 +106,18 @@ begin
   -- public; drafts resolve only for the owning organizer, a platform admin,
   -- or service_role (service_role detected via its JWT claim — see the
   -- SECURITY DEFINER note in the header).
-  if v_status <> 'published' and v_status <> 'closed' then
+  -- NULL discipline (Task 14 hardening): both columns are nullable, so the
+  -- comparisons use IS DISTINCT FROM / explicit NULL arms — a plain
+  -- `v_status <> 'published'` or `v_caller_org <> v_organizer_id` yields
+  -- NULL (→ gate skipped → theme RESOLVED) for a NULL-status or
+  -- NULL-organizer event. Distinct-from treats NULL as "not public", so
+  -- degenerate rows deny by default, exactly like a draft.
+  if v_status is distinct from 'published' and v_status is distinct from 'closed' then
     v_caller_org := public.get_my_organizer_id();
     if coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
        and not coalesce(public.is_admin(), false)
-       and (v_caller_org is null or v_caller_org <> v_organizer_id) then
+       and (v_organizer_id is null or v_caller_org is null
+            or v_caller_org <> v_organizer_id) then
       return null;
     end if;
   end if;

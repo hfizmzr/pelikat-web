@@ -81,8 +81,10 @@ function platformStorageHost(): string | null {
 function allowedFontUrl(raw: string): URL | null {
   // Traversal guard runs on the RAW string: URL normalization silently
   // resolves `..` away, which is exactly the DB-layer bypass this boundary
-  // replaces (Task 1 review pin). Covers raw and percent-encoded segments.
-  if (/(?:^|\/|\?)(?:\.|%2e){2}(?:\/|\?|#|$)/i.test(raw)) return null
+  // replaces (Task 1 review pin). Covers raw and percent-encoded segments on
+  // BOTH sides of the dot-dot run — including the fully-encoded `%2e%2e%2f`
+  // and the `x%2f..%2fy` leader form (Task 14 hardening).
+  if (/(?:^|\/|%2f|\?)(?:\.|%2e){2}(?:\/|%2f|\?|#|$)/i.test(raw)) return null
   let url: URL
   try {
     url = new URL(raw)

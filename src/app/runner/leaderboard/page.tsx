@@ -71,6 +71,11 @@ export default async function RunnerLeaderboardPage({
           .maybeSingle()
       ).data
     : null
+  if (scopedId && !scopedEvent) {
+    // Fetch failed (RLS/network/no row) — degrade to the neutral scope, but
+    // leave a trace instead of swallowing the error silently (Task 12 carry).
+    console.warn(`[leaderboard] themed event fetch failed for ${scopedId}`)
+  }
 
   let leaderboard: LeaderboardEntry[] | null = null
   if (!resultsLocked) {

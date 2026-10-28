@@ -64,6 +64,9 @@ everything-claude-code/
 .codex/*.local.toml
 .codex/.credentials.json
 
+# Supabase CLI branch artifacts (local churn since Task 1)
+supabase/.branches/
+
 /docs
 graphify-out/
 .mcp.json

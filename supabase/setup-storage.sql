@@ -58,18 +58,24 @@ create policy "authenticated update own avatar" on storage.objects
 
 -- ic-documents: private bucket for IC/passport images
 -- Runners can upload raw temp files; Django encrypts and replaces them
+-- ⚠ Drop-guards: migration 041 already creates these three identically-named
+-- policies, so a whole-file replay after `supabase db reset` would abort here
+-- without them (069 precedent: drop-if-exists before every re-created policy).
+drop policy if exists "runner uploads own ic document" on storage.objects;
 create policy "runner uploads own ic document" on storage.objects
   for insert with check (
     bucket_id = 'ic-documents' and
     (storage.foldername(name))[1] = auth.uid()::text
   );
 
+drop policy if exists "runner reads own ic document" on storage.objects;
 create policy "runner reads own ic document" on storage.objects
   for select using (
     bucket_id = 'ic-documents' and
     (storage.foldername(name))[1] = auth.uid()::text
   );
 
+drop policy if exists "runner deletes own ic document" on storage.objects;
 create policy "runner deletes own ic document" on storage.objects
   for delete using (
     bucket_id = 'ic-documents' and

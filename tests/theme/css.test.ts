@@ -142,6 +142,11 @@ describe('buildFontFace', () => {
     expect(buildFontFace(eventId, 'https://fonts.gstatic.com/../x.woff2')).toBe('')
     expect(buildFontFace(eventId, `${TEST_SUPABASE_URL}/storage/v1/../evil.woff2`)).toBe('')
     expect(buildFontFace(eventId, 'https://fonts.gstatic.com/%2e%2e/x.woff2')).toBe('')
+    // Fully-encoded traversal (`..` AND the slashes percent-encoded) — Task 14.
+    expect(buildFontFace(eventId, 'https://fonts.gstatic.com/%2e%2e%2fx.woff2')).toBe('')
+    expect(
+      buildFontFace(eventId, `${TEST_SUPABASE_URL}/storage/v1%2f..%2fevil.woff2`)
+    ).toBe('')
   })
 
   it('rejects malformed URLs', () => {
@@ -221,7 +226,7 @@ describe('event-theme.css whitelist (hard boundary — spec §5.3)', () => {
   })
 
   it('contains no raw forbidden-token substrings anywhere (belt to the declaration check)', () => {
-    for (const raw of ['--background', '--card', '--popover', '--muted', '--border', '--input', '--destructive', '--chart-', '--sidebar-', '--radius', '--success']) {
+    for (const raw of ['--background', '--foreground', '--card', '--popover', '--muted', '--border', '--input', '--destructive', '--chart-', '--sidebar-', '--radius', '--success']) {
       expect(css.includes(raw), `forbidden token substring present: ${raw}`).toBe(false)
     }
   })
