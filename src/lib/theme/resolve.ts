@@ -16,7 +16,8 @@ import {
   pickForeground,
   deriveDarkVariant,
 } from './color'
-import type { BrandSlot, LabelKey, ResolvedTheme, ThemeTokens } from './types'
+import { LABEL_KEYS, resolveLabels } from './labels'
+import type { BrandSlot, ResolvedTheme, ThemeTokens } from './types'
 
 // Stored-token HEX contract (Global Constraints / spec §4.3: ^#[0-9a-fA-F]{6}$).
 // color.ts's own regex is looser (`#` optional) and private; resolve validates
@@ -41,14 +42,6 @@ const DARK_FG = 'oklch(0.145 0 0)'
 const COLOR_KEYS = ['primary', 'secondary', 'accent', 'background', 'foreground', 'ring'] as const
 const TYPOGRAPHY_KEYS = ['heading_font_url', 'body_font_url'] as const
 const ASSET_KEYS = ['banner_url', 'logo_url', 'badge_icon_url', 'certificate_background_url'] as const
-const VOCABULARY_KEYS = [
-  'bib_label',
-  'checkpoint_label',
-  'medal_label',
-  'run_label',
-  'participant_label',
-  'certificate_label',
-] as const
 const META_KEYS = ['version'] as const
 const SECTION_KEYS = ['colors', 'typography', 'assets', 'vocabulary', 'meta'] as const
 
@@ -80,16 +73,8 @@ const PLATFORM_SLOTS: Record<'primary' | 'secondary' | 'accent' | 'ring', BrandS
   },
 }
 
-// Resolve-time label fallbacks. labels.ts (Task 8) is the canonical fallback
-// map + sanitization once it lands; carried note: dedupe onto resolveLabels.
-const LABEL_FALLBACKS: Record<LabelKey, string> = {
-  bib_label: 'Bib Number',
-  checkpoint_label: 'Checkpoint',
-  medal_label: 'Medal',
-  run_label: 'Run',
-  participant_label: 'Participant',
-  certificate_label: 'Certificate',
-}
+// Resolve-time label fallbacks + sanitization live in labels.ts (Task 8) —
+// single source of label truth for resolve, runner pages, and the cert payload.
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -112,7 +97,8 @@ function subKeysFor(section: (typeof SECTION_KEYS)[number]): readonly string[] {
     case 'assets':
       return ASSET_KEYS
     case 'vocabulary':
-      return VOCABULARY_KEYS
+      // labels.ts owns the key list (single source of label truth).
+      return LABEL_KEYS
     case 'meta':
       return META_KEYS
   }
@@ -172,7 +158,7 @@ function platformTheme(warnings: string[]): ResolvedTheme {
     background: { light: null, dark: null },
     foreground: { light: null, dark: null },
     fonts: { heading: null, body: null },
-    labels: { ...LABEL_FALLBACKS },
+    labels: resolveLabels(null),
     warnings,
     source: { presetId: null, overriddenKeys: [] },
   }
@@ -299,16 +285,13 @@ async function resolveTheme(supabase: SupabaseClient, eventRow: EventThemeInput)
     return raw
   }
 
-  const labels = { ...LABEL_FALLBACKS }
-  const vocab = merged.vocabulary ?? {}
-  for (const key of VOCABULARY_KEYS) {
-    const raw = vocab[key]
-    if (typeof raw === 'string') {
-      labels[key] = raw
-      markOverridden(`vocabulary.${key}`)
-    }
-    // Sanitization (trim/strip/cap) is labels.ts sanitizeLabel (Task 8);
-    // raw values are safe here — labels render as React text children only.
+  // Labels: sanitize + fallback via labels.ts (single source of truth).
+  // raw values are safe even unsanitized — labels render as React text
+  // children only — but resolve output is always clean plain strings.
+  const vocab = (merged.vocabulary ?? null) as Record<string, string> | null
+  const labels = resolveLabels(vocab)
+  for (const key of LABEL_KEYS) {
+    if (typeof vocab?.[key] === 'string') markOverridden(`vocabulary.${key}`)
   }
 
   return {
