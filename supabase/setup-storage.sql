@@ -139,6 +139,9 @@ as $$
 $$;
 
 -- organizer/admin can upload to their own event path (Storage upload)
+-- ⚠ Drop-guards: whole-file replay after `supabase db reset` must survive a
+-- SECOND execution (P1 Task 14 failure mode) — same 041/069 bookend style.
+drop policy if exists "organizer uploads own event theme assets" on storage.objects;
 create policy "organizer uploads own event theme assets" on storage.objects
   for insert to authenticated
   with check (
@@ -148,6 +151,7 @@ create policy "organizer uploads own event theme assets" on storage.objects
 
 -- organizer/admin list/download only (public serving is bucket-level and
 -- never consults RLS; anon matches no policy → not publicly listable)
+drop policy if exists "organizer reads own event theme assets" on storage.objects;
 create policy "organizer reads own event theme assets" on storage.objects
   for select to authenticated
   using (
@@ -156,6 +160,7 @@ create policy "organizer reads own event theme assets" on storage.objects
   );
 
 -- update covers Storage API upsert: true (insert-or-update replacement)
+drop policy if exists "organizer updates own event theme assets" on storage.objects;
 create policy "organizer updates own event theme assets" on storage.objects
   for update to authenticated
   using (
@@ -169,6 +174,7 @@ create policy "organizer updates own event theme assets" on storage.objects
 
 -- delete via Storage API as owner/admin (hosted Supabase blocks direct SQL
 -- deletes on storage.objects; the storage API applies these same policies)
+drop policy if exists "organizer deletes own event theme assets" on storage.objects;
 create policy "organizer deletes own event theme assets" on storage.objects
   for delete to authenticated
   using (

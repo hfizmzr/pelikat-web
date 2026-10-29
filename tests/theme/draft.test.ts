@@ -43,6 +43,39 @@ describe('normalizeThemeDraft', () => {
     expect(normalizeThemeDraft(null)).toBeNull()
     expect(normalizeThemeDraft(42 as never)).toBeNull()
   })
+
+  it('vocabulary strings are TRIMMED for the DB (review carry: draft keeps tail spaces)', () => {
+    expect(
+      normalizeThemeDraft({ vocabulary: { medal_label: 'Pingat Baru ' } }),
+    ).toEqual({ vocabulary: { medal_label: 'Pingat Baru' } })
+    expect(
+      normalizeThemeDraft({ vocabulary: { medal_label: '  Nombor' } }),
+    ).toEqual({ vocabulary: { medal_label: 'Nombor' } })
+  })
+
+  it('un-edited stored labels are preserved verbatim (validator owns the 64-char cap)', () => {
+    const long = 'x'.repeat(64)
+    expect(
+      normalizeThemeDraft({ vocabulary: { medal_label: long } }),
+    ).toEqual({ vocabulary: { medal_label: long } })
+    // trim-only normalization: markup is still passed through for a label the
+    // organizer never touched — sanitize at the keystroke owns markup stripping
+    expect(
+      normalizeThemeDraft({ vocabulary: { medal_label: ' <b>Legacy</b> ' } }),
+    ).toEqual({ vocabulary: { medal_label: '<b>Legacy</b>' } })
+  })
+
+  it('trim alone cannot empty a value (no key dropped by trim)', () => {
+    expect(
+      normalizeThemeDraft({ vocabulary: { medal_label: ' ' } }),
+    ).toEqual({ vocabulary: { medal_label: '' } })
+  })
+
+  it('non-string vocabulary values pass through unchanged (validator owns the type error)', () => {
+    expect(
+      normalizeThemeDraft({ vocabulary: { medal_label: 42 as never } }),
+    ).toEqual({ vocabulary: { medal_label: 42 } })
+  })
 })
 
 describe('themeDraftEquals', () => {

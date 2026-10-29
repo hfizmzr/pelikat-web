@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { LABEL_KEYS, sanitizeLabel, fallbackLabel, resolveLabels, labelPreview } from '@/lib/theme/labels'
+import { LABEL_KEYS, sanitizeLabel, sanitizeDraftLabel, fallbackLabel, resolveLabels, labelPreview } from '@/lib/theme/labels'
 
 describe('sanitizeLabel', () => {
   it('plan vector: strips HTML tags, control chars, and surrounding whitespace', () => {
@@ -28,6 +28,72 @@ describe('sanitizeLabel', () => {
     expect(sanitizeLabel('   ')).toBe('')
     expect(sanitizeLabel('\u0000')).toBe('')
     expect(sanitizeLabel('<b></b>')).toBe('')
+  })
+
+  it('NEVER returns a `<` or `>` across a hostile matrix (CodeQL carry)', () => {
+    const hostile = [
+      '<script>alert(1)</script>',
+      '<a onmouseover=x>Hi',
+      '<img src=x onerror=alert(1)//',
+      '<b<m>x>',
+      'a<<b>>c',
+      '<scr<script>ipt>x</scr</scr>ipt>', // self-nesting reconstruct after a naive pass
+      '>>>DetailFraud<x', // WAF bypass vector shape
+      '<',
+      '>',
+      '<><><>',
+      'text <<b>!',
+    ]
+    for (const input of hostile) {
+      const out = sanitizeLabel(input)
+      expect(out, `input ${JSON.stringify(input)}`).not.toMatch(/[<>]/)
+    }
+  })
+
+  it('P1 pinned vectors hold exactly', () => {
+    expect(sanitizeLabel('  <b>Scroll</b>\u0000 ')).toBe('Scroll')
+    expect(sanitizeLabel('a<b')).toBe('ab')
+    expect(sanitizeLabel('Bib < Number > X')).toBe('Bib X')
+    expect(sanitizeLabel('a'.repeat(41))).toBe('a'.repeat(40))
+  })
+})
+
+describe('sanitizeDraftLabel', () => {
+  it('keeps trailing/leading whitespace verbatim (no trim mid-typing)', () => {
+    expect(sanitizeDraftLabel('Spell ')).toBe('Spell ')
+    expect(sanitizeDraftLabel(' Spell')).toBe(' Spell')
+    expect(sanitizeDraftLabel('Pingat Baru ')).toBe('Pingat Baru ')
+  })
+
+  it('does NOT collapse internal whitespace (user spacing preserved)', () => {
+    expect(sanitizeDraftLabel('Pingat  Baru ')).toBe('Pingat  Baru ')
+    // pasted tab/newline become a SPACE (same separation the save path gives)
+    expect(sanitizeDraftLabel('Race\nDay')).toBe('Race Day')
+    expect(sanitizeDraftLabel('Bib\tNumber')).toBe('Bib Number')
+  })
+
+  it('strips markup + stray brackets + C0 exactly like the saved path', () => {
+    // no trim → the tag→space replacements stay verbatim in the draft
+    expect(sanitizeDraftLabel('<b>Scroll</b> ')).toBe(' Scroll  ')
+    expect(sanitizeDraftLabel('a<b')).toBe('ab')
+    expect(sanitizeDraftLabel('<script>alert(1)</script>')).toBe(' alert(1) ')
+  })
+
+  it('caps at 40 (UI cap)', () => {
+    expect(sanitizeDraftLabel('a'.repeat(41))).toBe('a'.repeat(40))
+  })
+
+  it('never returns a `<` or `>` (same hostile matrix as the save path)', () => {
+    const hostile = [
+      '<b>Spell </b>',
+      '<a onmouseover=x>Hi ',
+      '<scr<script>ipt>',
+      '<',
+      '  < x',
+    ]
+    for (const input of hostile) {
+      expect(sanitizeDraftLabel(input)).not.toMatch(/[<>]/)
+    }
   })
 })
 

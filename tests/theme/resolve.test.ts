@@ -20,12 +20,20 @@ const BATIK: ThemeTokens = {
 }
 
 const PRESET_ID = '11111111-1111-1111-1111-111111111111'
+const EVENT_ID = '00000000-0000-4000-8000-00000000000e'
 
 type PresetRow = { id: string; tokens: unknown } | null
 
-/** Minimal chainable mock of the only supabase query resolve.ts makes. */
-function fakeSupabase(row: PresetRow, error: unknown = null): SupabaseClient {
-  return {
+/** Minimal chainable mock of the only supabase queries resolve.ts makes:
+ * the theme_presets select (Task 11) + the get_event_theme RPC fallback
+ * (review carry). Pass `rpc` to arm the fallback; `rpcCalls` is inspectable. */
+function fakeSupabase(
+  row: PresetRow,
+  error: unknown = null,
+  rpc: { data: unknown; error: unknown } | null = null,
+): SupabaseClient & { rpcCalls: { fn: string; args: unknown }[] } {
+  const rpcCalls: { fn: string; args: unknown }[] = []
+  const client = {
     from: () => ({
       select: () => ({
         eq: () => ({
@@ -33,7 +41,12 @@ function fakeSupabase(row: PresetRow, error: unknown = null): SupabaseClient {
         }),
       }),
     }),
-  } as unknown as SupabaseClient
+    rpc: (fn: string, args: unknown) => {
+      rpcCalls.push({ fn, args })
+      return Promise.resolve(rpc ?? { data: null, error: null })
+    },
+  }
+  return Object.assign(client as unknown as SupabaseClient, { rpcCalls })
 }
 
 function eventRow(theme_config: unknown): {
@@ -114,6 +127,67 @@ describe('getResolvedTheme', () => {
     const resolved = await getResolvedTheme(fakeSupabase(null), eventRow(null))
     expect(resolved.primary.light).toBe(PLATFORM.primaryLight)
     expect(resolved.warnings.length).toBeGreaterThan(0)
+    expect(resolved.source.presetId).toBeNull()
+  })
+
+  // Review carry (resolve.ts:326): organizer-kind presets are RLS-hidden from
+  // runner/anon callers — the §4.3 RPC fallback resolves them nonetheless.
+  const THEMED_ROW = { id: EVENT_ID, theme_preset_id: PRESET_ID, theme_config: null }
+  const MERGED_RPC = { colors: { primary: '#9C4A1A' }, vocabulary: { medal_label: 'Pingat' }, meta: { version: 1 } }
+
+  it('RLS-hidden preset + event id → get_event_theme RPC fallback invoked, tokens applied', async () => {
+    const client = fakeSupabase(null, null, { data: MERGED_RPC, error: null })
+    const resolved = await getResolvedTheme(client, THEMED_ROW)
+    expect(client.rpcCalls).toHaveLength(1)
+    expect(client.rpcCalls[0].fn).toBe('get_event_theme')
+    expect(client.rpcCalls[0].args).toEqual({ event_id: EVENT_ID })
+    expect(resolved.labels.medal_label).toBe('Pingat')
+    expect(oklchToString(hexToOklch('#9C4A1A'))).toBe(resolved.primary.light)
+    expect(resolved.source.presetId).toBe(PRESET_ID)
+    expect(resolved.warnings.some((w) => w.includes('RPC'))).toBe(true)
+  })
+
+  it('config still wins over the RPC fallback base (event-wins merge kept)', async () => {
+    const client = fakeSupabase(null, null, { data: MERGED_RPC, error: null })
+    const resolved = await getResolvedTheme(client, {
+      ...THEMED_ROW,
+      theme_config: { vocabulary: { medal_label: 'Pingat Baru' } },
+    })
+    expect(resolved.labels.medal_label).toBe('Pingat Baru')
+    expect(resolved.source.overriddenKeys).toEqual(['vocabulary.medal_label'])
+  })
+
+  it('visible preset row → direct select path, NO rpc call', async () => {
+    const client = fakeSupabase({ id: PRESET_ID, tokens: BATIK }, null, { data: MERGED_RPC, error: null })
+    const resolved = await getResolvedTheme(client, THEMED_ROW)
+    expect(client.rpcCalls).toHaveLength(0)
+    expect(resolved.source.presetId).toBe(PRESET_ID)
+    expect(resolved.labels.medal_label).toBe('Pingat')
+    // no LOAD-stage warnings (derive-level contrast warnings are orthogonal)
+    expect(resolved.warnings.some((w) => w.includes('RPC') || w.includes('preset'))).toBe(false)
+  })
+
+  it('RPC error → degrade to platform + warning, no throw', async () => {
+    const client = fakeSupabase(null, null, { data: null, error: { message: 'permission denied' } })
+    const resolved = await getResolvedTheme(client, THEMED_ROW)
+    expect(client.rpcCalls).toHaveLength(1)
+    expect(resolved.primary.light).toBe(PLATFORM.primaryLight)
+    expect(resolved.labels.medal_label).toBe('Medal')
+    expect(resolved.warnings.length).toBeGreaterThan(0)
+  })
+
+  it('RPC throws → caught, platform + warning (never throws)', async () => {
+    const client = fakeSupabase(null)
+    ;(client as unknown as { rpc: () => Promise<never> }).rpc = () => Promise.reject(new Error('rpc down'))
+    const resolved = await getResolvedTheme(client, THEMED_ROW)
+    expect(resolved.primary.light).toBe(PLATFORM.primaryLight)
+    expect(resolved.warnings.length).toBeGreaterThan(0)
+  })
+
+  it('missing preset row WITHOUT an event id → legacy degrade (no rpc attempted)', async () => {
+    const client = fakeSupabase(null, null, { data: MERGED_RPC, error: null })
+    const resolved = await getResolvedTheme(client, eventRow(null))
+    expect(client.rpcCalls).toHaveLength(0)
     expect(resolved.source.presetId).toBeNull()
   })
 

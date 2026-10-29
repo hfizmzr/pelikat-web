@@ -131,8 +131,11 @@ export function mergeThemeConfig(preset: ThemeTokens, override: ThemeTokens | nu
   return merged as ThemeTokens
 }
 
-/** Event-row subset consumed by getResolvedTheme (Task 11 extends the select). */
+/** Event-row subset consumed by getResolvedTheme (Task 11 extends the select).
+ * `id` (when present — the scope always carries it) unlocks the §4.3 RPC
+ * fallback below for preset rows the caller cannot select under RLS. */
 export type EventThemeInput = {
+  id?: string
   theme_preset_id?: string | null
   theme_config?: unknown
 }
@@ -313,7 +316,32 @@ async function resolveTheme(supabase: SupabaseClient, eventRow: EventThemeInput)
         .eq('id', presetId)
         .maybeSingle()
       if (error || !isPlainObject(data)) {
-        loadWarnings.push(`theme preset ${presetId} not found — using platform theme`)
+        // Review carry (reviewer thread resolve.ts:326): organizer-kind preset
+        // rows are invisible to runner/anon callers under preset RLS. The
+        // 078 `get_event_theme` RPC is SECURITY DEFINER and granted to
+        // anon/authenticated/service_role, and returns the ALREADY-merged
+        // tokens (preset.tokens ⊕ events.theme_config) for the event — feed
+        // that in as the preset base: the TS merge below still lets the
+        // event's config win, so the result is identical either way. Fallback
+        // only when the event id is known; degrade gracefully otherwise.
+        // Direct-call arg names must match the SQL declaration (078: event_id
+        // uuid) — PostgREST named-argument RPC matching is name-exact.
+        const eventId = typeof eventRow.id === 'string' && eventRow.id.length > 0 ? eventRow.id : null
+        if (eventId !== null && typeof supabase.rpc === 'function') {
+          const { data: rpcData, error: rpcError } = await supabase
+            .rpc('get_event_theme', { event_id: eventId })
+          if (!rpcError && isPlainObject(rpcData)) {
+            loadWarnings.push(
+              `theme preset ${presetId} not selectable (RLS) — resolved via get_event_theme RPC`,
+            )
+            presetTokens = mergeThemeConfig(rpcData as ThemeTokens, null)
+            loadedId = presetId
+          } else {
+            loadWarnings.push(`theme preset ${presetId} not found — using platform theme`)
+          }
+        } else {
+          loadWarnings.push(`theme preset ${presetId} not found — using platform theme`)
+        }
       } else {
         loadedId = typeof data.id === 'string' ? data.id : null
         // data is the DB row { id, tokens } — project the tokens blob through

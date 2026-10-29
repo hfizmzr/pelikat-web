@@ -39,13 +39,36 @@ export const LABEL_MAX = 40
  * sanitizes to '' (caller applies the fallback).
  */
 export function sanitizeLabel(input: string): string {
-  return input
-    .replace(/<[^>]*>/g, '') // well-formed <…> markup (incl. <b>Scroll</b>)
-    .replace(/[<>]/g, '') // stray unclosed brackets
+  return sanitizeHtmlMarkup(input)
     .replace(/\s+/g, ' ') // collapse whitespace runs (tabs/newlines → space)
     .replace(/[\u0000-\u001F]/g, '') // remaining C0 controls
     .trim()
     .slice(0, LABEL_MAX)
+}
+
+/**
+ * Draft-path variant for the editor's onChange (review carry): identical
+ * sanitization pipeline MINUS the final trim and MINUS whitespace collapse —
+ * user spacing survives keystroke-by-keystroke, so the input never "eats" a
+ * trailing space mid-typing. The COMMIT path still runs full sanitizeLabel
+ * (see normalizeThemeDraft) so the DB keeps trimmed canonical values.
+ */
+export function sanitizeDraftLabel(input: string): string {
+  return sanitizeHtmlMarkup(input)
+    .replace(/[\t\n\r]/g, ' ') // pasted separators stay word boundaries (save path collapses them identically)
+    .replace(/[\u0000-\u001F]/g, '') // remaining C0 controls
+    .slice(0, LABEL_MAX)
+}
+
+/** Markup strip — well-formed <…> tags → a space, then EVERY surviving < /
+ * > (unclosed brackets, hand-crafted self-nesting like "<scr<script>ipt>")
+ * is removed unconditionally by the second, independent pass. Separate
+ * statements (not a chain): the output never re-enters a pattern the earlier
+ * pass could have missed, so no `<` or `>` can survive in any exit — the
+ * structural guarantee CodeQL's incomplete-sanitization rule asks for. */
+function sanitizeHtmlMarkup(input: string): string {
+  const withoutTags = input.replace(/<[^>]*>/g, ' ')
+  return withoutTags.replace(/[<>]/g, '')
 }
 
 /** Platform fallback for a key; unknown keys → '' (ignored). */

@@ -17,7 +17,7 @@ import {
   LABEL_MAX,
   fallbackLabel,
   labelPreview,
-  sanitizeLabel,
+  sanitizeDraftLabel,
 } from '@/lib/theme/labels'
 import { PLATFORM_BG_HEX, contrastRatio, hexToOklch, oklchToString } from '@/lib/theme/color'
 import type { LabelKey, ThemeTokens } from '@/lib/theme/types'
@@ -109,7 +109,11 @@ export function ThemeEditor({
   }
 
   function setVocab(key: LabelKey, raw: string) {
-    const clean = sanitizeLabel(raw)
+    // Draft path: sanitize WITHOUT trim/collapse so tail spaces survive
+    // mid-typing (review carry). The save payload passes through
+    // normalizeThemeDraft, which applies full sanitizeLabel → the DB keeps
+    // trimmed canonical values.
+    const clean = sanitizeDraftLabel(raw)
     setDraft((d) => {
       const vocabulary = { ...(d.vocabulary ?? {}) }
       if (clean.length === 0) delete vocabulary[key]

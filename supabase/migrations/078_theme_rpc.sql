@@ -91,6 +91,7 @@ declare
   v_tokens       jsonb;
   v_config       jsonb;
   v_caller_org   uuid;
+  v_claims_role  text;
 begin
   select e.status, e.organizer_id, e.theme_config, p.tokens
     into v_status, v_organizer_id, v_config, v_tokens
@@ -106,6 +107,18 @@ begin
   -- public; drafts resolve only for the owning organizer, a platform admin,
   -- or service_role (service_role detected via its JWT claim — see the
   -- SECURITY DEFINER note in the header).
+  -- service_role identity carriers (review hardening): SECURITY DEFINER hides
+  -- current_user, so the caller is matched by role ACROSS ALL realistic
+  -- identity carriers, first-match-wins, exact 'service_role' string only:
+  --   (a) request.jwt.claim.role — the PostgREST claim GUC (probe path);
+  --   (b) request.jwt.claims — PostgREST v12 normalized-claims JSON;
+  --   (c) role — the plain connection `SET ROLE` model (cron/psql paths).
+  -- The (b) cast is guarded so a garbage claims payload degrades to "not
+  -- is service_role" (deny) instead of erroring; the auth.jwt() readers
+  -- (get_my_organizer_id / is_admin) share that cast, so the WHOLE deny
+  -- evaluation is guarded — unreadable identity ⇒ deny, never a 500.
+  -- Same carrier pattern as
+  -- migrations 070/077 (not touched here) — keep the three in sync.
   -- NULL discipline (Task 14 hardening): both columns are nullable, so the
   -- comparisons use IS DISTINCT FROM / explicit NULL arms — a plain
   -- `v_status <> 'published'` or `v_caller_org <> v_organizer_id` yields
@@ -113,13 +126,25 @@ begin
   -- NULL-organizer event. Distinct-from treats NULL as "not public", so
   -- degenerate rows deny by default, exactly like a draft.
   if v_status is distinct from 'published' and v_status is distinct from 'closed' then
-    v_caller_org := public.get_my_organizer_id();
-    if coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
-       and not coalesce(public.is_admin(), false)
-       and (v_organizer_id is null or v_caller_org is null
-            or v_caller_org <> v_organizer_id) then
-      return null;
-    end if;
+    begin
+      v_caller_org := public.get_my_organizer_id();
+      begin
+        v_claims_role := nullif(current_setting('request.jwt.claims', true), '');
+        v_claims_role := v_claims_role::jsonb ->> 'role';
+      exception when others then
+        v_claims_role := null;                -- unparseable claims → not service_role
+      end;
+      if coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
+         and coalesce(v_claims_role, '') <> 'service_role'
+         and coalesce(current_setting('role', true), '') <> 'service_role'
+         and not coalesce(public.is_admin(), false)
+         and (v_organizer_id is null or v_caller_org is null
+              or v_caller_org <> v_organizer_id) then
+        return null;
+      end if;
+    exception when others then
+      return null;                            -- unreadable identity (garbage claims) → deny
+    end;
   end if;
 
   return public.jsonb_deep_merge(v_tokens, v_config);

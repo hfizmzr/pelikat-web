@@ -60,6 +60,13 @@ export function seedThemeDraft(config: unknown): ThemeTokens {
 /**
  * Draft → the exact payload to persist: null leaves/sections omitted, empty
  * sections dropped, empty draft → null (full reset). Never emits JSON nulls.
+ *
+ * Review carry (FIX 2): the draft store holds untrimmed keystroke state
+ * (sanitizeDraftLabel keeps tail spaces mid-typing) — vocabulary strings are
+ * TRIMMED here so the DB keeps trimmed canonical values. NOT a full
+ * sanitizeLabel re-run: seeded values the organizer did not edit (stored
+ * labels up to the DB's 64-char cap) must land in the write payload
+ * unchanged — trimming alone can never change a non-whitespace label.
  */
 export function normalizeThemeDraft(draft: ThemeTokens | null): ThemeTokens | null {
   if (draft === null || !isPlainObject(draft)) return null
@@ -68,7 +75,14 @@ export function normalizeThemeDraft(draft: ThemeTokens | null): ThemeTokens | nu
     const value = draft[section]
     if (!isPlainObject(value)) continue
     const clean: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value)) if (v !== null) clean[k] = v
+    for (const [k, v] of Object.entries(value)) {
+      if (v === null) continue
+      if (section === 'vocabulary' && typeof v === 'string') {
+        clean[k] = v.trim()
+      } else {
+        clean[k] = v
+      }
+    }
     if (Object.keys(clean).length > 0) out[section] = clean
   }
   return Object.keys(out).length > 0 ? (out as ThemeTokens) : null
