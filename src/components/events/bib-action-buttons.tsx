@@ -1,6 +1,17 @@
 'use client'
 import { Download, Share2 } from "lucide-react"
 
+/** P4 smoke carry: the download filename prefix is the RESOLVED bib label,
+ * slugified — lowercase, non-alnum folded to '-', trimmed; empty/unset →
+ * the platform 'BIB'. Never throws non-alnum bytes into the filename. */
+export function bibFilePrefix(bibLabel?: string): string {
+  const slug = (bibLabel ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return slug || 'BIB'
+}
+
 export function BibActionButtons({
   bibNumber,
   eventName,
@@ -37,7 +48,9 @@ export function BibActionButtons({
     ctx.fillText(eventName, canvas.width / 2, 150)
 
     const link = document.createElement('a')
-    link.download = `BIB-${bibNumber}-${eventName.replace(/\s+/g, '-')}.png`
+    // P4 smoke carry: the filename prefix is the RESOLVED bib label, slugified
+    // (lowercase, non-alnum → '-', trimmed); empty/unset → the platform 'BIB'.
+    link.download = `${bibFilePrefix(bibLabel)}-${bibNumber}-${eventName.replace(/\s+/g, '-')}.png`
     link.href = canvas.toDataURL('image/png')
     link.click()
   }

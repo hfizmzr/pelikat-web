@@ -13,7 +13,16 @@ interface StorageOriginDefinePlugin {
   apply(compiler: unknown): void;
 }
 
-let webpackDefineApi: ((defs: Record<string, string>) => { apply: (compiler: unknown) => void }) | undefined;
+let webpackDefineApi: WebpackDefinePluginCtor | undefined;
+
+// Minimal structural typing for the webpack hook so the DefinePlugin hand-off
+// is strict-safe (this file sits outside the tsconfig include — flagged in the
+// P2/P3 reviews). No behavior change: the captured constructor is exactly
+// what Next passes in as `options.webpack.DefinePlugin`.
+type WebpackDefinePluginCtor = new (definitions: Record<string, string>) => {
+  apply: (compiler: unknown) => void;
+};
+type WebpackHookOptions = { webpack?: { DefinePlugin?: WebpackDefinePluginCtor } };
 
 const themeStorageOriginDefinePlugin: StorageOriginDefinePlugin = {
   name: "ThemeStorageOriginDefinePlugin",
@@ -54,8 +63,8 @@ const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: __dirname,
   turbopack: {},
-  webpack(config, options) {
-    webpackDefineApi = (options.webpack as { DefinePlugin: unknown })?.DefinePlugin as never;
+  webpack(config, options: WebpackHookOptions) {
+    webpackDefineApi = options.webpack?.DefinePlugin;
     return config;
   },
   allowedDevOrigins: [

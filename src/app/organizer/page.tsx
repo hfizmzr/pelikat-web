@@ -269,7 +269,11 @@ export default async function OrganizerDashboard() {
             </div>
 
             <div className="bg-card rounded-xl p-6 border border-muted shadow-sm">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Audit #12: with only 2 wave cards the old 4-col desktop track
+              left a dead zone; sm:grid-cols-2 cap balances the cards. The
+              audit's `xl:grid-cols-3` (1280px) would re-create the same dead
+              zone at the audited 1440 viewport, so it is dropped. */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {activeCategories.map((cat, i) => {
                   const colors = ['bg-primary', 'bg-primary', 'bg-success', 'bg-muted-foreground']
                   const dotColors = ['bg-primary', 'bg-primary', 'bg-success', 'bg-muted-foreground']

@@ -163,11 +163,14 @@ function LoginForm() {
         </Link>
       </p>
 
+      {/* Audit #10: 3-line ragged wrap ("Terms and" / "Privacy" / "Policy") —
+      nowrap the link pair so phrases never split mid-span; the break lands
+      after "and" instead. */}
       <p className="text-xs text-muted-foreground text-center leading-relaxed">
         By signing in, you agree to our{' '}
-        <span className="text-primary underline underline-offset-2 cursor-pointer">Terms</span>
+        <span className="text-primary underline underline-offset-2 cursor-pointer whitespace-nowrap">Terms</span>
         {' '}and{' '}
-        <span className="text-primary underline underline-offset-2 cursor-pointer">Privacy Policy</span>.
+        <span className="text-primary underline underline-offset-2 cursor-pointer whitespace-nowrap">Privacy Policy</span>.
       </p>
     </div>
   )

@@ -154,26 +154,32 @@ export default async function OrganizerEventDetailPage({
     'http://localhost:3000'
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
+    // px gutters (post-P4 audit finding #2): stat cards + tab panels were
+    // flush to the viewport at mobile — sibling organizer pages wrap in px-6.
+    <div className="space-y-6 px-4 sm:px-6">
+      {/* Header wrap (audit #1/#4): the actions row overflowed the 390px
+      viewport (Settings clipped, Copy/Analytics off-canvas) — stack under
+      sm so every action is reachable; title column needs min-w-0 or the
+      flex min-width floor collapses it to one word per line. */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
         <Link href="/organizer/events">
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">{eventDetail.name}</h1>
+            <h1 className="min-w-0 flex-1 text-3xl font-bold tracking-tight">{eventDetail.name}</h1>
             <Badge variant={statusVariant[eventDetail.status] ?? 'secondary'}>
               {eventDetail.status}
             </Badge>
           </div>
-          <p className="text-muted-foreground flex items-center gap-2 mt-1">
-            <Calendar className="h-4 w-4" />
+          <p className="text-muted-foreground flex items-center gap-2 mt-1 min-w-0 truncate">
+            <Calendar className="h-4 w-4 shrink-0" />
             {new Date(eventDetail.event_date).toLocaleDateString()}
             {eventDetail.location && (
               <>
-                <MapPin className="h-4 w-4 ml-2" />
+                <MapPin className="h-4 w-4 ml-2 shrink-0" />
                 {eventDetail.location}
               </>
             )}

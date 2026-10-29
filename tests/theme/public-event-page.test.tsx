@@ -24,6 +24,15 @@ import OrganizerEventDetailPage from '@/app/organizer/events/[id]/page'
 import { storageAssetUrl } from '@/lib/theme/assets'
 import { hexToOklch, oklchToString } from '@/lib/theme/color'
 
+// og fallback is ABSOLUTE (link unfurls need a full URL) but built from the
+// env-driven origin chain (tunnel → APP_URL → localhost), so pin the shape,
+// never a specific host.
+const expectAbsoluteFallbackOgImage = (meta: Awaited<ReturnType<typeof generateMetadata>>) => {
+  const image = String(meta.openGraph?.images?.[0])
+  expect(image.startsWith('http')).toBe(true)
+  expect(image.endsWith('/icons/icon-512.png')).toBe(true)
+}
+
 const h = vi.hoisted(() => ({
   tables: {} as Record<string, unknown>,
   q: [] as string[],
@@ -288,6 +297,13 @@ describe('CopyPublicEventLink on the organizer page (P3 Task 5)', () => {
     const html = await renderOrganizerPage()
     expect(html).toContain('Copy Public Event Link')
     expect(html).toContain('SETTINGS-COMPONENT') // sanity: the header block rendered
+    // Post-P4 audit #1/#2/#4 cheap clip-guards: mobile-stack header (stretchy
+    // flex-wrap row kept Settings clipped), px gutters on the content root,
+    // and a min-w-0 title column. Class-presence only — vitest is not a
+    // layout engine.
+    expect(html).toContain('flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4')
+    expect(html).toContain('space-y-6 px-4 sm:px-6')
+    expect(html).toContain('min-w-0 flex-1')
   })
 
   it('event without slug (draft — slug stays NULL per 077) → no button, page still renders', async () => {
@@ -368,22 +384,26 @@ describe('PublicEventPage metadata + viewport (P3 Task 6)', () => {
     expect(vp.themeColor).toBe(oklchToString(hexToOklch('#0f9b9b')))
   })
 
-  it('unthemed event → platform metadata: og images key omitted, themeColor = platform primary literal', async () => {
+  it('unthemed event → platform metadata: og:image = static platform fallback, themeColor = platform primary literal', async () => {
     h.tables.events = publicEvent()
     const meta = await generateMetadata({ params: promiseParams() })
     expect(meta.title).toBe('Batik Heritage Run')
     expect(meta.description).toBe('A themed run.')
-    expect(meta.openGraph?.images).toBeUndefined()
+    // no banner asset → the static platform fallback image (P4 smoke carry),
+    // never an absent images key
+    expectAbsoluteFallbackOgImage(meta)
+
     expect(meta.twitter?.card).toBe('summary_large_image')
     const vp = await generateViewport({ params: promiseParams() })
     expect(vp.themeColor).toBe(PLATFORM_PRIMARY_LIGHT)
   })
 
-  it('unthemed event without description → fallback description copy, no og image', async () => {
+  it('unthemed event without description → fallback description copy + platform fallback og image', async () => {
     h.tables.events = publicEvent({ description: null })
     const meta = await generateMetadata({ params: promiseParams() })
     expect(meta.description).toBe('View public event details')
-    expect(meta.openGraph?.images).toBeUndefined()
+    expectAbsoluteFallbackOgImage(meta)
+
   })
 
   it('draft slug → generateMetadata degrades to {} (NOT a hard 500) with zero service-role fetch', async () => {
@@ -418,7 +438,9 @@ describe('PublicEventPage metadata + viewport (P3 Task 6)', () => {
     h.tables.events = publicEvent({ theme_config: toxic })
     const meta = await generateMetadata({ params: promiseParams() })
     expect(meta.title).toBe('Batik Heritage Run')
-    expect(meta.openGraph?.images).toBeUndefined()
+    // resolve degraded silently → no banner → the platform fallback og:image
+    expectAbsoluteFallbackOgImage(meta)
+
     const vp = await generateViewport({ params: promiseParams() })
     expect(vp.themeColor).toBe(PLATFORM_PRIMARY_LIGHT)
   })

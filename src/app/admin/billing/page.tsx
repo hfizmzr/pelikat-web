@@ -216,9 +216,12 @@ export default function AdminBillingPage() {
                       {inv.description}
                     </td>
 
-                    {/* Plan */}
+                    {/* Plan — audit #9: chip wrapped mid-phrase ("Organizer" /
+                    "Subscription") to 2 cramped lines. inline-block + scale-
+                    bounded truncate keeps one clean line with an ellipsis
+                    affordance (max-w-40 = 10rem, no arbitrary px). */}
                     <td className="py-3.5 px-5">
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                      <span className="inline-block max-w-40 truncate px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
                         {inv.plan}
                       </span>
                     </td>

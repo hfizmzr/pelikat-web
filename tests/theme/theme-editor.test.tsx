@@ -146,6 +146,11 @@ describe('ThemeEditor (SSR mount smoke)', () => {
       expect(html).toContain(role)
     }
     expect(html).toContain('Save theme')
+    // Post-P4 audit #3 cheap clip-guard: the preset gallery + two-col chain
+    // render min-w-0 and the scale-ordered mobile grid (no min-content blowout
+    // at 390px). Vitest can't measure layout — this pins the rendered classes.
+    expect(html).toContain('grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3')
+    expect(html).toContain('min-w-0')
     // Batik preset selected → its vocabulary seeds the live label preview
     expect(html).toContain('Your Kampung #1234')
     expect(html).toContain('Your Bib Number #1234')
@@ -273,6 +278,33 @@ describe('ThemeEditor (SSR mount smoke)', () => {
     expect(html).toContain('(deactivated)')
     expect(html).toContain('grayscale')
     expect(html).toContain('disabled=""')
+  })
+
+  it('dark-preview toggle threads a real .dark class onto the live preview root (P4 smoke carry)', () => {
+    render(
+      <ThemeEditor
+        eventId={EVENT_ID}
+        organizerId="org-1"
+        canEdit
+        savedPresetId={PRESET_ID}
+        savedConfig={null}
+        presets={PRESETS}
+      />,
+    )
+    const toggle = screen.getByRole('button', { name: /toggle dark mode preview/i })
+    expect(toggle.getAttribute('aria-pressed')).toBe('false')
+    fireEvent.click(toggle)
+    expect(toggle.getAttribute('aria-pressed')).toBe('true')
+    // class-only reactive proof (vitest is not a layout engine): the live
+    // preview's .event-theme root itself carries .dark — semantic-token
+    // children (bg-background/90, text-muted-foreground) re-resolve — AND it
+    // still sits under the wrapper .dark so .dark .event-theme brand mapping
+    // keeps matching.
+    const root = document.querySelector('.event-theme.dark')
+    expect(root).toBeTruthy()
+    expect(root?.parentElement?.classList.contains('dark')).toBe(true)
+    // the gallery cards stay light (no .dark member)
+    expect(document.querySelectorAll('.event-theme.dark').length).toBe(1)
   })
 
   it('CodeRabbit follow-up: the saved inactive preset card survives a draft switch to Custom', async () => {

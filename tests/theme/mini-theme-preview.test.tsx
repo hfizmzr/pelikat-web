@@ -92,6 +92,26 @@ describe('MiniThemePreview vocabulary line (P3 Task 1: all six labels)', () => {
   })
 })
 
+describe('MiniThemePreview dark mode prop (P4 smoke carry)', () => {
+  it("mode='dark' → the preview ROOT carries a real .dark class (semantic-token children re-resolve)", async () => {
+    const resolved = deriveTheme(ALL_SIX, null, PRESET_ID)
+    const html = await toHtml(<MiniThemePreview resolved={resolved} mode="dark" />)
+    // the root itself, not just an ancestor wrapper — Tailwind `dark:` and
+    // .dark-scoped tokens (bg-background/90, text-foreground,
+    // text-muted-foreground) re-resolve against it
+    expect(html).toContain('event-theme rounded-lg border bg-background p-3 dark')
+    // the cert-plate/leaderboard semantic tokens still render (same DOM)
+    expect(html).toContain('text-muted-foreground')
+    expect(html).toContain('text-foreground')
+  })
+
+  it('default (no mode) stays light — no .dark class on the preview root', async () => {
+    const resolved = deriveTheme(ALL_SIX, null, PRESET_ID)
+    const html = await toHtml(<MiniThemePreview resolved={resolved} />)
+    expect(html).toMatch(/class="event-theme rounded-lg border bg-background p-3"/)
+  })
+})
+
 describe('MiniThemePreview certificate mock (P4 Task 5: A4 landscape)', () => {
   const CERT_BG_PATH = 'organizers/o1/events/e1/certificate_background-v1.png'
   const CERT_BG_URL = `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/${CERT_BG_PATH}`
