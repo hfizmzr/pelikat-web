@@ -18,6 +18,7 @@ import {
   PLATFORM_BG_HEX,
 } from './color'
 import { LABEL_KEYS, resolveLabels } from './labels'
+import { isPlainObject } from './utils'
 import type { BrandSlot, ResolvedTheme, ThemeTokens } from './types'
 
 // Stored-token HEX contract (Global Constraints / spec §4.3: ^#[0-9a-fA-F]{6}$).
@@ -69,10 +70,6 @@ const PLATFORM_SLOTS: Record<'primary' | 'secondary' | 'accent' | 'ring', BrandS
 
 // Resolve-time label fallbacks + sanitization live in labels.ts (Task 8) —
 // single source of label truth for resolve, runner pages, and the cert payload.
-
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
 
 /** Allowlist projection: copies only known keys from a plain object. */
 function knownSection(src: unknown, keys: readonly string[]): Record<string, unknown> {

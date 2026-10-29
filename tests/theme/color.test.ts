@@ -127,6 +127,19 @@ describe('pickForeground', () => {
   })
 })
 
+// P2 Task 2 pin: #FF0000's chroma (≈0.258) × 0.85 (≈0.219) exceeds the cap,
+// so the Math.min cap branch must fire — C exactly 0.20 (1e-9 tolerance).
+describe('deriveDarkVariant — chroma cap at 0.20', () => {
+  it('caps #FF0000 chroma at exactly 0.20 (the ×0.85 branch alone would overshoot)', () => {
+    const src = hexToOklch('#FF0000')
+    expect(src.c).toBeGreaterThan(0.235)
+    expect(src.c * 0.85).toBeGreaterThan(0.2)
+    const parsed = /^oklch\((\S+) (\S+) (\S+)\)$/.exec(deriveDarkVariant('#FF0000'))
+    expect(parsed).not.toBeNull()
+    expect(Number(parsed![2])).toBeCloseTo(0.2, 9 as number)
+  })
+})
+
 describe('deriveDarkVariant', () => {
   function parseOklch(s: string): { l: number; c: number; h: number } {
     const m = /^oklch\((\S+) (\S+) (\S+)\)$/.exec(s)

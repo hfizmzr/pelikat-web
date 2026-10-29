@@ -10,6 +10,7 @@
  *    writes `theme_config: null`, SQL NULL).
  */
 import { LABEL_KEYS } from './labels'
+import { isPlainObject } from './utils'
 import type { ThemeTokens } from './types'
 
 const SECTION_KEYS = ['colors', 'typography', 'assets', 'vocabulary'] as const
@@ -19,10 +20,6 @@ const SECTION_KEYS = ['colors', 'typography', 'assets', 'vocabulary'] as const
 // equality checks stable. Same list as validate.ts/resolve.ts (kept local,
 // mirroring the codebase's per-module self-containment).
 const COLOR_KEYS = ['primary', 'secondary', 'accent', 'background', 'foreground', 'ring'] as const
-
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
 
 /**
  * DB row (untrusted JSONB shape) → a safe editable draft. Non-object sections

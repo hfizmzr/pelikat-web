@@ -14,6 +14,7 @@
  */
 import type { CSSProperties } from 'react'
 import type { BrandSlot, ResolvedTheme } from './types'
+import { themeFontUrlOk } from './utils'
 
 /** The four themed roles, in injection order. */
 const ROLES = ['primary', 'secondary', 'accent', 'ring'] as const
@@ -57,54 +58,21 @@ function headingFamily(eventId: string): string {
   return `ET-${eventIdPrefix(eventId)}-Heading`
 }
 
-// Font URL allowlist — spec §5.4, enforced HERE (app layer). The DB-layer
-// charset check is bypassable via `https://host/../x` (Task 1 review pin);
-// URL normalization + the .woff2 check below close that path.
-const FONT_STATIC_HOST = 'fonts.gstatic.com'
-
-function platformStorageHost(): string | null {
-  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL
-  if (!raw) return null
-  try {
-    return new URL(raw).host
-  } catch {
-    return null
-  }
-}
-
 /**
- * Validate a font URL against the §5.4 allowlist: https only, host is the
- * platform storage origin (Supabase) or fonts.gstatic.com, path ends
- * `.woff2`, no dot-dot path segments. Returns the normalized URL or null
- * (caller degrades to Geist — never throws, spec §5.5).
- */
-function allowedFontUrl(raw: string): URL | null {
-  // Traversal guard runs on the RAW string: URL normalization silently
-  // resolves `..` away, which is exactly the DB-layer bypass this boundary
-  // replaces (Task 1 review pin). Covers raw and percent-encoded segments on
-  // BOTH sides of the dot-dot run — including the fully-encoded `%2e%2e%2f`
-  // and the `x%2f..%2fy` leader form (Task 14 hardening).
-  if (/(?:^|\/|%2f|\?)(?:\.|%2e){2}(?:\/|%2f|\?|#|$)/i.test(raw)) return null
-  let url: URL
-  try {
-    url = new URL(raw)
-  } catch {
-    return null
-  }
-  if (url.protocol !== 'https:') return null
-  if (url.host !== FONT_STATIC_HOST && url.host !== platformStorageHost()) return null
-  if (!url.pathname.toLowerCase().endsWith('.woff2')) return null
-  return url
-}
-
-/**
- * Build the `@font-face` block for a themed heading font, or '' when the URL
- * fails the allowlist (no face injected → headings fall back to Geist).
- * Family name is system-generated from the event id — never user input.
+ * Font URL allowlist lives in utils.ts (`themeFontUrlOk`) — the ONE shared
+ * §5.4 enforcement point, consumed by css/validate/resolve. buildFontFace
+ * degrades to '' (no face → Geist) instead of throwing, spec §5.5.
  */
 export function buildFontFace(eventId: string, fontUrl: string): string {
-  const url = allowedFontUrl(fontUrl)
-  if (!url) return ''
+  if (!themeFontUrlOk(fontUrl)) return ''
+  // themeFontUrlOk parsed this same string, so the constructor here cannot
+  // throw; the catch keeps the never-throw contract airtight anyway.
+  let url: URL
+  try {
+    url = new URL(fontUrl)
+  } catch {
+    return ''
+  }
   return [
     '@font-face {',
     `  font-family: ${headingFamily(eventId)};`,

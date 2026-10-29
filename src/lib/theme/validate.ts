@@ -16,6 +16,7 @@
  */
 import { contrastRatio, hexToOklch, PLATFORM_BG_HEX } from './color'
 import { LABEL_KEYS } from './labels'
+import { isPlainObject } from './utils'
 
 // Stored-token HEX contract (Global Constraints / spec §4.3: ^#[0-9a-fA-F]{6}$).
 // Same strict regex resolve.ts validates; color.ts's runtime regex is looser
@@ -39,10 +40,6 @@ const COLOR_KEYS = ['primary', 'secondary', 'accent', 'background', 'foreground'
 const TYPOGRAPHY_KEYS = ['heading_font_url', 'body_font_url']
 const ASSET_KEYS = ['banner_url', 'logo_url', 'badge_icon_url', 'certificate_background_url']
 const ASSET_PATH_RE = /^[A-Za-z0-9/_.-]+$/
-
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
 
 /** Serialized byte length, or null when unserializable (cyclic and friends). */
 function jsonBytes(config: unknown): number | null {

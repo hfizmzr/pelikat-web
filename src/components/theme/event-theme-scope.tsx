@@ -17,13 +17,10 @@ import type { ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getResolvedTheme, type EventThemeInput } from '@/lib/theme/resolve'
 import { buildStyleVars, buildFontFace } from '@/lib/theme/css'
+import { isPlainObject } from '@/lib/theme/utils'
 
 /** Event row subset the scope consumes — `id` drives the font family + var bindings. */
 type EventWithTheme = EventThemeInput & { id: string }
-
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
 
 /** No-theme predicate: no preset reference AND no (non-empty) override config. */
 function hasTheme(event: EventWithTheme): boolean {
