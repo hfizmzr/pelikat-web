@@ -129,6 +129,20 @@ describe('cert actions: additive theme payload (P4 Task 4)', () => {
       )
     })
 
+    it('empty `{}` theme_config with no preset → NO theme key (zero-content config joins the legacy payload)', async () => {
+      // getSurfaceTheme counts `{}` as a config (plain-object rule) and still
+      // resolves the platform theme — the cert emission gate must NOT turn
+      // that into a theme block (PR34 r4411927725): no effective theme input
+      // → the legacy 5-key body, byte-shape equal to unthemed events.
+      seedVirtual({ theme_config: {} })
+      await generateVirtualEventCertificate({ eventId: EVENT_ID })
+      const body = lastBody()
+      expect('theme' in body).toBe(false)
+      expect(Object.keys(body).sort()).toEqual(
+        ['bib_number', 'event_date', 'event_name', 'registration_id', 'runner_name'].sort()
+      )
+    })
+
     it('preset-resolved event (RLS-hidden preset row → RPC fallback) → theme present', async () => {
       const presetClient = fakeClient({
         events: {
@@ -183,6 +197,25 @@ describe('cert actions: additive theme payload (P4 Task 4)', () => {
       expect('accent' in body.theme.colors).toBe(false)
       expect(body.theme.colors.primary).toBe('#9C4A1A')
       expect(body.theme.colors.secondary).toBe('#3E2C23')
+    })
+
+    it('hand-crafted evil-host https background → dropped at the validated resolve slot, certificate_background_url omitted', async () => {
+      // The payload reads resolve()'s VALIDATED slot (PR34 r4411927732), not
+      // the raw token: assetValueOk host-pins https to the platform storage
+      // origin, so evil.example.com never reaches certThemeOf — the payload
+      // omits the URL entirely (stronger than the storageAssetUrl fallback).
+      seedVirtual({
+        theme_config: {
+          ...THEME_CONFIG,
+          assets: { certificate_background_url: 'https://evil.example.com/bg.png' },
+        },
+      })
+      await generateVirtualEventCertificate({ eventId: EVENT_ID })
+      const body = lastBody()
+      expect('certificate_background_url' in body.theme).toBe(false)
+      expect(body.theme.colors).toEqual(EXPECTED_THEME.colors)
+      expect(body.theme.labels).toEqual(EXPECTED_THEME.labels)
+      expect(body.theme.layout).toEqual(EXPECTED_THEME.layout)
     })
   })
 

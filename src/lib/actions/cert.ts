@@ -5,6 +5,7 @@ import { requireAuth } from '@/lib/auth/requireUser'
 import { isConfirmedStatus } from '@/lib/registration-status'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getSurfaceTheme, type SurfaceEventInput, type SurfaceTheme } from '@/lib/theme/surface'
+import { isPlainObject } from '@/lib/theme/utils'
 import { storageAssetUrl } from '@/lib/theme/assets'
 
 interface CertResult {
@@ -36,7 +37,11 @@ function certThemeOf(surface: SurfaceTheme) {
     const hex = resolved[role].hex
     if (typeof hex === 'string') colors[role] = hex
   }
-  const background = surface.tokens?.assets?.certificate_background_url
+  // Validated slot (PR34 review): resolve()'s asset gate already host-pins
+  // https values to the platform storage origin (P3 Task 7), so a hostile
+  // hand-crafted https row drops HERE — a raw surface.tokens read would
+  // ship it past validation instead.
+  const background = resolved.assets.certificate_background
   const certificateBackgroundUrl =
     typeof background === 'string' ? storageAssetUrl(background) : null
   return {
@@ -50,9 +55,26 @@ function certThemeOf(surface: SurfaceTheme) {
 }
 
 /** Event-scoped theme resolution — no event row (badge path without an
- * event) → null → legacy payload. */
+ * event) → null → legacy payload.
+ *
+ * Emission gate beyond the platform resolution (PR34 review r4411927725):
+ * getSurfaceTheme counts even the EMPTY `{}` theme_config as "config"
+ * (plain-object rule, P3 Task 3) and still resolves the platform theme for
+ * it, but a zero-content config carries no presentation value — emitting
+ * its fallback labels against nothing would break the legacy request
+ * body. So the theme block ships only when an effective theme input
+ * exists: a preset id is set, OR theme_config is a plain object holding
+ * at least one key. */
 async function eventCertTheme(supabase: SupabaseClient, event: SurfaceEventInput | null) {
   if (!event) return null
+  // Same normalization getSurfaceTheme applies (''/non-string → no preset).
+  const presetId =
+    typeof event.theme_preset_id === 'string' && event.theme_preset_id.length > 0
+      ? event.theme_preset_id
+      : null
+  const configHasKeys =
+    isPlainObject(event.theme_config) && Object.keys(event.theme_config).length > 0
+  if (presetId === null && !configHasKeys) return null
   return certThemeOf(await getSurfaceTheme(event, supabase))
 }
 
