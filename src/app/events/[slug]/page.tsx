@@ -105,9 +105,16 @@ export async function generateMetadata({
   const description = event.description ?? FALLBACK_DESCRIPTION
   // og:image: the EXPANDED https storage form via storageAssetUrl — the raw
   // bucket path is never spliced in. No banner (unthemed / degraded config) →
-  // the static platform fallback image (public/icons/icon-512.png) so link
-  // unfurls keep at least the platform mark instead of an image-less card.
-  const ogImage = theme.assets.banner ? storageAssetUrl(theme.assets.banner) : '/icons/icon-512.png'
+  // the static platform fallback image (public/icons/icon-512.png) as an
+  // ABSOLUTE url (og images must be absolute for link unfurls) built from the
+  // same app origin chain as shareable links (tunnel in dev, APP_URL in prod).
+  const appUrl =
+    process.env.NEXT_PUBLIC_TUNNEL_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    'http://localhost:3000'
+  const ogImage = theme.assets.banner
+    ? storageAssetUrl(theme.assets.banner)
+    : new URL('/icons/icon-512.png', appUrl).href
   return {
     title: event.name,
     description,
