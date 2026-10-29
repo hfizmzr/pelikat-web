@@ -1,6 +1,8 @@
 import { ArrowLeft, Hourglass, Trophy } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import { LiveLeaderboard, type LeaderboardEntry } from '@/components/gamification/live-leaderboard'
+import { EventThemeScope } from '@/components/theme/event-theme-scope'
+import { scopedLeaderboardEventId } from './scope'
 import { LeaderboardFilters } from './filters'
 import { ExportCSV } from './export-csv'
 import Link from 'next/link'
@@ -55,6 +57,26 @@ export default async function RunnerLeaderboardPage({
     ? !(events ?? []).some((e) => e.id === event_id && e.results_published)
     : publishedIds.length === 0
 
+  // Theme scope (spec §5.3): only when event_id targets one published event.
+  // The events list (already fetched for the filters) is the publication source
+  // of truth; the themed row is fetched separately so the mixed view — and the
+  // always-run events query — never carries theme_config payload.
+  const scopedId = scopedLeaderboardEventId(event_id, events)
+  const scopedEvent = scopedId
+    ? (
+        await supabase
+          .from('events')
+          .select('id, theme_preset_id, theme_config')
+          .eq('id', scopedId)
+          .maybeSingle()
+      ).data
+    : null
+  if (scopedId && !scopedEvent) {
+    // Fetch failed (RLS/network/no row) — degrade to the neutral scope, but
+    // leave a trace instead of swallowing the error silently (Task 12 carry).
+    console.warn(`[leaderboard] themed event fetch failed for ${scopedId}`)
+  }
+
   let leaderboard: LeaderboardEntry[] | null = null
   if (!resultsLocked) {
     let query = supabase.from('leaderboard_virtual').select('*').limit(50)
@@ -77,7 +99,7 @@ export default async function RunnerLeaderboardPage({
   }
 
 
-  return (
+  const content = (
     <div className="flex flex-col w-full min-h-full bg-background">
       {/* Sticky Header */}
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
@@ -143,4 +165,10 @@ export default async function RunnerLeaderboardPage({
       </div>
     </div>
   )
+
+  // Single published event → themed scope (spec §5.3); mixed views render
+  // content unwrapped — same pattern as the runner event page (Task 11).
+  return scopedEvent ? (
+    <EventThemeScope event={scopedEvent}>{content}</EventThemeScope>
+  ) : content
 }

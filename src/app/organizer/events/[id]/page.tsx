@@ -2,12 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt, BarChart3, ClipboardList } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { EventSettingsPanel } from '@/components/events/event-settings-panel'
+import { EventPageTabs } from '@/components/events/event-tabs'
+import { ThemeEditor } from '@/components/theme/theme-editor'
 import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
+import type { ThemeTokens } from '@/lib/theme/types'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -52,6 +54,9 @@ type EventDetail = {
   reg_open: string | null
   reg_close: string | null
   results_published: boolean | null
+  organizer_id: string | null
+  theme_preset_id: string | null
+  theme_config: unknown
   race_categories: RaceCategory[] | null
   registrations: Registration[] | null
 }
@@ -97,6 +102,19 @@ export default async function OrganizerEventDetailPage({
   const eventDetail = eventWithProfiles as EventDetail
   const raceCategories = eventDetail.race_categories ?? []
   const registrations = eventDetail.registrations ?? []
+
+  // Theme tab inputs: system preset gallery (public read per 076 RLS) and
+  // caller ownership (read-only tab for non-owners — spec §8.6).
+  const [{ data: presets }, { data: { user } }] = await Promise.all([
+    supabase
+      .from('theme_presets')
+      .select('id, name, tokens')
+      .eq('kind', 'system')
+      .order('name'),
+    supabase.auth.getUser(),
+  ])
+  const myOrganizerId = user?.app_metadata?.organizer_id
+  const canEdit = typeof myOrganizerId === 'string' && eventDetail.organizer_id === myOrganizerId
 
   const stats = {
     totalRegistrations: registrations.length,
@@ -185,92 +203,87 @@ export default async function OrganizerEventDetailPage({
         </Card>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="registrations">Registrations</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-4">
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle>Event Description</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                {eventDetail.description || 'No description provided'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-4 md:grid-cols-2">
+      <EventPageTabs
+        overview={
+          <>
             <Card className="border-border">
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <Link href={`/organizer/events/${eventDetail.id}/registrations`}>
-                    <ClipboardList className="mr-2 h-4 w-4" />
-                    Registrations &amp; Guests
-                  </Link>
-                </Button>
-                <Link href={`/organizer/events/${eventDetail.id}/checkin`} className="block">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Users className="mr-2 h-4 w-4" />
-                    Check-in Dashboard
-                  </Button>
-                </Link>
-                <Link href={`/organizer/events/${eventDetail.id}/repc`} className="block">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Shirt className="mr-2 h-4 w-4" />
-                    REPC Inventory
-                  </Button>
-                </Link>
-                <Link href={`/organizer/events/${eventDetail.id}/photos`} className="block">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Clock className="mr-2 h-4 w-4" />
-                    Photo Management
-                  </Button>
-                </Link>
-                <Link href={`/organizer/events/${eventDetail.id}/leaderboard`} className="block">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Users className="mr-2 h-4 w-4" />
-                    Leaderboard
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle>Race Categories</CardTitle>
+                <CardTitle>Event Description</CardTitle>
               </CardHeader>
               <CardContent>
-                {raceCategories.length > 0 ? (
-                  <div className="space-y-2">
-                    {raceCategories.map((cat) => (
-                      <div key={cat.id} className="flex items-center justify-between">
-                        <span className="text-sm">{cat.name}</span>
-                        <Badge variant="outline">{cat.gender || "Open"}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-muted-foreground mb-3">No categories yet</p>
-                    <Link href={`/organizer/events/${eventDetail.id}/categories`}>
-                      <Button size="sm" variant="outline">Manage Categories</Button>
-                    </Link>
-                  </div>
-                )}
+                <p className="text-muted-foreground">
+                  {eventDetail.description || 'No description provided'}
+                </p>
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
 
-        <TabsContent value="registrations" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card className="border-border">
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link href={`/organizer/events/${eventDetail.id}/registrations`}>
+                      <ClipboardList className="mr-2 h-4 w-4" />
+                      Registrations &amp; Guests
+                    </Link>
+                  </Button>
+                  <Link href={`/organizer/events/${eventDetail.id}/checkin`} className="block">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Users className="mr-2 h-4 w-4" />
+                      Check-in Dashboard
+                    </Button>
+                  </Link>
+                  <Link href={`/organizer/events/${eventDetail.id}/repc`} className="block">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Shirt className="mr-2 h-4 w-4" />
+                      REPC Inventory
+                    </Button>
+                  </Link>
+                  <Link href={`/organizer/events/${eventDetail.id}/photos`} className="block">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Clock className="mr-2 h-4 w-4" />
+                      Photo Management
+                    </Button>
+                  </Link>
+                  <Link href={`/organizer/events/${eventDetail.id}/leaderboard`} className="block">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Users className="mr-2 h-4 w-4" />
+                      Leaderboard
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border">
+                <CardHeader>
+                  <CardTitle>Race Categories</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {raceCategories.length > 0 ? (
+                    <div className="space-y-2">
+                      {raceCategories.map((cat) => (
+                        <div key={cat.id} className="flex items-center justify-between">
+                          <span className="text-sm">{cat.name}</span>
+                          <Badge variant="outline">{cat.gender || "Open"}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-muted-foreground mb-3">No categories yet</p>
+                      <Link href={`/organizer/events/${eventDetail.id}/categories`}>
+                        <Button size="sm" variant="outline">Manage Categories</Button>
+                      </Link>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        }
+        registrations={
           <Card className="border-border">
             <CardHeader>
               <CardTitle>Registrations</CardTitle>
@@ -303,9 +316,8 @@ export default async function OrganizerEventDetailPage({
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="categories" className="space-y-4">
+        }
+        categories={
           <Card className="border-border">
             <CardHeader className="flex flex-row items-start justify-between">
               <div>
@@ -344,8 +356,23 @@ export default async function OrganizerEventDetailPage({
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        }
+        theme={
+          <ThemeEditor
+            eventId={eventDetail.id}
+            canEdit={canEdit}
+            savedPresetId={eventDetail.theme_preset_id ?? null}
+            // theme_config is hand-craftable JSONB — the editor seeds
+            // defensively (non-object shapes degrade to an empty draft).
+            savedConfig={(eventDetail.theme_config ?? null) as ThemeTokens | null}
+            presets={(presets ?? []).map((preset) => ({
+              id: preset.id,
+              name: preset.name,
+              tokens: preset.tokens as ThemeTokens,
+            }))}
+          />
+        }
+      />
     </div>
   )
 }

@@ -74,6 +74,20 @@ values
   ('merch-images',  'merch-images',  true)
 on conflict (id) do nothing;
 
+-- Event Themes P1: `event-themes` bucket with FULL config (size + mime
+-- allowlist). setup-storage.sql is the config authority; this upsert only
+-- makes a bare `db reset` + seed self-contained like the buckets above.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'event-themes', 'event-themes', true,
+  10485760,
+  array['image/png','image/jpeg','image/webp','font/woff','font/woff2','font/ttf']
+)
+on conflict (id) do update set
+  public            = excluded.public,
+  file_size_limit   = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
 -- ════════════════════════════════════════════════════════════════════════════
 -- §2 AUTH USERS  (password for all: Pelikat!2026)
 --    Role resolution is via raw_app_meta_data (read by get_my_organizer_id()
