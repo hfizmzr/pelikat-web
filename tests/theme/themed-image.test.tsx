@@ -29,8 +29,8 @@ describe('ThemedImage', () => {
     )
     const img = container.querySelector('img')
     expect(img).not.toBeNull()
-    expect(img).toHaveAttribute('src', 'https://example.test/banner.png')
-    expect(img).toHaveAttribute('alt', 'Event banner')
+    expect(img?.getAttribute('src')).toBe('https://example.test/banner.png')
+    expect(img?.getAttribute('alt')).toBe('Event banner')
   })
 
   it('onError swaps to the fallback div: no img element, no broken glyph, alt still accessible', () => {
@@ -55,7 +55,7 @@ describe('ThemedImage', () => {
     )
     const img = container.querySelector('img')
     expect(img).not.toBeNull()
-    expect(img).toHaveAttribute('src', 'https://example.test/live.png')
+    expect(img?.getAttribute('src')).toBe('https://example.test/live.png')
   })
 
   it('alt is present in both states', () => {

@@ -75,7 +75,7 @@ describe('deriveTheme assets slot (Task 10: resolved banner/logo URLs)', () => {
       ...BATIK,
       assets: { banner_url: 'https://vault.example.com/b.png', logo_url: 'https://vault.example.com/l.png' },
     }
-    const resolved = deriveTheme(withAssets, { assets: { logo_url: null } }, PRESET_ID)
+    const resolved = deriveTheme(withAssets, { assets: { logo_url: null } } as unknown as ThemeTokens, PRESET_ID)
     expect(resolved.assets).toEqual({ banner: 'https://vault.example.com/b.png', logo: null })
     expect(resolved.source.overriddenKeys).toEqual([])
   })

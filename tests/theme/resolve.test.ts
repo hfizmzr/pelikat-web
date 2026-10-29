@@ -69,7 +69,7 @@ describe('mergeThemeConfig', () => {
   })
 
   it('null override key drops the key (→ platform default downstream)', () => {
-    const merged = mergeThemeConfig(BATIK, { colors: { primary: null } })
+    const merged = mergeThemeConfig(BATIK, { colors: { primary: null } } as unknown as ThemeTokens)
     expect(merged.colors && 'primary' in merged.colors).toBe(false)
     expect(merged.colors?.secondary).toBe('#3E2C23')
   })

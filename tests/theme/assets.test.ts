@@ -201,7 +201,8 @@ describe('upload 409 → remove + retry', () => {
     const path = 'organizers/org-1/events/e-1/banner-v5.png'
     const conflict = { message: '409 Conflict', statusCode: '409' }
     const bucket = {
-      upload: vi.fn(async () => {
+      upload: vi.fn(async (path: string) => {
+        void path
         uploadCount += 1
         return { error: uploadCount === 1 ? conflict : null }
       }),

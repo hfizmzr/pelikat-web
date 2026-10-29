@@ -35,6 +35,7 @@ const resolved: ResolvedTheme = {
   background: { light: null, dark: null },
   foreground: { light: null, dark: null },
   fonts: { heading: null, body: null },
+  assets: { banner: null, logo: null },
   labels: {
     bib_label: 'Bib Number',
     checkpoint_label: 'Checkpoint',
