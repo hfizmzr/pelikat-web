@@ -74,10 +74,13 @@ export function MiniThemePreview({
         <span className="flex-1 truncate text-sm">Runner name</span>
         <span className="text-xs tabular-nums text-muted-foreground">00:42:07</span>
       </div>
-      {/* Vocabulary live preview — resolved labels (fallbacks filled) as plain text children */}
-      <p className="mt-2 truncate text-xs text-muted-foreground">
-        {resolved.labels.checkpoint_label} · {resolved.labels.medal_label} ·{' '}
-        {resolved.labels.bib_label} #1234
+      {/* Vocabulary live preview — ALL six resolved labels (fallbacks filled;
+          labels.ts = single source of truth) as plain text children. The line
+          wraps instead of truncating so six entries stay visible. */}
+      <p className="mt-2 wrap-break-word text-xs leading-relaxed text-muted-foreground">
+        {resolved.labels.bib_label} #1234 · {resolved.labels.checkpoint_label} ·{' '}
+        {resolved.labels.medal_label} · {resolved.labels.run_label} ·{' '}
+        {resolved.labels.participant_label} · {resolved.labels.certificate_label}
       </p>
     </div>
   )
