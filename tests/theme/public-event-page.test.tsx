@@ -17,10 +17,12 @@
  * Mock surface = the minimal supabase tables the pages can touch; heavy
  * client children are stubbed.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { afterEach, describe, it, expect, vi, beforeEach } from 'vitest'
 import { prerender } from 'react-dom/static'
-import PublicEventPage from '@/app/events/[slug]/page'
+import PublicEventPage, { generateMetadata, generateViewport } from '@/app/events/[slug]/page'
 import OrganizerEventDetailPage from '@/app/organizer/events/[id]/page'
+import { storageAssetUrl } from '@/lib/theme/assets'
+import { hexToOklch, oklchToString } from '@/lib/theme/color'
 
 const h = vi.hoisted(() => ({
   tables: {} as Record<string, unknown>,
@@ -297,5 +299,113 @@ describe('CopyPublicEventLink on the organizer page (P3 Task 5)', () => {
   it('hidden event row → notFound', async () => {
     h.tables.events = null
     await expect(renderOrganizerPage()).rejects.toThrow('NEXT_NOT_FOUND')
+  })
+})
+
+/**
+ * P3 Task 6: generateMetadata + generateViewport. Same loader gate as the
+ * page (public-event tests above); storageAssetUrl reads
+ * NEXT_PUBLIC_SUPABASE_URL per call — stubbed per-test here (same env-stub
+ * pattern as the other theme test files) so the EXPANDED https form is
+ * deterministic.
+ */
+describe('PublicEventPage metadata + viewport (P3 Task 6)', () => {
+  const TEST_SUPABASE_URL = 'https://task6-project.test'
+  const REAL_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const BANNER_PATH = 'organizers/org-1/events/evt-1/banner-v7.png'
+  const THEME_CONFIG = {
+    colors: { primary: '#0f9b9b' },
+    assets: { banner_url: BANNER_PATH },
+  }
+  const SLUG = 'batik-heritage-run-a1b2c3d4'
+  const promiseParams = () => Promise.resolve({ slug: SLUG })
+  const PLATFORM_PRIMARY_LIGHT = 'oklch(0.51 0.16 190)' // resolve.ts PLATFORM_SLOTS pin
+
+  beforeEach(() => {
+    h.tables = {}
+    h.q.length = 0
+    h.lastEq = null
+    fetchOrganizerName.mockReset()
+    fetchOrganizerName.mockImplementation(async () => 'Klub Batik Heritage')
+    process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+  })
+
+  afterEach(() => {
+    if (REAL_SUPABASE_URL === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = REAL_SUPABASE_URL
+  })
+
+  it('themed event → og:image is the EXPANDED https form via storageAssetUrl (never the raw bucket path)', async () => {
+    h.tables.events = publicEvent({ theme_config: THEME_CONFIG })
+    const meta = await generateMetadata({ params: promiseParams() })
+    expect(meta.title).toBe('Batik Heritage Run')
+    expect(meta.description).toBe('A themed run.')
+    const expected = storageAssetUrl(THEME_CONFIG.assets.banner_url as string)
+    expect(meta.openGraph?.images).toEqual([expected])
+    expect(String(meta.openGraph?.images?.[0])).toMatch(/^https:/)
+    expect(String(meta.openGraph?.images?.[0])).not.toBe(BANNER_PATH)
+    expect(meta.twitter?.card).toBe('summary_large_image')
+  })
+
+  it('themed event → viewport themeColor is the resolved primary (light) as a string', async () => {
+    h.tables.events = publicEvent({ theme_config: THEME_CONFIG })
+    const vp = await generateViewport({ params: promiseParams() })
+    expect(typeof vp.themeColor).toBe('string')
+    expect(vp.themeColor).toBe(oklchToString(hexToOklch('#0f9b9b')))
+  })
+
+  it('unthemed event → platform metadata: og images key omitted, themeColor = platform primary literal', async () => {
+    h.tables.events = publicEvent()
+    const meta = await generateMetadata({ params: promiseParams() })
+    expect(meta.title).toBe('Batik Heritage Run')
+    expect(meta.description).toBe('A themed run.')
+    expect(meta.openGraph?.images).toBeUndefined()
+    expect(meta.twitter?.card).toBe('summary_large_image')
+    const vp = await generateViewport({ params: promiseParams() })
+    expect(vp.themeColor).toBe(PLATFORM_PRIMARY_LIGHT)
+  })
+
+  it('unthemed event without description → fallback description copy, no og image', async () => {
+    h.tables.events = publicEvent({ description: null })
+    const meta = await generateMetadata({ params: promiseParams() })
+    expect(meta.description).toBe('View public event details')
+    expect(meta.openGraph?.images).toBeUndefined()
+  })
+
+  it('draft slug → generateMetadata degrades to {} (NOT a hard 500) with zero service-role fetch', async () => {
+    h.tables.events = publicEvent({ status: 'draft' })
+    await expect(generateMetadata({ params: promiseParams() })).resolves.toEqual({})
+    expect(h.q).toEqual(['events'])
+    expect(h.lastEq).toEqual({ col: 'slug', val: SLUG })
+    expect(fetchOrganizerName).not.toHaveBeenCalled()
+  })
+
+  it('missing slug → generateMetadata degrades to {} with zero service-role fetch', async () => {
+    h.tables.events = null
+    await expect(generateMetadata({ params: promiseParams() })).resolves.toEqual({})
+    expect(h.q).toEqual(['events'])
+    expect(fetchOrganizerName).not.toHaveBeenCalled()
+  })
+
+  it('draft slug → generateViewport still carries a platform themeColor (string, never undefined)', async () => {
+    h.tables.events = publicEvent({ status: 'draft' })
+    const vp = await generateViewport({ params: promiseParams() })
+    expect(vp.themeColor).toBe(PLATFORM_PRIMARY_LIGHT)
+  })
+
+  it('resolve throws internally (hostile config) → metadata + viewport degrade silently, never throw', async () => {
+    const toxic: Record<string, unknown> = {}
+    Object.defineProperty(toxic, 'colors', {
+      get() {
+        throw new Error('resolve boom')
+      },
+      enumerable: true,
+    })
+    h.tables.events = publicEvent({ theme_config: toxic })
+    const meta = await generateMetadata({ params: promiseParams() })
+    expect(meta.title).toBe('Batik Heritage Run')
+    expect(meta.openGraph?.images).toBeUndefined()
+    const vp = await generateViewport({ params: promiseParams() })
+    expect(vp.themeColor).toBe(PLATFORM_PRIMARY_LIGHT)
   })
 })
