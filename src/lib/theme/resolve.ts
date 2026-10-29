@@ -180,7 +180,7 @@ function platformTheme(warnings: string[]): ResolvedTheme {
     background: { light: null, dark: null },
     foreground: { light: null, dark: null },
     fonts: { heading: null, body: null },
-    assets: { banner: null, logo: null },
+    assets: { banner: null, logo: null, certificate_background: null },
     labels: resolveLabels(null),
     warnings,
     source: { presetId: null, overriddenKeys: [] },
@@ -206,8 +206,9 @@ export async function getResolvedTheme(
  * P4 Task 4 (e-cert payload) — the same never-degrade resolution as
  * getResolvedTheme, plus the RAW merged token projection (preset ⊕ config)
  * that the derived slots came from. Needed because ResolvedTheme carries
- * oklch brand slots and resolves only banner/logo assets — the cert payload
- * wants the validated HEX colors and the stored certificate_background URL.
+ * oklch brand slots — the cert payload wants the validated HEX colors and
+ * the RAW stored `certificate_background_url` key name Django's contract
+ * expects (the resolved .assets slot carries the same value raw, P4 Task 5).
  * Never throws; null only when resolution itself failed internally.
  */
 export async function getResolvedThemeParts(
@@ -351,7 +352,7 @@ export function deriveTheme(
   // implementation in utils.ts) re-checked here as a degrade floor — hostile
   // hand-crafted JSONB rows drop the slot to null → gradient fallback
   // downstream, never a throw (same never-throw contract as the font slots).
-  function asset(key: 'banner_url' | 'logo_url'): string | null {
+  function asset(key: 'banner_url' | 'logo_url' | 'certificate_background_url'): string | null {
     const raw = (merged.assets ?? {})[key]
     if (raw === undefined) return null
     if (!assetValueOk(raw)) {
@@ -379,7 +380,7 @@ export function deriveTheme(
     background: tint('background'),
     foreground: tint('foreground'),
     fonts: { heading: font('heading_font_url'), body: font('body_font_url') },
-    assets: { banner: asset('banner_url'), logo: asset('logo_url') },
+    assets: { banner: asset('banner_url'), logo: asset('logo_url'), certificate_background: asset('certificate_background_url') },
     labels,
     warnings,
     source: { presetId, overriddenKeys: overridden },

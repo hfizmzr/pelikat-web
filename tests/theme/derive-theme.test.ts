@@ -64,9 +64,9 @@ describe('deriveTheme', () => {
 })
 
 describe('deriveTheme assets slot (Task 10: resolved banner/logo URLs)', () => {
-  it('no assets anywhere → both slots null', () => {
+  it('no assets anywhere → all slots null', () => {
     const resolved = deriveTheme(BATIK, null, PRESET_ID)
-    expect(resolved.assets).toEqual({ banner: null, logo: null })
+    expect(resolved.assets).toEqual({ banner: null, logo: null, certificate_background: null })
     expect(resolved.source.overriddenKeys).toEqual([])
   })
 
@@ -85,6 +85,7 @@ describe('deriveTheme assets slot (Task 10: resolved banner/logo URLs)', () => {
     expect(resolved.assets).toEqual({
       banner,
       logo: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/logo.png`,
+      certificate_background: null,
     })
     expect(resolved.source.overriddenKeys).toEqual(['assets.banner_url', 'assets.logo_url'])
   })
@@ -116,6 +117,7 @@ describe('deriveTheme assets slot (Task 10: resolved banner/logo URLs)', () => {
     expect(resolved.assets).toEqual({
       banner: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/b.png`,
       logo: null,
+      certificate_background: null,
     })
     expect(resolved.source.overriddenKeys).toEqual([])
   })
@@ -137,7 +139,15 @@ describe('deriveTheme assets slot (Task 10: resolved banner/logo URLs)', () => {
   it('fuzz: garbage assets sections never throw', () => {
     for (const cfg of [{ assets: 5 }, { assets: 'x' }, { assets: { badge_icon_url: 1 } }]) {
       const resolved = deriveTheme(BATIK, cfg as unknown as ThemeTokens, PRESET_ID)
-      expect(resolved.assets).toEqual({ banner: null, logo: null })
+      expect(resolved.assets).toEqual({ banner: null, logo: null, certificate_background: null })
     }
+  })
+
+  it('P4 Task 5: certificate_background_url resolves RAW into its own slot (preview expands)', () => {
+    const path = 'organizers/o1/events/e1/certificate_background-v1.png'
+    const resolved = deriveTheme({}, { assets: { certificate_background_url: path } }, null)
+    expect(resolved.assets.certificate_background).toBe(path)
+    expect(resolved.source.overriddenKeys).toEqual(['assets.certificate_background_url'])
+    expect(resolved.warnings).toEqual([])
   })
 })

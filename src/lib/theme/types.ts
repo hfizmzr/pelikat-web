@@ -84,9 +84,11 @@ export type ResolvedTheme = {
   fonts: { heading: string | null; body: string | null }
   /** Asset URLs carried post-merge (§4.2 assets slot); null → no themed asset
    * (the reserved-box ThemedImage renders only when a value exists). P2
-   * consumers: runner banner/logo scope (Task 10); badge/certificate slots
-   * intentionally not resolved until they gain a renderer. */
-  assets: { banner: string | null; logo: string | null }
+   * consumers: runner banner/logo scope (Task 10). P4 Task 5 adds
+   * certificate_background (the organizer live cert mock); badge_icon is
+   * intentionally still unresolved (no renderer for it yet). Values stay in
+   * the stored 076-legal shape — consumers expand via storageAssetUrl. */
+  assets: { banner: string | null; logo: string | null; certificate_background: string | null }
   /** Fully resolved — platform defaults filled. */
   labels: Record<LabelKey, string>
   /** Structured degradation log — resolve never throws (spec §5.5). */

@@ -91,3 +91,67 @@ describe('MiniThemePreview vocabulary line (P3 Task 1: all six labels)', () => {
     expect(html).toContain('Pingat')
   })
 })
+
+describe('MiniThemePreview certificate mock (P4 Task 5: A4 landscape)', () => {
+  const CERT_BG_PATH = 'organizers/o1/events/e1/certificate_background-v1.png'
+  const CERT_BG_URL = `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/${CERT_BG_PATH}`
+  const CERT_TOKENS: ThemeTokens = { ...ALL_SIX, assets: { certificate_background_url: CERT_BG_PATH } }
+
+  it('no themed bg → A4 landscape reserved box: aspect attr 1.414/1, gradient fallback, no img', async () => {
+    const resolved = deriveTheme(ALL_SIX, null, PRESET_ID)
+    const html = await toHtml(<MiniThemePreview resolved={resolved} />)
+    // the shipping artifact ratio (3508x2480 ≈ 1.414) — plan "16:9" superseded
+    expect(html).toContain('style="aspect-ratio:1.414/1"')
+    // nothing anywhere resolves into an img — banner/logo/cert all unset
+    expect(html).not.toContain('<img')
+    expect(html).toContain('bg-gradient-to-br')
+    // the reserved box carries the cert metadata too (overlaid labels)
+    expect(html).toContain('Sijil')
+    expect(html).toContain('Peserta')
+    expect(html).toContain('Nombor')
+  })
+
+  it('bucket-path bg → src present AND expanded to the storage public URL', async () => {
+    const resolved = deriveTheme(CERT_TOKENS, null, PRESET_ID)
+    const html = await toHtml(<MiniThemePreview resolved={resolved} />)
+    expect(html).toContain(`<img src="${CERT_BG_URL}"`)
+    expect(html).toContain('alt="Certificate background"')
+  })
+
+  it('https bg passthrough renders verbatim (no re-expansion)', async () => {
+    const resolved = deriveTheme(
+      { ...ALL_SIX, assets: { certificate_background_url: CERT_BG_URL } },
+      null,
+      PRESET_ID,
+    )
+    const html = await toHtml(<MiniThemePreview resolved={resolved} />)
+    expect(html).toContain(`<img src="${CERT_BG_URL}"`)
+  })
+
+  it('platform fallback labels render in the cert card when nothing is overridden', async () => {
+    const resolved = deriveTheme({}, null, null)
+    const html = await toHtml(<MiniThemePreview resolved={resolved} />)
+    expect(html).toContain('Certificate')
+    expect(html).toContain('Participant')
+    expect(html).toContain('Bib Number')
+  })
+
+  it('hostile cert-card labels (angle brackets) stay sanitized — text children only', async () => {
+    const HOSTILE: ThemeTokens = {
+      ...ALL_SIX,
+      vocabulary: {
+        certificate_label: '<b>Sijil</b>',
+        participant_label: '<i>Peserta</i>',
+        bib_label: '<b>Bib</b>',
+      },
+    }
+    const resolved = deriveTheme(HOSTILE, null, PRESET_ID)
+    const html = await toHtml(<MiniThemePreview resolved={resolved} />)
+    expect(html).not.toContain('<b')
+    expect(html).not.toContain('<i')
+    // the cleaned plain text still renders
+    expect(html).toContain('Sijil')
+    expect(html).toContain('Peserta')
+    expect(html).toContain('Bib')
+  })
+})
