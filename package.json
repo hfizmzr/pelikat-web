@@ -88,6 +88,7 @@
     "supabase": "^2.105.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.11"
+    "vite": "~7.3.7",
+    "vitest": "^4.1.12"
   }
 }
