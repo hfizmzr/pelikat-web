@@ -145,6 +145,9 @@ function brandSlot(hex: string): BrandSlot {
     fgLight: pickForeground(hex),
     // See DARK_FG comment — direct assignment, never pickForeground(oklch).
     fgDark: DARK_FG,
+    // P4 Task 4 additive — the themed fill took effect; non-CSS consumers
+    // (e-cert payload) read this HEX (oklch slots are unreadable there).
+    hex,
   }
 }
 
@@ -177,7 +180,7 @@ function platformTheme(warnings: string[]): ResolvedTheme {
     background: { light: null, dark: null },
     foreground: { light: null, dark: null },
     fonts: { heading: null, body: null },
-    assets: { banner: null, logo: null },
+    assets: { banner: null, logo: null, certificate_background: null },
     labels: resolveLabels(null),
     warnings,
     source: { presetId: null, overriddenKeys: [] },
@@ -193,9 +196,29 @@ export async function getResolvedTheme(
   eventRow: EventThemeInput,
 ): Promise<ResolvedTheme> {
   try {
-    return await resolveTheme(supabase, eventRow)
+    return (await resolveTheme(supabase, eventRow)).resolved
   } catch (err) {
     return platformTheme([`theme resolution failed unexpectedly: ${String(err)}`])
+  }
+}
+
+/**
+ * P4 Task 4 (e-cert payload) — the same never-degrade resolution as
+ * getResolvedTheme, plus the RAW merged token projection (preset ⊕ config)
+ * that the derived slots came from. Needed because ResolvedTheme carries
+ * oklch brand slots — the cert payload wants the validated HEX colors and
+ * the RAW stored `certificate_background_url` key name Django's contract
+ * expects (the resolved .assets slot carries the same value raw, P4 Task 5).
+ * Never throws; null only when resolution itself failed internally.
+ */
+export async function getResolvedThemeParts(
+  supabase: SupabaseClient,
+  eventRow: EventThemeInput,
+): Promise<{ resolved: ResolvedTheme; tokens: ThemeTokens } | null> {
+  try {
+    return await resolveTheme(supabase, eventRow)
+  } catch {
+    return null
   }
 }
 
@@ -329,7 +352,7 @@ export function deriveTheme(
   // implementation in utils.ts) re-checked here as a degrade floor — hostile
   // hand-crafted JSONB rows drop the slot to null → gradient fallback
   // downstream, never a throw (same never-throw contract as the font slots).
-  function asset(key: 'banner_url' | 'logo_url'): string | null {
+  function asset(key: 'banner_url' | 'logo_url' | 'certificate_background_url'): string | null {
     const raw = (merged.assets ?? {})[key]
     if (raw === undefined) return null
     if (!assetValueOk(raw)) {
@@ -357,14 +380,17 @@ export function deriveTheme(
     background: tint('background'),
     foreground: tint('foreground'),
     fonts: { heading: font('heading_font_url'), body: font('body_font_url') },
-    assets: { banner: asset('banner_url'), logo: asset('logo_url') },
+    assets: { banner: asset('banner_url'), logo: asset('logo_url'), certificate_background: asset('certificate_background_url') },
     labels,
     warnings,
     source: { presetId, overriddenKeys: overridden },
   }
 }
 
-async function resolveTheme(supabase: SupabaseClient, eventRow: EventThemeInput): Promise<ResolvedTheme> {
+async function resolveTheme(
+  supabase: SupabaseClient,
+  eventRow: EventThemeInput,
+): Promise<{ resolved: ResolvedTheme; tokens: ThemeTokens }> {
   const loadWarnings: string[] = []
 
   const presetId =
@@ -421,5 +447,14 @@ async function resolveTheme(supabase: SupabaseClient, eventRow: EventThemeInput)
   // config shape-guards + warnings live inside deriveTheme; the theme_config
   // value is handed over raw (garbage → platform + warning, never a throw).
   const derived = deriveTheme(presetTokens, (eventRow.theme_config ?? null) as ThemeTokens | null, loadedId)
-  return { ...derived, warnings: [...loadWarnings, ...derived.warnings] }
+  const resolved = { ...derived, warnings: [...loadWarnings, ...derived.warnings] }
+  // P4 Task 4 — raw merged projection for non-CSS consumers (e-cert): the
+  // SAME merge deriveTheme ran; same mergeThemeConfig contract (unknown /
+  // non-object sections contribute nothing), so garbage configs yield
+  // preset-only tokens here exactly like the derivation saw.
+  const tokens = mergeThemeConfig(
+    presetTokens,
+    isPlainObject(eventRow.theme_config) ? (eventRow.theme_config as ThemeTokens) : null,
+  )
+  return { resolved, tokens }
 }

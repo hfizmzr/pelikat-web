@@ -74,6 +74,34 @@ export function MiniThemePreview({
         <span className="flex-1 truncate text-sm">Runner name</span>
         <span className="text-xs tabular-nums text-muted-foreground">00:42:07</span>
       </div>
+      {/* Themed certificate mock (P4 Task 5) — the live cert card. Aspect
+          1.414/1 mirrors the real A4-landscape 3508x2480 Pillow artifact; the
+          plan's "16:9" wording is superseded by the manager ruling. Same
+          reserved-box engine as the banner mock (storageAssetUrl expansion;
+          junk/unset → gradient box). Labels are plain text children of the
+          resolved vocabulary, heading styled like the runner bib mock. */}
+      <div className="mt-2 rounded-md border bg-card p-3">
+        <div className="relative">
+          <ThemedImage
+            src={storageAssetUrl(resolved.assets.certificate_background ?? null) ?? undefined}
+            alt="Certificate background"
+            aspect={THEME_ASPECTS.certificate_background}
+          />
+          {/* Auto-polarity plate (spec §7 name plate): keeps the mock text
+              readable over any themed art, light + dark alike. */}
+          <div className="absolute inset-0 flex items-center justify-center p-2">
+            <div className="w-full rounded bg-background/90 px-3 py-2 text-center shadow-sm">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                {resolved.labels.certificate_label}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {resolved.labels.participant_label}: Runner name
+              </p>
+              <p className="text-xs text-muted-foreground">{resolved.labels.bib_label} #1234</p>
+            </div>
+          </div>
+        </div>
+      </div>
       {/* Vocabulary live preview — ALL six resolved labels (fallbacks filled;
           labels.ts = single source of truth) as plain text children. The line
           wraps instead of truncating so six entries stay visible. */}

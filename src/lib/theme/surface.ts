@@ -12,19 +12,19 @@
  * own createClient()).
  *
  * Degrade contract (spec §5.5, plan Task 3): never throws. Three outcomes:
- * - no preset id AND no usable config → BOTH nulls, caller renders platform
- *   defaults with zero DB queries (the fast path — the null-null short
- *   circuit returns before any client access);
+ * - no preset id AND no usable config → resolved/labels/tokens ALL null,
+ *   caller renders platform defaults with zero DB queries (the fast path —
+ *   the null-null short circuit returns before any client access);
  * - resolvable input → full ResolvedTheme + its 6-key labels map
  *   (degradation inside getResolvedTheme still resolves — platform theme,
  *   never a null);
- * - any unexpected failure → both nulls, never a throw.
+ * - any unexpected failure → all three nulls, never a throw.
  */
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { getResolvedTheme } from './resolve'
+import { getResolvedThemeParts } from './resolve'
 import type { EventThemeInput } from './resolve'
 import { isPlainObject } from './utils'
-import type { LabelKey, ResolvedTheme } from './types'
+import type { LabelKey, ResolvedTheme, ThemeTokens } from './types'
 
 /** Event-row subset a themed surface must select (Task 11 extends the select
  * with theme columns; consumers pass the row straight through). `id` (the
@@ -39,6 +39,12 @@ export type SurfaceEventInput = {
 export type SurfaceTheme = {
   resolved: ResolvedTheme | null
   labels: Record<LabelKey, string> | null
+  /** P4 Task 4 additive — the raw merged token projection that produced
+   * `resolved`, for non-CSS consumers that need token shapes outside the
+   * slots (the e-cert payload reads the stored certificate_background asset;
+   * colors flow through BrandSlot.hex instead). Null whenever `resolved`
+   * is null. */
+  tokens: ThemeTokens | null
 }
 
 export async function getSurfaceTheme(
@@ -56,18 +62,21 @@ export async function getSurfaceTheme(
     // case: short-circuit BEFORE any client access (zero queries).
     const hasConfig = isPlainObject(event.theme_config)
     if (presetId === null && !hasConfig) {
-      return { resolved: null, labels: null }
+      return { resolved: null, labels: null, tokens: null }
     }
-    const resolved = await getResolvedTheme(client, {
+    const parts = await getResolvedThemeParts(client, {
       id: event.id,
       theme_preset_id: presetId,
       theme_config: event.theme_config,
     } satisfies EventThemeInput)
-    return { resolved, labels: resolved.labels }
+    if (!parts) {
+      return { resolved: null, labels: null, tokens: null }
+    }
+    return { resolved: parts.resolved, labels: parts.resolved.labels, tokens: parts.tokens }
   } catch {
     // Belt-and-braces: getResolvedTheme itself never throws (spec §5.5), but
     // the surface helper's public contract is unconditional — any failure
     // → nulls, the caller renders platform defaults.
-    return { resolved: null, labels: null }
+    return { resolved: null, labels: null, tokens: null }
   }
 }
