@@ -280,6 +280,33 @@ describe('ThemeEditor (SSR mount smoke)', () => {
     expect(html).toContain('disabled=""')
   })
 
+  it('dark-preview toggle threads a real .dark class onto the live preview root (P4 smoke carry)', () => {
+    render(
+      <ThemeEditor
+        eventId={EVENT_ID}
+        organizerId="org-1"
+        canEdit
+        savedPresetId={PRESET_ID}
+        savedConfig={null}
+        presets={PRESETS}
+      />,
+    )
+    const toggle = screen.getByRole('button', { name: /toggle dark mode preview/i })
+    expect(toggle.getAttribute('aria-pressed')).toBe('false')
+    fireEvent.click(toggle)
+    expect(toggle.getAttribute('aria-pressed')).toBe('true')
+    // class-only reactive proof (vitest is not a layout engine): the live
+    // preview's .event-theme root itself carries .dark — semantic-token
+    // children (bg-background/90, text-muted-foreground) re-resolve — AND it
+    // still sits under the wrapper .dark so .dark .event-theme brand mapping
+    // keeps matching.
+    const root = document.querySelector('.event-theme.dark')
+    expect(root).toBeTruthy()
+    expect(root?.parentElement?.classList.contains('dark')).toBe(true)
+    // the gallery cards stay light (no .dark member)
+    expect(document.querySelectorAll('.event-theme.dark').length).toBe(1)
+  })
+
   it('CodeRabbit follow-up: the saved inactive preset card survives a draft switch to Custom', async () => {
     const RETIRED_ID = '55555555-5555-5555-5555-555555555555'
     render(

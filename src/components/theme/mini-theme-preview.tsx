@@ -19,6 +19,7 @@ export function MiniThemePreview({
   resolved,
   eventId,
   className,
+  mode,
 }: {
   resolved: ResolvedTheme
   /** Two-arg form (Task 10 BINDING carry): the themed font family is bound
@@ -26,10 +27,17 @@ export function MiniThemePreview({
    * real id keeps the preview font-correct when P2 lands. */
   eventId?: string
   className?: string
+  /** Dark-preview toggle (P4 smoke carry): the editor threads its toggle state
+   * so the preview ROOT carries a real `.dark` class — Tailwind `dark:`
+   * variants and `.dark`-scoped semantic tokens on the children
+   * (`bg-background/90`, `text-foreground`, `text-muted-foreground`) genuinely
+   * re-resolve instead of only the whitelisted brand vars flipping. Absent →
+   * light. */
+  mode?: 'light' | 'dark'
 }) {
   return (
     <div
-      className={cn('event-theme rounded-lg border bg-background p-3', className)}
+      className={cn('event-theme rounded-lg border bg-background p-3', mode === 'dark' && 'dark', className)}
       style={buildStyleVars(resolved, eventId)}
     >
       {/* Themed event-card mock */}

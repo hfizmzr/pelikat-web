@@ -375,22 +375,24 @@ describe('PublicEventPage metadata + viewport (P3 Task 6)', () => {
     expect(vp.themeColor).toBe(oklchToString(hexToOklch('#0f9b9b')))
   })
 
-  it('unthemed event → platform metadata: og images key omitted, themeColor = platform primary literal', async () => {
+  it('unthemed event → platform metadata: og:image = static platform fallback, themeColor = platform primary literal', async () => {
     h.tables.events = publicEvent()
     const meta = await generateMetadata({ params: promiseParams() })
     expect(meta.title).toBe('Batik Heritage Run')
     expect(meta.description).toBe('A themed run.')
-    expect(meta.openGraph?.images).toBeUndefined()
+    // no banner asset → the static platform fallback image (P4 smoke carry),
+    // never an absent images key
+    expect(meta.openGraph?.images).toEqual(['/icons/icon-512.png'])
     expect(meta.twitter?.card).toBe('summary_large_image')
     const vp = await generateViewport({ params: promiseParams() })
     expect(vp.themeColor).toBe(PLATFORM_PRIMARY_LIGHT)
   })
 
-  it('unthemed event without description → fallback description copy, no og image', async () => {
+  it('unthemed event without description → fallback description copy + platform fallback og image', async () => {
     h.tables.events = publicEvent({ description: null })
     const meta = await generateMetadata({ params: promiseParams() })
     expect(meta.description).toBe('View public event details')
-    expect(meta.openGraph?.images).toBeUndefined()
+    expect(meta.openGraph?.images).toEqual(['/icons/icon-512.png'])
   })
 
   it('draft slug → generateMetadata degrades to {} (NOT a hard 500) with zero service-role fetch', async () => {
@@ -425,7 +427,8 @@ describe('PublicEventPage metadata + viewport (P3 Task 6)', () => {
     h.tables.events = publicEvent({ theme_config: toxic })
     const meta = await generateMetadata({ params: promiseParams() })
     expect(meta.title).toBe('Batik Heritage Run')
-    expect(meta.openGraph?.images).toBeUndefined()
+    // resolve degraded silently → no banner → the platform fallback og:image
+    expect(meta.openGraph?.images).toEqual(['/icons/icon-512.png'])
     const vp = await generateViewport({ params: promiseParams() })
     expect(vp.themeColor).toBe(PLATFORM_PRIMARY_LIGHT)
   })

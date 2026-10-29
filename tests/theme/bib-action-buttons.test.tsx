@@ -90,3 +90,28 @@ describe('BibActionButtons bibLabel prop contract (P3 Task 4)', () => {
     }
   })
 })
+
+describe('BibActionButtons download filename (P4 smoke carry)', () => {
+  it('resolved bib label is the slugified filename prefix', () => {
+    const { shared } = spyCanvas()
+    render(<BibActionButtons bibNumber="R-042" eventName="Batik Run" bibLabel="Nombor Larian" />)
+    fireEvent.click(screen.getByRole('button', { name: /save image/i }))
+    expect(shared.anchorProps.download).toBe('nombor-larian-R-042-Batik-Run.png')
+  })
+
+  it('label with non-alnum runs collapses to single dashes and is trimmed', () => {
+    const { shared } = spyCanvas()
+    render(<BibActionButtons bibNumber="R-042" eventName="Batik Run" bibLabel="  -- No., BIB! --" />)
+    fireEvent.click(screen.getByRole('button', { name: /save image/i }))
+    expect(shared.anchorProps.download).toBe('no-bib-R-042-Batik-Run.png')
+  })
+
+  it('empty/unset label → the platform BIB prefix (canvas copy untouched)', () => {
+    const { fillText, shared } = spyCanvas()
+    render(<BibActionButtons bibNumber="R-042" eventName="Batik Run" />)
+    fireEvent.click(screen.getByRole('button', { name: /save image/i }))
+    expect(shared.anchorProps.download).toBe('BIB-R-042-Batik-Run.png')
+    // unchanged: the canvas line keeps the uppercase platform copy fallback
+    expect(fillText.mock.calls[0][0]).toBe('BIB NUMBER')
+  })
+})

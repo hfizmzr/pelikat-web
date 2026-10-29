@@ -499,14 +499,18 @@ export function ThemeEditor({
             variant="ghost"
             size="icon"
             aria-label="Toggle dark mode preview"
+            aria-pressed={dark}
             onClick={() => setDark((v) => !v)}
           >
             {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
         </div>
-        {/* `.dark` ancestor + .event-theme descendant = pure-CSS dark re-resolution */}
+        {/* `.dark` ancestor + .event-theme descendant = pure-CSS dark
+            re-resolution (brand vars); the preview root ALSO carries `.dark`
+            via the mode prop so `dark:` and .dark-scoped semantic tokens
+            (bg-background/90, text-foreground, text-muted-foreground) flip. */}
         <div className={dark ? 'dark' : undefined}>
-          <MiniThemePreview resolved={previewResolved} eventId={eventId} />
+          <MiniThemePreview resolved={previewResolved} eventId={eventId} mode={dark ? 'dark' : 'light'} />
         </div>
 
         {canEdit && (

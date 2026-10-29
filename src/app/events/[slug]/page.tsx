@@ -104,9 +104,10 @@ export async function generateMetadata({
   const theme = await resolvePublicTheme(event, supabase)
   const description = event.description ?? FALLBACK_DESCRIPTION
   // og:image: the EXPANDED https storage form via storageAssetUrl — the raw
-  // bucket path is never spliced in. No banner (unthemed / degraded config)
-  // → the images key is omitted entirely (Next's default image behavior).
-  const ogImage = theme.assets.banner ? storageAssetUrl(theme.assets.banner) : null
+  // bucket path is never spliced in. No banner (unthemed / degraded config) →
+  // the static platform fallback image (public/icons/icon-512.png) so link
+  // unfurls keep at least the platform mark instead of an image-less card.
+  const ogImage = theme.assets.banner ? storageAssetUrl(theme.assets.banner) : '/icons/icon-512.png'
   return {
     title: event.name,
     description,
