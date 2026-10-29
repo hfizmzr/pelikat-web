@@ -16,7 +16,7 @@
  */
 import { contrastRatio, hexToOklch, PLATFORM_BG_HEX } from './color'
 import { LABEL_KEYS } from './labels'
-import { isPlainObject } from './utils'
+import { isPlainObject, themeFontUrlOk } from './utils'
 
 // Stored-token HEX contract (Global Constraints / spec §4.3: ^#[0-9a-fA-F]{6}$).
 // Same strict regex resolve.ts validates; color.ts's runtime regex is looser
@@ -181,8 +181,9 @@ export function validateThemeConfig(config: unknown): ThemeValidation {
     }
   }
 
-  // typography: known keys, https-only floor (origin/.woff2 allowlist lands
-  // at the buildFontFace consumer, Task 10 — DB enforces the floor only).
+  // typography: known keys + §5.4 font-URL allowlist (enforced at save —
+  // P2 Task 3); resolve.ts re-checks with the same themeFontUrlOk below its
+  // drop-and-degrade floor.
   const typography = config.typography
   if (typography !== undefined) {
     if (!isPlainObject(typography)) {
@@ -194,8 +195,15 @@ export function validateThemeConfig(config: unknown): ThemeValidation {
       for (const key of TYPOGRAPHY_KEYS) {
         const raw = typography[key]
         if (raw === undefined) continue
-        if (typeof raw !== 'string' || !raw.startsWith('https://')) {
-          errors.push(`typography.${key}: must be an https:// URL`)
+        // §5.4 enforced at save AND resolve: a non-allowlisted font URL is a
+        // hard error (the write would render untrusted CSS — allowlist via
+        // themeFontUrlOk, the ONE implementation in utils.ts). Note this is
+        // strictly stronger than the DB floor (DB: https only) — a config the
+        // DB accepts here stays editor-blocked per spec.
+        if (!themeFontUrlOk(raw)) {
+          errors.push(
+            `typography.${key}: not an allowed font URL — must be https://fonts.gstatic.com or the platform storage origin, end in .woff2, and contain no path traversal`,
+          )
         }
       }
     }

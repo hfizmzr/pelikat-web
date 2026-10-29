@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { validateThemeConfig } from '@/lib/theme/validate'
 import { PLATFORM_BG_HEX, contrastRatio } from '@/lib/theme/color'
 import type { ThemeTokens } from '@/lib/theme/types'
@@ -218,5 +218,61 @@ describe('background tint gate (§5.5.1 — oklch L windows)', () => {
   it('applies no tint window to colors.foreground (no gate in §5.5)', () => {
     const res = validateThemeConfig({ colors: { foreground: '#FFD700' } })
     expect(res.warnings).toEqual([])
+  })
+})
+
+describe('typography §5.4 allowlist at save (P2 Task 3 — errors block)', () => {
+  // Platform storage origin for the font allowlist (spec §5.4). utils.ts reads
+  // NEXT_PUBLIC_SUPABASE_URL per call — same env stub as tests/theme/utils.test.ts.
+  const TEST_SUPABASE_URL = 'https://ugexrrslijmwtieevjbs.supabase.co'
+  const REAL_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+  beforeAll(() => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+  })
+  afterAll(() => {
+    if (REAL_SUPABASE_URL === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = REAL_SUPABASE_URL
+  })
+
+  it('accepts fonts.gstatic.com https .woff2 (incl. the seeded Prata URL)', () => {
+    const res = validateThemeConfig({
+      typography: { heading_font_url: 'https://fonts.gstatic.com/s/prata/v20/prata-46Rm.woff2' },
+    })
+    expect(res).toEqual({ ok: true, errors: [], warnings: [] })
+  })
+
+  it('accepts the platform storage-origin woff2', () => {
+    const res = validateThemeConfig({
+      typography: {
+        heading_font_url: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/o/e/heading_font-v1.woff2`,
+      },
+    })
+    expect(res).toEqual({ ok: true, errors: [], warnings: [] })
+  })
+
+  it('rejects allowlist failures as structured errors (blocking save, §5.4 enforced at save)', () => {
+    const bad = [
+      'https://evil.com/a.woff2', // non-allowlisted host
+      'http://fonts.gstatic.com/a.woff2', // non-https
+      'https://fonts.gstatic.com/a.ttf', // non-.woff2
+      'https://fonts.gstatic.com/s/../x.woff2', // raw traversal
+      'https://fonts.gstatic.com/s/%2e%2e/x.woff2', // encoded traversal
+    ]
+    for (const url of bad) {
+      const res = validateThemeConfig({ typography: { heading_font_url: url } })
+      expect(res.ok).toBe(false)
+      expect(res.errors.some((e) => e.includes('typography.heading_font_url'))).toBe(true)
+    }
+    // error (not warning) — no findings in warnings for allowlist failures
+    expect(validateThemeConfig({ typography: { heading_font_url: 'https://evil.com/a.woff2' } }).warnings).toEqual([])
+  })
+
+  it('rejects non-string typography values with structured errors', () => {
+    for (const raw of [42, null, ['x'], { url: 'https://fonts.gstatic.com/a.woff2' }]) {
+      const res = validateThemeConfig({ typography: { body_font_url: raw as unknown as string } })
+      expect(res.ok).toBe(false)
+      expect(res.errors.some((e) => e.includes('typography.body_font_url'))).toBe(true)
+    }
   })
 })

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { mergeThemeConfig, getResolvedTheme } from '@/lib/theme/resolve'
 import type { ThemeTokens } from '@/lib/theme/types'
@@ -306,5 +306,53 @@ describe('getResolvedTheme', () => {
       expect(resolved.primary).toBeTruthy()
       expect(resolved.labels.bib_label).toBeTruthy()
     }
+  })
+})
+
+describe('resolve-time §5.4 font-URL floor (P2 Task 3 — drop + warn, never throw)', () => {
+  // Platform storage origin for the font allowlist (spec §5.4). utils.ts reads
+  // NEXT_PUBLIC_SUPABASE_URL per call — same env stub as tests/theme/utils.test.ts.
+  const TEST_SUPABASE_URL = 'https://ugexrrslijmwtieevjbs.supabase.co'
+  const REAL_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+  beforeAll(() => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+  })
+  afterAll(() => {
+    if (REAL_SUPABASE_URL === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = REAL_SUPABASE_URL
+  })
+
+  it('hostile pre-existing row: non-allowlisted URL → slot dropped + warning, never throws', async () => {
+    const resolved = await getResolvedTheme(
+      fakeSupabase({ id: PRESET_ID, tokens: BATIK }),
+      eventRow({
+        typography: {
+          heading_font_url: 'https://evil.com/a.woff2',
+          body_font_url: 'https://fonts.gstatic.com/s/../x.woff2',
+        },
+      }),
+    )
+    expect(resolved.fonts.heading).toBeNull()
+    expect(resolved.fonts.body).toBeNull()
+    expect(resolved.warnings.some((w) => w.includes('typography.heading_font_url'))).toBe(true)
+    expect(resolved.warnings.some((w) => w.includes('typography.body_font_url'))).toBe(true)
+  })
+
+  it('valid pre-existing rows: gstatic + storage-origin woff2 slots intact and used', async () => {
+    const resolved = await getResolvedTheme(
+      fakeSupabase({ id: PRESET_ID, tokens: BATIK }),
+      eventRow({
+        typography: {
+          heading_font_url: 'https://fonts.gstatic.com/s/prata/v20/prata-46Rm.woff2',
+          body_font_url: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/o/e/body_font-v1.woff2`,
+        },
+      }),
+    )
+    expect(resolved.fonts.heading).toBe('https://fonts.gstatic.com/s/prata/v20/prata-46Rm.woff2')
+    expect(resolved.fonts.body).toBe(`${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/o/e/body_font-v1.woff2`)
+    expect(resolved.warnings.filter((w) => w.includes('typography'))).toEqual([])
+    expect(resolved.source.overriddenKeys).toContain('typography.heading_font_url')
+    expect(resolved.source.overriddenKeys).toContain('typography.body_font_url')
   })
 })

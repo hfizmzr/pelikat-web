@@ -18,7 +18,7 @@ import {
   PLATFORM_BG_HEX,
 } from './color'
 import { LABEL_KEYS, resolveLabels } from './labels'
-import { isPlainObject } from './utils'
+import { isPlainObject, themeFontUrlOk } from './utils'
 import type { BrandSlot, ResolvedTheme, ThemeTokens } from './types'
 
 // Stored-token HEX contract (Global Constraints / spec §4.3: ^#[0-9a-fA-F]{6}$).
@@ -262,11 +262,14 @@ export function deriveTheme(
     const typography = merged.typography ?? {}
     const raw = typography[key]
     if (raw === undefined) return null
-    // Spec §5.4 allowlist is enforced in full at save (validate.ts); resolve
-    // applies the https-only floor. Origin + .woff2 narrowing at the
-    // buildFontFace consumer (Task 10).
-    if (typeof raw !== 'string' || !raw.startsWith('https://')) {
-      warnings.push(`typography.${key}: must be an https URL — using platform font`)
+    // §5.4 resolve-time floor (P2 Task 3): a font URL not passing the full
+    // allowlist (https, fonts.gstatic.com or the platform storage origin,
+    // .woff2, no traversal) drops the slot to null → Geist fallback
+    // downstream. Never throws — hostile pre-existing DB rows degrade with
+    // a structured warning. Save-time re-checks the same predicate as a
+    // hard error (validate.ts); here it only degrades.
+    if (!themeFontUrlOk(raw)) {
+      warnings.push(`typography.${key}: not an allowed font URL — using platform font`)
       return null
     }
     markOverridden(`typography.${key}`)
