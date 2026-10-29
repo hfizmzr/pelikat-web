@@ -37,7 +37,14 @@ const themeAssetRuntimeCache = (() => {
       handler: new CacheFirst({
         cacheName: THEME_ASSET_CACHE_NAME,
         plugins: [
-          new CacheableResponsePlugin({ statuses: [200] }),
+          // statuses [0, 200]: Cross-origin Storage responses come back OPAQUE
+          // (status 0) whenever the bucket's CORS headers don't cover the
+          // page's origin — an opaque response is unmodifiable and NOT an
+          // error, so caching a binary asset read-only is safe. [200] alone
+          // made every such theme fetch fall through uncached. Matcher stays
+          // exactly scoped to the event-themes bucket, other hosts/buckets
+          // never match, and defaultCache is untouched.
+          new CacheableResponsePlugin({ statuses: [0, 200] }),
           new ExpirationPlugin({
             maxEntries: THEME_ASSET_MAX_ENTRIES,
             maxAgeSeconds: THEME_ASSET_MAX_AGE_SECONDS,

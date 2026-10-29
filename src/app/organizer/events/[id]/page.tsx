@@ -38,6 +38,10 @@ type Registration = {
 
 type EventStatus = 'draft' | 'published' | 'closed'
 
+// Same shape the ids take in Postgres (uuid) — used to guard the `.or` filter
+// below against a hand-craftable theme_preset_id.
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+
 const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'outline'> = {
   published: 'default',
   draft: 'secondary',
@@ -113,7 +117,17 @@ export default async function OrganizerEventDetailPage({
       // Task 8: the gallery shows ACTIVE presets only — deactivation hides the
       // card + blocks (re)selection; resolve.ts is unchanged so already-themed
       // events keep rendering (@manager ruling, formerly ruling #10).
-      .eq('is_active', true)
+      // CodeRabbit fix: ALSO include the preset the CURRENT event references,
+      // even when deactivated — otherwise theme_config.presetId resolves to
+      // null in the editor (preview diverges from the engine, colors empty).
+      // The save-side is_active rejection stays unchanged (fail-closed).
+      // Guarded to a syntactically-valid uuid so an odd stored id can't build
+      // a malformed `.or` filter.
+      .or(
+        UUID_RE.test(eventDetail.theme_preset_id ?? '')
+          ? `is_active.eq.true,id.eq.${eventDetail.theme_preset_id}`
+          : 'is_active.eq.true',
+      )
       .order('name'),
     supabase.auth.getUser(),
   ])

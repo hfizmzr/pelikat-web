@@ -242,7 +242,10 @@ export function ThemeEditor({
   )
 
   async function handleUpload(kind: ThemeAssetKind, file: File) {
-    if (!canEdit || uploading) return
+    // CodeRabbit fix: uploads must not START while a save is running either —
+    // the object an upload creates isn't in the config being saved, so
+    // post-save cleanup could delete it (dangling ref on the next save).
+    if (!canEdit || uploading || saving) return
     setUploadError(null)
     setUploading(kind)
     try {
@@ -267,7 +270,10 @@ export function ThemeEditor({
   }
 
   async function handleSave() {
-    if (!canEdit || saving || !validation.ok || !dirty) return
+    // CodeRabbit fix: block Save while an upload is in flight — persisting a
+    // config without the pending asset would let post-save cleanup delete the
+    // just-uploaded object (data loss + a dangling reference on the next save).
+    if (!canEdit || saving || uploading || !validation.ok || !dirty) return
     setSaving(true)
     setActionError(null)
     setSaveWarnings([])
@@ -305,27 +311,40 @@ export function ThemeEditor({
           </h3>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {/* Task 8: gallery = ACTIVE presets only (fail-closed second gate
-                after the page query `.eq('is_active', true)`); `selectedPreset`
-                intentionally resolves against the FULL list so a
-                deactivated-but-saved preset keeps seeding its own values. */}
-            {presets.filter((p) => p.is_active !== false).map((preset) => (
+                after the page query); `selectedPreset` resolves against the
+                FULL list so a deactivated-but-saved preset keeps seeding its
+                own values. CodeRabbit fix: the deactivated preset the event
+                SAVES is the one exception — its card stays visible (marked,
+                not removed) keyed off the SAVED reference, so switching the
+                draft to Custom doesn't erase the organizer's only view of
+                their saved selection; it still can't be (re)selected (Task 8
+                fail-closed read-only semantics for deactivated presets). */}
+            {presets.map((preset) => {
+              const inactive = preset.is_active === false
+              if (inactive && savedPresetId !== preset.id) return null
+              return (
               <button
                 key={preset.id}
                 type="button"
-                disabled={!canEdit}
+                disabled={!canEdit || inactive}
                 onClick={() => setSelectedPresetId(preset.id)}
                 aria-pressed={selectedPresetId === preset.id}
                 className={cn(
                   'rounded-lg border p-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+                  inactive && 'grayscale ring-1 ring-border',
                   selectedPresetId === preset.id
                     ? 'border-primary ring-2 ring-ring/50'
                     : 'hover:border-primary/50',
                 )}
               >
                 <MiniThemePreview resolved={deriveTheme(preset.tokens, null, preset.id)} eventId={eventId} />
-                <p className="mt-1.5 truncate text-xs font-medium">{preset.name}</p>
+                <p className="mt-1.5 truncate text-xs font-medium">
+                  {preset.name}
+                  {inactive && <span className="block text-[10px] text-muted-foreground">(deactivated)</span>}
+                </p>
               </button>
-            ))}
+              )
+            })}
             <button
               type="button"
               disabled={!canEdit}
@@ -386,7 +405,7 @@ export function ThemeEditor({
                 }
                 busy={uploading === row.kind}
                 error={uploadError?.kind === row.kind ? uploadError.message : null}
-                canEdit={canEdit}
+                canEdit={canEdit && !saving}
                 onPick={(file) => void handleUpload(row.kind, file)}
                 onRemove={() => setAssetUrl(row.key, null)}
               />
@@ -396,9 +415,10 @@ export function ThemeEditor({
                 key={slot.kind}
                 label={slot.label}
                 value={draft.typography?.[slot.urlKey]}
+                presetValue={selectedPreset?.tokens?.typography?.[slot.urlKey]}
                 busy={uploading === slot.kind}
                 error={uploadError?.kind === slot.kind ? uploadError.message : null}
-                canEdit={canEdit}
+                canEdit={canEdit && !saving}
                 onSelect={(url) => setFontUrl(slot.urlKey, url === '' ? null : url)}
                 onPick={(file) => void handleUpload(slot.kind, file)}
                 onRemove={() => setFontUrl(slot.urlKey, null)}
@@ -499,10 +519,11 @@ export function ThemeEditor({
               </p>
             ))}
             {actionError && <p className="text-xs text-destructive">{actionError}</p>}
+            {uploading && <p className="text-xs text-muted-foreground">Upload in progress…</p>}
             <Button
               type="button"
               onClick={handleSave}
-              disabled={saving || !validation.ok || !dirty}
+              disabled={saving || uploading !== null || !validation.ok || !dirty}
               className="w-full"
             >
               {saving ? (
@@ -737,6 +758,13 @@ function AssetRow({
   )
 }
 
+// The 'platform-default' deferred option: when the selected preset defines
+// the slot, dropping to it restores the PRESET font — label honestly
+// (display-only; the onValueChange behavior is the same).
+export function fontDefaultLabel(presetValue?: string) {
+  return presetValue ? 'Preset default' : 'Platform default'
+}
+
 /**
  * One font row (P2 Task 7): curated gstatic family dropdown (URL values land
  * in `draft.typography.{heading,body}_font_url`) OR a .woff2 upload ≤ the
@@ -745,6 +773,7 @@ function AssetRow({
 function FontRow({
   label,
   value,
+  presetValue,
   busy,
   error,
   canEdit,
@@ -754,6 +783,7 @@ function FontRow({
 }: {
   label: string
   value?: string
+  presetValue?: string
   busy: boolean
   error: string | null
   canEdit: boolean
@@ -785,7 +815,7 @@ function FontRow({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="platform-default">Platform default</SelectItem>
+          <SelectItem value="platform-default">{fontDefaultLabel(presetValue)}</SelectItem>
           {value && family === undefined && <SelectItem value="custom">Custom upload</SelectItem>}
           {FONT_FAMILY_ITEMS.map(([name, url]) => (
             <SelectItem key={url} value={url}>

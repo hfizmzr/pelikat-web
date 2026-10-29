@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import { prerender } from 'react-dom/static'
+import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { MiniThemePreview } from '@/components/theme/mini-theme-preview'
-import { ThemeEditor } from '@/components/theme/theme-editor'
+import { ThemeEditor, fontDefaultLabel } from '@/components/theme/theme-editor'
 import { deriveTheme } from '@/lib/theme/resolve'
 import type { ThemeTokens } from '@/lib/theme/types'
 
@@ -55,6 +56,15 @@ async function toHtml(node: React.ReactElement): Promise<string> {
 // server-only modules — never executed in these render smokes.
 vi.mock('@/components/events/actions', () => ({ saveEventTheme: vi.fn() }))
 vi.mock('@/components/events/event-tabs', () => ({ useThemeDirtyReporter: () => null }))
+// createClient is only consumed by the (mocked) uploader — keep a real
+// browser supabase out of the test graph.
+vi.mock('@/lib/supabase/client', () => ({ createClient: vi.fn(() => ({})) }))
+// In-flight stub: tests control when (if ever) the upload settles.
+const { uploadThemeAsset } = vi.hoisted(() => ({ uploadThemeAsset: vi.fn() }))
+vi.mock('@/lib/theme/assets', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('@/lib/theme/assets')>()
+  return { ...mod, uploadThemeAsset }
+})
 
 describe('MiniThemePreview (SSR through the .event-theme engine)', () => {
   it('renders the themed scope with inline --et-* vars (two-arg buildStyleVars)', async () => {
@@ -232,5 +242,136 @@ describe('ThemeEditor (SSR mount smoke)', () => {
     )
     expect(html).toContain('read-only')
     expect(html).not.toContain('Save theme')
+  })
+
+  it('CodeRabbit (PRRT_kwDOSFI0as6xa2iK): the deactivated-but-REFERENCED preset stays visible as a disabled card', async () => {
+    const RETIRED_ID = '33333333-3333-3333-3333-333333333333'
+    const html = await toHtml(
+      <ThemeEditor
+        eventId={EVENT_ID}
+        organizerId="org-1"
+        canEdit
+        savedPresetId={RETIRED_ID}
+        savedConfig={null}
+        presets={[
+          { id: PRESET_ID, name: 'Batik Heritage', tokens: BATIK, is_active: true },
+          { id: RETIRED_ID, name: 'Retired Preset', tokens: BATIK, is_active: false },
+        ]}
+      />,
+    )
+    // The referenced card renders (editor keeps resolving its saved selection)…
+    expect(html).toContain('Retired Preset')
+    // …marked distinctly disabled: CSS class + (deactivated) marker + disabled
+    expect(html).toContain('(deactivated)')
+    expect(html).toContain('grayscale')
+    expect(html).toContain('disabled=""')
+  })
+
+  it('CodeRabbit follow-up: the saved inactive preset card survives a draft switch to Custom', async () => {
+    const RETIRED_ID = '55555555-5555-5555-5555-555555555555'
+    render(
+      <ThemeEditor
+        eventId={EVENT_ID}
+        organizerId="org-1"
+        canEdit
+        savedPresetId={RETIRED_ID}
+        savedConfig={null}
+        presets={[
+          { id: PRESET_ID, name: 'Batik Heritage', tokens: BATIK, is_active: true },
+          { id: RETIRED_ID, name: 'Retired Preset', tokens: BATIK, is_active: false },
+        ]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Custom/ }))
+    expect(screen.getByText('Retired Preset')).toBeTruthy()
+    // …but stays unmistakably unselectable while inactive
+    const card = screen.getByRole('button', { name: /Retired Preset/i }) as HTMLButtonElement
+    expect(card.disabled).toBe(true)
+  })
+
+  it('CodeRabbit (PRRT_kwDOSFI0as6xa2iW follow-up): still hides a deactivated preset the event does NOT reference (Task 8)', async () => {
+    const RETIRED_ID = '44444444-4444-4444-4444-444444444444'
+    const html = await toHtml(
+      <ThemeEditor
+        eventId={EVENT_ID}
+        organizerId="org-1"
+        canEdit
+        savedPresetId={PRESET_ID}
+        savedConfig={null}
+        presets={[
+          { id: PRESET_ID, name: 'Batik Heritage', tokens: BATIK, is_active: true },
+          { id: RETIRED_ID, name: 'Retired Preset', tokens: BATIK, is_active: false },
+        ]}
+      />,
+    )
+    expect(html).toContain('Batik Heritage')
+    expect(html).not.toContain('Retired Preset')
+  })
+})
+
+describe('CodeRabbit fixes (interactive): save-time data safety + label honesty', () => {
+  afterEach(cleanup)
+
+  it('Save is disabled while an upload is in flight (PRRT_kwDOSFI0as6xa2if)', async () => {
+    uploadThemeAsset.mockImplementation(
+      () => new Promise<never>(() => {}), // never settles — stays in flight
+    )
+    render(
+      <ThemeEditor
+        eventId={EVENT_ID}
+        organizerId="org-1"
+        canEdit
+        savedPresetId={PRESET_ID}
+        savedConfig={null}
+        presets={PRESETS}
+      />,
+    )
+    // Make the draft dirty WITHOUT the upload: switch to the Custom card so
+    // selectedPresetId diverges from the saved one (Save would be enabled).
+    fireEvent.click(screen.getByRole('button', { name: /Custom/ }))
+    const saveBefore = screen.getByRole('button', { name: /Save theme/i })
+    expect(saveBefore.disabled).toBe(false)
+
+    // Start a banner upload (first image file input = banner row).
+    const file = new File(['x'], 'banner.png', { type: 'image/png' })
+    const inputs = document.querySelectorAll('input[type=file]')
+    fireEvent.change(inputs[0], { target: { files: [file] } })
+
+    expect(screen.getByRole('button', { name: /Save theme/i }).disabled).toBe(true)
+    expect(screen.getByText('Upload in progress…')).toBeTruthy()
+  })
+
+  it('reciprocal gate: upload controls are disabled while a save is in flight', async () => {
+    const { saveEventTheme } = await import('@/components/events/actions')
+    vi.mocked(saveEventTheme).mockImplementation(() => new Promise(() => {})) // never settles
+    render(
+      <ThemeEditor
+        eventId={EVENT_ID}
+        organizerId="org-1"
+        canEdit
+        savedPresetId={PRESET_ID}
+        savedConfig={null}
+        presets={PRESETS}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Custom/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Save theme/i }))
+
+    // Saving → post-save cleanup window: rows' pickers/inputs disable (the
+    // handleUpload guard backs the gate up for any path).
+    const inputs = document.querySelectorAll('input[type=file]')
+    expect(inputs.length).toBeGreaterThan(0)
+    for (const input of inputs) expect((input as HTMLInputElement).disabled).toBe(true)
+  })
+
+  it("CodeRabbit (PRRT_kwDOSFI0as6xa2il): the font default option reads 'Preset default' when the preset defines the slot", async () => {
+    // Display-only honesty fix: Radix keeps dropdown items client-only (SSR
+    // renders the trigger collapsed), so assert the label helper directly —
+    // the onValueChange behavior is unchanged either way.
+    expect(fontDefaultLabel(undefined)).toBe('Platform default')
+    expect(fontDefaultLabel('')).toBe('Platform default')
+    expect(fontDefaultLabel('https://fonts.gstatic.com/s/prata/v22/6xKhdSpbNNCT-sWPCm4.woff2')).toBe(
+      'Preset default',
+    )
   })
 })
