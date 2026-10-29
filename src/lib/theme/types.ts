@@ -60,6 +60,12 @@ export type BrandSlot = {
   dark: string
   fgLight: string
   fgDark: string
+  /** P4 Task 4 additive — the validated HEX these slots were derived from.
+   * Present ONLY when a themed value took effect (branded-fill path);
+   * platform-default slots and contrast-degraded slots omit it, so non-CSS
+   * consumers (the e-cert payload) send exactly the colors the resolver
+   * kept — they cannot read oklch and the backend normalizer wants HEX. */
+  hex?: string
 }
 
 /**

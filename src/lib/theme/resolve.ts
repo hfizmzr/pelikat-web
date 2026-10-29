@@ -145,6 +145,9 @@ function brandSlot(hex: string): BrandSlot {
     fgLight: pickForeground(hex),
     // See DARK_FG comment — direct assignment, never pickForeground(oklch).
     fgDark: DARK_FG,
+    // P4 Task 4 additive — the themed fill took effect; non-CSS consumers
+    // (e-cert payload) read this HEX (oklch slots are unreadable there).
+    hex,
   }
 }
 
@@ -193,9 +196,28 @@ export async function getResolvedTheme(
   eventRow: EventThemeInput,
 ): Promise<ResolvedTheme> {
   try {
-    return await resolveTheme(supabase, eventRow)
+    return (await resolveTheme(supabase, eventRow)).resolved
   } catch (err) {
     return platformTheme([`theme resolution failed unexpectedly: ${String(err)}`])
+  }
+}
+
+/**
+ * P4 Task 4 (e-cert payload) — the same never-degrade resolution as
+ * getResolvedTheme, plus the RAW merged token projection (preset ⊕ config)
+ * that the derived slots came from. Needed because ResolvedTheme carries
+ * oklch brand slots and resolves only banner/logo assets — the cert payload
+ * wants the validated HEX colors and the stored certificate_background URL.
+ * Never throws; null only when resolution itself failed internally.
+ */
+export async function getResolvedThemeParts(
+  supabase: SupabaseClient,
+  eventRow: EventThemeInput,
+): Promise<{ resolved: ResolvedTheme; tokens: ThemeTokens } | null> {
+  try {
+    return await resolveTheme(supabase, eventRow)
+  } catch {
+    return null
   }
 }
 
@@ -364,7 +386,10 @@ export function deriveTheme(
   }
 }
 
-async function resolveTheme(supabase: SupabaseClient, eventRow: EventThemeInput): Promise<ResolvedTheme> {
+async function resolveTheme(
+  supabase: SupabaseClient,
+  eventRow: EventThemeInput,
+): Promise<{ resolved: ResolvedTheme; tokens: ThemeTokens }> {
   const loadWarnings: string[] = []
 
   const presetId =
@@ -421,5 +446,14 @@ async function resolveTheme(supabase: SupabaseClient, eventRow: EventThemeInput)
   // config shape-guards + warnings live inside deriveTheme; the theme_config
   // value is handed over raw (garbage → platform + warning, never a throw).
   const derived = deriveTheme(presetTokens, (eventRow.theme_config ?? null) as ThemeTokens | null, loadedId)
-  return { ...derived, warnings: [...loadWarnings, ...derived.warnings] }
+  const resolved = { ...derived, warnings: [...loadWarnings, ...derived.warnings] }
+  // P4 Task 4 — raw merged projection for non-CSS consumers (e-cert): the
+  // SAME merge deriveTheme ran; same mergeThemeConfig contract (unknown /
+  // non-object sections contribute nothing), so garbage configs yield
+  // preset-only tokens here exactly like the derivation saw.
+  const tokens = mergeThemeConfig(
+    presetTokens,
+    isPlainObject(eventRow.theme_config) ? (eventRow.theme_config as ThemeTokens) : null,
+  )
+  return { resolved, tokens }
 }
