@@ -1,7 +1,18 @@
 'use client'
 import { Download, Share2 } from "lucide-react"
 
-export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; eventName: string }) {
+export function BibActionButtons({
+  bibNumber,
+  eventName,
+  bibLabel,
+}: {
+  bibNumber: string
+  eventName: string
+  /** Themed vocabulary threaded from the server bib page (P3 Task 4) — the
+   * canvas-share copy uses it; absent → the platform 'BIB' copy, so this served
+   * prop keeps the component usable anywhere. No client-side theme fetch. */
+  bibLabel?: string
+}) {
   const handleSave = () => {
     const canvas = document.createElement('canvas')
     canvas.width = 400
@@ -15,7 +26,7 @@ export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; 
     ctx.fillStyle = '#94a3b8'
     ctx.font = '14px system-ui'
     ctx.textAlign = 'center'
-    ctx.fillText('BIB NUMBER', canvas.width / 2, 40)
+    ctx.fillText((bibLabel ?? 'BIB NUMBER').toUpperCase(), canvas.width / 2, 40)
 
     ctx.fillStyle = '#f8fafc'
     ctx.font = 'bold 48px monospace'
@@ -35,8 +46,8 @@ export function BibActionButtons({ bibNumber, eventName }: { bibNumber: string; 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `BIB ${bibNumber} - ${eventName}`,
-          text: `Check out my digital BIB ${bibNumber} for ${eventName}!`,
+          title: `${bibLabel ?? 'BIB'} ${bibNumber} - ${eventName}`,
+          text: `Check out my digital ${bibLabel ?? 'BIB'} ${bibNumber} for ${eventName}!`,
           url: window.location.href,
         })
       } catch {}

@@ -40,7 +40,7 @@ export default async function RunnerLeaderboardPage({
   const [{ data: events }, { data: categories }] = await Promise.all([
     supabase
       .from('events')
-      .select('id, name, results_published')
+      .select('id, name, results_published, status')
       .order('event_date', { ascending: false }),
     event_id && event_id !== 'all'
       ? supabase

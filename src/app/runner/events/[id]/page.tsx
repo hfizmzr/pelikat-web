@@ -7,6 +7,9 @@ import { RunnerRegistrationActions } from '@/components/events/runner-registrati
 import { CancelRegistrationButton } from '@/components/events/cancel-registration-button'
 import { VirtualCertificateButton } from '@/components/gamification/virtual-certificate-button'
 import { EventThemeScope } from '@/components/theme/event-theme-scope'
+import { getSurfaceTheme } from '@/lib/theme/surface'
+import { resolveLabels } from '@/lib/theme/labels'
+import { fetchOrganizerName } from '@/lib/supabase/safe-name'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -52,6 +55,17 @@ export default async function RunnerEventDetailPage({
   if (!event) {
     notFound()
   }
+
+  // Post-visibility only (safe-name contract): the event row loaded through the
+  // RLS client, so a hidden draft never reaches the service-role read below.
+  // Shortcut: the joined name (owners/admins can read organizers) wins; the
+  // service fetch only fills the runner path where RLS hides organizers.
+  const { labels: themedLabels } = await getSurfaceTheme(event, supabase)
+  const labels = themedLabels ?? resolveLabels(null)
+  const organizerName =
+    (event.organizers?.name as string | undefined) ||
+    (await fetchOrganizerName(event.organizer_id)) ||
+    'Unknown Organizer'
 
   const { data: registration } = await supabase
     .from('registrations')
@@ -147,7 +161,7 @@ export default async function RunnerEventDetailPage({
             </p>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-[12px] text-muted-foreground">Organized by:</span>
-              <span className="text-[12px] font-bold text-foreground">{event.organizers?.name || 'Unknown Organizer'}</span>
+              <span className="text-[12px] font-bold text-foreground">{organizerName}</span>
             </div>
           </section>
 
@@ -170,7 +184,7 @@ export default async function RunnerEventDetailPage({
                   <div className="grid grid-cols-2 gap-4 mt-2">
                     {!isVirtual && (
                       <div className="flex flex-col">
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">BIB Number</span>
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">{labels.bib_label}</span>
                         <span className="text-[16px] font-mono font-bold text-foreground">{registration.bib_number || 'TBA'}</span>
                       </div>
                     )}
@@ -210,7 +224,7 @@ export default async function RunnerEventDetailPage({
                       className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                     >
                       <QrCode className="size-[18px]" />
-                      View Digital BIB Pass
+                      View {labels.bib_label}
                     </Link>
                   )}
 
@@ -241,7 +255,7 @@ export default async function RunnerEventDetailPage({
                       className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                     >
                       <Footprints className="size-[18px]" />
-                      Log a Run
+                      {labels.run_label}
                     </Link>
                   )}
 
