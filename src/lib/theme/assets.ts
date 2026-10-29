@@ -277,9 +277,8 @@ export async function cleanupThemeAssets(
   }
   if (references.size === 0) return { removed, warnings }
 
-  const { data, error } = await client.storage.from(THEME_ASSET_BUCKET).list(
-    `organizers/${organizerId}/events/${eventId}`,
-  )
+  const folder = `organizers/${organizerId}/events/${eventId}`
+  const { data, error } = await client.storage.from(THEME_ASSET_BUCKET).list(folder)
   if (error) {
     warnings.push(`theme assets: could not list existing assets — cleanup skipped (${describeError(error)})`)
     return { removed, warnings }
@@ -291,7 +290,9 @@ export async function cleanupThemeAssets(
     for (const [kind, keptName] of references) {
       if (!name.startsWith(`${kind}-v`)) continue
       if (name === keptName) continue // the object the saved config references — KEEP
-      const { error: removeError } = await client.storage.from(THEME_ASSET_BUCKET).remove([name])
+      // Storage remove() resolves prefixes from the BUCKET ROOT — list()
+      // returns names relative to the tenant folder, so re-prefix them.
+      const { error: removeError } = await client.storage.from(THEME_ASSET_BUCKET).remove([`${folder}/${name}`])
       if (removeError) {
         warnings.push(`theme assets: could not delete stale "${name}" (${describeError(removeError)})`)
       } else {

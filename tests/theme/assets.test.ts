@@ -265,7 +265,12 @@ describe('cleanupThemeAssets — keep saved, delete stale, never touch absent ki
       },
     })
     const removed = (bucket.remove as ReturnType<typeof vi.fn>).mock.calls.flat(2)
-    expect(removed.sort()).toEqual(['banner-v99.png', 'logo-v1.png'])
+    // Storage remove() resolves paths from the bucket ROOT, so the tenant
+    // folder must be prefixed onto every listed name.
+    expect(removed.sort()).toEqual([
+      'organizers/org-1/events/e-1/banner-v99.png',
+      'organizers/org-1/events/e-1/logo-v1.png',
+    ])
     expect(calls.listed).toEqual(['organizers/org-1/events/e-1'])
     expect(result.removed.sort()).toEqual(['banner-v99.png', 'logo-v1.png'])
     expect(result.warnings).toEqual([])
@@ -294,7 +299,7 @@ describe('cleanupThemeAssets — keep saved, delete stale, never touch absent ki
       savedAssets: { heading_font_url: 'https://fonts.gstatic.com/s/prata/v22/prata-46Rm.woff2' },
     })
     const removed = (bucket.remove as ReturnType<typeof vi.fn>).mock.calls.flat(2)
-    expect(removed).toEqual(['heading_font-v1.woff2']) // kind present, reference is gstatic
+    expect(removed).toEqual(['organizers/org-1/events/e-1/heading_font-v1.woff2']) // kind present, reference is gstatic
     expect(removed).not.toContain('body_font-v2.woff2') // absent kind untouched
     expect(result.warnings).toEqual([])
   })
