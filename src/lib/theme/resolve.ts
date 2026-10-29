@@ -14,6 +14,7 @@ import {
   oklchToString,
   contrastRatio,
   pickForeground,
+  relativeLuminance,
   deriveDarkVariant,
   PLATFORM_BG_HEX,
 } from './color'
@@ -147,6 +148,26 @@ function brandSlot(hex: string): BrandSlot {
   }
 }
 
+/**
+ * Ruling #10 (P2 Task 5) — light-mode `-foreground` companion ratio for a HEX
+ * fill: the fill paired with its computed companion `pickForeground(fill)`.
+ * A WHITE pick passes by construction (pickForeground returns white only when
+ * it reaches ≥4.5:1). A dark pick (`oklch(0.145 0 0)`) is unparseable by
+ * HEX-only contrastRatio (it would silently return 1), so measure the fill's
+ * WCAG luminance against the dark-fg constant's EXACT luminance: a neutral
+ * OKLab gray's linear channel — hence its relative luminance — is L³ = 0.145³.
+ */
+const WHITE_FG = '#ffffff' // color.ts's private WHITE constant (stable)
+const DARK_FG_LUMINANCE = 0.145 ** 3
+
+function companionRatio(fill: string): number {
+  if (pickForeground(fill) === WHITE_FG) return contrastRatio(fill, WHITE_FG)
+  const y = relativeLuminance(fill)
+  const hi = Math.max(y, DARK_FG_LUMINANCE)
+  const lo = Math.min(y, DARK_FG_LUMINANCE)
+  return (hi + 0.05) / (lo + 0.05)
+}
+
 function platformTheme(warnings: string[]): ResolvedTheme {
   return {
     primary: PLATFORM_SLOTS.primary,
@@ -227,9 +248,33 @@ export function deriveTheme(
       if (raw !== undefined) warnings.push(`colors.${role}: invalid HEX — using platform color`)
       return PLATFORM_SLOTS[role]
     }
-    // Contrast precheck (spec §5.5 semantics): primary/secondary/accent
-    // <3:1 vs the platform background degrade to platform (a bypassed
-    // #FFD700-class fill renders nothing readable); ring only warns.
+    if (role === 'secondary' || role === 'accent') {
+      // Ruling #10 (P2 Task 5): these slots are UI surfaces — they render when
+      // their computed -foreground companions pass ≥4.5:1, replacing the P1
+      // fill-vs-platform-background gate. Mode-companions:
+      // - light: fg = pickForeground(fill) — measured by companionRatio above
+      //   (WHITE pick ≥4.5:1 by construction, dark pick measured).
+      // - dark: fill.dark is the deriveDarkVariant output — an opaque oklch
+      //   with L clamped ∈ [0.68, 0.82] vs DARK_FG 'oklch(0.145 0 0)': at the
+      //   L floor that is (0.68³+0.05)/(0.145³+0.05) ≈ 6.87:1 ≥ 4.5 — PASS by
+      //   construction (P1-analyzed; no OKLab→sRGB solver to measure a
+      //   chromatic oklch against HEX-only contrastRatio: passing is the
+      //   contract). Light mode is therefore the only measured side.
+      const ratio = companionRatio(raw)
+      if (ratio < 4.5) {
+        warnings.push(
+          `colors.${role}: foreground companion ${ratio.toFixed(2)}:1 < 4.5:1 — using platform color`,
+        )
+        return PLATFORM_SLOTS[role]
+      }
+      markOverridden(`colors.${role}`)
+      return brandSlot(raw)
+    }
+    // Contrast precheck (spec §5.5 semantics) — primary + ring keep the P1
+    // fill-vs-platform-background gate unchanged (Ruling #10 regression
+    // guard): primary <3:1 vs the platform background degrades to platform
+    // (a bypassed #FFD700-class fill renders nothing readable); ring only
+    // warns (P1 byte-identical).
     // PLATFORM_BG_HEX is color.ts's shared constant — the SAME decision the
     // validate.ts save-gate applies (Task 7 carried requirement). Dark
     // variants (L ∈ [0.68, 0.82]) trivially clear 3:1 against the dark

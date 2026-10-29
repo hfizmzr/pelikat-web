@@ -140,14 +140,17 @@ describe('saveEventTheme', () => {
     expect(revalidatePath).toHaveBeenCalledWith('/runner/leaderboard')
   })
 
-  it('happy path with a low-contrast secondary → ok:true with structured warnings', async () => {
+  it('happy path with a fails-companion secondary → ok:true with structured warnings', async () => {
     requireAuth.mockResolvedValue({
       supabase: makeSupabase({ event: OWNED_EVENT, preset: SYSTEM_PRESET }),
       user: OWNER,
     })
+    // Ruling #10 (P2 Task 5): '#FFD700' now renders (dark-text companion
+    // 14.1:1 ≥ 4.5) — the warn-and-accept carrier is the pickForeground dead
+    // band where BOTH companions sit just under 4.5:1 (white 4.48, dark 4.42).
     const result = await saveEventTheme('event-1', {
       theme_preset_id: null,
-      theme_config: { colors: { primary: '#00807A', secondary: '#FFD700' } },
+      theme_config: { colors: { primary: '#00807A', secondary: '#777777' } },
     })
     expect(result.ok).toBe(true)
     expect((result as { warnings: string[] }).warnings.some((w) => w.includes('colors.secondary'))).toBe(true)

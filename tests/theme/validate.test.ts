@@ -172,16 +172,41 @@ describe('WCAG contrast gate (§5.5 — vs PLATFORM_BG_HEX, shared with resolve)
     expect(res).toEqual({ ok: true, errors: [], warnings: [] })
   })
 
-  it('warn-and-degrades secondary/accent <3:1 (ok:true, warnings only)', () => {
-    const secondary = validateThemeConfig({ colors: { secondary: '#949494' } })
+  it('warns (never blocks) when a secondary/accent companion FAILS ≥4.5:1 (Ruling #10)', () => {
+    // #777777/#787878 sit in pickForeground's dead band — white 4.48/4.42:1
+    // and dark-fg 4.42/4.48:1: BOTH candidates just under 4.5. Warn-and-accept
+    // (§5.5 hard block stays primary-only); text mirrors the resolve degrade.
+    const secondary = validateThemeConfig({ colors: { secondary: '#777777' } }) // dark-fg companion 4.42:1
     expect(secondary.ok).toBe(true)
     expect(secondary.errors).toEqual([])
-    expect(secondary.warnings.some((w) => w.includes('colors.secondary') && w.includes('contrast'))).toBe(true)
+    expect(
+      secondary.warnings.some(
+        (w) =>
+          w.includes('colors.secondary') &&
+          w.includes('companion') &&
+          w.includes('will degrade at render'),
+      ),
+    ).toBe(true)
 
-    // the real Batik accent — gold on light background
-    const accent = validateThemeConfig({ colors: { accent: '#D4A017' } }) // 2.28:1
+    const accent = validateThemeConfig({ colors: { accent: '#787878' } }) // dark-fg companion 4.48:1
     expect(accent.ok).toBe(true)
-    expect(accent.warnings.some((w) => w.includes('colors.accent') && w.includes('contrast'))).toBe(true)
+    expect(accent.warnings.some((w) => w.includes('colors.accent') && w.includes('companion'))).toBe(true)
+  })
+
+  it('Batik gold #D4A017 accent passes the companion gate with NO warning (Ruling #10)', () => {
+    // White on gold fails (2.38:1) → pickForeground's dark-text companion is
+    // 8.33:1 ≥ 4.5 — renders. P1's <3:1-vs-bg warning is gone (the ruling's
+    // headline: "Batik gold renders"); ring keeps warn-only per P1.
+    const accent = validateThemeConfig({ colors: { accent: '#D4A017' } })
+    expect(accent).toEqual({ ok: true, errors: [], warnings: [] })
+  })
+
+  it('#949494 secondary passes silently (dark-fg companion 6.52:1 ≥ 4.5)', () => {
+    // P1 warned (2.91:1 vs bg < 3); the companion rule lets near-neutral
+    // surface fills through — text-vs-surface is the §5.5 contract for these
+    // slots, the ring warn path is untouched below.
+    const res = validateThemeConfig({ colors: { secondary: '#949494' } })
+    expect(res).toEqual({ ok: true, errors: [], warnings: [] })
   })
 
   it('warns (recommended) for ring <3:1, never blocks', () => {

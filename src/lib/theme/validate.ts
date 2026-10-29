@@ -14,7 +14,7 @@
  * Never throws (spec §5.5.4): unserializable/malformed input surfaces as
  * structured errors.
  */
-import { contrastRatio, hexToOklch, PLATFORM_BG_HEX } from './color'
+import { contrastRatio, hexToOklch, pickForeground, relativeLuminance, PLATFORM_BG_HEX } from './color'
 import { LABEL_KEYS } from './labels'
 import { isPlainObject, themeFontUrlOk } from './utils'
 
@@ -52,9 +52,34 @@ function jsonBytes(config: unknown): number | null {
   }
 }
 
-/** §5.5 WCAG gate — the SAME platform-background decision as resolve.ts's
- * precheck (color.ts PLATFORM_BG_HEX). Light-mode only: dark variants
- * (L ∈ [0.68, 0.82]) trivially clear 3:1 against the dark background. */
+/**
+ * Ruling #10 (P2 Task 5) — light-mode `-foreground` companion ratio. MIRRORS
+ * resolve.ts's companionRatio (same shape as the mirrored PLATFORM_BG_HEX
+ * decision): fill paired with its computed companion `pickForeground(fill)`.
+ * A WHITE pick passes by construction (pickForeground returns white only when
+ * it reaches ≥4.5:1). A dark pick (`oklch(0.145 0 0)`) is unparseable by
+ * HEX-only contrastRatio (it would silently return 1), so measure the fill's
+ * WCAG luminance against the dark-fg constant's EXACT luminance: a neutral
+ * OKLab gray's linear channel — hence its relative luminance — is L³ = 0.145³.
+ */
+const WHITE_FG = '#ffffff' // color.ts's private WHITE constant (stable)
+const DARK_FG_LUMINANCE = 0.145 ** 3
+
+function companionRatio(fill: string): number {
+  if (pickForeground(fill) === WHITE_FG) return contrastRatio(fill, WHITE_FG)
+  const y = relativeLuminance(fill)
+  const hi = Math.max(y, DARK_FG_LUMINANCE)
+  const lo = Math.min(y, DARK_FG_LUMINANCE)
+  return (hi + 0.05) / (lo + 0.05)
+}
+
+/** §5.5 WCAG gate — primary keeps the SAME platform-background decision as
+ * resolve.ts's precheck (color.ts PLATFORM_BG_HEX). Light-mode only: dark
+ * variants (L ∈ [0.68, 0.82]) trivially clear 3:1 against the dark background.
+ * secondary/accent (Ruling #10, P2 Task 5) mirror save-side the resolve
+ * -foreground companion gate as a WARNING — never blocks (the hard block
+ * stays primary-only); resolve.ts degrades at render when the companion
+ * fails. */
 function contrastGate(hexes: Record<string, string>, errors: string[], warnings: string[]): void {
   const primary = hexes.primary
   if (primary !== undefined) {
@@ -67,10 +92,13 @@ function contrastGate(hexes: Record<string, string>, errors: string[], warnings:
   for (const role of ['secondary', 'accent'] as const) {
     const hex = hexes[role]
     if (hex === undefined) continue
-    const ratio = contrastRatio(hex, PLATFORM_BG_HEX)
-    if (ratio < 3) {
+    // Ruling #10 (P2 Task 5): warn-and-accept mirror of the resolve
+    // -foreground companion criterion (≥4.5:1) — never blocks (§5.5 hard
+    // block stays primary-only).
+    const ratio = companionRatio(hex)
+    if (ratio < 4.5) {
       warnings.push(
-        `colors.${role}: contrast ${ratio.toFixed(2)}:1 vs platform background < 3:1 — will degrade to platform color`,
+        `colors.${role}: foreground companion ${ratio.toFixed(2)}:1 < 4.5:1 — will degrade at render (companion contrast < 4.5:1)`,
       )
     }
   }

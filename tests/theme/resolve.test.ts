@@ -253,6 +253,82 @@ describe('getResolvedTheme', () => {
     expect(resolved.warnings.some((w) => w.includes('colors.ring'))).toBe(true)
   })
 
+  describe('Ruling #10 — secondary/accent fg-companion gating (P2 Task 5)', () => {
+    // Degraded slots return resolve.ts's PLATFORM_SLOTS verbatim (mirrors
+    // globals.css — companion clausing same as the platform-theme test above).
+    const DEGRADED = {
+      secondary: {
+        light: 'oklch(0.92 0 0)',
+        dark: 'oklch(0.16 0 0)',
+        fgLight: 'oklch(0.145 0 0)',
+        fgDark: 'oklch(0.985 0 0)',
+      },
+      accent: {
+        light: 'oklch(0.92 0 0)',
+        dark: 'oklch(0.28 0.03 190)',
+        fgLight: 'oklch(0.145 0 0)',
+        fgDark: 'oklch(0.985 0 0)',
+      },
+    }
+
+    async function resolveColors(colors: Record<string, string>) {
+      return getResolvedTheme(fakeSupabase({ id: PRESET_ID, tokens: BATIK }), eventRow({ colors }))
+    }
+
+    it('Batik gold #D4A017 accent RENDERS: fill kept, dark-text companion ≥4.5:1, no warning', async () => {
+      const resolved = await resolveColors({ accent: '#D4A017' })
+      expect(resolved.accent.light).toBe(oklchToString(hexToOklch('#D4A017')))
+      expect(resolved.accent.dark).toBe(deriveDarkVariant('#D4A017'))
+      // White on gold fails (2.38:1) → pickForeground picks its dark fg,
+      // which measures 8.33:1 ≥ 4.5 — dark text on gold. Plan Task 5, req 1.
+      expect(resolved.accent.fgLight).toBe('oklch(0.145 0 0)')
+      expect(resolved.accent.fgDark).toBe('oklch(0.145 0 0)')
+      expect(resolved.warnings.some((w) => w.includes('colors.accent'))).toBe(false)
+      expect(resolved.source.overriddenKeys).toContain('colors.accent')
+    })
+
+    it('white-companion fill also passes: #949494 secondary kept (dark companion 6.52:1)', async () => {
+      // P1 degraded this (2.91:1 vs bg < 3); companion rule lets it render —
+      // pickForeground's dark fg clears 4.5:1 (white fails at 3.03:1).
+      const resolved = await resolveColors({ secondary: '#949494' })
+      expect(resolved.secondary.light).toBe(oklchToString(hexToOklch('#949494')))
+      expect(resolved.warnings.some((w) => w.includes('colors.secondary'))).toBe(false)
+    })
+
+    it('fails-companion fill degrades fill AND fg in BOTH slots + warning, never throws', async () => {
+      // #777777/#787878 sit in pickForeground's dead band: white 4.48/4.42:1,
+      // dark fg 4.42/4.48:1 — BOTH candidates just under 4.5 → no qualifying
+      // companion. Degrade + structured warning; degraded keys not overridden.
+      const resolved = await resolveColors({ secondary: '#777777', accent: '#787878' })
+      expect(resolved.secondary).toEqual(DEGRADED.secondary)
+      expect(resolved.accent).toEqual(DEGRADED.accent)
+      for (const role of ['secondary', 'accent'] as const) {
+        expect(
+          resolved.warnings.some(
+            (w) => w.includes(`colors.${role}`) && w.includes('companion') && w.includes('4.5'),
+          ),
+        ).toBe(true)
+      }
+      expect(resolved.source.overriddenKeys).toEqual([])
+    })
+
+    it('plan Task 5 vector note: #EDEDED/#FFFFFF KEEP rendering (dark companions ≥4.5:1)', async () => {
+      // Plan Task 5 lists these as "fails-companion → degrades", but that
+      // outcome is numerically impossible under the plan's own @manager-locked
+      // rule: their WHITE companions fail, so pickForeground pairs the DARK
+      // companion, which passes hugely (16.9:1 / 19.8:1) — same pairing the
+      // platform secondary slot itself uses (oklch(0.92) + dark fg). Locked
+      // rule wins: asserts the rule outcome for the record.
+      const resolved = await resolveColors({ secondary: '#EDEDED', accent: '#FFFFFF' })
+      expect(resolved.secondary.light).toBe(oklchToString(hexToOklch('#EDEDED')))
+      expect(resolved.accent.light).toBe(oklchToString(hexToOklch('#FFFFFF')))
+      expect(resolved.secondary.fgLight).toBe('oklch(0.145 0 0)')
+      expect(resolved.accent.fgLight).toBe('oklch(0.145 0 0)')
+      expect(resolved.warnings.some((w) => w.includes('colors.secondary'))).toBe(false)
+      expect(resolved.warnings.some((w) => w.includes('colors.accent'))).toBe(false)
+    })
+  })
+
   it('fg pairing: fgLight from pickForeground(HEX); fgDark assigned directly, never derived from oklch', async () => {
     const resolved = await getResolvedTheme(
       fakeSupabase({ id: PRESET_ID, tokens: BATIK }),
