@@ -76,6 +76,11 @@ export type ResolvedTheme = {
   foreground: { light: string | null; dark: string | null }
   /** Font URLs (https) or null → platform font. */
   fonts: { heading: string | null; body: string | null }
+  /** Asset URLs carried post-merge (§4.2 assets slot); null → no themed asset
+   * (the reserved-box ThemedImage renders only when a value exists). P2
+   * consumers: runner banner/logo scope (Task 10); badge/certificate slots
+   * intentionally not resolved until they gain a renderer. */
+  assets: { banner: string | null; logo: string | null }
   /** Fully resolved — platform defaults filled. */
   labels: Record<LabelKey, string>
   /** Structured degradation log — resolve never throws (spec §5.5). */

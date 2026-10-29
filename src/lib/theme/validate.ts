@@ -16,7 +16,7 @@
  */
 import { contrastRatio, hexToOklch, pickForeground, relativeLuminance, PLATFORM_BG_HEX } from './color'
 import { LABEL_KEYS } from './labels'
-import { isPlainObject, themeFontUrlOk } from './utils'
+import { isPlainObject, themeFontUrlOk, assetValueOk } from './utils'
 
 // Stored-token HEX contract (Global Constraints / spec §4.3: ^#[0-9a-fA-F]{6}$).
 // Same strict regex resolve.ts validates; color.ts's runtime regex is looser
@@ -39,7 +39,6 @@ const TOP_KEYS = ['colors', 'typography', 'assets', 'vocabulary', 'meta']
 const COLOR_KEYS = ['primary', 'secondary', 'accent', 'background', 'foreground', 'ring']
 const TYPOGRAPHY_KEYS = ['heading_font_url', 'body_font_url']
 const ASSET_KEYS = ['banner_url', 'logo_url', 'badge_icon_url', 'certificate_background_url']
-const ASSET_PATH_RE = /^[A-Za-z0-9/_.-]+$/
 
 /** Serialized byte length, or null when unserializable (cyclic and friends). */
 function jsonBytes(config: unknown): number | null {
@@ -124,13 +123,6 @@ function tintGate(hexes: Record<string, string>, warnings: string[]): void {
       `colors.background: oklch L ${l.toFixed(3)} outside tint windows [0.93, 0.995] light / [0.05, 0.12] dark — will be ignored`,
     )
   }
-}
-
-/** 076 asset rule: relative bucket paths ([A-Za-z0-9/_.-]+, no '..') or https
- * URLs. ':' is off-charset, so javascript:/http: URIs fail the path branch. */
-function assetValueOk(value: string): boolean {
-  if (value.startsWith('https://')) return true
-  return !value.includes('..') && ASSET_PATH_RE.test(value)
 }
 
 /**

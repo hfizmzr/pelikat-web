@@ -2,6 +2,7 @@
 
 import { buildStyleVars } from '@/lib/theme/css'
 import type { ResolvedTheme } from '@/lib/theme/types'
+import { ThemedImage, THEME_ASPECTS } from '@/components/theme/themed-image'
 import { cn } from '@/lib/utils'
 
 /**
@@ -32,6 +33,25 @@ export function MiniThemePreview({
     >
       {/* Themed event-card mock */}
       <div className="space-y-2 rounded-md border bg-card p-3">
+        {/* Task 10 asset slot: the SAME reserved-box engine/props as the
+            runner banner + logo overlay. Values come from the resolved assets
+            slot — P2 seed presets carry none, so the gradient fallback layer
+            renders here (the exercised engine; real banners are Task 11's
+            live smoke, and a broken/removed src collapses nothing). */}
+        <div className="relative">
+          <ThemedImage
+            src={resolved.assets.banner ?? undefined}
+            alt="Event banner"
+            aspect={THEME_ASPECTS.banner}
+          />
+          <div className="absolute right-2 top-2 w-10">
+            <ThemedImage
+              src={resolved.assets.logo ?? undefined}
+              alt="Event logo"
+              aspect={THEME_ASPECTS.logo}
+            />
+          </div>
+        </div>
         <p className="text-sm font-bold text-primary">Riverside Run 2026</p>
         <div className="flex items-center gap-1.5">
           <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">

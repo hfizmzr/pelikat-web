@@ -19,7 +19,7 @@ import {
   PLATFORM_BG_HEX,
 } from './color'
 import { LABEL_KEYS, resolveLabels } from './labels'
-import { isPlainObject, themeFontUrlOk } from './utils'
+import { isPlainObject, themeFontUrlOk, assetValueOk } from './utils'
 import type { BrandSlot, ResolvedTheme, ThemeTokens } from './types'
 
 // Stored-token HEX contract (Global Constraints / spec §4.3: ^#[0-9a-fA-F]{6}$).
@@ -177,6 +177,7 @@ function platformTheme(warnings: string[]): ResolvedTheme {
     background: { light: null, dark: null },
     foreground: { light: null, dark: null },
     fonts: { heading: null, body: null },
+    assets: { banner: null, logo: null },
     labels: resolveLabels(null),
     warnings,
     source: { presetId: null, overriddenKeys: [] },
@@ -321,6 +322,22 @@ export function deriveTheme(
     return raw
   }
 
+  // Assets slot (Task 10): the resolved banner/logo values ThemedImage
+  // renders. The 076 write rule (https or clean bucket path, ONE
+  // implementation in utils.ts) re-checked here as a degrade floor — hostile
+  // hand-crafted JSONB rows drop the slot to null → gradient fallback
+  // downstream, never a throw (same never-throw contract as the font slots).
+  function asset(key: 'banner_url' | 'logo_url'): string | null {
+    const raw = (merged.assets ?? {})[key]
+    if (raw === undefined) return null
+    if (!assetValueOk(raw)) {
+      warnings.push(`assets.${key}: not a valid asset value — using no themed asset`)
+      return null
+    }
+    markOverridden(`assets.${key}`)
+    return raw
+  }
+
   // Labels: sanitize + fallback via labels.ts (single source of truth).
   // raw values are safe even unsanitized — labels render as React text
   // children only — but resolve output is always clean plain strings.
@@ -338,6 +355,7 @@ export function deriveTheme(
     background: tint('background'),
     foreground: tint('foreground'),
     fonts: { heading: font('heading_font_url'), body: font('body_font_url') },
+    assets: { banner: asset('banner_url'), logo: asset('logo_url') },
     labels,
     warnings,
     source: { presetId, overriddenKeys: overridden },

@@ -25,6 +25,17 @@ function platformStorageHost(): string | null {
   }
 }
 
+/** 076 asset value rule (shared with the save validator): relative bucket paths
+ * ([A-Za-z0-9/_.-]+, no '..') or https URLs. ':' is off-charset, so
+ * javascript:/http: URIs fail the path branch. */
+const ASSET_PATH_RE = /^[A-Za-z0-9/_.-]+$/
+
+export function assetValueOk(value: unknown): boolean {
+  if (typeof value !== 'string') return false
+  if (value.startsWith('https://')) return true
+  return !value.includes('..') && ASSET_PATH_RE.test(value)
+}
+
 /**
  * Validate a font URL against the §5.4 allowlist: https only, host is the
  * platform storage origin (Supabase) or fonts.gstatic.com, path ends

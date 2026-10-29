@@ -47,9 +47,12 @@ function event(theme_preset_id: string | null, theme_config: unknown = null) {
 // renderToStaticMarkup (react-dom/server) rejects async components in React
 // 19; prerender (react-dom/static) is its async-capable counterpart and still
 // yields the raw SSR string — inline vars pre-hydration are asserted verbatim.
-async function render(event: { id: string; theme_preset_id: string | null; theme_config: unknown }) {
+async function render(
+  event: { id: string; theme_preset_id: string | null; theme_config: unknown },
+  showAssets?: boolean,
+) {
   const { prelude } = await prerender(
-    <EventThemeScope event={event}>
+    <EventThemeScope event={event} showAssets={showAssets}>
       <p>child</p>
     </EventThemeScope>,
   )
@@ -66,6 +69,85 @@ async function render(event: { id: string; theme_preset_id: string | null; theme
 
 // The 16 brand vars buildStyleVars emits — light/dark × color/companion-fg.
 const ROLE_SUFFIXES = ['-fg', '-dark', '-fg-dark'] as const
+
+const ASSETS_CONFIG = {
+  assets: {
+    banner_url: 'https://vault.example.com/event-themes/banner-v1721000000000.png',
+    logo_url: 'https://vault.example.com/event-themes/logo.png',
+  },
+}
+
+describe('EventThemeScope showAssets (Task 10: banner/logo rendering)', () => {
+  beforeEach(() => {
+    vi.mocked(createClient).mockReset()
+  })
+
+  it('unthemed event + showAssets → children unwrapped exactly as without the prop', async () => {
+    useSupabase(null)
+    const html = await render(event(null), true)
+    expect(html).toBe('<p>child</p>')
+    expect(createClient).not.toHaveBeenCalled()
+  })
+
+  it('default (no prop) + theme carrying assets → NO asset nodes (P1 DOM; leaderboard contract)', async () => {
+    useSupabase({ id: PRESET_ID, tokens: { ...TOKENS, ...ASSETS_CONFIG } })
+    const html = await render(event(PRESET_ID))
+    expect(html).not.toContain('<img')
+    expect(html).not.toContain('aspect-ratio')
+    expect(html).toContain('child')
+  })
+
+  it('showAssets with NO resolved asset values → DOM byte-identical to the default render', async () => {
+    useSupabase({ id: PRESET_ID, tokens: TOKENS })
+    const baseline = await render(event(PRESET_ID))
+    const html = await render(event(PRESET_ID), true)
+    expect(html).toBe(baseline)
+    expect(html).not.toContain('<img')
+  })
+
+  it('showAssets + resolved banner + logo → banner (3/1) above children + logo (1/1) overlay', async () => {
+    useSupabase({ id: PRESET_ID, tokens: { ...TOKENS, ...ASSETS_CONFIG } })
+    const html = await render(event(PRESET_ID), true)
+    // Banner: leading section, reserved 3/1 box with the real img src.
+    expect(html).toContain('aspect-ratio:3/1')
+    expect(html).toContain(`<img src="${ASSETS_CONFIG.assets.banner_url}"`)
+    // Logo: 1/1 box, width-capped w-16, real img src (ER: "synthetic banner
+    // value → banner img src present"; logo mirrors the same contract).
+    expect(html).toContain('aspect-ratio:1/1')
+    expect(html).toContain('w-16')
+    expect(html).toContain(`<img src="${ASSETS_CONFIG.assets.logo_url}"`)
+    // Children still render after the asset nodes.
+    expect(html.indexOf('aspect-ratio:3/1')).toBeLessThan(html.indexOf('child'))
+  })
+
+  it('showAssets + banner only / logo only → each renders its OWN slot only', async () => {
+    useSupabase({
+      id: PRESET_ID,
+      tokens: { ...TOKENS, assets: { banner_url: ASSETS_CONFIG.assets.banner_url } },
+    })
+    const bannerOnly = await render(event(PRESET_ID), true)
+    expect(bannerOnly).toContain(`<img src="${ASSETS_CONFIG.assets.banner_url}"`)
+    expect(bannerOnly).not.toContain(ASSETS_CONFIG.assets.logo_url)
+
+    useSupabase({
+      id: PRESET_ID,
+      tokens: { ...TOKENS, assets: { logo_url: ASSETS_CONFIG.assets.logo_url } },
+    })
+    const logoOnly = await render(event(PRESET_ID), true)
+    expect(logoOnly).toContain(`<img src="${ASSETS_CONFIG.assets.logo_url}"`)
+    expect(logoOnly).not.toContain('aspect-ratio:3/1')
+  })
+
+  it('showAssets + hostile asset value → resolve degrades: no img, P1 DOM preserved', async () => {
+    useSupabase({
+      id: PRESET_ID,
+      tokens: { ...TOKENS, assets: { banner_url: 'javascript:alert(1)' } },
+    })
+    const baseline = await render(event(PRESET_ID))
+    const html = await render(event(PRESET_ID), true)
+    expect(html).toBe(baseline)
+  })
+})
 
 describe('EventThemeScope (SSR, spec §5.3)', () => {
   beforeEach(() => {

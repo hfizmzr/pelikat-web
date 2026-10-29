@@ -48,3 +48,56 @@ describe('deriveTheme', () => {
     }
   })
 })
+
+describe('deriveTheme assets slot (Task 10: resolved banner/logo URLs)', () => {
+  it('no assets anywhere → both slots null', () => {
+    const resolved = deriveTheme(BATIK, null, PRESET_ID)
+    expect(resolved.assets).toEqual({ banner: null, logo: null })
+    expect(resolved.source.overriddenKeys).toEqual([])
+  })
+
+  it('https values (the uploader stores public URLs) → both slots resolved + tracked', () => {
+    const banner = 'https://vault.example.com/event-themes/banner-v1721000000000.png'
+    const resolved = deriveTheme(
+      {},
+      { assets: { banner_url: banner, logo_url: 'https://vault.example.com/event-themes/logo.png' } },
+      null,
+    )
+    expect(resolved.assets).toEqual({
+      banner,
+      logo: 'https://vault.example.com/event-themes/logo.png',
+    })
+    expect(resolved.source.overriddenKeys).toEqual(['assets.banner_url', 'assets.logo_url'])
+  })
+
+  it('preset carries assets, override drops one via null → merge semantics apply', () => {
+    const withAssets: ThemeTokens = {
+      ...BATIK,
+      assets: { banner_url: 'https://vault.example.com/b.png', logo_url: 'https://vault.example.com/l.png' },
+    }
+    const resolved = deriveTheme(withAssets, { assets: { logo_url: null } }, PRESET_ID)
+    expect(resolved.assets).toEqual({ banner: 'https://vault.example.com/b.png', logo: null })
+    expect(resolved.source.overriddenKeys).toEqual([])
+  })
+
+  it('hostile/junk values (hand-crafted JSONB) degrade to null + warning, never throw', () => {
+    for (const junk of ['javascript:alert(1)', 'http://evil.example/x.png', '../escape.png', 42]) {
+      const resolved = deriveTheme(
+        BATIK,
+        { assets: { banner_url: junk } } as unknown as ThemeTokens,
+        PRESET_ID,
+      )
+      expect(resolved.assets.banner).toBeNull()
+      // Degraded keys don't count as overrides (warning path, same as fonts).
+      expect(resolved.source.overriddenKeys).toEqual([])
+      expect(resolved.warnings.some((w) => w.includes('assets.banner_url'))).toBe(true)
+    }
+  })
+
+  it('fuzz: garbage assets sections never throw', () => {
+    for (const cfg of [{ assets: 5 }, { assets: 'x' }, { assets: { badge_icon_url: 1 } }]) {
+      const resolved = deriveTheme(BATIK, cfg as unknown as ThemeTokens, PRESET_ID)
+      expect(resolved.assets).toEqual({ banner: null, logo: null })
+    }
+  })
+})

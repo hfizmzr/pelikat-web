@@ -59,6 +59,32 @@ describe('MiniThemePreview (SSR through the .event-theme engine)', () => {
     expect(html).toContain('Pingat')
     expect(html).toContain('Bib Number')
   })
+
+  it('Task 10: no assets → ThemedImage reserved boxes render the gradient fallback engine', async () => {
+    const resolved = deriveTheme(BATIK, null, PRESET_ID)
+    const html = await toHtml(<MiniThemePreview resolved={resolved} />)
+    // Reserved boxes exist for BOTH asset kinds (banner 3/1 over the mock
+    // card, 1/1 logo overlay) …
+    expect(html).toContain('aspect-ratio:3/1')
+    expect(html).toContain('aspect-ratio:1/1')
+    // … but NO im element: seed presets carry no assets, so the fallback
+    // gradient layer renders (the same collapsed-src engine as a dead URL).
+    expect(html).not.toContain('<img')
+    expect(html).toContain('bg-gradient-to-br')
+  })
+
+  it('Task 10: override draft assets flow through derive → real ThemedImage img srcs', async () => {
+    const banner = 'https://vault.example.com/event-themes/banner-v1721000000000.png'
+    const resolved = deriveTheme(
+      BATIK,
+      { assets: { banner_url: banner, logo_url: 'https://vault.example.com/event-themes/logo.png' } },
+      PRESET_ID,
+    )
+    const html = await toHtml(<MiniThemePreview resolved={resolved} />)
+    expect(html).toContain(`<img src="${banner}"`)
+    expect(html).toContain('banner-v1721000000000.png')
+    expect(html).toContain('<img src="https://vault.example.com/event-themes/logo.png"')
+  })
 })
 
 describe('ThemeEditor (SSR mount smoke)', () => {
