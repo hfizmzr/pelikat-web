@@ -20,7 +20,7 @@
  *  - all rejections/cleanup failures are STRUCTURED — warnings, never throws
  *    for cleanup; uploads reject with a readable message for the editor.
  */
-import { isPlainObject } from './utils'
+import { assetValueOk, isPlainObject } from './utils'
 
 /** Storage bucket (locked, spec §6). */
 export const THEME_ASSET_BUCKET = 'event-themes'
@@ -111,6 +111,35 @@ export function kindFromAssetKey(key: string): ThemeAssetKind | null {
 }
 
 /**
+ * Stored asset value → renderable URL at consume time (Task 11 rider). The
+ * editor drafts the bucket-relative path (076-legal on ANY origin), so BOTH
+ * stored value shapes consume here:
+ *  - `https://` URL → passthrough (legacy/external references);
+ *  - 076-legal bucket path → expanded against NEXT_PUBLIC_SUPABASE_URL into
+ *    the same shape Storage's `getPublicUrl` produces (also matches the SW
+ *    cache matcher origin+prefix — serwist.ts untouched);
+ *  - anything else (junk/hostile values) → null → ThemedImage's reserved-box
+ *    fallback. Pure + total, never throws.
+ */
+export function storageAssetUrl(value: string | null): string | null {
+  if (value === null) return null
+  if (value.startsWith('https://')) return value
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (typeof raw !== 'string') return null
+  let base: string
+  try {
+    // origin + pathname: a prefixed Supabase base URL keeps its API path
+    // (CodeRabbit rider note) and a trailing slash never double-slashes.
+    const parsed = new URL(raw)
+    base = parsed.origin + parsed.pathname.replace(/\/+$/, '')
+  } catch {
+    return null // malformed origin — fabricating a URL would mislead consumers
+  }
+  if (!assetValueOk(value)) return null
+  return `${base}/storage/v1/object/public/${THEME_ASSET_BUCKET}/${value}`
+}
+
+/**
  * Deterministic versioned path — plan Task 7: `{kind}-v{ts}.{ext}` with
  * `ts` defaulting to Date.now() and the extra dot staying ONE path segment
  * (passes the 4-segment tenancy equality).
@@ -142,8 +171,9 @@ function basenameOf(value: string): string | null {
 
 /**
  * Structured upload with the client gate FIRST, then a direct Storage upload
- * (upsert), then a single remove+retry on conflict. Returns the canonical
- * public URL consumed as the draft/DB value.
+ * (upsert), then a single remove+retry on conflict. Returns both shapes: the
+ * canonical `path` is the value the editor DRAFTS (076-legal on any origin —
+ * consumers expand via `storageAssetUrl`), `publicUrl` is its expansion.
  */
 export async function uploadThemeAsset(
   client: ThemeAssetClient,

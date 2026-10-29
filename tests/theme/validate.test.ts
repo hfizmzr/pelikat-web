@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { validateThemeConfig } from '@/lib/theme/validate'
+import { assetValueOk } from '@/lib/theme/utils'
 import { PLATFORM_BG_HEX, contrastRatio } from '@/lib/theme/color'
 import type { ThemeTokens } from '@/lib/theme/types'
 
@@ -56,6 +57,16 @@ describe('DB validator mirror (076 non-strict mode — events.theme_config CHECK
     ).toBe(true)
     expect(validateThemeConfig({ vocabulary: { bib_label: 'Nombor' } }).ok).toBe(true)
     expect(validateThemeConfig({ assets: { logo_url: 'organizers/x/logo.png' } }).ok).toBe(true)
+  })
+
+  it('Task 11 rider: the editor-drafted bucket-path shape (assetPath exact output) passes the save gate', () => {
+    // The uploader drafts `result.path` = `assetPath(org, evt, kind, ext, ts)` —
+    // a 076-legal bucket path. On an http dev origin its publicUrl would fail
+    // assetValueOk, so Save staying enabled depends on THIS shape passing.
+    const drafted = 'organizers/org-abc/events/9b2f4c1e-abcd-4321-9876-abcdef012345/banner-v1720000000000.png'
+    const res = validateThemeConfig({ assets: { banner_url: drafted } })
+    expect(res.errors).toEqual([])
+    expect(assetValueOk(drafted)).toBe(true)
   })
 
   it('rejects non-object configs (number, string, boolean, array)', () => {

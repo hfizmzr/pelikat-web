@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest'
 import { prerender } from 'react-dom/static'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
@@ -66,6 +66,19 @@ async function render(
   }
   return html + decoder.decode()
 }
+
+// Task 11 rider: storageAssetUrl reads NEXT_PUBLIC_SUPABASE_URL per call —
+// same env stub as tests/theme/utils.test.ts (vitest isolates workers per file).
+const TEST_SUPABASE_URL = 'https://ugexrrslijmwtieevjbs.supabase.co'
+const REAL_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+beforeAll(() => {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+})
+afterAll(() => {
+  if (REAL_SUPABASE_URL === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+  else process.env.NEXT_PUBLIC_SUPABASE_URL = REAL_SUPABASE_URL
+})
 
 // The 16 brand vars buildStyleVars emits — light/dark × color/companion-fg.
 const ROLE_SUFFIXES = ['-fg', '-dark', '-fg-dark'] as const
@@ -146,6 +159,23 @@ describe('EventThemeScope showAssets (Task 10: banner/logo rendering)', () => {
     const baseline = await render(event(PRESET_ID))
     const html = await render(event(PRESET_ID), true)
     expect(html).toBe(baseline)
+  })
+
+  it('Task 11 rider: 076-legal bucket-path asset → <img src> is the EXPANDED Storage URL, raw path never renders', async () => {
+    const bannerPath = 'organizers/org-1/events/e-1/banner-v1720000000000.png'
+    const logoPath = 'organizers/org-1/events/e-1/logo-v1720000000001.png'
+    useSupabase({
+      id: PRESET_ID,
+      tokens: { ...TOKENS, assets: { banner_url: bannerPath, logo_url: logoPath } },
+    })
+    const html = await render(event(PRESET_ID), true)
+    const expandedBanner = `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/${bannerPath}`
+    const expandedLogo = `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/${logoPath}`
+    expect(html).toContain(`<img src="${expandedBanner}"`)
+    expect(html).toContain(`<img src="${expandedLogo}"`)
+    expect(html).not.toContain(`<img src="organizers/`)
+    expect(html).toContain('aspect-ratio:3/1')
+    expect(html).toContain('aspect-ratio:1/1')
   })
 })
 

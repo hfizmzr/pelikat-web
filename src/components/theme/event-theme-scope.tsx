@@ -18,6 +18,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getResolvedTheme, type EventThemeInput } from '@/lib/theme/resolve'
 import { buildStyleVars, buildFontFace } from '@/lib/theme/css'
 import { isPlainObject } from '@/lib/theme/utils'
+import { storageAssetUrl } from '@/lib/theme/assets'
 import { ThemedImage, THEME_ASPECTS } from '@/components/theme/themed-image'
 
 /** Event row subset the scope consumes — `id` drives the font family + var bindings. */
@@ -55,9 +56,15 @@ export async function EventThemeScope({
   const fontFace = buildFontFace(event.id, resolved.fonts)
 
   // Asset slots (Task 10): values ONLY exist when resolved — no reserved
-  // empty boxes here, so no-asset events keep the exact P1 output.
+  // empty boxes here, so no-asset events keep the exact P1 output. Task 11
+  // rider: bucket-path values expand to the public Storage URL at consume
+  // time (storageAssetUrl); https passthrough, junk → null (display-only —
+  // resolve's 076 floor already dropped hostile values).
   const { banner, logo } = showAssets
-    ? { banner: resolved.assets.banner, logo: resolved.assets.logo }
+    ? {
+        banner: storageAssetUrl(resolved.assets.banner),
+        logo: storageAssetUrl(resolved.assets.logo),
+      }
     : { banner: null, logo: null }
 
   return (

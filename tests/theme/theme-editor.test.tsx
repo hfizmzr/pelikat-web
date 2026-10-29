@@ -1,9 +1,23 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import { prerender } from 'react-dom/static'
 import { MiniThemePreview } from '@/components/theme/mini-theme-preview'
 import { ThemeEditor } from '@/components/theme/theme-editor'
 import { deriveTheme } from '@/lib/theme/resolve'
 import type { ThemeTokens } from '@/lib/theme/types'
+
+// Task 11 rider: consumers (AssetRow thumbnails + MiniThemePreview) expand
+// bucket-path values via storageAssetUrl, which reads NEXT_PUBLIC_SUPABASE_URL
+// per call — same env stub as tests/theme/utils.test.ts (per-file isolation).
+const TEST_SUPABASE_URL = 'https://ugexrrslijmwtieevjbs.supabase.co'
+const REAL_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+beforeAll(() => {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+})
+afterAll(() => {
+  if (REAL_SUPABASE_URL === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+  else process.env.NEXT_PUBLIC_SUPABASE_URL = REAL_SUPABASE_URL
+})
 
 /**
  * Task 13 render smoke (prerender convention from event-theme-scope.test.tsx):
@@ -85,6 +99,16 @@ describe('MiniThemePreview (SSR through the .event-theme engine)', () => {
     expect(html).toContain('banner-v1721000000000.png')
     expect(html).toContain('<img src="https://vault.example.com/event-themes/logo.png"')
   })
+
+  it('Task 11 rider: bucket-path override asset → preview img src expanded via storageAssetUrl', async () => {
+    const bannerPath = 'organizers/org-1/events/e-1/banner-v1721000000000.png'
+    const resolved = deriveTheme(BATIK, { assets: { banner_url: bannerPath } }, PRESET_ID)
+    const html = await toHtml(<MiniThemePreview resolved={resolved} />)
+    expect(html).toContain(
+      `<img src="${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/${bannerPath}"`,
+    )
+    expect(html).not.toContain('<img src="organizers/')
+  })
 })
 
 describe('ThemeEditor (SSR mount smoke)', () => {
@@ -146,6 +170,34 @@ describe('ThemeEditor (SSR mount smoke)', () => {
     expect(html).toContain('banner-v1720000000000.png')
     // the ThemedImage reserved box is part of the row structure
     expect(html).toContain('Banner')
+  })
+
+  it('Task 11 rider: bucket-path asset draft → thumbnail src is the EXPANDED Storage URL (Save stays enabled)', async () => {
+    // The uploader now drafts `result.path` (bucket-relative — 076-legal on
+    // any origin). The row thumbnail must render its expansion, never the raw
+    // path; and the value passes the save validator (no validation errors in
+    // the render).
+    const bannerPath = 'organizers/org-1/events/e-1/banner-v1720000000000.png'
+    const html = await toHtml(
+      <ThemeEditor
+        eventId={EVENT_ID}
+        organizerId="org-1"
+        canEdit
+        savedPresetId={null}
+        savedConfig={{
+          assets: { banner_url: bannerPath },
+          typography: { heading_font_url: 'https://fonts.gstatic.com/s/prata/v22/6xKhdSpbNNCT-sWPCm4.woff2' },
+        }}
+        presets={PRESETS}
+      />,
+    )
+    expect(html).toContain(
+      `<img src="${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/${bannerPath}"`,
+    )
+    expect(html).not.toContain(`<img src="organizers/`)
+    expect(html).toContain('banner-v1720000000000.png')
+    // bucket path passes assetValueOk → the save bar renders no asset errors
+    expect(html).not.toContain('must be a bucket path')
   })
 
   it('gallery excludes an inactive preset; actives remain (Task 8)', async () => {

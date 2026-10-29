@@ -323,7 +323,9 @@ export function deriveTheme(
   }
 
   // Assets slot (Task 10): the resolved banner/logo values ThemedImage
-  // renders. The 076 write rule (https or clean bucket path, ONE
+  // renders (Task 11 rider: CONSUMERS expand bucket-path values to URLs via
+  // storageAssetUrl — resolve returns the stored 076-legal shape raw).
+  // The 076 write rule (https or clean bucket path, ONE
   // implementation in utils.ts) re-checked here as a degrade floor — hostile
   // hand-crafted JSONB rows drop the slot to null → gradient fallback
   // downstream, never a throw (same never-throw contract as the font slots).

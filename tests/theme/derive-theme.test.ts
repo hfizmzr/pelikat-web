@@ -70,6 +70,14 @@ describe('deriveTheme assets slot (Task 10: resolved banner/logo URLs)', () => {
     expect(resolved.source.overriddenKeys).toEqual(['assets.banner_url', 'assets.logo_url'])
   })
 
+  it('Task 11 rider: 076-legal bucket path (the uploader-drafted shape) resolves RAW (consumers expand)', () => {
+    const path = 'organizers/org-1/events/e-1/banner-v1720000000000.png'
+    const resolved = deriveTheme({}, { assets: { banner_url: path } }, null)
+    expect(resolved.assets.banner).toBe(path)
+    expect(resolved.source.overriddenKeys).toEqual(['assets.banner_url'])
+    expect(resolved.warnings).toEqual([])
+  })
+
   it('preset carries assets, override drops one via null → merge semantics apply', () => {
     const withAssets: ThemeTokens = {
       ...BATIK,

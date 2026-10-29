@@ -25,6 +25,8 @@ import {
   ASSET_LIMITS,
   FAMILY_FONT_URLS,
   FONT_LIMIT,
+  IMAGE_ASSET_KINDS,
+  storageAssetUrl,
   uploadThemeAsset,
   type AssetKind,
   type FontKind,
@@ -199,11 +201,13 @@ export function ThemeEditor({
     })
   }
 
-  // ── Assets (P2 Task 7) ──────────────────────────────────────────────────────
-  // String values only; null/garbage never reaches the draft (draft.ts
-  // projection). A direct Storage upload (merch precedent) returns the
-  // canonical public URL — the client gate in assets.ts rejects BEFORE any
-  // network call when size/type/ext is off.
+  // ── Assets (P2 Task 7 + Task 11 rider) ──────────────────────────────────────
+  // Image slots draft the BUCKET-RELATIVE path (result.path — 076-legal, so
+  // Save passes on any origin; publicUrl would be origin-absolute and fail
+  // assetValueOk on http dev stacks). Font slots keep the public URL (§5.4
+  // https allowlist). Thumbnails/consumers expand paths via storageAssetUrl;
+  // the client gate in assets.ts rejects BEFORE any network call when
+  // size/type/ext is off.
   function setAssetUrl(key: ImageAssetKey, url: string | null) {
     setDraft((d) => {
       const assets = { ...(d.assets ?? {}) }
@@ -248,7 +252,10 @@ export function ThemeEditor({
         kind,
         file,
       })
-      assigners.get(kind)?.(result.publicUrl)
+      // Task 11 rider: image asset values are stored (and drafted) as the
+      // bucket-relative path; font slots stay absolute https (allowlist).
+      const value = (IMAGE_ASSET_KINDS as readonly string[]).includes(kind) ? result.path : result.publicUrl
+      assigners.get(kind)?.(value)
     } catch (err) {
       setUploadError({
         kind,
@@ -372,7 +379,11 @@ export function ThemeEditor({
                 label={row.label}
                 aspect={row.aspect}
                 hint={row.hint}
-                url={typeof draft.assets?.[row.key] === 'string' ? (draft.assets?.[row.key] as string) : undefined}
+                url={
+                  storageAssetUrl(
+                    typeof draft.assets?.[row.key] === 'string' ? (draft.assets?.[row.key] as string) : null,
+                  ) ?? undefined
+                }
                 busy={uploading === row.kind}
                 error={uploadError?.kind === row.kind ? uploadError.message : null}
                 canEdit={canEdit}

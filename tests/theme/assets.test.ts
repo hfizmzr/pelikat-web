@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import {
   ASSET_LIMITS,
   FAMILY_FONT_URLS,
@@ -6,6 +6,7 @@ import {
   assetPath,
   cleanupThemeAssets,
   uploadThemeAsset,
+  storageAssetUrl,
   type ThemeAssetClient,
 } from '@/lib/theme/assets'
 
@@ -342,5 +343,94 @@ describe('FAMILY_FONT_URLS (hardcoded mirror of 081 seed)', () => {
       expect(url.startsWith('https://fonts.gstatic.com/') && url.endsWith('.woff2')).toBe(true)
       expect(themeFontUrlOk(url)).toBe(true)
     }
+  })
+})
+
+// Task 11 rider (asset-value shape fix): stored values are origin-portable —
+// https URLs pass through, the editor-drafted bucket path expands to the same
+// public URL Storage's getPublicUrl produces, junk → null. utils.ts reads
+// NEXT_PUBLIC_SUPABASE_URL per call — same env stub as tests/theme/utils.test.ts.
+describe('storageAssetUrl (Task 11 rider — expand at consume)', () => {
+  const TEST_SUPABASE_URL = 'https://ugexrrslijmwtieevjbs.supabase.co'
+  const REAL_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+  beforeAll(() => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+  })
+  afterAll(() => {
+    if (REAL_SUPABASE_URL === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = REAL_SUPABASE_URL
+  })
+
+  it('https URLs pass through untouched (external/legacy references)', () => {
+    const url = 'https://vault.example.com/anything/else.png'
+    expect(storageAssetUrl(url)).toBe(url)
+  })
+
+  it('the editor-drafted bucket path expands to the SAME URL getPublicUrl produces', async () => {
+    // End-to-end tie: upload ships path+publicUrl; the path value the editor
+    // now drafts expands against the origin env to exactly the publicUrl
+    // (Save-enabled + renderable on any origin this env points to).
+    const PREV_ENV = process.env.NEXT_PUBLIC_SUPABASE_URL
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://storage-origin.test' // makeBucket's mock origin
+    try {
+      const { calls, client } = makeBucket()
+      const result = await uploadThemeAsset(client, {
+        organizerId: 'org-1',
+        eventId: 'e-1',
+        kind: 'banner',
+        file: makeFile('b.png', 'image/png', 10),
+        ts: 1720000000000,
+      })
+      expect(result.path).toBe('organizers/org-1/events/e-1/banner-v1720000000000.png')
+      expect(calls.uploads).toEqual(['organizers/org-1/events/e-1/banner-v1720000000000.png'])
+      expect(storageAssetUrl(result.path)).toBe(result.publicUrl)
+    } finally {
+      process.env.NEXT_PUBLIC_SUPABASE_URL = PREV_ENV
+    }
+  })
+
+  it('plain 076-legal bucket path (no upload round-trip needed) also expands', () => {
+    expect(
+      storageAssetUrl('organizers/org-abc/events/9b2f4c1e-abcd-4321-9876-abcdef012345/logo-v7.webp'),
+    ).toBe(
+      `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/organizers/org-abc/events/9b2f4c1e-abcd-4321-9876-abcdef012345/logo-v7.webp`,
+    )
+  })
+
+  it('trailing-slash / origin-normalized Supabase URL env never double-slashes the object URL', () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = `${TEST_SUPABASE_URL}/`
+    expect(
+      storageAssetUrl('organizers/org-1/events/e-1/banner-v1.png'),
+    ).toBe(`${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/organizers/org-1/events/e-1/banner-v1.png`)
+    // back to the describe-level stub for the remaining tests
+    process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+  })
+
+  it('a prefixed Supabase base URL keeps its API path (getPublicUrl parity for non-origin bases)', () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://portal.projectsupa.org/base'
+    expect(storageAssetUrl('organizers/org-1/events/e-1/banner-v1.png')).toBe(
+      'https://portal.projectsupa.org/base/storage/v1/object/public/event-themes/organizers/org-1/events/e-1/banner-v1.png',
+    )
+    process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+  })
+
+  it('null → null; junk/hostile/076-invalid path values → null (reserved-box fallback)', () => {
+    expect(storageAssetUrl(null)).toBeNull()
+    expect(storageAssetUrl('javascript:alert(1)')).toBeNull()
+    expect(storageAssetUrl('http://evil.example/x.png')).toBeNull()
+    expect(storageAssetUrl('../escape.png')).toBeNull()
+    expect(storageAssetUrl('has space.png')).toBeNull()
+    expect(storageAssetUrl('')).toBeNull()
+    expect(storageAssetUrl('banner-v1.png')).not.toBeNull() // plain valid path still expands
+  })
+
+  it('bucket path with the env unset or malformed → null (never fabricates a bad origin)', () => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    expect(storageAssetUrl('organizers/org-1/events/e-1/banner-v1.png')).toBeNull()
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'not-a-url'
+    expect(storageAssetUrl('organizers/org-1/events/e-1/banner-v1.png')).toBeNull()
+    // Restore for worker hygiene.
+    process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
   })
 })
