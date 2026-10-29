@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest'
 import { prerender } from 'react-dom/static'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
@@ -47,9 +47,12 @@ function event(theme_preset_id: string | null, theme_config: unknown = null) {
 // renderToStaticMarkup (react-dom/server) rejects async components in React
 // 19; prerender (react-dom/static) is its async-capable counterpart and still
 // yields the raw SSR string — inline vars pre-hydration are asserted verbatim.
-async function render(event: { id: string; theme_preset_id: string | null; theme_config: unknown }) {
+async function render(
+  event: { id: string; theme_preset_id: string | null; theme_config: unknown },
+  showAssets?: boolean,
+) {
   const { prelude } = await prerender(
-    <EventThemeScope event={event}>
+    <EventThemeScope event={event} showAssets={showAssets}>
       <p>child</p>
     </EventThemeScope>,
   )
@@ -64,8 +67,117 @@ async function render(event: { id: string; theme_preset_id: string | null; theme
   return html + decoder.decode()
 }
 
+// Task 11 rider: storageAssetUrl reads NEXT_PUBLIC_SUPABASE_URL per call —
+// same env stub as tests/theme/utils.test.ts (vitest isolates workers per file).
+const TEST_SUPABASE_URL = 'https://ugexrrslijmwtieevjbs.supabase.co'
+const REAL_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+beforeAll(() => {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+})
+afterAll(() => {
+  if (REAL_SUPABASE_URL === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+  else process.env.NEXT_PUBLIC_SUPABASE_URL = REAL_SUPABASE_URL
+})
+
 // The 16 brand vars buildStyleVars emits — light/dark × color/companion-fg.
 const ROLE_SUFFIXES = ['-fg', '-dark', '-fg-dark'] as const
+
+const ASSETS_CONFIG = {
+  assets: {
+    banner_url: 'https://vault.example.com/event-themes/banner-v1721000000000.png',
+    logo_url: 'https://vault.example.com/event-themes/logo.png',
+  },
+}
+
+describe('EventThemeScope showAssets (Task 10: banner/logo rendering)', () => {
+  beforeEach(() => {
+    vi.mocked(createClient).mockReset()
+  })
+
+  it('unthemed event + showAssets → children unwrapped exactly as without the prop', async () => {
+    useSupabase(null)
+    const html = await render(event(null), true)
+    expect(html).toBe('<p>child</p>')
+    expect(createClient).not.toHaveBeenCalled()
+  })
+
+  it('default (no prop) + theme carrying assets → NO asset nodes (P1 DOM; leaderboard contract)', async () => {
+    useSupabase({ id: PRESET_ID, tokens: { ...TOKENS, ...ASSETS_CONFIG } })
+    const html = await render(event(PRESET_ID))
+    expect(html).not.toContain('<img')
+    expect(html).not.toContain('aspect-ratio')
+    expect(html).toContain('child')
+  })
+
+  it('showAssets with NO resolved asset values → DOM byte-identical to the default render', async () => {
+    useSupabase({ id: PRESET_ID, tokens: TOKENS })
+    const baseline = await render(event(PRESET_ID))
+    const html = await render(event(PRESET_ID), true)
+    expect(html).toBe(baseline)
+    expect(html).not.toContain('<img')
+  })
+
+  it('showAssets + resolved banner + logo → banner (3/1) above children + logo (1/1) overlay', async () => {
+    useSupabase({ id: PRESET_ID, tokens: { ...TOKENS, ...ASSETS_CONFIG } })
+    const html = await render(event(PRESET_ID), true)
+    // Banner: leading section, reserved 3/1 box with the real img src.
+    expect(html).toContain('aspect-ratio:3/1')
+    expect(html).toContain(`<img src="${ASSETS_CONFIG.assets.banner_url}"`)
+    // Logo: 1/1 box, width-capped w-16, real img src (ER: "synthetic banner
+    // value → banner img src present"; logo mirrors the same contract).
+    expect(html).toContain('aspect-ratio:1/1')
+    expect(html).toContain('w-16')
+    expect(html).toContain(`<img src="${ASSETS_CONFIG.assets.logo_url}"`)
+    // Children still render after the asset nodes.
+    expect(html.indexOf('aspect-ratio:3/1')).toBeLessThan(html.indexOf('child'))
+  })
+
+  it('showAssets + banner only / logo only → each renders its OWN slot only', async () => {
+    useSupabase({
+      id: PRESET_ID,
+      tokens: { ...TOKENS, assets: { banner_url: ASSETS_CONFIG.assets.banner_url } },
+    })
+    const bannerOnly = await render(event(PRESET_ID), true)
+    expect(bannerOnly).toContain(`<img src="${ASSETS_CONFIG.assets.banner_url}"`)
+    expect(bannerOnly).not.toContain(ASSETS_CONFIG.assets.logo_url)
+
+    useSupabase({
+      id: PRESET_ID,
+      tokens: { ...TOKENS, assets: { logo_url: ASSETS_CONFIG.assets.logo_url } },
+    })
+    const logoOnly = await render(event(PRESET_ID), true)
+    expect(logoOnly).toContain(`<img src="${ASSETS_CONFIG.assets.logo_url}"`)
+    expect(logoOnly).not.toContain('aspect-ratio:3/1')
+  })
+
+  it('showAssets + hostile asset value → resolve degrades: no img, P1 DOM preserved', async () => {
+    useSupabase({
+      id: PRESET_ID,
+      tokens: { ...TOKENS, assets: { banner_url: 'javascript:alert(1)' } },
+    })
+    const baseline = await render(event(PRESET_ID))
+    const html = await render(event(PRESET_ID), true)
+    expect(html).toBe(baseline)
+  })
+
+  it('Task 11 rider: 076-legal bucket-path asset → <img src> is the EXPANDED Storage URL, raw path never renders', async () => {
+    const bannerPath = 'organizers/org-1/events/e-1/banner-v1720000000000.png'
+    const logoPath = 'organizers/org-1/events/e-1/logo-v1720000000001.png'
+    useSupabase({
+      id: PRESET_ID,
+      tokens: { ...TOKENS, assets: { banner_url: bannerPath, logo_url: logoPath } },
+    })
+    const html = await render(event(PRESET_ID), true)
+    const expandedBanner = `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/${bannerPath}`
+    const expandedLogo = `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/${logoPath}`
+    expect(html).toContain(`<img src="${expandedBanner}"`)
+    expect(html).toContain(`<img src="${expandedLogo}"`)
+    expect(html).not.toContain(`<img src="organizers/`)
+    expect(html).toContain('aspect-ratio:3/1')
+    expect(html).toContain('aspect-ratio:1/1')
+  })
+})
 
 describe('EventThemeScope (SSR, spec §5.3)', () => {
   beforeEach(() => {
@@ -122,9 +234,31 @@ describe('EventThemeScope (SSR, spec §5.3)', () => {
     expect(html).toContain('font-family: ET-9b2f4c1e-Heading;')
     // Binding carry (Task 10): font vars only emit when event.id is passed.
     expect(html).toContain('--et-font-heading:ET-9b2f4c1e-Heading')
+    // Body slot unset → no body face, no body var (Geist = platform behavior).
+    expect(html).not.toContain('ET-9b2f4c1e-Body')
+    expect(html).not.toContain('--et-font-body')
   })
 
-  it('font URL failing the allowlist → no @font-face (Geist fallback)', async () => {
+  it('both font slots set → both @font-faces + both vars with system families', async () => {
+    useSupabase({
+      id: PRESET_ID,
+      tokens: {
+        ...TOKENS,
+        typography: {
+          heading_font_url: 'https://fonts.gstatic.com/s/lasso/v1/x.woff2',
+          body_font_url: 'https://fonts.gstatic.com/s/inter/v1/y.woff2',
+        },
+      },
+    })
+    const html = await render(event(PRESET_ID))
+    expect(html.match(/@font-face/g)).toHaveLength(2)
+    expect(html).toContain('font-family: ET-9b2f4c1e-Heading;')
+    expect(html).toContain('font-family: ET-9b2f4c1e-Body;')
+    expect(html).toContain('--et-font-heading:ET-9b2f4c1e-Heading')
+    expect(html).toContain('--et-font-body:ET-9b2f4c1e-Body')
+  })
+
+  it('font slot URL failing the allowlist (heading scope) → no @font-face (Geist fallback)', async () => {
     useSupabase({
       id: PRESET_ID,
       tokens: { ...TOKENS, typography: { heading_font_url: 'http://evil.example/x.woff2' } },
@@ -133,5 +267,24 @@ describe('EventThemeScope (SSR, spec §5.3)', () => {
     expect(html).not.toContain('@font-face')
     expect(html).not.toContain('--et-font-heading')
     expect(html).toContain('class="event-theme"')
+  })
+
+  it('hostile body slot URL → body face + var dropped, heading survives', async () => {
+    useSupabase({
+      id: PRESET_ID,
+      tokens: {
+        ...TOKENS,
+        typography: {
+          heading_font_url: 'https://fonts.gstatic.com/s/lasso/v1/x.woff2',
+          body_font_url: 'https://evil.example.com/x.woff2',
+        },
+      },
+    })
+    const html = await render(event(PRESET_ID))
+    expect(html).not.toContain('ET-9b2f4c1e-Body')
+    expect(html).not.toContain('--et-font-body')
+    expect(html).toContain('font-family: ET-9b2f4c1e-Heading;')
+    expect(html).toContain('--et-font-heading:ET-9b2f4c1e-Heading')
+    expect(html.match(/@font-face/g)).toHaveLength(1)
   })
 })

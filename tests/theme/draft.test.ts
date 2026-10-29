@@ -78,6 +78,47 @@ describe('normalizeThemeDraft', () => {
   })
 })
 
+describe('assets/typography sections (P2 Task 7 — allowlist projection + omit-only)', () => {
+  const ASSET_URL = 'https://ugexrrslijmwtieevjbs.supabase.co/storage/v1/object/public/event-themes/organizers/o1/events/e1/banner-v1.png'
+  const FONT_URL = 'https://fonts.gstatic.com/s/prata/v22/6xKhdSpbNNCT-sWPCm4.woff2'
+
+  it('seed projects only known string values; unknown keys and nulls are rejected', () => {
+    const seeded = seedThemeDraft({
+      assets: {
+        banner_url: ASSET_URL,
+        evil_url: 'https://evil.com/x.png',
+        old_key: 42, // unknown key of the wrong type
+        logo_url: null,
+      } as never,
+      typography: { heading_font_url: FONT_URL, family: 'Prata' } as never,
+    })
+    expect(seeded.assets).toEqual({ banner_url: ASSET_URL })
+    expect(seeded.typography).toEqual({ heading_font_url: FONT_URL })
+  })
+
+  it('normalize drops null leaves and non-strings from assets/typography (omit-reset semantics)', () => {
+    expect(
+      normalizeThemeDraft({
+        assets: { banner_url: null, logo_url: ASSET_URL, badge_icon_url: 42 as never },
+        typography: { heading_font_url: null, body_font_url: FONT_URL },
+      } as never),
+    ).toEqual({
+      assets: { logo_url: ASSET_URL },
+      typography: { body_font_url: FONT_URL },
+    })
+  })
+
+  it('a section with nothing left drops out entirely (removed last asset → no assets key)', () => {
+    expect(
+      normalizeThemeDraft({ colors: { primary: '#123456' }, assets: { banner_url: null } } as never),
+    ).toEqual({ colors: { primary: '#123456' } })
+  })
+
+  it('empty draft with assets still → null (full reset)', () => {
+    expect(normalizeThemeDraft({ assets: {} } as never)).toBeNull()
+  })
+})
+
 describe('themeDraftEquals', () => {
   it('key-order independent', () => {
     expect(

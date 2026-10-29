@@ -1,7 +1,9 @@
 'use client'
 
 import { buildStyleVars } from '@/lib/theme/css'
+import { storageAssetUrl } from '@/lib/theme/assets'
 import type { ResolvedTheme } from '@/lib/theme/types'
+import { ThemedImage, THEME_ASPECTS } from '@/components/theme/themed-image'
 import { cn } from '@/lib/utils'
 
 /**
@@ -32,6 +34,25 @@ export function MiniThemePreview({
     >
       {/* Themed event-card mock */}
       <div className="space-y-2 rounded-md border bg-card p-3">
+        {/* Task 10 asset slot: the SAME reserved-box engine/props as the
+            runner banner + logo overlay. Values come from the resolved assets
+            slot — Task 11 rider: bucket-path values expand via
+            storageAssetUrl before reaching the <img> (https passes through,
+            junk → null → gradient fallback). P2 seed presets carry none. */}
+        <div className="relative">
+          <ThemedImage
+            src={storageAssetUrl(resolved.assets.banner ?? null) ?? undefined}
+            alt="Event banner"
+            aspect={THEME_ASPECTS.banner}
+          />
+          <div className="absolute right-2 top-2 w-10">
+            <ThemedImage
+              src={storageAssetUrl(resolved.assets.logo ?? null) ?? undefined}
+              alt="Event logo"
+              aspect={THEME_ASPECTS.logo}
+            />
+          </div>
+        </div>
         <p className="text-sm font-bold text-primary">Riverside Run 2026</p>
         <div className="flex items-center gap-1.5">
           <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">

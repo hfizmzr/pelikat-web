@@ -14,10 +14,12 @@ import {
   oklchToString,
   contrastRatio,
   pickForeground,
+  relativeLuminance,
   deriveDarkVariant,
   PLATFORM_BG_HEX,
 } from './color'
 import { LABEL_KEYS, resolveLabels } from './labels'
+import { isPlainObject, themeFontUrlOk, assetValueOk } from './utils'
 import type { BrandSlot, ResolvedTheme, ThemeTokens } from './types'
 
 // Stored-token HEX contract (Global Constraints / spec §4.3: ^#[0-9a-fA-F]{6}$).
@@ -69,10 +71,6 @@ const PLATFORM_SLOTS: Record<'primary' | 'secondary' | 'accent' | 'ring', BrandS
 
 // Resolve-time label fallbacks + sanitization live in labels.ts (Task 8) —
 // single source of label truth for resolve, runner pages, and the cert payload.
-
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
 
 /** Allowlist projection: copies only known keys from a plain object. */
 function knownSection(src: unknown, keys: readonly string[]): Record<string, unknown> {
@@ -150,6 +148,26 @@ function brandSlot(hex: string): BrandSlot {
   }
 }
 
+/**
+ * Ruling #10 (P2 Task 5) — light-mode `-foreground` companion ratio for a HEX
+ * fill: the fill paired with its computed companion `pickForeground(fill)`.
+ * A WHITE pick passes by construction (pickForeground returns white only when
+ * it reaches ≥4.5:1). A dark pick (`oklch(0.145 0 0)`) is unparseable by
+ * HEX-only contrastRatio (it would silently return 1), so measure the fill's
+ * WCAG luminance against the dark-fg constant's EXACT luminance: a neutral
+ * OKLab gray's linear channel — hence its relative luminance — is L³ = 0.145³.
+ */
+const WHITE_FG = '#ffffff' // color.ts's private WHITE constant (stable)
+const DARK_FG_LUMINANCE = 0.145 ** 3
+
+function companionRatio(fill: string): number {
+  if (pickForeground(fill) === WHITE_FG) return contrastRatio(fill, WHITE_FG)
+  const y = relativeLuminance(fill)
+  const hi = Math.max(y, DARK_FG_LUMINANCE)
+  const lo = Math.min(y, DARK_FG_LUMINANCE)
+  return (hi + 0.05) / (lo + 0.05)
+}
+
 function platformTheme(warnings: string[]): ResolvedTheme {
   return {
     primary: PLATFORM_SLOTS.primary,
@@ -159,6 +177,7 @@ function platformTheme(warnings: string[]): ResolvedTheme {
     background: { light: null, dark: null },
     foreground: { light: null, dark: null },
     fonts: { heading: null, body: null },
+    assets: { banner: null, logo: null },
     labels: resolveLabels(null),
     warnings,
     source: { presetId: null, overriddenKeys: [] },
@@ -230,9 +249,33 @@ export function deriveTheme(
       if (raw !== undefined) warnings.push(`colors.${role}: invalid HEX — using platform color`)
       return PLATFORM_SLOTS[role]
     }
-    // Contrast precheck (spec §5.5 semantics): primary/secondary/accent
-    // <3:1 vs the platform background degrade to platform (a bypassed
-    // #FFD700-class fill renders nothing readable); ring only warns.
+    if (role === 'secondary' || role === 'accent') {
+      // Ruling #10 (P2 Task 5): these slots are UI surfaces — they render when
+      // their computed -foreground companions pass ≥4.5:1, replacing the P1
+      // fill-vs-platform-background gate. Mode-companions:
+      // - light: fg = pickForeground(fill) — measured by companionRatio above
+      //   (WHITE pick ≥4.5:1 by construction, dark pick measured).
+      // - dark: fill.dark is the deriveDarkVariant output — an opaque oklch
+      //   with L clamped ∈ [0.68, 0.82] vs DARK_FG 'oklch(0.145 0 0)': at the
+      //   L floor that is (0.68³+0.05)/(0.145³+0.05) ≈ 6.87:1 ≥ 4.5 — PASS by
+      //   construction (P1-analyzed; no OKLab→sRGB solver to measure a
+      //   chromatic oklch against HEX-only contrastRatio: passing is the
+      //   contract). Light mode is therefore the only measured side.
+      const ratio = companionRatio(raw)
+      if (ratio < 4.5) {
+        warnings.push(
+          `colors.${role}: foreground companion ${ratio.toFixed(2)}:1 < 4.5:1 — using platform color`,
+        )
+        return PLATFORM_SLOTS[role]
+      }
+      markOverridden(`colors.${role}`)
+      return brandSlot(raw)
+    }
+    // Contrast precheck (spec §5.5 semantics) — primary + ring keep the P1
+    // fill-vs-platform-background gate unchanged (Ruling #10 regression
+    // guard): primary <3:1 vs the platform background degrades to platform
+    // (a bypassed #FFD700-class fill renders nothing readable); ring only
+    // warns (P1 byte-identical).
     // PLATFORM_BG_HEX is color.ts's shared constant — the SAME decision the
     // validate.ts save-gate applies (Task 7 carried requirement). Dark
     // variants (L ∈ [0.68, 0.82]) trivially clear 3:1 against the dark
@@ -265,14 +308,35 @@ export function deriveTheme(
     const typography = merged.typography ?? {}
     const raw = typography[key]
     if (raw === undefined) return null
-    // Spec §5.4 allowlist is enforced in full at save (validate.ts); resolve
-    // applies the https-only floor. Origin + .woff2 narrowing at the
-    // buildFontFace consumer (Task 10).
-    if (typeof raw !== 'string' || !raw.startsWith('https://')) {
-      warnings.push(`typography.${key}: must be an https URL — using platform font`)
+    // §5.4 resolve-time floor (P2 Task 3): a font URL not passing the full
+    // allowlist (https, fonts.gstatic.com or the platform storage origin,
+    // .woff2, no traversal) drops the slot to null → Geist fallback
+    // downstream. Never throws — hostile pre-existing DB rows degrade with
+    // a structured warning. Save-time re-checks the same predicate as a
+    // hard error (validate.ts); here it only degrades.
+    if (!themeFontUrlOk(raw)) {
+      warnings.push(`typography.${key}: not an allowed font URL — using platform font`)
       return null
     }
     markOverridden(`typography.${key}`)
+    return raw
+  }
+
+  // Assets slot (Task 10): the resolved banner/logo values ThemedImage
+  // renders (Task 11 rider: CONSUMERS expand bucket-path values to URLs via
+  // storageAssetUrl — resolve returns the stored 076-legal shape raw).
+  // The 076 write rule (https or clean bucket path, ONE
+  // implementation in utils.ts) re-checked here as a degrade floor — hostile
+  // hand-crafted JSONB rows drop the slot to null → gradient fallback
+  // downstream, never a throw (same never-throw contract as the font slots).
+  function asset(key: 'banner_url' | 'logo_url'): string | null {
+    const raw = (merged.assets ?? {})[key]
+    if (raw === undefined) return null
+    if (!assetValueOk(raw)) {
+      warnings.push(`assets.${key}: not a valid asset value — using no themed asset`)
+      return null
+    }
+    markOverridden(`assets.${key}`)
     return raw
   }
 
@@ -293,6 +357,7 @@ export function deriveTheme(
     background: tint('background'),
     foreground: tint('foreground'),
     fonts: { heading: font('heading_font_url'), body: font('body_font_url') },
+    assets: { banner: asset('banner_url'), logo: asset('logo_url') },
     labels,
     warnings,
     source: { presetId, overriddenKeys: overridden },

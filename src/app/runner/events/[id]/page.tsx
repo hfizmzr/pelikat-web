@@ -73,7 +73,7 @@ export default async function RunnerEventDetailPage({
   const eventDate = new Date(event.event_date)
 
   return (
-    <EventThemeScope event={event}>
+    <EventThemeScope event={event} showAssets>
       <div className="flex flex-col w-full min-h-full bg-background">
         {/* Sticky Header */}
         <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">

@@ -17,6 +17,8 @@ import {
 import { requireAuth } from '@/lib/auth/requireUser'
 import { getOrganizerSubscriptionPrice } from '@/lib/subscription'
 import { validateThemeConfig } from '@/lib/theme/validate'
+import { cleanupThemeAssets } from '@/lib/theme/assets'
+import { isPlainObject } from '@/lib/theme/utils'
 import type { ThemeTokens } from '@/lib/theme/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -371,7 +373,10 @@ export type SaveEventThemeResult =
  *    the BFF path has no DB-level ownership check — the event must belong to
  *    the caller's organizer BEFORE anything is written;
  *  - preset reference: system OR owned by the caller's organizer (same
- *    trigger-bypass rationale, defense in depth);
+ *    trigger-bypass rationale, defense in depth); a NEW (not-yet-referenced)
+ *    preset must also be is_active (Task 8) — deactivation hides it from the
+ *    gallery and blocks switching to it; the already-referenced preset is
+ *    exempt (deactivated-but-themed events keep rendering, resolve unchanged);
  *  - validation: validateThemeConfig re-runs HERE — client validation is UX
  *    only (Task 9). Hard-blocks on `errors` (only the primary <3:1 rule);
  *    warnings ride along as structured strings (render as text children).
@@ -390,7 +395,7 @@ export async function saveEventTheme(
 
   const { data: event } = await supabase
     .from('events')
-    .select('id, organizer_id')
+    .select('id, organizer_id, theme_preset_id')
     .eq('id', eventId)
     .single()
 
@@ -402,7 +407,7 @@ export async function saveEventTheme(
   if (presetId !== null) {
     const { data: preset } = await supabase
       .from('theme_presets')
-      .select('id, kind, organizer_id')
+      .select('id, kind, organizer_id, is_active')
       .eq('id', presetId)
       .maybeSingle()
 
@@ -412,6 +417,15 @@ export async function saveEventTheme(
         (preset.kind === 'organizer' && preset.organizer_id === organizerId))
 
     if (!permitted) return { ok: false, error: 'Unknown or not permitted theme preset.' }
+
+    // Task 8: deactivation gates SELECTION only — switching to an inactive
+    // preset is rejected fail-closed (same structured treatment as the
+    // ownership violation, no PII). Re-saving an already-referenced preset
+    // stays allowed so deactivated-but-themed events keep rendering
+    // (resolve.ts unchanged, @manager ruling, formerly ruling #10).
+    if (presetId !== event.theme_preset_id && preset.is_active === false) {
+      return { ok: false, error: 'That theme preset is no longer available.' }
+    }
   }
 
   const validation = validateThemeConfig(input.theme_config)
@@ -432,7 +446,33 @@ export async function saveEventTheme(
   revalidatePath(`/runner/events/${eventId}`)
   revalidatePath('/runner/leaderboard')
 
-  return { ok: true, warnings: validation.warnings }
+  // P2 Task 7 — orphan cleanup runs ONLY after a successful save, with the
+  // FRESHLY-READ DB config (NOT the client draft — the DB is the canonical
+  // reference set). Same authenticated RLS context as the write (the event
+  // owner passes `can_manage_theme_path` for its own tenant folder); cleanup
+  // never throws — failures surface as structured warnings.
+  const warnings = [...validation.warnings]
+  const { data: savedRow } = await supabase
+    .from('events')
+    .select('theme_config')
+    .eq('id', eventId)
+    .single()
+
+  const savedConfig = (savedRow?.theme_config ?? null) as unknown
+  const refs: Record<string, unknown> = {}
+  if (isPlainObject(savedConfig)) {
+    for (const section of ['assets', 'typography'] as const) {
+      const value = savedConfig[section]
+      if (!isPlainObject(value)) continue
+      for (const [key, v] of Object.entries(value)) {
+        if (typeof v === 'string' && key.endsWith('_url')) refs[key] = v
+      }
+    }
+  }
+  const cleanup = await cleanupThemeAssets(supabase, { organizerId, eventId, savedAssets: refs })
+  warnings.push(...cleanup.warnings)
+
+  return { ok: true, warnings }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

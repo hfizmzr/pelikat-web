@@ -10,6 +10,7 @@
  *    writes `theme_config: null`, SQL NULL).
  */
 import { LABEL_KEYS } from './labels'
+import { isPlainObject } from './utils'
 import type { ThemeTokens } from './types'
 
 const SECTION_KEYS = ['colors', 'typography', 'assets', 'vocabulary'] as const
@@ -20,8 +21,27 @@ const SECTION_KEYS = ['colors', 'typography', 'assets', 'vocabulary'] as const
 // mirroring the codebase's per-module self-containment).
 const COLOR_KEYS = ['primary', 'secondary', 'accent', 'background', 'foreground', 'ring'] as const
 
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
+// P2 Task 7: the editor now ALSO edits assets + typography — those sections
+// are allowlist-projected (known keys, string values only; unknown keys are
+// rejected, explicit nulls never carried) instead of passing through
+// verbatim. Mirror of validate.ts key lists (kept local).
+const ASSET_KEYS = ['banner_url', 'logo_url', 'badge_icon_url', 'certificate_background_url'] as const
+const TYPOGRAPHY_KEYS = ['heading_font_url', 'body_font_url'] as const
+
+const STRING_KEYS: Record<'assets' | 'typography', readonly string[]> = {
+  assets: ASSET_KEYS,
+  typography: TYPOGRAPHY_KEYS,
+}
+
+/** Keep only known string leaves of an assets/typography section. */
+function projectStringSection(section: 'assets' | 'typography', value: unknown): Record<string, unknown> | null {
+  if (!isPlainObject(value)) return null
+  const keys = STRING_KEYS[section]
+  const picked: Record<string, unknown> = {}
+  for (const key of keys) {
+    if (key in value && typeof value[key] === 'string') picked[key] = value[key]
+  }
+  return Object.keys(picked).length > 0 ? picked : null
 }
 
 /**
@@ -47,11 +67,11 @@ export function seedThemeDraft(config: unknown): ThemeTokens {
     if (Object.keys(v).length > 0) out.vocabulary = v
   }
 
-  // Sections the P1 editor doesn't manage (P2 assets/typography) pass through
-  // verbatim so a later phase's data survives an earlier-phase edit.
+  // Sections the P2 editor edits (assets/typography): allowlist projection —
+  // string values on known keys only (unknown keys rejected, nulls omitted).
   for (const section of ['typography', 'assets'] as const) {
-    const value = config[section]
-    if (isPlainObject(value) && Object.keys(value).length > 0) out[section] = { ...value }
+    const picked = projectStringSection(section, config[section])
+    if (picked) out[section] = picked
   }
 
   return out as ThemeTokens
@@ -74,6 +94,12 @@ export function normalizeThemeDraft(draft: ThemeTokens | null): ThemeTokens | nu
   for (const section of SECTION_KEYS) {
     const value = draft[section]
     if (!isPlainObject(value)) continue
+    // assets/typography: allowlist-projected string sections (P2 Task 7).
+    if (section === 'assets' || section === 'typography') {
+      const picked = projectStringSection(section, value)
+      if (picked) out[section] = picked
+      continue
+    }
     const clean: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(value)) {
       if (v === null) continue

@@ -35,6 +35,7 @@ const resolved: ResolvedTheme = {
   background: { light: null, dark: null },
   foreground: { light: null, dark: null },
   fonts: { heading: null, body: null },
+  assets: { banner: null, logo: null },
   labels: {
     bib_label: 'Bib Number',
     checkpoint_label: 'Checkpoint',
@@ -90,6 +91,19 @@ describe('buildStyleVars', () => {
     expect(vars['--et-font-heading']).toBeUndefined()
   })
 
+  it('emits BOTH font vars with system families + Geist fallback when both slots set', () => {
+    const themed: ResolvedTheme = {
+      ...resolved,
+      fonts: {
+        heading: 'https://fonts.gstatic.com/s/lasso/v1/x.woff2',
+        body: 'https://fonts.gstatic.com/s/inter/v1/y.woff2',
+      },
+    }
+    const vars = buildStyleVars(themed, '9b2f4c1e-abcd-4321-9876-abcdef012345') as unknown as Record<string, string>
+    expect(vars['--et-font-heading']).toBe('ET-9b2f4c1e-Heading, var(--font-geist)')
+    expect(vars['--et-font-body']).toBe('ET-9b2f4c1e-Body, var(--font-geist)')
+  })
+
   it('omits font vars when no eventId is given (pinned single-arg signature)', () => {
     const themed: ResolvedTheme = {
       ...resolved,
@@ -97,72 +111,119 @@ describe('buildStyleVars', () => {
     }
     const vars = buildStyleVars(themed) as unknown as Record<string, string>
     expect(vars['--et-font-heading']).toBeUndefined()
+    expect(vars['--et-font-body']).toBeUndefined()
   })
 })
 
 describe('buildFontFace', () => {
   const eventId = '9b2f4c1e-abcd-4321-9876-abcdef012345'
+  const VALID = 'https://fonts.gstatic.com/s/lasso/v1/x.woff2'
+  const BODY_VALID = 'https://fonts.gstatic.com/s/inter/v1/y.woff2'
+  const HOSTILE = 'https://evil.example.com/x.woff2'
 
   it('accepts fonts.gstatic.com https woff2 and emits @font-face with system family + swap', () => {
-    const css = buildFontFace(eventId, 'https://fonts.gstatic.com/s/lasso/v1/x.woff2')
+    const css = buildFontFace(eventId, { heading: VALID })
     expect(css).toContain('font-family: ET-9b2f4c1e-Heading;')
     expect(css).toContain('font-display: swap;')
     expect(css).toContain('url("https://fonts.gstatic.com/s/lasso/v1/x.woff2") format("woff2")')
+    expect(css).not.toContain('ET-9b2f4c1e-Body')
+  })
+
+  it('emits BOTH families when both slots are set', () => {
+    const css = buildFontFace(eventId, { heading: VALID, body: BODY_VALID })
+    expect(css).toContain('font-family: ET-9b2f4c1e-Heading;')
+    expect(css).toContain('font-family: ET-9b2f4c1e-Body;')
+    expect(css).toContain('url("https://fonts.gstatic.com/s/inter/v1/y.woff2") format("woff2")')
+    expect(css.match(/@font-face \{/g)).toHaveLength(2)
+  })
+
+  it('emits the body face when only the body slot is set', () => {
+    const css = buildFontFace(eventId, { heading: null, body: BODY_VALID })
+    expect(css).toContain('font-family: ET-9b2f4c1e-Body;')
+    expect(css).not.toContain('font-family: ET-9b2f4c1e-Heading;')
+    expect(css.match(/@font-face \{/g)).toHaveLength(1)
+  })
+
+  it('emits nothing when neither slot is set', () => {
+    expect(buildFontFace(eventId, { heading: null, body: null })).toBe('')
+    expect(buildFontFace(eventId, {})).toBe('')
+  })
+
+  it('drops ONLY the hostile slot; the other face survives (per-slot gate)', () => {
+    const css = buildFontFace(eventId, { heading: VALID, body: HOSTILE })
+    expect(css).toContain('font-family: ET-9b2f4c1e-Heading;')
+    expect(css).not.toContain('ET-9b2f4c1e-Body')
+    const css2 = buildFontFace(eventId, { heading: HOSTILE, body: BODY_VALID })
+    expect(css2).not.toContain('ET-9b2f4c1e-Heading')
+    expect(css2).toContain('font-family: ET-9b2f4c1e-Body;')
   })
 
   it('accepts the platform storage origin (Supabase URL env)', () => {
-    const css = buildFontFace(
-      eventId,
-      `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/organizers/o/events/e/heading.woff2`
-    )
+    const css = buildFontFace(eventId, {
+      heading: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/organizers/o/events/e/heading.woff2`,
+    })
     expect(css).toContain('ET-9b2f4c1e-Heading')
     expect(css).toContain('font-display: swap;')
   })
 
   it('rejects non-allowlisted https hosts', () => {
-    expect(buildFontFace(eventId, 'https://evil.example.com/x.woff2')).toBe('')
+    expect(buildFontFace(eventId, { heading: HOSTILE, body: null })).toBe('')
   })
 
   it('rejects non-https URLs even on allowed hosts', () => {
-    expect(buildFontFace(eventId, 'http://fonts.gstatic.com/x.woff2')).toBe('')
+    expect(buildFontFace(eventId, { heading: 'http://fonts.gstatic.com/x.woff2', body: null })).toBe('')
     expect(
-      buildFontFace(eventId, `${TEST_SUPABASE_URL.replace('https', 'http')}/storage/v1/object/public/event-themes/x.woff2`)
+      buildFontFace(eventId, {
+        heading: `${TEST_SUPABASE_URL.replace('https', 'http')}/storage/v1/object/public/event-themes/x.woff2`,
+        body: null,
+      }),
     ).toBe('')
   })
 
   it('rejects non-woff2 extensions', () => {
-    expect(buildFontFace(eventId, 'https://fonts.gstatic.com/x.ttf')).toBe('')
-    expect(buildFontFace(eventId, 'https://fonts.gstatic.com/x.woff')).toBe('')
-    expect(buildFontFace(eventId, `${TEST_SUPABASE_URL}/x`)).toBe('')
+    expect(buildFontFace(eventId, { heading: 'https://fonts.gstatic.com/x.ttf', body: null })).toBe('')
+    expect(buildFontFace(eventId, { heading: 'https://fonts.gstatic.com/x.woff', body: null })).toBe('')
+    expect(buildFontFace(eventId, { heading: `${TEST_SUPABASE_URL}/x`, body: null })).toBe('')
   })
 
   it('rejects ../ path traversal (DB charset bypass — app-layer boundary, spec §5.4)', () => {
     // Raw dot-dot segments are rejected before URL normalization hides them.
-    expect(buildFontFace(eventId, `${TEST_SUPABASE_URL}/../x.woff2`)).toBe('')
-    expect(buildFontFace(eventId, 'https://fonts.gstatic.com/../x.woff2')).toBe('')
-    expect(buildFontFace(eventId, `${TEST_SUPABASE_URL}/storage/v1/../evil.woff2`)).toBe('')
-    expect(buildFontFace(eventId, 'https://fonts.gstatic.com/%2e%2e/x.woff2')).toBe('')
-    // Fully-encoded traversal (`..` AND the slashes percent-encoded) — Task 14.
-    expect(buildFontFace(eventId, 'https://fonts.gstatic.com/%2e%2e%2fx.woff2')).toBe('')
     expect(
-      buildFontFace(eventId, `${TEST_SUPABASE_URL}/storage/v1%2f..%2fevil.woff2`)
+      buildFontFace(eventId, { heading: `${TEST_SUPABASE_URL}/../x.woff2`, body: null }),
+    ).toBe('')
+    expect(buildFontFace(eventId, { heading: 'https://fonts.gstatic.com/../x.woff2', body: null })).toBe('')
+    expect(
+      buildFontFace(eventId, { heading: `${TEST_SUPABASE_URL}/storage/v1/../evil.woff2`, body: null }),
+    ).toBe('')
+    expect(
+      buildFontFace(eventId, { heading: 'https://fonts.gstatic.com/%2e%2e/x.woff2', body: null }),
+    ).toBe('')
+    // Fully-encoded traversal (`..` AND the slashes percent-encoded) — Task 14.
+    expect(
+      buildFontFace(eventId, { heading: 'https://fonts.gstatic.com/%2e%2e%2fx.woff2', body: null }),
+    ).toBe('')
+    expect(
+      buildFontFace(eventId, {
+        heading: `${TEST_SUPABASE_URL}/storage/v1%2f..%2fevil.woff2`,
+        body: null,
+      }),
     ).toBe('')
   })
 
   it('rejects malformed URLs', () => {
-    expect(buildFontFace(eventId, 'not-a-url')).toBe('')
-    expect(buildFontFace(eventId, '')).toBe('')
+    expect(buildFontFace(eventId, { heading: 'not-a-url', body: null })).toBe('')
+    expect(buildFontFace(eventId, { heading: '', body: null })).toBe('')
   })
 
   it('normalizes the URL (no raw spaces/quotes injected into the CSS string)', () => {
-    const css = buildFontFace(eventId, 'https://fonts.gstatic.com/a b.woff2')
+    const css = buildFontFace(eventId, { heading: 'https://fonts.gstatic.com/a b.woff2', body: null })
     expect(css).toContain('url("https://fonts.gstatic.com/a%20b.woff2")')
     // Inside the url("…") token there must be no whitespace or nested quotes.
     expect(css).toMatch(/url\("[^"\s]*"\)/)
   })
 
   it('sanitizes the family prefix to alphanumeric characters', () => {
-    const css = buildFontFace('dead<beef>-1234', 'https://fonts.gstatic.com/x.woff2')
+    const css = buildFontFace('dead<beef>-1234', { heading: 'https://fonts.gstatic.com/x.woff2' })
     expect(css).toContain('font-family: ET-deadbeef-Heading;')
   })
 })
@@ -244,5 +305,19 @@ describe('event-theme.css whitelist (hard boundary — spec §5.3)', () => {
   it('heading selectors pick up the themed heading font with a platform fallback', () => {
     expect(css).toMatch(/\.event-theme h[1-6]/)
     expect(css).toContain('font-family: var(--et-font-heading, var(--font-sans));')
+  })
+
+  it('scope div picks up the themed body font with a platform fallback', () => {
+    expect(css).toContain('.event-theme {')
+    expect(css).toContain('font-family: var(--et-font-body, var(--font-sans));')
+  })
+
+  it('font mappings stay tier-2 (reference-only): no --et-* custom property declared', () => {
+    const declared = declaredProps(css)
+    for (const name of declared) {
+      expect(name.startsWith('--et-'), `private intermediate declared in stylesheet: ${name}`).toBe(false)
+    }
+    expect(css).toContain('var(--et-font-heading,')
+    expect(css).toContain('var(--et-font-body,')
   })
 })
