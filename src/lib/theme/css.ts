@@ -21,10 +21,10 @@ const ROLES = ['primary', 'secondary', 'accent', 'ring'] as const
 
 /**
  * @param resolved — output of resolve.ts (never throws upstream).
- * @param eventId — event uuid. Required for font vars: the themed font family
- *   is system-generated per event (`ET-{eventIdPrefix}-Heading`, spec §5.4),
- *   so the single-arg signature from the plan cannot emit them. Optional and
- *   call-compatible; color vars never depend on it.
+ * @param eventId — event uuid. Required for font vars: the themed font families
+ *   are system-generated per event (`ET-{eventIdPrefix}-Heading` / `-Body`,
+ *   spec §5.4), so the single-arg signature from the plan cannot emit them.
+ *   Optional and call-compatible; color vars never depend on it.
  */
 export function buildStyleVars(resolved: ResolvedTheme, eventId?: string): CSSProperties {
   const vars: Record<string, string> = {}
@@ -38,11 +38,13 @@ export function buildStyleVars(resolved: ResolvedTheme, eventId?: string): CSSPr
   if (eventId) {
     const prefix = eventIdPrefix(eventId)
     // Full fallback stack travels in the var — the static rule stays a single
-    // var() deep, and the stack always ends in Geist (spec §5.4). The body
-    // face is not registered in P1 (heading-only @font-face), so an unset
-    // family falls through to Geist = platform behavior until P2.
-    if (resolved.fonts.heading) vars['--et-font-heading'] = `${headingFamily(eventId)}, var(--font-geist)`
-    if (resolved.fonts.body) vars['--et-font-body'] = `ET-${prefix}-Body, var(--font-geist)`
+    // var() deep, and the stack always ends in Geist (spec §5.4).
+    if (resolved.fonts.heading) {
+      vars['--et-font-heading'] = `ET-${prefix}-Heading, var(--font-geist)`
+    }
+    if (resolved.fonts.body) {
+      vars['--et-font-body'] = `ET-${prefix}-Body, var(--font-geist)`
+    }
   }
   // Custom properties are not in React's closed CSSProperties type; the cast
   // is the standard pattern for CSS-variable style objects.
@@ -61,10 +63,31 @@ function headingFamily(eventId: string): string {
 /**
  * Font URL allowlist lives in utils.ts (`themeFontUrlOk`) — the ONE shared
  * §5.4 enforcement point, consumed by css/validate/resolve. buildFontFace
- * degrades to '' (no face → Geist) instead of throwing, spec §5.5.
+ * never throws: a slot failing the gate (or unset) simply emits no face →
+ * Geist fallback, spec §5.5.
+ *
+ * @param eventId — drives the system families.
+ * @param fonts — the resolved font slots; each set URL emits one @font-face.
+ *   Every URL is re-gated here even though resolve.ts already dropped
+ *   hostile ones — this is the last line of defense before the CSS string.
  */
-export function buildFontFace(eventId: string, fontUrl: string): string {
-  if (!themeFontUrlOk(fontUrl)) return ''
+export function buildFontFace(
+  eventId: string,
+  fonts: { heading?: string | null; body?: string | null },
+): string {
+  const heading = fontFace(eventId, 'Heading', fonts.heading)
+  const body = fontFace(eventId, 'Body', fonts.body)
+  // Per-block trailing newline keeps the single-face output byte-identical to
+  // the P1 contract; multiple faces come out one blank line apart.
+  return [heading, body].filter((block) => block !== '').join('\n')
+}
+
+function fontFace(
+  eventId: string,
+  variant: 'Heading' | 'Body',
+  fontUrl: string | null | undefined,
+): string {
+  if (!fontUrl || !themeFontUrlOk(fontUrl)) return ''
   // themeFontUrlOk parsed this same string, so the constructor here cannot
   // throw; the catch keeps the never-throw contract airtight anyway.
   let url: URL
@@ -73,9 +96,10 @@ export function buildFontFace(eventId: string, fontUrl: string): string {
   } catch {
     return ''
   }
+  const family = variant === 'Heading' ? headingFamily(eventId) : `ET-${eventIdPrefix(eventId)}-Body`
   return [
     '@font-face {',
-    `  font-family: ${headingFamily(eventId)};`,
+    `  font-family: ${family};`,
     `  src: url("${url.href}") format("woff2");`,
     '  font-display: swap;',
     '}',

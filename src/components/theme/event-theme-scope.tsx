@@ -6,10 +6,10 @@
  * at first paint, pre-hydration; next-themes `.dark` toggling re-resolves via
  * pure CSS (`src/app/event-theme.css`, tier 2).
  *
- * The per-event heading @font-face (resolver-built: allowlisted URL,
- * system-generated `ET-{prefix}-Heading` family) is injected as a <style>
- * inside the scope — spec §5.4's resolver-built fallback. Scope dies with
- * navigation, so the face dies with it.
+ * The per-event heading/body @font-faces (resolver-built: allowlisted URLs,
+ * system-generated `ET-{prefix}-Heading` / `-Body` families) are injected as a
+ * <style> inside the scope — spec §5.4's resolver-built fallback. Scope dies
+ * with navigation, so the faces die with it.
  *
  * Unthemed events render children unwrapped: zero DOM, zero queries.
  */
@@ -43,8 +43,8 @@ export async function EventThemeScope({
   const resolved = await getResolvedTheme(supabase, event)
 
   // BINDING (Task 10 review carry): event.id is REQUIRED in both calls —
-  // without it the font vars/family never emit.
-  const fontFace = resolved.fonts.heading ? buildFontFace(event.id, resolved.fonts.heading) : ''
+  // without it the font vars/families never emit.
+  const fontFace = buildFontFace(event.id, resolved.fonts)
 
   return (
     <div className="event-theme" style={buildStyleVars(resolved, event.id)}>

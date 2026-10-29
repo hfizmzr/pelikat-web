@@ -122,9 +122,31 @@ describe('EventThemeScope (SSR, spec §5.3)', () => {
     expect(html).toContain('font-family: ET-9b2f4c1e-Heading;')
     // Binding carry (Task 10): font vars only emit when event.id is passed.
     expect(html).toContain('--et-font-heading:ET-9b2f4c1e-Heading')
+    // Body slot unset → no body face, no body var (Geist = platform behavior).
+    expect(html).not.toContain('ET-9b2f4c1e-Body')
+    expect(html).not.toContain('--et-font-body')
   })
 
-  it('font URL failing the allowlist → no @font-face (Geist fallback)', async () => {
+  it('both font slots set → both @font-faces + both vars with system families', async () => {
+    useSupabase({
+      id: PRESET_ID,
+      tokens: {
+        ...TOKENS,
+        typography: {
+          heading_font_url: 'https://fonts.gstatic.com/s/lasso/v1/x.woff2',
+          body_font_url: 'https://fonts.gstatic.com/s/inter/v1/y.woff2',
+        },
+      },
+    })
+    const html = await render(event(PRESET_ID))
+    expect(html.match(/@font-face/g)).toHaveLength(2)
+    expect(html).toContain('font-family: ET-9b2f4c1e-Heading;')
+    expect(html).toContain('font-family: ET-9b2f4c1e-Body;')
+    expect(html).toContain('--et-font-heading:ET-9b2f4c1e-Heading')
+    expect(html).toContain('--et-font-body:ET-9b2f4c1e-Body')
+  })
+
+  it('font slot URL failing the allowlist (heading scope) → no @font-face (Geist fallback)', async () => {
     useSupabase({
       id: PRESET_ID,
       tokens: { ...TOKENS, typography: { heading_font_url: 'http://evil.example/x.woff2' } },
@@ -133,5 +155,24 @@ describe('EventThemeScope (SSR, spec §5.3)', () => {
     expect(html).not.toContain('@font-face')
     expect(html).not.toContain('--et-font-heading')
     expect(html).toContain('class="event-theme"')
+  })
+
+  it('hostile body slot URL → body face + var dropped, heading survives', async () => {
+    useSupabase({
+      id: PRESET_ID,
+      tokens: {
+        ...TOKENS,
+        typography: {
+          heading_font_url: 'https://fonts.gstatic.com/s/lasso/v1/x.woff2',
+          body_font_url: 'https://evil.example.com/x.woff2',
+        },
+      },
+    })
+    const html = await render(event(PRESET_ID))
+    expect(html).not.toContain('ET-9b2f4c1e-Body')
+    expect(html).not.toContain('--et-font-body')
+    expect(html).toContain('font-family: ET-9b2f4c1e-Heading;')
+    expect(html).toContain('--et-font-heading:ET-9b2f4c1e-Heading')
+    expect(html.match(/@font-face/g)).toHaveLength(1)
   })
 })

@@ -2,7 +2,7 @@
  * Event Themes P1 — whitelist stylesheet (spec §5.3).
  *
  * HARD BOUNDARY: maps ONLY the 7 brand tokens (via the private --et-*
- * intermediates emitted by buildStyleVars) plus the heading font rule.
+ * intermediates emitted by buildStyleVars) plus the heading/body font rules.
  * Platform tokens outside this list are structurally unreachable inside
  * .event-theme — the core design system cannot break even if JSONB
  * validation is bypassed. Do not add mappings here; the test
@@ -40,4 +40,10 @@
 .event-theme h5,
 .event-theme h6 {
   font-family: var(--et-font-heading, var(--font-sans));
+}
+
+/* Themed body text: same contract as headings. Lives on the scope div so all
+   non-heading text inherits it; unset → platform sans (= current behavior). */
+.event-theme {
+  font-family: var(--et-font-body, var(--font-sans));
 }
