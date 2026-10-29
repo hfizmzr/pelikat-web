@@ -284,7 +284,7 @@ export default async function RunnerEventDetailPage({
                   )}
                 </div>
               </div>
-            ) : (
+            ) : event.status === 'published' ? (
               <RunnerRegistrationActions
                 eventId={event.id}
                 categories={raceCategories}
@@ -306,6 +306,14 @@ export default async function RunnerEventDetailPage({
                   location: event.location,
                 }}
               />
+            ) : (
+              // Closed unregistered: 045 rejects new registrations, so no CTA —
+              // neutral card instead. Registered runners keep their view above.
+              <div className="p-5 rounded-2xl bg-card border border-border/60">
+                <p className="text-[14px] text-muted-foreground">
+                  Registration is closed for this event.
+                </p>
+              </div>
             )}
           </section>
 

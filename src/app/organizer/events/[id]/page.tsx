@@ -192,8 +192,10 @@ export default async function OrganizerEventDetailPage({
         {/* Copy Public Event Link (P3 Task 5): the shareable /events/[slug]
         page is public for published+closed events (082); the slug is only
         guaranteed there (auto-derived for published/closed; drafts may be
-        NULL) — hidden when the slug is absent. */}
-        {eventDetail.slug && (
+        NULL). Also gated on status: published-then-drafted events KEEP their
+        slug (077 trigger does not clear it), but 082 still denies drafts — the
+        copied URL would 404. */}
+        {eventDetail.slug && eventDetail.status !== 'draft' && (
           <CopyPublicEventLink
             url={`${appUrl}/events/${eventDetail.slug}`}
           />

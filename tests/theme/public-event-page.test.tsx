@@ -297,6 +297,19 @@ describe('CopyPublicEventLink on the organizer page (P3 Task 5)', () => {
     expect(html).toContain('SETTINGS-COMPONENT')
   })
 
+  it('draft event that kept its slug (077 enforce_published_slug) → stays hidden: the copied URL would 404 (082 denies drafts)', async () => {
+    h.tables.events = { ...ORGANIZER_EVENT, status: 'draft' } // slug PRESENT
+    const html = await renderOrganizerPage()
+    expect(html).not.toContain('Copy Public Event Link')
+    expect(html).toContain('SETTINGS-COMPONENT')
+  })
+
+  it('closed event with slug → button still renders (082 renders closed events)', async () => {
+    h.tables.events = { ...ORGANIZER_EVENT, status: 'closed' }
+    const html = await renderOrganizerPage()
+    expect(html).toContain('Copy Public Event Link')
+  })
+
   it('hidden event row → notFound', async () => {
     h.tables.events = null
     await expect(renderOrganizerPage()).rejects.toThrow('NEXT_NOT_FOUND')

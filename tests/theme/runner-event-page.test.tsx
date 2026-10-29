@@ -193,3 +193,28 @@ describe('RunnerEventDetailPage service-role ORDER guard (P3 Task 4)', () => {
     expect(fetchOrganizerName).not.toHaveBeenCalled()
   })
 })
+
+describe('RunnerEventDetailPage registration CTA gating on event status (PR33 / 045)', () => {
+  it('published + unregistered → Register CTA renders', async () => {
+    useTables(baseEvent({ status: 'published' }))
+    h.tables.registrations = null
+    const html = await renderPage()
+    expect(html).toContain('REGISTER-COMPONENT')
+  })
+
+  it('closed + unregistered → no Register CTA (045 rejects), neutral closed body instead', async () => {
+    useTables(baseEvent({ status: 'closed' }))
+    h.tables.registrations = null
+    const html = await renderPage()
+    expect(html).not.toContain('REGISTER-COMPONENT')
+    expect(html).toContain('Registration is closed for this event.')
+  })
+
+  it('closed + registered → registered view unchanged (no closed body)', async () => {
+    useTables(baseEvent({ status: 'closed' }))
+    const html = await renderPage()
+    expect(html).toContain('See you at the start line.')
+    expect(html).not.toContain('Registration is closed for this event.')
+    expect(html).not.toContain('REGISTER-COMPONENT')
+  })
+})
