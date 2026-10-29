@@ -6,6 +6,7 @@ import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt, BarChart3, ClipboardL
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { EventSettingsPanel } from '@/components/events/event-settings-panel'
+import { CopyPublicEventLink } from '@/components/events/copy-public-link-button'
 import { EventPageTabs } from '@/components/events/event-tabs'
 import { ThemeEditor } from '@/components/theme/theme-editor'
 import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
@@ -61,6 +62,9 @@ type EventDetail = {
   organizer_id: string | null
   theme_preset_id: string | null
   theme_config: unknown
+  /** Public-page slug (077 trigger auto-derives for published/closed); drafts
+   * may be NULL — the copy-link button is hidden then (P3 Task 5). */
+  slug: string | null
   race_categories: RaceCategory[] | null
   registrations: Registration[] | null
 }
@@ -142,6 +146,13 @@ export default async function OrganizerEventDetailPage({
 
   const statusVariant = STATUS_VARIANTS
 
+  // Public app origin for the shareable /events/{slug} URL (P3 Task 5) —
+  // same fallback chain as hitpayRedirectUrl (tunnel in dev, APP_URL in prod).
+  const appUrl =
+    process.env.NEXT_PUBLIC_TUNNEL_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    'http://localhost:3000'
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -178,6 +189,17 @@ export default async function OrganizerEventDetailPage({
           regClose={eventDetail.reg_close}
           resultsPublished={eventDetail.results_published ?? false}
         />
+        {/* Copy Public Event Link (P3 Task 5): the shareable /events/[slug]
+        page is public for published+closed events (082); the slug is only
+        guaranteed there (auto-derived for published/closed; drafts may be
+        NULL). Also gated on status: published-then-drafted events KEEP their
+        slug (077 trigger does not clear it), but 082 still denies drafts — the
+        copied URL would 404. */}
+        {eventDetail.slug && eventDetail.status !== 'draft' && (
+          <CopyPublicEventLink
+            url={`${appUrl}/events/${eventDetail.slug}`}
+          />
+        )}
         <Link href={`/organizer/events/${eventDetail.id}/analytics`}>
           <Button variant="outline">
             <BarChart3 className="mr-2 h-4 w-4" />

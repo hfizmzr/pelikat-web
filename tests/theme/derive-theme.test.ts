@@ -1,7 +1,21 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { deriveTheme } from '@/lib/theme/resolve'
 import type { ThemeTokens } from '@/lib/theme/types'
 import { oklchToString, hexToOklch, deriveDarkVariant } from '@/lib/theme/color'
+
+// assetValueOk pins https asset values to the platform storage origin and
+// reads NEXT_PUBLIC_SUPABASE_URL per call — same env stub as
+// tests/theme/utils.test.ts (per-file isolation). P3 Task 7.
+const TEST_SUPABASE_URL = 'https://ugexrrslijmwtieevjbs.supabase.co'
+const REAL_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+beforeAll(() => {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+})
+afterAll(() => {
+  if (REAL_SUPABASE_URL === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+  else process.env.NEXT_PUBLIC_SUPABASE_URL = REAL_SUPABASE_URL
+})
 
 /**
  * deriveTheme — the pure, isomorphic derivation half of the resolver. The
@@ -56,18 +70,30 @@ describe('deriveTheme assets slot (Task 10: resolved banner/logo URLs)', () => {
     expect(resolved.source.overriddenKeys).toEqual([])
   })
 
-  it('https values (the uploader stores public URLs) → both slots resolved + tracked', () => {
-    const banner = 'https://vault.example.com/event-themes/banner-v1721000000000.png'
+  it('storage-origin https values (P3 Task 7 pin) → both slots resolved + tracked', () => {
+    const banner = `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/banner-v1721000000000.png`
     const resolved = deriveTheme(
       {},
-      { assets: { banner_url: banner, logo_url: 'https://vault.example.com/event-themes/logo.png' } },
+      {
+        assets: {
+          banner_url: banner,
+          logo_url: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/logo.png`,
+        },
+      },
       null,
     )
     expect(resolved.assets).toEqual({
       banner,
-      logo: 'https://vault.example.com/event-themes/logo.png',
+      logo: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/logo.png`,
     })
     expect(resolved.source.overriddenKeys).toEqual(['assets.banner_url', 'assets.logo_url'])
+  })
+
+  it('hostile https asset URL (other host) → slot null + warning, never throw (P3 Task 7)', () => {
+    const resolved = deriveTheme({}, { assets: { banner_url: 'https://evil.com/a.png' } }, null)
+    expect(resolved.assets.banner).toBeNull()
+    expect(resolved.source.overriddenKeys).toEqual([])
+    expect(resolved.warnings.some((w) => w.includes('assets.banner_url'))).toBe(true)
   })
 
   it('Task 11 rider: 076-legal bucket path (the uploader-drafted shape) resolves RAW (consumers expand)', () => {
@@ -81,10 +107,16 @@ describe('deriveTheme assets slot (Task 10: resolved banner/logo URLs)', () => {
   it('preset carries assets, override drops one via null → merge semantics apply', () => {
     const withAssets: ThemeTokens = {
       ...BATIK,
-      assets: { banner_url: 'https://vault.example.com/b.png', logo_url: 'https://vault.example.com/l.png' },
+      assets: {
+        banner_url: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/b.png`,
+        logo_url: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/l.png`,
+      },
     }
     const resolved = deriveTheme(withAssets, { assets: { logo_url: null } } as unknown as ThemeTokens, PRESET_ID)
-    expect(resolved.assets).toEqual({ banner: 'https://vault.example.com/b.png', logo: null })
+    expect(resolved.assets).toEqual({
+      banner: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/b.png`,
+      logo: null,
+    })
     expect(resolved.source.overriddenKeys).toEqual([])
   })
 

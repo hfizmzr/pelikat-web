@@ -26,13 +26,23 @@ function platformStorageHost(): string | null {
 }
 
 /** 076 asset value rule (shared with the save validator): relative bucket paths
- * ([A-Za-z0-9/_.-]+, no '..') or https URLs. ':' is off-charset, so
- * javascript:/http: URIs fail the path branch. */
+ * ([A-Za-z0-9/_.-]+, no '..') or https URLs pinned to the platform storage
+ * origin (P3 Task 7 — assets are not fonts: fonts.gstatic.com is
+ * themeFontUrlOk's allowlist only, invalid for ASSET values). ':' is
+ * off-charset, so javascript:/http: URIs fail the path branch. */
 const ASSET_PATH_RE = /^[A-Za-z0-9/_.-]+$/
 
 export function assetValueOk(value: unknown): boolean {
   if (typeof value !== 'string') return false
-  if (value.startsWith('https://')) return true
+  if (value.startsWith('https://')) {
+    const host = platformStorageHost()
+    if (host === null) return false
+    try {
+      return new URL(value).host === host
+    } catch {
+      return false
+    }
+  }
   return !value.includes('..') && ASSET_PATH_RE.test(value)
 }
 

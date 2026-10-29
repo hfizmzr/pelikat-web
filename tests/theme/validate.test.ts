@@ -22,7 +22,9 @@ const FULL: ThemeTokens = {
   assets: {
     banner_url:
       'organizers/00000000-0000-0000-0000-000000000000/events/11111111-1111-1111-1111-111111111111/banner.png',
-    logo_url: 'https://cdn.example.com/logo.png',
+    // P3 Task 7: https asset values are pinned to the platform storage
+    // origin, so this env-independent fixture uses bucket paths throughout.
+    logo_url: 'organizers/00000000-0000-0000-0000-000000000000/logo.png',
   },
   vocabulary: {
     bib_label: 'Nombor',
@@ -38,6 +40,55 @@ const FULL: ThemeTokens = {
 function errorFor(config: unknown, fragment: string): string | undefined {
   return validateThemeConfig(config).errors.find((e) => e.includes(fragment))
 }
+
+describe('assets host allowlist at save (P3 Task 7 — origin pin)', () => {
+  // Same env stub as the typography describe below / tests/theme/utils.test.ts.
+  const TEST_SUPABASE_URL = 'https://ugexrrslijmwtieevjbs.supabase.co'
+  const REAL_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+  beforeAll(() => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+  })
+  afterAll(() => {
+    if (REAL_SUPABASE_URL === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = REAL_SUPABASE_URL
+  })
+
+  it('accepts https assets on the platform storage origin', () => {
+    const res = validateThemeConfig({
+      assets: { banner_url: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/o/e/banner-v1.png` },
+    })
+    expect(res).toEqual({ ok: true, errors: [], warnings: [] })
+  })
+
+  it('rejects https assets on other hosts (error blocks Save)', () => {
+    expect(
+      validateThemeConfig({ assets: { banner_url: 'https://evil.com/a.png' } }).errors.some((e) =>
+        e.includes('assets.banner_url'),
+      ),
+    ).toBe(true)
+    // Asset-kind distinction: the FONT allowlist host is not valid for assets.
+    expect(errorFor({ assets: { logo_url: 'https://fonts.gstatic.com/s/foo.woff2' } }, 'assets.logo_url')).toBeDefined()
+  })
+
+  it('env-unset/malformed parity: storage-origin https also rejected', () => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    expect(
+      validateThemeConfig({ assets: { banner_url: `${TEST_SUPABASE_URL}/x.png` } }).errors.length,
+    ).toBeGreaterThan(0)
+    process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
+  })
+
+  it('P2 smoke parity: a THEMED event with bucket-path assets still passes resolve + validate', () => {
+    const drafted = {
+      banner_url: 'organizers/org-abc/events/9b2f4c1e-abcd-4321-9876-abcdef012345/banner-v1720000000000.png',
+      logo_url: 'organizers/org-abc/events/9b2f4c1e-abcd-4321-9876-abcdef012345/logo-v1720000000000.png',
+    }
+    expect(validateThemeConfig({ assets: drafted }).ok).toBe(true)
+    expect(assetValueOk(drafted.banner_url)).toBe(true)
+    expect(assetValueOk(drafted.logo_url)).toBe(true)
+  })
+})
 
 describe('DB validator mirror (076 non-strict mode — events.theme_config CHECK)', () => {
   it('accepts minimal {} and column-NULL inputs (null/undefined)', () => {

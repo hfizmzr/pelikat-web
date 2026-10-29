@@ -58,8 +58,11 @@ describe('Security: Service Role Key Exposure', () => {
       )
     })
     
-    // Only server-side files should import it: API routes and server actions
-    const serverDirs = [join('src', 'app', 'api'), join('src', 'lib', 'actions')]
+    // Only server-side files should import it: API routes, server actions, and
+    // (P3 Task 4) the server-only lib/supabase helper module — runner pages
+    // reach the service-role client ONLY through src/lib/supabase/safe-name
+    // (post-visibility organizer-name fetch), never directly.
+    const serverDirs = [join('src', 'app', 'api'), join('src', 'lib', 'actions'), join('src', 'lib', 'supabase')]
     const nonApiImports = importingFiles.filter(
       (f) => !serverDirs.some((dir) => f.includes(dir))
     )
