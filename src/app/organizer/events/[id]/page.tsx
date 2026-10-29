@@ -108,8 +108,12 @@ export default async function OrganizerEventDetailPage({
   const [{ data: presets }, { data: { user } }] = await Promise.all([
     supabase
       .from('theme_presets')
-      .select('id, name, tokens')
+      .select('id, name, tokens, is_active')
       .eq('kind', 'system')
+      // Task 8: the gallery shows ACTIVE presets only — deactivation hides the
+      // card + blocks (re)selection; resolve.ts is unchanged so already-themed
+      // events keep rendering (@manager ruling, formerly ruling #10).
+      .eq('is_active', true)
       .order('name'),
     supabase.auth.getUser(),
   ])
@@ -372,6 +376,7 @@ export default async function OrganizerEventDetailPage({
               id: preset.id,
               name: preset.name,
               tokens: preset.tokens as ThemeTokens,
+              is_active: preset.is_active as boolean | null,
             }))}
           />
         }

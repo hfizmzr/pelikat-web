@@ -61,8 +61,8 @@ function makeSupabase(opts: { event?: Row; preset?: Row; savedConfig?: Row } = {
 }
 
 const OWNER = { id: 'user-1', app_metadata: { organizer_id: 'org-1' } }
-const OWNED_EVENT = { id: 'event-1', organizer_id: 'org-1' }
-const SYSTEM_PRESET = { id: 'preset-1', kind: 'system', organizer_id: null }
+const OWNED_EVENT = { id: 'event-1', organizer_id: 'org-1', theme_preset_id: null }
+const SYSTEM_PRESET = { id: 'preset-1', kind: 'system', organizer_id: null, is_active: true }
 
 const { saveEventTheme } = await import('@/components/events/actions')
 
@@ -135,6 +135,47 @@ describe('saveEventTheme', () => {
     expect(result.ok).toBe(false)
     expect((result as { error: string }).error).toMatch(/colors\.primary.*contrast/i)
     expect(updatePayload).not.toHaveBeenCalled()
+  })
+
+  // P2 Task 8: switching to a DEACTIVATED preset is rejected fail-closed
+  // (same structured treatment as the ownership violation — no PII).
+  it('inactive preset (is_active=false) → rejected with structured error, never writes', async () => {
+    requireAuth.mockResolvedValue({
+      supabase: makeSupabase({
+        event: OWNED_EVENT,
+        preset: { id: 'preset-1', kind: 'system', organizer_id: null, is_active: false },
+      }),
+      user: OWNER,
+    })
+    const result = await saveEventTheme('event-1', {
+      theme_preset_id: 'preset-1',
+      theme_config: null,
+    })
+    expect(result.ok).toBe(false)
+    expect((result as { error: string }).error).toMatch(/no longer available/i)
+    expect(updatePayload).not.toHaveBeenCalled()
+  })
+
+  // @manager ruling (formerly #10): deactivation gates SELECTION only —
+  // re-saving the ALREADY-REFERENCED inactive preset stays allowed so
+  // deactivated-but-themed events keep rendering (resolve.ts unchanged).
+  it('already-referenced inactive preset → still saves (selection-only gating)', async () => {
+    requireAuth.mockResolvedValue({
+      supabase: makeSupabase({
+        event: { ...OWNED_EVENT, theme_preset_id: 'preset-1' },
+        preset: { id: 'preset-1', kind: 'system', organizer_id: null, is_active: false },
+      }),
+      user: OWNER,
+    })
+    const result = await saveEventTheme('event-1', {
+      theme_preset_id: 'preset-1',
+      theme_config: { colors: { primary: '#00807A' } },
+    })
+    expect(result.ok).toBe(true)
+    expect(updatePayload).toHaveBeenCalledWith({
+      theme_preset_id: 'preset-1',
+      theme_config: { colors: { primary: '#00807A' } },
+    })
   })
 
   it('happy path → both columns written + revalidates organizer, runner event, leaderboard', async () => {

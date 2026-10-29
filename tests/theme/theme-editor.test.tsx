@@ -122,6 +122,25 @@ describe('ThemeEditor (SSR mount smoke)', () => {
     expect(html).toContain('Banner')
   })
 
+  it('gallery excludes an inactive preset; actives remain (Task 8)', async () => {
+    const RETIRED_ID = '22222222-2222-2222-2222-222222222222'
+    const html = await toHtml(
+      <ThemeEditor
+        eventId={EVENT_ID}
+        organizerId="org-1"
+        canEdit
+        savedPresetId={null}
+        savedConfig={null}
+        presets={[
+          { id: PRESET_ID, name: 'Batik Heritage', tokens: BATIK, is_active: true },
+          { id: RETIRED_ID, name: 'Retired Preset', tokens: BATIK, is_active: false },
+        ]}
+      />,
+    )
+    expect(html).toContain('Batik Heritage')
+    expect(html).not.toContain('Retired Preset')
+  })
+
   it('read-only mode (non-owner): banner shown, no save button', async () => {
     const html = await toHtml(
       <ThemeEditor

@@ -46,6 +46,10 @@ export type ThemePresetOption = {
   id: string
   name: string
   tokens: ThemeTokens
+  // Task 8: absent/undefined counts as active; only an explicit `false` hides
+  // the preset from the gallery (deactivated-but-themed events keep
+  // rendering — resolve.ts unchanged).
+  is_active?: boolean | null
 }
 
 const COLOR_ROLES = ['primary', 'secondary', 'accent', 'ring'] as const
@@ -293,7 +297,11 @@ export function ThemeEditor({
             Preset
           </h3>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {presets.map((preset) => (
+            {/* Task 8: gallery = ACTIVE presets only (fail-closed second gate
+                after the page query `.eq('is_active', true)`); `selectedPreset`
+                intentionally resolves against the FULL list so a
+                deactivated-but-saved preset keeps seeding its own values. */}
+            {presets.filter((p) => p.is_active !== false).map((preset) => (
               <button
                 key={preset.id}
                 type="button"

@@ -373,7 +373,10 @@ export type SaveEventThemeResult =
  *    the BFF path has no DB-level ownership check — the event must belong to
  *    the caller's organizer BEFORE anything is written;
  *  - preset reference: system OR owned by the caller's organizer (same
- *    trigger-bypass rationale, defense in depth);
+ *    trigger-bypass rationale, defense in depth); a NEW (not-yet-referenced)
+ *    preset must also be is_active (Task 8) — deactivation hides it from the
+ *    gallery and blocks switching to it; the already-referenced preset is
+ *    exempt (deactivated-but-themed events keep rendering, resolve unchanged);
  *  - validation: validateThemeConfig re-runs HERE — client validation is UX
  *    only (Task 9). Hard-blocks on `errors` (only the primary <3:1 rule);
  *    warnings ride along as structured strings (render as text children).
@@ -392,7 +395,7 @@ export async function saveEventTheme(
 
   const { data: event } = await supabase
     .from('events')
-    .select('id, organizer_id')
+    .select('id, organizer_id, theme_preset_id')
     .eq('id', eventId)
     .single()
 
@@ -404,7 +407,7 @@ export async function saveEventTheme(
   if (presetId !== null) {
     const { data: preset } = await supabase
       .from('theme_presets')
-      .select('id, kind, organizer_id')
+      .select('id, kind, organizer_id, is_active')
       .eq('id', presetId)
       .maybeSingle()
 
@@ -414,6 +417,15 @@ export async function saveEventTheme(
         (preset.kind === 'organizer' && preset.organizer_id === organizerId))
 
     if (!permitted) return { ok: false, error: 'Unknown or not permitted theme preset.' }
+
+    // Task 8: deactivation gates SELECTION only — switching to an inactive
+    // preset is rejected fail-closed (same structured treatment as the
+    // ownership violation, no PII). Re-saving an already-referenced preset
+    // stays allowed so deactivated-but-themed events keep rendering
+    // (resolve.ts unchanged, @manager ruling, formerly ruling #10).
+    if (presetId !== event.theme_preset_id && preset.is_active === false) {
+      return { ok: false, error: 'That theme preset is no longer available.' }
+    }
   }
 
   const validation = validateThemeConfig(input.theme_config)
