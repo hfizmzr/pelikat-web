@@ -288,6 +288,13 @@ describe('CopyPublicEventLink on the organizer page (P3 Task 5)', () => {
     const html = await renderOrganizerPage()
     expect(html).toContain('Copy Public Event Link')
     expect(html).toContain('SETTINGS-COMPONENT') // sanity: the header block rendered
+    // Post-P4 audit #1/#2/#4 cheap clip-guards: mobile-stack header (stretchy
+    // flex-wrap row kept Settings clipped), px gutters on the content root,
+    // and a min-w-0 title column. Class-presence only — vitest is not a
+    // layout engine.
+    expect(html).toContain('flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4')
+    expect(html).toContain('space-y-6 px-4 sm:px-6')
+    expect(html).toContain('min-w-0 flex-1')
   })
 
   it('event without slug (draft — slug stays NULL per 077) → no button, page still renders', async () => {

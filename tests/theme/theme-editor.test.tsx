@@ -146,6 +146,11 @@ describe('ThemeEditor (SSR mount smoke)', () => {
       expect(html).toContain(role)
     }
     expect(html).toContain('Save theme')
+    // Post-P4 audit #3 cheap clip-guard: the preset gallery + two-col chain
+    // render min-w-0 and the scale-ordered mobile grid (no min-content blowout
+    // at 390px). Vitest can't measure layout — this pins the rendered classes.
+    expect(html).toContain('grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3')
+    expect(html).toContain('min-w-0')
     // Batik preset selected → its vocabulary seeds the live label preview
     expect(html).toContain('Your Kampung #1234')
     expect(html).toContain('Your Bib Number #1234')

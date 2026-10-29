@@ -102,13 +102,15 @@ function SortHeader({
   label,
   sortKeyVal,
   onSort,
+  className,
 }: {
   label: string
   sortKeyVal: SortKey
   onSort: (key: SortKey) => void
+  className?: string
 }) {
   return (
-    <th className="py-3 px-4">
+    <th className={`py-3 px-4 ${className ?? ''}`}>
       <button
         className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-muted-foreground transition-colors font-inter"
         onClick={() => onSort(sortKeyVal)}
@@ -288,12 +290,16 @@ export function OrganizerTable({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-border/30">
-              <SortHeader label="Organization" sortKeyVal="name" onSort={handleSort} />
-              <SortHeader label="Slug" sortKeyVal="slug" onSort={handleSort} />
-              <SortHeader label="Email" sortKeyVal="contact_email" onSort={handleSort} />
-              <SortHeader label="Status" sortKeyVal="is_active" onSort={handleSort} />
-              <SortHeader label="Sub Expires" sortKeyVal="sub_expires_at" onSort={handleSort} />
-              <SortHeader label="Created" sortKeyVal="created_at" onSort={handleSort} />
+            {/* Audit #5: 7 columns overflow a phone viewport — STATUS/ACTIONS
+            were unreachable. Class-only fix: value-light columns (Slug, Sub
+            Expires, Created) drop below md (the wrapper already has
+            overflow-x-auto, so scrolling is scale-safe at any ≥md width). */}
+            <SortHeader label="Organization" sortKeyVal="name" onSort={handleSort} />
+            <SortHeader label="Slug" sortKeyVal="slug" onSort={handleSort} className="hidden md:table-cell" />
+            <SortHeader label="Email" sortKeyVal="contact_email" onSort={handleSort} />
+            <SortHeader label="Status" sortKeyVal="is_active" onSort={handleSort} />
+            <SortHeader label="Sub Expires" sortKeyVal="sub_expires_at" onSort={handleSort} className="hidden md:table-cell" />
+            <SortHeader label="Created" sortKeyVal="created_at" onSort={handleSort} className="hidden md:table-cell" />
               <th className="py-3 px-4 text-right">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Actions</span>
               </th>
@@ -327,14 +333,18 @@ export function OrganizerTable({
                       </div>
                     </td>
 
-                    {/* Slug */}
-                    <td className="py-4 px-4">
+                    {/* Slug (hidden < md — audit #5, see header note) */}
+                    <td className="py-4 px-4 hidden md:table-cell">
                       <span className="text-muted-foreground font-mono text-[12px]">@{organizer.slug}</span>
                     </td>
 
-                    {/* Email */}
+                    {/* Email — block truncate (audit #8): overflow-hidden cells
+                    contribute min-content 0 to auto table layout, so the column
+                    absorbs the shrink and reads with an ellipsis affordance
+                    instead of a mid-glyph cut (table-fixed/colgroup skipped —
+                    that redistributes every column at desktop). */}
                     <td className="py-4 px-4">
-                      <span className="text-muted-foreground">{organizer.contact_email || '—'}</span>
+                      <span className="block truncate text-muted-foreground">{organizer.contact_email || '—'}</span>
                     </td>
 
                     {/* Status + Toggle */}
@@ -354,8 +364,8 @@ export function OrganizerTable({
                       </div>
                     </td>
 
-                    {/* Expiry */}
-                    <td className="py-4 px-4">
+                    {/* Expiry (hidden < md — audit #5) */}
+                    <td className="py-4 px-4 hidden md:table-cell">
                       {isEditingExpiry ? (
                         <div className="flex items-center gap-1">
                           <Input
@@ -409,8 +419,8 @@ export function OrganizerTable({
                       )}
                     </td>
 
-                    {/* Created */}
-                    <td className="py-4 px-4">
+                    {/* Created (hidden < md — audit #5) */}
+                    <td className="py-4 px-4 hidden md:table-cell">
                       <span className="text-muted-foreground font-mono text-[12px]">
                         {new Date(organizer.created_at).toLocaleDateString()}
                       </span>

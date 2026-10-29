@@ -297,7 +297,9 @@ export function ThemeEditor({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="space-y-6">
+      {/* Two-col panel chain (audit #3): min-w-0 guards each grid item so a
+      min-content-preset blowout can't widen the whole lg:[1fr_360px] panel. */}
+      <div className="min-w-0 space-y-6">
         {!canEdit && (
           <p className="rounded-lg border border-border bg-muted/50 p-3 text-sm text-muted-foreground">
             You can only theme events you organize — this tab is read-only.
@@ -309,7 +311,12 @@ export function ThemeEditor({
           <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             Preset
           </h3>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {/* Audit #3: the old idle grid-cols-2 blew out min-content tracks
+          (~406px on a 390 viewport, widening the whole two-col panel). Scale
+          substitution for the audit's `min-[420px]:` (arbitrary-value syntax,
+          no xs breakpoint in the v4 @theme): single column until sm, 3 cols
+          from md (before the lg two-col split). */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
             {/* Task 8: gallery = ACTIVE presets only (fail-closed second gate
                 after the page query); `selectedPreset` resolves against the
                 FULL list so a deactivated-but-saved preset keeps seeding its
@@ -330,7 +337,7 @@ export function ThemeEditor({
                 onClick={() => setSelectedPresetId(preset.id)}
                 aria-pressed={selectedPresetId === preset.id}
                 className={cn(
-                  'rounded-lg border p-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+                  'min-w-0 rounded-lg border p-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60',
                   inactive && 'grayscale ring-1 ring-border',
                   selectedPresetId === preset.id
                     ? 'border-primary ring-2 ring-ring/50'
@@ -351,7 +358,7 @@ export function ThemeEditor({
               onClick={() => setSelectedPresetId(null)}
               aria-pressed={selectedPresetId === null}
               className={cn(
-                'flex min-h-[80px] flex-col items-center justify-center gap-1 rounded-lg border border-dashed p-2 text-center transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+                'flex min-h-[80px] min-w-0 flex-col items-center justify-center gap-1 rounded-lg border border-dashed p-2 text-center transition-colors disabled:cursor-not-allowed disabled:opacity-60',
                 selectedPresetId === null
                   ? 'border-primary ring-2 ring-ring/50'
                   : 'hover:border-primary/50',
@@ -482,7 +489,7 @@ export function ThemeEditor({
       </div>
 
       {/* ── Sticky live preview + save bar ─────────────────────────────── */}
-      <div className="space-y-3 lg:sticky lg:top-20 lg:self-start">
+      <div className="min-w-0 space-y-3 lg:sticky lg:top-20 lg:self-start">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             Live preview
