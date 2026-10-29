@@ -83,10 +83,12 @@ afterAll(() => {
 // The 16 brand vars buildStyleVars emits — light/dark × color/companion-fg.
 const ROLE_SUFFIXES = ['-fg', '-dark', '-fg-dark'] as const
 
+// P3 Task 7: https asset values must sit on the platform storage origin
+// (assetValueOk host pin — env stubbed to TEST_SUPABASE_URL above).
 const ASSETS_CONFIG = {
   assets: {
-    banner_url: 'https://vault.example.com/event-themes/banner-v1721000000000.png',
-    logo_url: 'https://vault.example.com/event-themes/logo.png',
+    banner_url: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/banner-v1721000000000.png`,
+    logo_url: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/logo.png`,
   },
 }
 

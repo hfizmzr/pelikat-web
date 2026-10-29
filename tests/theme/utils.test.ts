@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { isPlainObject, themeFontUrlOk } from '@/lib/theme/utils'
+import { isPlainObject, themeFontUrlOk, assetValueOk } from '@/lib/theme/utils'
 
 // Platform storage origin for the font allowlist (spec §5.4). utils.ts reads
 // NEXT_PUBLIC_SUPABASE_URL per call — set before any test body runs. Vitest
@@ -35,6 +35,52 @@ describe('isPlainObject', () => {
   it('rejects built-in object flavors (Map, Date)', () => {
     expect(isPlainObject(new Map())).toBe(false)
     expect(isPlainObject(new Date())).toBe(false)
+  })
+})
+
+describe('assetValueOk (076 asset value rule + P3 Task 7 origin pin)', () => {
+  it('accepts relative bucket paths (076-legal: charset + no dot-dot)', () => {
+    expect(assetValueOk('organizers/org-1/events/e-1/banner-v1720000000000.png')).toBe(true)
+    expect(assetValueOk('banner.png')).toBe(true)
+    expect(assetValueOk('a.b_c/d-e/f.webp')).toBe(true)
+    expect(assetValueOk('../escape.png')).toBe(false)
+    expect(assetValueOk('a/../b.png')).toBe(false)
+    expect(assetValueOk('has space.png')).toBe(false)
+    expect(assetValueOk('javascript:alert(1)')).toBe(false)
+    expect(assetValueOk('http://evil.example/x.png')).toBe(false)
+  })
+
+  it('accepts https URLs only on the platform storage origin', () => {
+    expect(
+      assetValueOk(`${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/organizers/o/e/banner-v1.png`),
+    ).toBe(true)
+    // Asset-kind distinction (P3 Task 7): fonts.gstatic.com is the §5.4 FONT
+    // allowlist (themeFontUrlOk) — NOT valid for ASSET values.
+    expect(assetValueOk('https://fonts.gstatic.com/s/foo.woff2')).toBe(false)
+    expect(assetValueOk('https://evil.com/a.png')).toBe(false)
+    expect(assetValueOk('https://fonts.gstatic.com.evil.com/x.png')).toBe(false)
+  })
+
+  it('rejects non-string input and http/other schemes', () => {
+    expect(assetValueOk(undefined)).toBe(false)
+    expect(assetValueOk(null)).toBe(false)
+    expect(assetValueOk(42)).toBe(false)
+    expect(assetValueOk({})).toBe(false)
+    expect(assetValueOk('')).toBe(false)
+    expect(assetValueOk(`${TEST_SUPABASE_URL.replace('https', 'http')}/x.png`)).toBe(false)
+  })
+
+  it('rejects when the Supabase URL env is unset or malformed (themeFontUrlOk parity)', () => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL
+    expect(
+      assetValueOk(`${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/x.png`),
+    ).toBe(false)
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'not-a-url'
+    expect(
+      assetValueOk(`${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/x.png`),
+    ).toBe(false)
+    // Restore for the remaining tests in this file (hygiene for workers).
+    process.env.NEXT_PUBLIC_SUPABASE_URL = TEST_SUPABASE_URL
   })
 })
 

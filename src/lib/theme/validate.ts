@@ -229,7 +229,8 @@ export function validateThemeConfig(config: unknown): ThemeValidation {
     }
   }
 
-  // assets: bucket paths or https URLs (076 charset/traversal rules).
+  // assets: bucket paths or storage-origin https URLs (076 charset/traversal
+  // rules + the P3 Task 7 host pin in assetValueOk).
   const assets = config.assets
   if (assets !== undefined) {
     if (!isPlainObject(assets)) {
@@ -243,7 +244,7 @@ export function validateThemeConfig(config: unknown): ThemeValidation {
         if (raw === undefined) continue
         if (typeof raw !== 'string' || !assetValueOk(raw)) {
           errors.push(
-            `assets.${key}: must be a bucket path ([A-Za-z0-9/_.-], no '..') or an https:// URL`,
+            `assets.${key}: must be a bucket path ([A-Za-z0-9/_.-], no '..') or an https:// URL on the platform storage origin`,
           )
         }
       }

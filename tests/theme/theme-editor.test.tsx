@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from 'vitest'
 import { prerender } from 'react-dom/static'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { MiniThemePreview } from '@/components/theme/mini-theme-preview'
@@ -98,16 +98,24 @@ describe('MiniThemePreview (SSR through the .event-theme engine)', () => {
   })
 
   it('Task 10: override draft assets flow through derive → real ThemedImage img srcs', async () => {
-    const banner = 'https://vault.example.com/event-themes/banner-v1721000000000.png'
+    // Storage-origin https URLs (P3 Task 7 asset host pin) — real img srcs.
+    const banner = `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/banner-v1721000000000.png`
     const resolved = deriveTheme(
       BATIK,
-      { assets: { banner_url: banner, logo_url: 'https://vault.example.com/event-themes/logo.png' } },
+      {
+        assets: {
+          banner_url: banner,
+          logo_url: `${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/logo.png`,
+        },
+      },
       PRESET_ID,
     )
     const html = await toHtml(<MiniThemePreview resolved={resolved} />)
     expect(html).toContain(`<img src="${banner}"`)
     expect(html).toContain('banner-v1721000000000.png')
-    expect(html).toContain('<img src="https://vault.example.com/event-themes/logo.png"')
+    expect(html).toContain(
+      `<img src="${TEST_SUPABASE_URL}/storage/v1/object/public/event-themes/logo.png"`,
+    )
   })
 
   it('Task 11 rider: bucket-path override asset → preview img src expanded via storageAssetUrl', async () => {
