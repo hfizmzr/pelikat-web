@@ -62,10 +62,11 @@ describe('MiniThemePreview (SSR through the .event-theme engine)', () => {
 })
 
 describe('ThemeEditor (SSR mount smoke)', () => {
-  it('editable mode: gallery + color rows + vocab + save bar render', async () => {
+  it('editable mode: gallery + color rows + assets + vocab + save bar render', async () => {
     const html = await toHtml(
       <ThemeEditor
         eventId={EVENT_ID}
+        organizerId="org-1"
         canEdit
         savedPresetId={PRESET_ID}
         savedConfig={null}
@@ -80,12 +81,52 @@ describe('ThemeEditor (SSR mount smoke)', () => {
     // Batik preset selected → its vocabulary seeds the live label preview
     expect(html).toContain('Your Kampung #1234')
     expect(html).toContain('Your Bib Number #1234')
+    // P2 Task 7: 4 asset rows + 2 font rows in an Assets section
+    expect(html).toContain('Assets')
+    expect(html).toContain('Banner')
+    expect(html).toContain('Badge icon')
+    expect(html).toContain('Certificate background')
+    expect(html).toContain('Heading font')
+    expect(html).toContain('Body font')
+    // per-kind limit hints (exact §6 values)
+    expect(html).toContain('2.0 MB max')
+    expect(html).toContain('512 KB max')
+    expect(html).toContain('256 KB max')
+    expect(html).toContain('8.0 MB max')
+    // font rows draw from FAMILY_FONT_URLS (assets.test.ts pins all 9 URLs);
+    // the Radix Select dropdown items are client-only, so the fixture asserts
+    // the trigger's default state instead
+    expect(html).toContain('Heading font')
+    expect(html).toContain('Body font')
+    expect(html).toContain('Google OFL families')
+  })
+
+  it('asset draft values render as ThemedImage thumbnails (reserved box, src present)', async () => {
+    const banner = 'https://ugexrrslijmwtieevjbs.supabase.co/storage/v1/object/public/event-themes/organizers/org-1/events/e-1/banner-v1720000000000.png'
+    const html = await toHtml(
+      <ThemeEditor
+        eventId={EVENT_ID}
+        organizerId="org-1"
+        canEdit
+        savedPresetId={null}
+        savedConfig={{
+          assets: { banner_url: banner },
+          typography: { heading_font_url: 'https://fonts.gstatic.com/s/prata/v22/6xKhdSpbNNCT-sWPCm4.woff2' },
+        }}
+        presets={PRESETS}
+      />,
+    )
+    expect(html).toContain(banner)
+    expect(html).toContain('banner-v1720000000000.png')
+    // the ThemedImage reserved box is part of the row structure
+    expect(html).toContain('Banner')
   })
 
   it('read-only mode (non-owner): banner shown, no save button', async () => {
     const html = await toHtml(
       <ThemeEditor
         eventId={EVENT_ID}
+        organizerId="org-1"
         canEdit={false}
         savedPresetId={null}
         savedConfig={null}

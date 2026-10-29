@@ -5,13 +5,32 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Moon, Paintbrush, RotateCcw, Save, Sun } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Loader2, Moon, Paintbrush, RotateCcw, Save, Sun, UploadCloud } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { saveEventTheme } from '@/components/events/actions'
 import { useThemeDirtyReporter } from '@/components/events/event-tabs'
 import { MiniThemePreview } from '@/components/theme/mini-theme-preview'
+import { ThemedImage, THEME_ASPECTS } from '@/components/theme/themed-image'
 import { validateThemeConfig } from '@/lib/theme/validate'
 import { deriveTheme } from '@/lib/theme/resolve'
 import { normalizeThemeDraft, seedThemeDraft, themeDraftEquals } from '@/lib/theme/draft'
+import {
+  ASSET_LIMITS,
+  FAMILY_FONT_URLS,
+  FONT_LIMIT,
+  uploadThemeAsset,
+  type AssetKind,
+  type FontKind,
+  type ImageAssetKey,
+  type ThemeAssetKind,
+} from '@/lib/theme/assets'
 import {
   LABEL_KEYS,
   LABEL_MAX,
@@ -42,6 +61,50 @@ const ROLE_LABELS: Record<ColorRole, string> = {
 // Same strict HEX contract the tokens use (validate.ts / 076).
 const HEX_RE = /^#[0-9a-fA-F]{6}$/
 
+// ── Assets section (P2 Task 7, spec §6/§8) ───────────────────────────────────
+// Aspect keys are the exported THEME_ASPECTS from Task 6 (note: the badge
+// key is `badge`, the kind is `badge_icon` — mapped explicitly here).
+const IMAGE_ACCEPT = 'image/png,image/jpeg,image/webp'
+
+const ASSET_ROWS: { key: ImageAssetKey; kind: AssetKind; label: string; aspect: string; hint: string }[] = [
+  {
+    key: 'banner_url',
+    kind: 'banner',
+    label: 'Banner',
+    aspect: THEME_ASPECTS.banner,
+    hint: `${(ASSET_LIMITS.banner.maxBytes / 1_048_576).toFixed(1)} MB max · PNG, JPEG or WebP`,
+  },
+  {
+    key: 'logo_url',
+    kind: 'logo',
+    label: 'Logo',
+    aspect: THEME_ASPECTS.logo,
+    hint: `${(ASSET_LIMITS.logo.maxBytes / 1024).toFixed(0)} KB max · PNG, JPEG or WebP`,
+  },
+  {
+    key: 'badge_icon_url',
+    kind: 'badge_icon',
+    label: 'Badge icon',
+    aspect: THEME_ASPECTS.badge,
+    hint: `${(ASSET_LIMITS.badge_icon.maxBytes / 1024).toFixed(0)} KB max · PNG, JPEG or WebP`,
+  },
+  {
+    key: 'certificate_background_url',
+    kind: 'certificate_background',
+    label: 'Certificate background',
+    aspect: THEME_ASPECTS.certificate_background,
+    hint: `${(ASSET_LIMITS.certificate_background.maxBytes / 1_048_576).toFixed(1)} MB max · PNG, JPEG or WebP`,
+  },
+]
+
+const FONT_SLOTS: { kind: FontKind; urlKey: 'heading_font_url' | 'body_font_url'; label: string }[] = [
+  { kind: 'heading_font', urlKey: 'heading_font_url', label: 'Heading font' },
+  { kind: 'body_font', urlKey: 'body_font_url', label: 'Body font' },
+]
+
+const FONT_FAMILY_ITEMS = Object.entries(FAMILY_FONT_URLS)
+const FONT_URL_TO_FAMILY = new Map(FONT_FAMILY_ITEMS.map(([name, url]) => [url, name]))
+
 /**
  * Theme tab (spec §8, plan Task 13): preset gallery + custom color pickers +
  * vocabulary fields with a live preview — everything renders through the same
@@ -51,12 +114,14 @@ const HEX_RE = /^#[0-9a-fA-F]{6}$/
  */
 export function ThemeEditor({
   eventId,
+  organizerId,
   canEdit,
   savedPresetId,
   savedConfig,
   presets,
 }: {
   eventId: string
+  organizerId: string
   canEdit: boolean
   savedPresetId: string | null
   savedConfig: ThemeTokens | null
@@ -72,6 +137,11 @@ export function ThemeEditor({
   const [actionError, setActionError] = useState<string | null>(null)
   const [saveWarnings, setSaveWarnings] = useState<string[]>([])
   const [dark, setDark] = useState(false)
+  // P2 Task 7 — in-flight upload keyed by asset kind / font kind; last
+  // structured upload error carries its row (one upload at a time) so the
+  // message renders AT the affected row only.
+  const [uploading, setUploading] = useState<ThemeAssetKind | null>(null)
+  const [uploadError, setUploadError] = useState<{ kind: ThemeAssetKind; message: string } | null>(null)
 
   const payload = useMemo(() => normalizeThemeDraft(draft), [draft])
   const validation = useMemo(() => validateThemeConfig(payload), [payload])
@@ -123,6 +193,66 @@ export function ThemeEditor({
       else delete next.vocabulary
       return next as ThemeTokens
     })
+  }
+
+  // ── Assets (P2 Task 7) ──────────────────────────────────────────────────────
+  // String values only; null/garbage never reaches the draft (draft.ts
+  // projection). A direct Storage upload (merch precedent) returns the
+  // canonical public URL — the client gate in assets.ts rejects BEFORE any
+  // network call when size/type/ext is off.
+  function setAssetUrl(key: ImageAssetKey, url: string | null) {
+    setDraft((d) => {
+      const assets = { ...(d.assets ?? {}) }
+      if (url === null) delete assets[key]
+      else assets[key] = url
+      const next = { ...d }
+      if (Object.keys(assets).length > 0) next.assets = assets
+      else delete next.assets
+      return next as ThemeTokens
+    })
+  }
+
+  function setFontUrl(urlKey: 'heading_font_url' | 'body_font_url', url: string | null) {
+    setDraft((d) => {
+      const typography = { ...(d.typography ?? {}) }
+      if (url === null) delete typography[urlKey]
+      else typography[urlKey] = url
+      const next = { ...d }
+      if (Object.keys(typography).length > 0) next.typography = typography
+      else delete next.typography
+      return next as ThemeTokens
+    })
+  }
+
+  // One assign-callback per kind/slot keeps the shared uploader dumb about
+  // where the public URL lands (assets vs typography slot).
+  const assigners = new Map<ThemeAssetKind, (url: string) => void>(
+    [
+      ...ASSET_ROWS.map((row) => [row.kind, (url: string) => setAssetUrl(row.key, url)] as const),
+      ...FONT_SLOTS.map((slot) => [slot.kind, (url: string) => setFontUrl(slot.urlKey, url)] as const),
+    ],
+  )
+
+  async function handleUpload(kind: ThemeAssetKind, file: File) {
+    if (!canEdit || uploading) return
+    setUploadError(null)
+    setUploading(kind)
+    try {
+      const result = await uploadThemeAsset(createClient(), {
+        organizerId,
+        eventId,
+        kind,
+        file,
+      })
+      assigners.get(kind)?.(result.publicUrl)
+    } catch (err) {
+      setUploadError({
+        kind,
+        message: err instanceof Error ? err.message : 'Upload failed — please try again.',
+      })
+    } finally {
+      setUploading(null)
+    }
   }
 
   async function handleSave() {
@@ -215,6 +345,44 @@ export function ThemeEditor({
                 canEdit={canEdit}
                 onChange={(hex) => setColor(role, hex)}
                 onReset={() => resetColor(role)}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* ── Assets (P2 Task 7): per-kind ThemedImage thumbnails, drag-drop +
+             picker uploads with the §6 client gate, omit-key remove ──── */}
+        <section className="space-y-3">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Assets
+          </h3>
+          <div className="space-y-2">
+            {ASSET_ROWS.map((row) => (
+              <AssetRow
+                key={row.key}
+                rowKey={row.key}
+                label={row.label}
+                aspect={row.aspect}
+                hint={row.hint}
+                url={typeof draft.assets?.[row.key] === 'string' ? (draft.assets?.[row.key] as string) : undefined}
+                busy={uploading === row.kind}
+                error={uploadError?.kind === row.kind ? uploadError.message : null}
+                canEdit={canEdit}
+                onPick={(file) => void handleUpload(row.kind, file)}
+                onRemove={() => setAssetUrl(row.key, null)}
+              />
+            ))}
+            {FONT_SLOTS.map((slot) => (
+              <FontRow
+                key={slot.kind}
+                label={slot.label}
+                value={draft.typography?.[slot.urlKey]}
+                busy={uploading === slot.kind}
+                error={uploadError?.kind === slot.kind ? uploadError.message : null}
+                canEdit={canEdit}
+                onSelect={(url) => setFontUrl(slot.urlKey, url === '' ? null : url)}
+                onPick={(file) => void handleUpload(slot.kind, file)}
+                onRemove={() => setFontUrl(slot.urlKey, null)}
               />
             ))}
           </div>
@@ -449,6 +617,195 @@ function ColorRow({
           disabled={!canEdit}
           aria-label={`Reset ${ROLE_LABELS[role]} to preset`}
           onClick={onReset}
+        >
+          <RotateCcw className="h-3 w-3" />
+        </Button>
+      )}
+    </div>
+  )
+}
+
+/**
+ * One asset row (P2 Task 7, spec §8 component 3): ThemedImage reserved-box
+ * thumbnail (draft value when set — omit-reset semantics when removed),
+ * drag-drop + file-picker upload with the §6 client gate, per-kind limit
+ * hint, upload-in-progress and structured error states.
+ */
+function AssetRow({
+  rowKey,
+  label,
+  aspect,
+  hint,
+  url,
+  busy,
+  error,
+  canEdit,
+  onPick,
+  onRemove,
+}: {
+  rowKey: ImageAssetKey
+  label: string
+  aspect: string
+  hint: string
+  url?: string
+  busy: boolean
+  error: string | null
+  canEdit: boolean
+  onPick: (file: File) => void
+  onRemove: () => void
+}) {
+  const rowError = error
+  return (
+    <div
+      className="flex items-start gap-3 rounded-lg border border-border p-2.5"
+      onDragOver={(e) => {
+        if (canEdit && !busy) e.preventDefault()
+      }}
+      onDrop={(e) => {
+        e.preventDefault()
+        const file = e.dataTransfer.files?.[0]
+        if (canEdit && !busy && file) onPick(file)
+      }}
+    >
+      <ThemedImage src={url} alt={label} aspect={aspect} className="max-w-[240px] rounded-md border border-border" />
+      <div className="min-w-0 flex-1 space-y-1.5">
+        <div className="flex items-center gap-2">
+          <Label className="text-xs">{label}</Label>
+          {url && <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">{url.split('/').pop()}</span>}
+        </div>
+        <p className="text-xs text-muted-foreground">{hint}</p>
+        {rowError && <p className="text-xs text-destructive">{rowError}</p>}
+        <div className="flex items-center gap-1.5">
+          <Label
+            htmlFor={`asset-${rowKey}`}
+            aria-label={`Upload ${label}`}
+            className={cn(
+              'inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-border px-2.5 text-sm hover:bg-accent',
+              (!canEdit || busy) && 'pointer-events-none opacity-50',
+            )}
+          >
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UploadCloud className="h-3.5 w-3.5" />}
+            {busy ? 'Uploading…' : 'Upload'}
+          </Label>
+          <input
+            id={`asset-${rowKey}`}
+            type="file"
+            accept={IMAGE_ACCEPT}
+            multiple={false}
+            className="sr-only"
+            disabled={!canEdit || busy}
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) onPick(file)
+              e.target.value = ''
+            }}
+          />
+          {url && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              disabled={!canEdit || busy}
+              aria-label={`Remove ${label}`}
+              onClick={onRemove}
+            >
+              <RotateCcw className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * One font row (P2 Task 7): curated gstatic family dropdown (URL values land
+ * in `draft.typography.{heading,body}_font_url`) OR a .woff2 upload ≤ the
+ * font limit; the saved URL is re-gated by `themeFontUrlOk` at save+resolve.
+ */
+function FontRow({
+  label,
+  value,
+  busy,
+  error,
+  canEdit,
+  onSelect,
+  onPick,
+  onRemove,
+}: {
+  label: string
+  value?: string
+  busy: boolean
+  error: string | null
+  canEdit: boolean
+  onSelect: (url: string) => void
+  onPick: (file: File) => void
+  onRemove: () => void
+}) {
+  const family = value ? FONT_URL_TO_FAMILY.get(value) : undefined
+  return (
+    <div className="flex items-center gap-2 rounded-lg border border-border p-2.5">
+      <div className="min-w-0 flex-1 space-y-1">
+        <Label className="text-xs">{label}</Label>
+        <p className="text-xs text-muted-foreground">
+          {`Google OFL families or your own .woff2 (≤ ${(FONT_LIMIT / 1_048_576).toFixed(1)} MB)`}
+        </p>
+        {error && <p className="text-xs text-destructive">{error}</p>}
+      </div>      <Select
+        value={family ?? (value ? 'custom' : 'platform-default')}
+        disabled={!canEdit || busy}
+        onValueChange={(v) => {
+          // The sentinel "custom" is a display-only option for an already
+          // uploaded custom .woff2 (picked via the file input) — never a
+          // value to write to the draft.
+          if (v === 'custom') return
+          onSelect(v === 'platform-default' ? '' : v)
+        }}
+      >
+        <SelectTrigger aria-label={`${label} family`} className="h-8 w-[180px] text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="platform-default">Platform default</SelectItem>
+          {value && family === undefined && <SelectItem value="custom">Custom upload</SelectItem>}
+          {FONT_FAMILY_ITEMS.map(([name, url]) => (
+            <SelectItem key={url} value={url}>
+              {name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Label
+        htmlFor={`font-${label.replace(/\s+/g, '-').toLowerCase()}`}
+        aria-label={`Upload custom ${label.toLowerCase()}`}
+        className={cn(
+          'inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-border px-2 text-sm hover:bg-accent',
+          (!canEdit || busy) && 'pointer-events-none opacity-50',
+        )}
+      >
+        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UploadCloud className="h-3.5 w-3.5" />}
+      </Label>
+      <input
+        id={`font-${label.replace(/\s+/g, '-').toLowerCase()}`}
+        type="file"
+        accept=".woff2"
+        multiple={false}
+        className="sr-only"
+        disabled={!canEdit || busy}
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) onPick(file)
+          e.target.value = ''
+        }}
+      />
+      {value !== undefined && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          disabled={!canEdit || busy}
+          aria-label={`Reset ${label.toLowerCase()}`}
+          onClick={onRemove}
         >
           <RotateCcw className="h-3 w-3" />
         </Button>

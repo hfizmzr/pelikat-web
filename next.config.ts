@@ -1,10 +1,34 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 
+// The Serwist SW (src/app/sw.ts) compiles as a webpack child compilation that
+// does NOT inherit Next's NEXT_PUBLIC_ DefinePlugin values — so we inject the
+// platform storage origin into that compilation explicitly via
+// `webpackCompilationPlugins`. The plugin object below captures the real
+// webpack module from the build's webpack hook (a resolvable direct webpack
+// import doesn't exist under pnpm); the define is ALWAYS a string literal,
+// and "" (unset env) makes the SW ship WITHOUT the theme-asset rule.
+interface StorageOriginDefinePlugin {
+  name: string;
+  apply(compiler: unknown): void;
+}
+
+let webpackDefineApi: ((defs: Record<string, string>) => { apply: (compiler: unknown) => void }) | undefined;
+
+const themeStorageOriginDefinePlugin: StorageOriginDefinePlugin = {
+  name: "ThemeStorageOriginDefinePlugin",
+  apply(compiler) {
+    if (webpackDefineApi) {
+      new webpackDefineApi({ "process.env.NEXT_PUBLIC_SUPABASE_URL": JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "") }).apply(compiler);
+    }
+  },
+};
+
 const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
   disable: process.env.NODE_ENV === "development",
+  webpackCompilationPlugins: [themeStorageOriginDefinePlugin],
 });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -30,6 +54,10 @@ const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: __dirname,
   turbopack: {},
+  webpack(config, options) {
+    webpackDefineApi = (options.webpack as { DefinePlugin: unknown })?.DefinePlugin as never;
+    return config;
+  },
   allowedDevOrigins: [
     'localhost',
     '127.0.0.1',

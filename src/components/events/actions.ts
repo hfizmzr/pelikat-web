@@ -17,6 +17,8 @@ import {
 import { requireAuth } from '@/lib/auth/requireUser'
 import { getOrganizerSubscriptionPrice } from '@/lib/subscription'
 import { validateThemeConfig } from '@/lib/theme/validate'
+import { cleanupThemeAssets } from '@/lib/theme/assets'
+import { isPlainObject } from '@/lib/theme/utils'
 import type { ThemeTokens } from '@/lib/theme/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -432,7 +434,33 @@ export async function saveEventTheme(
   revalidatePath(`/runner/events/${eventId}`)
   revalidatePath('/runner/leaderboard')
 
-  return { ok: true, warnings: validation.warnings }
+  // P2 Task 7 — orphan cleanup runs ONLY after a successful save, with the
+  // FRESHLY-READ DB config (NOT the client draft — the DB is the canonical
+  // reference set). Same authenticated RLS context as the write (the event
+  // owner passes `can_manage_theme_path` for its own tenant folder); cleanup
+  // never throws — failures surface as structured warnings.
+  const warnings = [...validation.warnings]
+  const { data: savedRow } = await supabase
+    .from('events')
+    .select('theme_config')
+    .eq('id', eventId)
+    .single()
+
+  const savedConfig = (savedRow?.theme_config ?? null) as unknown
+  const refs: Record<string, unknown> = {}
+  if (isPlainObject(savedConfig)) {
+    for (const section of ['assets', 'typography'] as const) {
+      const value = savedConfig[section]
+      if (!isPlainObject(value)) continue
+      for (const [key, v] of Object.entries(value)) {
+        if (typeof v === 'string' && key.endsWith('_url')) refs[key] = v
+      }
+    }
+  }
+  const cleanup = await cleanupThemeAssets(supabase, { organizerId, eventId, savedAssets: refs })
+  warnings.push(...cleanup.warnings)
+
+  return { ok: true, warnings }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

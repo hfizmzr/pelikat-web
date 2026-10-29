@@ -360,6 +360,9 @@ export default async function OrganizerEventDetailPage({
         theme={
           <ThemeEditor
             eventId={eventDetail.id}
+            // uploads target organizers/{organizer_id}/... — session-supplied
+            // (plan Task 7: never fetched client-side)
+            organizerId={typeof myOrganizerId === 'string' ? myOrganizerId : ''}
             canEdit={canEdit}
             savedPresetId={eventDetail.theme_preset_id ?? null}
             // theme_config is hand-craftable JSONB — the editor seeds
