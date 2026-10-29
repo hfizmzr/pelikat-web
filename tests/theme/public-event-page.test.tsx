@@ -206,6 +206,7 @@ describe('PublicEventPage hostile slug handling (plan review focus #2)', () => {
     '%2e%2e',
     '%00',
     '\u0000',
+    `' OR 1=1 --`,
     'a'.repeat(300),
     '러닝 유니코드slugé',
   ] as const

@@ -79,6 +79,22 @@ describe('getSurfaceTheme', () => {
     expect(client.queryCalls).toBe(0)
   })
 
+  it('empty-object config {} (no preset id) → non-null platform ResolvedTheme + fallback labels, zero queries', async () => {
+    const client = fakeSupabase(null)
+    const result = await getSurfaceTheme(surfaceEvent(null, {}), client)
+    // {} IS a plain object → the null-null fast path does NOT fire, but a
+    // preset-less empty config contributes nothing: full platform resolution
+    // (never nulls), the complete fallback label map, and still zero DB access.
+    expect(result.resolved).not.toBeNull()
+    expect(result.resolved?.primary.light).toBe(PLATFORM.primaryLight)
+    expect(result.resolved?.primary.dark).toBe(PLATFORM.primaryDark)
+    expect(Object.keys(result.labels!).sort()).toEqual([...LABEL_KEYS].sort())
+    expect(result.labels?.bib_label).toBe('Bib Number')
+    expect(result.labels?.medal_label).toBe('Medal')
+    expect(result.labels?.run_label).toBe('Run')
+    expect(client.queryCalls).toBe(0)
+  })
+
   it('preset row → resolved + full 6-label map (override wins, fallbacks fill)', async () => {
     const client = fakeSupabase({ id: PRESET_ID, tokens: BATIK })
     const result = await getSurfaceTheme(
