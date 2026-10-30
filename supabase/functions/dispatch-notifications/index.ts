@@ -86,7 +86,8 @@ async function resendPost(url: string, key: string, body: unknown): Promise<Resp
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
     // a stalled request must not hold up the whole batch; a timeout is a
-    // retriable failure (sendEmails catches it)
+    // retriable failure (sendEmails catches it). The signal also covers the
+    // body read, so callers must not let res.text() throw.
     signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
   });
 }
@@ -108,7 +109,7 @@ async function sendEmails(emails: OutgoingEmail[], key: string, from: string): P
       for (const e of chunk) results.set(e.id, { ok: false, retriable: true, error: String(err) });
       continue;
     }
-    const detail = res.ok ? "" : (await res.text()).slice(0, 300);
+    const detail = res.ok ? "" : (await res.text().catch(() => "")).slice(0, 300);
     const batch = classify(res, detail);
     if (batch.ok || batch.retriable) {
       for (const e of chunk) results.set(e.id, batch);
@@ -122,7 +123,7 @@ async function sendEmails(emails: OutgoingEmail[], key: string, from: string): P
       await sleep(RESEND_SPACING_MS);
       try {
         const single = await resendPost(RESEND_API, key, { from, to: e.to, subject: e.subject, html: e.html, text: e.text });
-        results.set(e.id, classify(single, single.ok ? "" : (await single.text()).slice(0, 300)));
+        results.set(e.id, classify(single, single.ok ? "" : (await single.text().catch(() => "")).slice(0, 300)));
       } catch (err) {
         results.set(e.id, { ok: false, retriable: true, error: String(err) });
       }
