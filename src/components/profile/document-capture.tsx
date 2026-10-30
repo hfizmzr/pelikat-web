@@ -11,11 +11,13 @@ interface Props {
     path: string | null
     mime: string | null
   }
+  /** Fires 'stored' after a successful upload, null after a delete. */
+  onDocumentChange?: (path: string | null) => void
 }
 
 const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024
 
-export default function DocumentCapture({ currentDocument, uploadBlocked = null }: Props) {
+export default function DocumentCapture({ currentDocument, uploadBlocked = null, onDocumentChange }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
 
@@ -123,6 +125,7 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null 
 
       setHasDocument(true)
       setRawFile(null)
+      onDocumentChange?.('stored')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed')
     } finally {
@@ -138,6 +141,7 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null 
     try {
       await deleteDocument()
       setHasDocument(false)
+      onDocumentChange?.(null)
       setNeedsReview(false)
       setPreviewUrl(null)
       setRawFile(null)
