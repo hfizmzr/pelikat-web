@@ -17,8 +17,9 @@ upsert re-writes rows and therefore adds a few audit-trigger rows on every run
 ```bash
 cd pelikat-web
 supabase start          # boot the local stack (ports: db 54322, api 54321)
-supabase db reset       # ⚠ DESTROYS ALL DATA — then applies migrations 001–068
-                        #   and automatically runs supabase/seed.sql afterwards
+supabase db reset       # ⚠ DESTROYS ALL DATA — then applies migrations 001–083
+                        #   (incl. the Event Themes 076–083 set) and
+                        #   automatically runs supabase/seed.sql afterwards
 ```
 
 > ⚠ `supabase db reset` **drops and recreates the database**. Only run it on
@@ -33,8 +34,10 @@ psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f supabase/seed.sql
 
 Safe against an already-seeded database: every insert uses fixed UUIDs with
 `on conflict do nothing` (targeted upserts for `event_shirt_inventory`,
-`runner_streaks`, `platform_settings`). Must run as the `postgres` superuser
-(bypasses RLS — `payments` / `webhook_events` are FORCE-RLS'd).
+`runner_streaks`, `platform_settings`, **`theme_presets`** (§5.1) and the three
+**`auth.users`** rows-blocks §2, which now CONVERGE the 18 accounts onto the
+fixed password below). Must run as the `postgres` superuser (bypasses RLS —
+`payments` / `webhook_events` are FORCE-RLS'd).
 
 ## Cloud A2 variant (hosted project ugexrrslijmwtieevjbs — PRESERVES your personal admin logins)
 
@@ -56,19 +59,47 @@ preserved in the @db-specialist orchestrator session of 2026-10-20.
 
 ## 3. Credentials
 
-Password for **every** seeded account: — see local seeding secret (below)
+Password for **every** seeded account: **`Pelikat-Dev-2026!`**
 
-> **Credential handling.** The shared password for the seeded `@pelikat.test`
-> accounts applies ONLY to freshly seeded **local** environments created by
-> `supabase db reset` + `supabase/seed.sql` in this repo — it is deliberately
-> NOT documented as a published value here; obtain it from the team's private
-> credential store, not from any file in the repo. On the hosted project
-> (`ugexrrslijmwtieevjbs`) the 18 seeded `@pelikat.test` accounts had their
-> passwords ROTATED to unknown values immediately after the 2026-10-20 cloud
-> seeding, so the historical password no longer unlocks anything there (the
-> preserved `@gmail.com` Google admin logins were unaffected). If local
-> passwords ever need changing, rotate them per-project via the usual Supabase
-> dashboard / SQL flow.
+> **Credential handling — STANDING RULE (no rotation).** `Pelikat-Dev-2026!` is
+> the **permanent, fixed** password for ALL 18 seeded `@pelikat.test` accounts
+> (3 admins + 5 organizers + 10 runners) — on **local** environments seeded by
+> `supabase db reset` + `supabase/seed.sql` AND on the hosted cloud project
+> (`ugexrrslijmwtieevjbs`). It is published here BY DESIGN so any dev/QA can
+> log in without hunting for a secret; these are dummy accounts on a dev
+> dataset — do NOT treat them as production credentials. This password MUST
+> NOT be rotated after QA/smoke sessions anymore (the old
+> rotate-after-use policy is retired). It was set uniformly on 2026-10-30 via
+> a targeted SQL update (`auth.users` `crypt('Pelikat-Dev-2026!', gen_salt('bf',
+> 10))`), replacing the previous per-session rotation workflow. The preserved
+> `@gmail.com` Google admin logins (`hafizisamzar@gmail.com`,
+> `abdul.hafiz170022@gmail.com`) remain OAuth-only and are NOT affected. The
+> 18 seeded accounts also stay converged on this password: the seed.sql §2
+> auth.users blocks now use a targeted upsert, so a seed-only re-run re-locks
+> the password if anything drifted.
+
+### Dummy Account Quick-Login Cheat Sheet (fixed password for every row: `Pelikat-Dev-2026!`)
+
+| Email                          | Role      | Name (display / organizer / runner) |
+|--------------------------------|-----------|-------------------------------------|
+| admin1@pelikat.test            | Admin     | Pelikat Admin Satu                  |
+| admin2@pelikat.test            | Admin     | Pelikat Admin Dua                   |
+| admin3@pelikat.test            | Admin     | Pelikat Admin Tiga                  |
+| klcityrunners@pelikat.test     | Organizer | KL City Runners                     |
+| penangpacers@pelikat.test      | Organizer | Penang Pacers                       |
+| jbultras@pelikat.test          | Organizer | JB Ultras                           |
+| borneotrailcrew@pelikat.test   | Organizer | Borneo Trail Crew                   |
+| putrajayastriders@pelikat.test | Organizer | Putrajaya Striders                  |
+| runner1@pelikat.test           | Runner    | Adam Faizal bin Harun               |
+| runner2@pelikat.test           | Runner    | Nurul Aisyah binti Zulkifli         |
+| runner3@pelikat.test           | Runner    | Tan Wei Ming                        |
+| runner4@pelikat.test           | Runner    | Priya Darshini                      |
+| runner5@pelikat.test           | Runner    | Muhammad Hafiz bin Roslan           |
+| runner6@pelikat.test           | Runner    | Lim Siew Ling                       |
+| runner7@pelikat.test           | Runner    | Ahmad Zulkarnain bin Omar           |
+| runner8@pelikat.test           | Runner    | Chloe Wong Mei Ling                 |
+| runner9@pelikat.test           | Runner    | Gopal Krishnan                      |
+| runner10@pelikat.test          | Runner    | Farah Nadia binti Ahmad             |
 
 ### Admins (`raw_app_meta_data: {"role":"admin"}`)
 
@@ -80,13 +111,13 @@ Password for **every** seeded account: — see local seeding secret (below)
 
 ### Organizers (`{"role":"organizer","organizer_id":"<organizers.id>"}`)
 
-| Email                        | Password      | Organizer           | State                                          |
-|------------------------------|---------------|---------------------|------------------------------------------------|
-| klcityrunners@pelikat.test   | (local seed secret — not published here)  | KL City Runners     | active, approved, subscription paid (+155 d)    |
-| penangpacers@pelikat.test    | (local seed secret — not published here)  | Penang Pacers       | active, approved, subscription expires in 12 d  |
-| jbultras@pelikat.test        | (local seed secret — not published here)  | JB Ultras           | **pending approval** (approved_at NULL)         |
-| borneotrailcrew@pelikat.test | (local seed secret — not published here)  | Borneo Trail Crew   | **rejected** (rejected_at set, inactive)        |
-| putrajayastriders@pelikat.test | (local seed secret — not published here) | Putrajaya Striders | **inactive** — lapsed subscription (65 d ago)   |
+| Email                        | Password          | Organizer           | State                                          |
+|------------------------------|-------------------|---------------------|------------------------------------------------|
+| klcityrunners@pelikat.test   | Pelikat-Dev-2026! | KL City Runners     | active, approved, subscription paid (+155 d)    |
+| penangpacers@pelikat.test    | Pelikat-Dev-2026! | Penang Pacers       | active, approved, subscription expires in 12 d  |
+| jbultras@pelikat.test        | Pelikat-Dev-2026! | JB Ultras           | **pending approval** (approved_at NULL)         |
+| borneotrailcrew@pelikat.test | Pelikat-Dev-2026! | Borneo Trail Crew   | **rejected** (rejected_at set, inactive)        |
+| putrajayastriders@pelikat.test | Pelikat-Dev-2026! | Putrajaya Striders | **inactive** — lapsed subscription (65 d ago)   |
 
 ### Runners (`{"role":"runner"}`, complete runner_profiles)
 
@@ -110,9 +141,10 @@ All runners have DOB, phone, emergency contact and `pdpa_agreed = true`.
 | Table                  | Rows | Highlights                                                              |
 |------------------------|------|-------------------------------------------------------------------------|
 | storage.buckets        | 7    | race-photos, certificates, receipts, photo-gallery, avatars, ic-documents, merch-images |
-| auth.users / identities| 18   | 3 admin + 5 organizer + 10 runner, email-confirmed; shared local seed password (not published here)      |
+| auth.users / identities| 18   | 3 admin + 5 organizer + 10 runner, email-confirmed; fixed non-rotating password `Pelikat-Dev-2026!` (§3 standing rule) |
 | organizers             | 5    | one per lifecycle state (active / expiring / pending / rejected / inactive) |
-| events                 | 10   | 2 past (closed; 1 physical with results published, 1 virtual) · 4 active (2 physical, 2 virtual) · 4 future published (2 physical, 2 virtual) — dates via `now()::date` arithmetic, never stale |
+| events                 | 10   | 2 past (closed; 1 physical with results published, 1 virtual) · 4 active (2 physical, 2 virtual) · 4 future published (2 physical, 2 virtual) — dates via `now()::date` arithmetic, never stale; every row auto-slugged by migration 077/080 (kebab + 8-hex md5(id), same values as cloud) |
+| theme_presets          | 6    | system presets per migrations 079+081 (Pelikat Classic, Wizard Academy, Hidden Village, Galaxy Runner, Sunset Marathon, Batik Heritage) with full tokens incl. Google-Fonts woff2 typography; sample assignments: E1 → Batik Heritage, E3 → Hidden Village (seed.sql §5.1, mirrors the cloud) |
 | race_categories        | 19   | paid HitPay tiers, early-bird vs standard (shared prefix, offset bib_start), free/RM0, VIP, pacer categories |
 | runner_profiles        | 10   | XS–XXL sizes, genders, DOB, emergency contacts, pdpa_agreed             |
 | registrations          | 42   | paid+completed payments+bib · pending+pending payment+bib NULL (payment-first flow) · waived (free + comps) · 1 refunded · runner/pacer/vip roles · claimed comps (runner_id set) & unclaimed comps (guest_name/email, several email-less) for CSV export & auto-claim testing |
@@ -134,7 +166,7 @@ All runners have DOB, phone, emergency contact and `pdpa_agreed = true`.
 
 ## 5. Known gaps & notes
 
-- **Promo codes / vouchers have NO schema** anywhere in migrations 001–068 —
+- **Promo codes / vouchers have NO schema** anywhere in migrations 001–083 —
   nothing is faked; needs a schema decision first.
 - **Official physical race results have NO table** — only the
   `events.results_published` gate exists. Physical "results" are represented by
@@ -143,8 +175,12 @@ All runners have DOB, phone, emergency contact and `pdpa_agreed = true`.
 - **Audit-trigger noise**: migration 032 attaches `audit.log_change()` to 11
   tables, so every seeded row auto-writes an `INSERT <table>` audit row. This
   is accepted noise. Re-runs do **not** duplicate it (conflicting inserts are
-  skipped before triggers fire) — except the §9 `event_shirt_inventory` upsert,
-  which re-writes rows and adds a few noise entries each run. Harmless.
+  skipped before triggers fire) — except the §9 `event_shirt_inventory` upsert
+  and the two §5.1 theme-assignment UPDATEs on `events`, which re-write rows and
+  add a few noise entries each run. Timestamp rewrites are similar non-no-op
+  churn each run: the §5.1 `theme_presets` upsert always bumps `updated_at`,
+  and the §2 auth.users upserts re-set `email_confirmed_at`/`updated_at` with
+  fresh `now()`. Harmless.
 - **Photos are placeholders**: `photo_tags.storage_path` values exist under
   `race-photos/`, but no `storage.objects` rows are created — gallery signed
   URLs will 404 until real photos are uploaded.

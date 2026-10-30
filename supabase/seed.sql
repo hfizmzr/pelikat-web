@@ -7,10 +7,13 @@
 --   platform: 3 admins, 5 organizers (one per lifecycle state), 10 runners,
 --   10 events (past / active / future × physical / virtual), 42 registrations,
 --   payments, REPC kit-collection, merch store, run logs, badges, photo tags
---   and audit entries. All UUIDs are FIXED so re-runs are exact no-ops.
+--   and audit entries. All UUIDs are FIXED, so re-runs converge to the same
+--   idempotent state (not byte-exact: only timestamps bump — theme_presets
+--   .updated_at, auth.users email_confirmed_at/updated_at, and the
+--   audit/event UPDATE noise already covered in SEED.md §5).
 --
 -- HOW TO RUN
---   Automatic:  `supabase db reset`  (runs migrations 001–068, then this file)
+--   Automatic:  `supabase db reset`  (runs migrations 001–083, then this file)
 --   Manual:     psql -h 127.0.0.1 -p 54322 -U postgres -d postgres \
 --                 -f supabase/seed.sql
 --
@@ -23,7 +26,8 @@
 --     only.
 --   • Must run as the `postgres` superuser (bypasses RLS — `payments` and
 --     `webhook_events` are FORCE RLS'd with service-role-only write paths).
---   • Seeded LOGIN password for EVERY account: `Pelikat!2026`
+--   • Seeded LOGIN password for EVERY account: `Pelikat-Dev-2026!`
+--     (standing rule, non-rotating: local AND cloud — see supabase/SEED.md §3)
 --   • The audit triggers (migration 032) fire on these inserts and auto-write
 --     `INSERT <table>` rows into audit_log. This is harmless noise; a second
 --     re-run does NOT duplicate them (conflicting inserts are skipped before
@@ -35,7 +39,7 @@
 --     `deactivate-expired-organizers` (daily) matches the seeded org5 state.
 --
 -- KNOWN GAPS (no schema exists — NOT faked here)
---   • Promo codes / vouchers: no table anywhere in migrations 001–068.
+--   • Promo codes / vouchers: no table anywhere in migrations 001–083.
 --   • Official PHYSICAL race results: only `events.results_published` (gate)
 --     exists; no results table. Physical "results" are represented by
 --     registrations + bibs + check-ins; virtual results come from the
@@ -89,7 +93,7 @@ on conflict (id) do update set
   allowed_mime_types = excluded.allowed_mime_types;
 
 -- ════════════════════════════════════════════════════════════════════════════
--- §2 AUTH USERS  (password for all: Pelikat!2026)
+-- §2 AUTH USERS  (password for all: Pelikat-Dev-2026!)
 --    Role resolution is via raw_app_meta_data (read by get_my_organizer_id()
 --    / is_admin()): admin {"role":"admin"},
 --    organizer {"role":"organizer","organizer_id":"<organizers.id>"},
@@ -120,15 +124,23 @@ insert into auth.users
    reauthentication_token)
 values
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000a1', 'authenticated', 'authenticated',
-   'admin1@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'admin1@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"admin"}', '{"full_name":"Pelikat Admin Satu"}', now() - interval '300 days', now() - interval '300 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000a2', 'authenticated', 'authenticated',
-   'admin2@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'admin2@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"admin"}', '{"full_name":"Pelikat Admin Dua"}', now() - interval '290 days', now() - interval '290 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000a3', 'authenticated', 'authenticated',
-   'admin3@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'admin3@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"admin"}', '{"full_name":"Pelikat Admin Tiga"}', now() - interval '280 days', now() - interval '280 days', '', '', '', '', '', '', '', '')
-on conflict do nothing;
+-- ★ targeted upsert (not `do nothing`): re-runs CONVERGE existing rows onto the
+--   fixed bcrypt of Pelikat-Dev-2026! (standing-rule password). Everything
+--   else (raw_*_meta_data, created_at, token columns) is intentionally NOT
+--   rewritten. `(id)` matches the auth.users PK — GoTrue's email index is
+--   partial (is_sso_user=false), so `(email)` would not bind.
+on conflict (id) do update
+  set encrypted_password = excluded.encrypted_password,
+      email_confirmed_at = excluded.email_confirmed_at,
+      updated_at         = now();
 
 -- ── Organizer identities (login email == organizers.contact_email) ─────────
 insert into auth.users
@@ -142,26 +154,30 @@ insert into auth.users
    reauthentication_token)
 values
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000b1', 'authenticated', 'authenticated',
-   'klcityrunners@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'klcityrunners@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"organizer","organizer_id":"d0e5e000-0000-4000-8000-000000000011"}',
    '{"full_name":"KL City Runners"}', now() - interval '270 days', now() - interval '270 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000b2', 'authenticated', 'authenticated',
-   'penangpacers@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'penangpacers@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"organizer","organizer_id":"d0e5e000-0000-4000-8000-000000000012"}',
    '{"full_name":"Penang Pacers"}', now() - interval '200 days', now() - interval '200 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000b3', 'authenticated', 'authenticated',
-   'jbultras@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'jbultras@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"organizer","organizer_id":"d0e5e000-0000-4000-8000-000000000013"}',
    '{"full_name":"JB Ultras"}', now() - interval '30 days', now() - interval '30 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000b4', 'authenticated', 'authenticated',
-   'borneotrailcrew@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'borneotrailcrew@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"organizer","organizer_id":"d0e5e000-0000-4000-8000-000000000014"}',
    '{"full_name":"Borneo Trail Crew"}', now() - interval '40 days', now() - interval '40 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000b5', 'authenticated', 'authenticated',
-   'putrajayastriders@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'putrajayastriders@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"organizer","organizer_id":"d0e5e000-0000-4000-8000-000000000015"}',
    '{"full_name":"Putrajaya Striders"}', now() - interval '420 days', now() - interval '420 days', '', '', '', '', '', '', '', '')
-on conflict do nothing;
+-- ★ targeted upsert as above (admins block).
+on conflict (id) do update
+  set encrypted_password = excluded.encrypted_password,
+      email_confirmed_at = excluded.email_confirmed_at,
+      updated_at         = now();
 
 -- ── Runners ─────────────────────────────────────────────────────────────────
 insert into auth.users
@@ -175,36 +191,40 @@ insert into auth.users
    reauthentication_token)
 values
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000c1', 'authenticated', 'authenticated',
-   'runner1@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'runner1@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"runner"}', '{"full_name":"Adam Faizal bin Harun"}', now() - interval '250 days', now() - interval '250 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000c2', 'authenticated', 'authenticated',
-   'runner2@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'runner2@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"runner"}', '{"full_name":"Nurul Aisyah binti Zulkifli"}', now() - interval '240 days', now() - interval '240 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000c3', 'authenticated', 'authenticated',
-   'runner3@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'runner3@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"runner"}', '{"full_name":"Tan Wei Ming"}', now() - interval '230 days', now() - interval '230 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000c4', 'authenticated', 'authenticated',
-   'runner4@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'runner4@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"runner"}', '{"full_name":"Priya Darshini"}', now() - interval '220 days', now() - interval '220 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000c5', 'authenticated', 'authenticated',
-   'runner5@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'runner5@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"runner"}', '{"full_name":"Muhammad Hafiz bin Roslan"}', now() - interval '210 days', now() - interval '210 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000c6', 'authenticated', 'authenticated',
-   'runner6@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'runner6@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"runner"}', '{"full_name":"Lim Siew Ling"}', now() - interval '200 days', now() - interval '200 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000c7', 'authenticated', 'authenticated',
-   'runner7@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'runner7@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"runner"}', '{"full_name":"Ahmad Zulkarnain bin Omar"}', now() - interval '190 days', now() - interval '190 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000c8', 'authenticated', 'authenticated',
-   'runner8@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'runner8@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"runner"}', '{"full_name":"Chloe Wong Mei Ling"}', now() - interval '180 days', now() - interval '180 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000c9', 'authenticated', 'authenticated',
-   'runner9@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'runner9@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"runner"}', '{"full_name":"Gopal Krishnan"}', now() - interval '170 days', now() - interval '170 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000ca', 'authenticated', 'authenticated',
-   'runner10@pelikat.test', crypt('Pelikat!2026', gen_salt('bf')), now(),
+   'runner10@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
    '{"role":"runner"}', '{"full_name":"Farah Nadia binti Ahmad"}', now() - interval '160 days', now() - interval '160 days', '', '', '', '', '', '', '', '')
-on conflict do nothing;
+-- ★ targeted upsert as above (runners block).
+on conflict (id) do update
+  set encrypted_password = excluded.encrypted_password,
+      email_confirmed_at = excluded.email_confirmed_at,
+      updated_at         = now();
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- §3 AUTH IDENTITIES  (email provider; sub == user id; ★ (provider_id, sub))
@@ -356,6 +376,194 @@ values
    current_date + 40, null, 'published',
    'virtual', 30.00, now() - interval '1 day', current_date + 40, false, now() - interval '18 days')
 on conflict do nothing;
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- §5.1 EVENT THEMES  (Event Themes P1–P4 state — mirrors migrations 076–083)
+--    Schema (table, validator, RPC, slug columns, RLS/policies 082/083) comes
+--    from migrations 076–083, which `supabase db reset` replays BEFORE this
+--    file — nothing is re-created here. This section seeds only the DATA
+--    post-state on top of the organizers/events seeding above:
+--    • the 6 system theme_presets exactly as 079 + 081 leave them (fixed
+--      uuids committed as literals — events.theme_preset_id FK targets these;
+--      full tokens INCLUDING the 081 Google-Fonts woff2 typography). Upsert on
+--      ★ slug so a seed-only re-run CONVERGES even if a local DB predates 081
+--      (its presets would still exist, unmerged with typography).
+--    • events.slug is deliberately NOT seeded explicitly: 077's backfill (as
+--      repaired by 080) + the events_published_needs_slug trigger auto-derive
+--      kebab(name) + '-<8-hex md5(id)>' deterministically for the published/
+--      closed seeded rows — byte-identical to the values on the cloud project
+--      (md5 of the fixed ids, no 8-hex prefix collisions among these 10).
+--    • Sample preset assignments corresponding to the backfill applied on the
+--      cloud on 2026-10-30:
+--        E1 KL City Night Run (closed → public via 082)    → Batik Heritage
+--        E3 Putrajaya Heritage Half (published, live REPC) → Hidden Village
+--      A fresh reset yields the same two references the cloud carries.
+--    Runs as the postgres superuser → the 077 events_validate_theme_refs
+--    trusted-writer clause (current_user postgres) applies; presets exist by
+--    the time the UPDATEs run.
+-- ════════════════════════════════════════════════════════════════════════════
+
+insert into public.theme_presets (id, slug, name, description, kind, organizer_id, tokens)
+values
+  -- 1. Pelikat Classic — Barlow / Barlow (platform brand teal + race-day red)
+  (
+    'b7d4dfdd-0c4d-4427-b561-b989f370008d',
+    'pelikat-classic',
+    'Pelikat Classic',
+    'Pelikat platform look — brand teal with race-day red accents.',
+    'system', null,
+    '{
+      "colors": {
+        "primary": "#00807A",
+        "secondary": "#115E59",
+        "accent": "#C62A2F",
+        "ring": "#00807A"
+      },
+      "typography": {
+        "heading_font_url": "https://fonts.gstatic.com/s/barlow/v13/7cHpv4kjgoGqM7E_DMs5.woff2",
+        "body_font_url": "https://fonts.gstatic.com/s/barlow/v13/7cHpv4kjgoGqM7E_DMs5.woff2"
+      },
+      "meta": {"version": 1}
+    }'::jsonb
+  ),
+  -- 2. Wizard Academy — Cinzel / Source Sans 3
+  (
+    'e2c9ba7d-4751-4101-a2e8-b27c86c61a1b',
+    'wizard-academy',
+    'Wizard Academy',
+    'Midnight purple and antique gold — a school-of-magic run day.',
+    'system', null,
+    '{
+      "colors": {
+        "primary": "#4C1D95",
+        "secondary": "#5B21B6",
+        "accent": "#A16207",
+        "ring": "#4C1D95"
+      },
+      "typography": {
+        "heading_font_url": "https://fonts.gstatic.com/s/cinzel/v26/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnfY3lDQ.woff2",
+        "body_font_url": "https://fonts.gstatic.com/s/sourcesans3/v20/nwpBtKy2OAdR1K-IwhWudF-R9QMylBJAV3Bo8Ky462EK9Cs.woff2"
+      },
+      "vocabulary": {
+        "bib_label": "Spell Number",
+        "medal_label": "House Crest",
+        "certificate_label": "Diploma of Magic"
+      },
+      "meta": {"version": 1}
+    }'::jsonb
+  ),
+  -- 3. Hidden Village — Bebas Neue / Roboto
+  (
+    '04b5923b-d10d-49fe-ad74-7c5705f92179',
+    'hidden-village',
+    'Hidden Village',
+    'Forest greens and moss — a hidden woodland village trail.',
+    'system', null,
+    '{
+      "colors": {
+        "primary": "#166534",
+        "secondary": "#365314",
+        "accent": "#4D7C0F",
+        "ring": "#166534"
+      },
+      "typography": {
+        "heading_font_url": "https://fonts.gstatic.com/s/bebasneue/v16/JTUSjIg69CK48gW7PXoo9Wlhyw.woff2",
+        "body_font_url": "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmUiAo.woff2"
+      },
+      "vocabulary": {
+        "checkpoint_label": "Waypoint",
+        "run_label": "Trail"
+      },
+      "meta": {"version": 1}
+    }'::jsonb
+  ),
+  -- 4. Galaxy Runner — Orbitron / Roboto
+  (
+    'bd39de2a-0ff0-455e-bb27-047bca7b8194',
+    'galaxy-runner',
+    'Galaxy Runner',
+    'Deep-space navy with neon cyan — an interstellar run.',
+    'system', null,
+    '{
+      "colors": {
+        "primary": "#1E1B4B",
+        "secondary": "#312E81",
+        "accent": "#0891B2",
+        "ring": "#1E1B4B"
+      },
+      "typography": {
+        "heading_font_url": "https://fonts.gstatic.com/s/orbitron/v35/yMJMMIlzdpvBhQQL_SC3X9yhF25-T1nyGy6BoWgz.woff2",
+        "body_font_url": "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmUiAo.woff2"
+      },
+      "vocabulary": {
+        "bib_label": "Crew ID",
+        "medal_label": "Star Shard"
+      },
+      "meta": {"version": 1}
+    }'::jsonb
+  ),
+  -- 5. Sunset Marathon — Poppins / Roboto
+  (
+    'e4fb2e41-ad2c-4e1f-a8a9-cf334acd72ca',
+    'sunset-marathon',
+    'Sunset Marathon',
+    'Dusk orange fading to pink — a sunset finish line.',
+    'system', null,
+    '{
+      "colors": {
+        "primary": "#C2410C",
+        "secondary": "#9A3412",
+        "accent": "#BE185D",
+        "ring": "#C2410C"
+      },
+      "typography": {
+        "heading_font_url": "https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJfecg.woff2",
+        "body_font_url": "https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbVmUiAo.woff2"
+      },
+      "meta": {"version": 1}
+    }'::jsonb
+  ),
+  -- 6. Batik Heritage — Prata / Inter (@manager-locked), colors verbatim §4.6
+  (
+    '03c7d417-d02a-4104-9299-2f03be5c4d66',
+    'batik-heritage',
+    'Batik Heritage',
+    'Malaysian batik-inspired — terracotta and canting gold on wax-cream.',
+    'system', null,
+    '{
+      "colors": {
+        "primary": "#9C4A1A",
+        "secondary": "#3E2C23",
+        "accent": "#D4A017",
+        "background": "#FBF6EC",
+        "foreground": "#2B2118",
+        "ring": "#C68B2E"
+      },
+      "typography": {
+        "heading_font_url": "https://fonts.gstatic.com/s/prata/v22/6xKhdSpbNNCT-sWPCm4.woff2",
+        "body_font_url": "https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.woff2"
+      },
+      "vocabulary": {
+        "checkpoint_label": "Kampung",
+        "medal_label": "Pingat",
+        "run_label": "Larian",
+        "participant_label": "Peserta",
+        "certificate_label": "Sijil"
+      },
+      "meta": {"version": 1}
+    }'::jsonb
+  )
+on conflict (slug) do update set
+  name        = excluded.name,
+  description = excluded.description,
+  tokens      = excluded.tokens,
+  updated_at  = now();
+
+-- Sample theme preset assignments (same values as the cloud backfill):
+update public.events set theme_preset_id = '03c7d417-d02a-4104-9299-2f03be5c4d66'  -- Batik Heritage
+  where id = 'd0e5e000-0000-4000-8000-000000000021';                               -- E1 KL City Night Run
+update public.events set theme_preset_id = '04b5923b-d10d-49fe-ad74-7c5705f92179'  -- Hidden Village
+  where id = 'd0e5e000-0000-4000-8000-000000000023';                               -- E3 Putrajaya Heritage Half
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- §6 RACE CATEGORIES
