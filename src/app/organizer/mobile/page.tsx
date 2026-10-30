@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 async function getOrganizerDashboardData() {
   const cookieStore = await cookies()
@@ -170,6 +171,7 @@ export default async function OrganizerMobileHome() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle className="w-10 h-10 flex items-center justify-center rounded-full" />
             <button className="relative w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
               <Bell className="size-[22px]" />
               <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary ring-2 ring-background" />

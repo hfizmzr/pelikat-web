@@ -75,7 +75,7 @@ export default function OrganizerMobileLayout({
 
         {/* Floating pill bottom nav */}
         <nav className="absolute bottom-0 inset-x-0 z-50 pb-safe pointer-events-none flex justify-center pb-3 px-4">
-          <div className="pointer-events-auto w-full bg-card/90 backdrop-blur-2xl rounded-full px-2 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-around border border-border/60">
+          <div className="pointer-events-auto w-full bg-card/90 backdrop-blur-2xl rounded-full px-2 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-around border border-border/60">
             {NAV_ITEMS.map((item) => {
               // Active if current path matches exactly or starts with (for sub-routes)
               const active =

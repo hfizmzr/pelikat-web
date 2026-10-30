@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronDown, CircleAlert, CircleCheck, Keyboard, LoaderCircl
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import DocumentCapture from "@/components/profile/document-capture";
+import { ThemeSelect } from "@/components/theme-toggle";
 import { deleteRunnerAccount, storeEncryptedIc } from "@/lib/actions/account";
 import { profileGateMissing, profileIcBlockReason, profileSaveErrors } from "@/lib/profile-validation";
 import { validateIdentityInput } from "@/lib/nric";
@@ -350,7 +351,6 @@ export default function RunnerProfilePage() {
                 value={formData.dob}
                 onChange={(e) => updateField("dob", e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
-                style={{ colorScheme: 'dark' }}
               />
             </div>
             <div className="flex flex-col gap-1.5 relative">
@@ -567,6 +567,17 @@ export default function RunnerProfilePage() {
         {saveNotice && !saveError && (
           <p className="text-[12px] text-amber-600 dark:text-amber-400 mt-2 text-center">{saveNotice}</p>
         )}
+
+        {/* Appearance */}
+        <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+          <div className="p-5 border-b border-border/60">
+            <h2 className="text-[16px] font-bold text-foreground">Appearance</h2>
+            <p className="text-[12px] text-muted-foreground">Saved on this device</p>
+          </div>
+          <div className="p-5">
+            <ThemeSelect />
+          </div>
+        </section>
 
         <button
           onClick={handleLogout}

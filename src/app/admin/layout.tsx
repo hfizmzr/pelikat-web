@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
 import { AdminSidebar, AdminMobileNav } from '@/components/layout/admin-sidebar'
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeToggle } from '@/components/theme-toggle'
 import Link from 'next/link'
 
 export default function AdminLayout({
@@ -47,7 +48,7 @@ export default function AdminLayout({
   }, [])
 
   return (
-    <div className="flex min-h-dvh bg-background dark">
+    <div className="flex min-h-dvh bg-background">
       {/* ── Sticky Desktop Sidebar ─────────────────────────────── */}
       <div className="hidden lg:sticky lg:top-0 lg:h-dvh lg:flex lg:flex-col shrink-0">
         <AdminSidebar />
@@ -72,12 +73,14 @@ export default function AdminLayout({
 
           </div>
 
-          {/* Right: Clock + CTA */}
+          {/* Right: Clock + theme + CTA */}
           <div className="flex items-center gap-3">
             {/* Live clock */}
             <span className="hidden lg:inline-block text-[11px] text-border font-mono font-inter">
               {clock}
             </span>
+
+            <ThemeToggle />
 
             {/* Add Tenant Organizer CTA */}
             <Link

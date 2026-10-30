@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
 import { OrganizerSidebar, OrganizerMobileNav } from '@/components/layout/organizer-sidebar'
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function OrganizerLayout({
   children,
@@ -97,6 +98,7 @@ export default function OrganizerLayout({
 
             {/* Right actions */}
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <button
                 className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title="Notifications"

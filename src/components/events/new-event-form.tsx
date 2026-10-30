@@ -198,7 +198,7 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
                   type="date"
                   value={formData.event_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, event_date: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground focus:outline-none focus:border-primary/50 transition-colors [color-scheme:dark]"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground focus:outline-none focus:border-primary/50 transition-colors"
                 />
                 {errors.event_date && <p className="text-[12px] text-red-500 dark:text-red-300 mt-1">{errors.event_date}</p>}
               </div>
@@ -250,7 +250,7 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
                   type="datetime-local"
                   value={formData.reg_open}
                   onChange={(e) => setFormData(prev => ({ ...prev, reg_open: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground focus:outline-none focus:border-primary/50 transition-colors [color-scheme:dark]"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground focus:outline-none focus:border-primary/50 transition-colors"
                 />
               </div>
 
@@ -260,7 +260,7 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
                   type="datetime-local"
                   value={formData.reg_close}
                   onChange={(e) => setFormData(prev => ({ ...prev, reg_close: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground focus:outline-none focus:border-primary/50 transition-colors [color-scheme:dark]"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground focus:outline-none focus:border-primary/50 transition-colors"
                 />
               </div>
 
