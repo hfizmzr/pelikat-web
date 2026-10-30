@@ -42,6 +42,37 @@ function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback
 }
 
+/** Reprocess confirmation dialog, shared by both uploader screens. */
+function ReprocessConfirm({
+  trigger,
+  title,
+  description,
+  onConfirm,
+}: {
+  trigger: React.ReactNode
+  title: string
+  description: string
+  onConfirm: () => void
+}) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>
+            Reprocess Uploads
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
 export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [state, setState] = useState<UploadState>('idle')
@@ -199,33 +230,6 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
     runAutoTagging(() => triggerPhotoProcessingForPrefix(eventId, organizerId, selectedExistingPrefix, nextBatchId))
   }
 
-  /** Reprocess confirmation with onConfirm wired to handleRunExistingAutoTagging. */
-  const ReprocessConfirm = ({
-    trigger,
-    title,
-    description,
-  }: {
-    trigger: React.ReactNode
-    title: string
-    description: string
-  }) => (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleRunExistingAutoTagging}>
-            Reprocess Uploads
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  )
-
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     setIsDragging(false)
@@ -378,6 +382,7 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
                   }
                   title="Reprocess uploads?"
                   description="This will reprocess the selected upload folder and replace existing AI tags for the same images. Runner galleries will not receive duplicate rows for the same stored image."
+                  onConfirm={handleRunExistingAutoTagging}
                 />
 
                 {existingBatches.length > 0 && (
@@ -524,6 +529,7 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
               }
               title="Run auto tagging again?"
               description="This will reprocess the selected existing upload folder and replace previous AI tags for matching images."
+              onConfirm={handleRunExistingAutoTagging}
             />
             <Button variant="outline" size="sm" onClick={handleReset}>
               Upload Different Photos
