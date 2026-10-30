@@ -21,8 +21,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Pencil, Trash2, Loader2 } from 'lucide-react'
 import { updateCategory, deleteCategory } from '@/components/events/actions'
 import { CategoryFormFields } from '@/components/events/category-form-fields'

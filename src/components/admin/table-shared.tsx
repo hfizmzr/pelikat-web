@@ -4,7 +4,6 @@ import { ArrowUpDown } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 export { getInitials } from '@/lib/utils'
-import { getInitials } from '@/lib/utils'
 
 // Shared initials palette (superset of the admin tables' variants).
 export const INITIALS_COLORS = [
