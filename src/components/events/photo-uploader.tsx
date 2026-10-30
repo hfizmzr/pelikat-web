@@ -32,7 +32,6 @@ import {
 
 interface PhotoUploaderProps {
   eventId: string
-  organizerId: string
 }
 
 type UploadState = 'idle' | 'uploading' | 'uploaded' | 'processing' | 'done' | 'error'
@@ -73,7 +72,7 @@ function ReprocessConfirm({
   )
 }
 
-export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
+export function PhotoUploader({ eventId }: PhotoUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [state, setState] = useState<UploadState>('idle')
   const [progress, setProgress] = useState(0)
@@ -165,7 +164,7 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
   const handleRunAutoTagging = () => {
     if (!batchId || storagePaths.length === 0) return
 
-    runAutoTagging(() => triggerPhotoProcessing(eventId, organizerId, storagePaths, batchId))
+    runAutoTagging(() => triggerPhotoProcessing(eventId, storagePaths, batchId))
   }
 
   const handleLoadExistingBatches = async () => {
@@ -227,7 +226,7 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
     setErrorMsg(null)
     setState('processing')
 
-    runAutoTagging(() => triggerPhotoProcessingForPrefix(eventId, organizerId, selectedExistingPrefix, nextBatchId))
+    runAutoTagging(() => triggerPhotoProcessingForPrefix(eventId, selectedExistingPrefix, nextBatchId))
   }
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
