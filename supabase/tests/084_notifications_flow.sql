@@ -33,12 +33,12 @@ begin
   select count(*) into v_recipients from public.notification_recipients(v_phys);
 
   -- a paid physical registration with a BIB and a runner account
-  select r.id, rp.user_id, r.bib_number into v_reg, v_runner_user, v_bib
-    from public.registrations r join public.runner_profiles rp on rp.id = r.runner_id
-   where r.event_id = v_phys and r.payment_status = 'paid' and r.bib_number is not null
+  select reg.id, rp.user_id, reg.bib_number into v_reg, v_runner_user, v_bib
+    from public.registrations reg join public.runner_profiles rp on rp.id = reg.runner_id
+   where reg.event_id = v_phys and reg.payment_status = 'paid' and reg.bib_number is not null
    limit 1;
-  select r.id into v_vreg from public.registrations r
-   where r.event_id = v_virt and r.payment_status = 'paid' and r.runner_id is not null limit 1;
+  select reg.id into v_vreg from public.registrations reg
+   where reg.event_id = v_virt and reg.payment_status = 'paid' and reg.runner_id is not null limit 1;
   select rp.user_id into v_other_user from public.runner_profiles rp
    where rp.user_id <> v_runner_user and rp.user_id is not null limit 1;
 
