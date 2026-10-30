@@ -7,6 +7,7 @@ import {
   THEME_ASSET_MAX_ENTRIES,
   themeAssetMatcherSource,
 } from "../lib/theme/serwist";
+import { parsePushMessage, safeNotificationPath } from "../lib/notifications/push-payload";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -64,3 +65,33 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+// FR-31 Web Push: show what the dispatch-notifications edge function sent
+// and light the home-screen badge (Badging API, iOS 16.4+ / Chromium).
+self.addEventListener("push", (event) => {
+  const { title, options } = parsePushMessage(event.data?.text());
+  event.waitUntil(
+    Promise.all([
+      self.registration.showNotification(title, options),
+      self.navigator.setAppBadge?.().catch(() => {}),
+    ]),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const path = safeNotificationPath(event.notification.data?.url);
+  const target = new URL(path, self.location.origin).href;
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const existing = windows.find((w) => new URL(w.url).origin === self.location.origin);
+      if (existing) {
+        await existing.focus();
+        if ("navigate" in existing) await existing.navigate(target).catch(() => {});
+        return;
+      }
+      await self.clients.openWindow(target);
+    })(),
+  );
+});

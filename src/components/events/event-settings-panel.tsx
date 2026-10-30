@@ -93,7 +93,19 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
     setSavingDates(false)
   }
 
+  // Publishing emails + pushes every confirmed runner (FR-30), so turning
+  // it on asks first; hiding results again is instant.
+  const [confirmPublishOpen, setConfirmPublishOpen] = useState(false)
+
   const handleResultsToggle = (checked: boolean) => {
+    if (checked) {
+      setConfirmPublishOpen(true)
+      return
+    }
+    applyResultsPublished(false)
+  }
+
+  const applyResultsPublished = (checked: boolean) => {
     const previous = resultsPublishedValue
     setResultsPublishedValue(checked)
     setSavingResults(true)
@@ -233,7 +245,7 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {resultsPublishedValue
                     ? 'Runners can see the leaderboard and their rank.'
-                    : 'Runner leaderboard is hidden until you publish.'}
+                    : 'Runner leaderboard is hidden until you publish. Publishing notifies every confirmed runner.'}
                 </p>
               </div>
               {resultsError && (
@@ -249,6 +261,24 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
                 />
               )}
             </div>
+            <AlertDialog open={confirmPublishOpen} onOpenChange={setConfirmPublishOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Publish results for &ldquo;{eventName}&rdquo;?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    The leaderboard becomes visible to runners, and every confirmed runner gets an
+                    email and a push notification that results are out. Runners are only notified the
+                    first time you publish.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => applyResultsPublished(true)}>
+                    Publish &amp; notify
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
           <div className="space-y-3 pt-4 border-t border-border">

@@ -30,11 +30,6 @@ interface RunnerRegistrationActionsProps {
     phone: string | null
     icOnFile: boolean
   }
-  eventSummary: {
-    name: string
-    date: string
-    location: string | null
-  }
 }
 
 export function RunnerRegistrationActions({
@@ -42,7 +37,6 @@ export function RunnerRegistrationActions({
   categories,
   hasRunnerProfile,
   runner,
-  eventSummary,
 }: RunnerRegistrationActionsProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -63,7 +57,7 @@ export function RunnerRegistrationActions({
     }
 
     startTransition(async () => {
-      const { data, error } = await supabase.rpc('register_for_event', {
+      const { error } = await supabase.rpc('register_for_event', {
         p_event_id: eventId,
         p_category_id: selectedCategoryId,
       })
@@ -78,33 +72,9 @@ export function RunnerRegistrationActions({
         return
       }
 
-      // Fire-and-forget confirmation email (UC11 step 8). The edge
-      // function is a no-op stub when RESEND_API_KEY is absent.
-      const category = categories.find((c) => c.id === selectedCategoryId)
-      void supabase.functions
-        .invoke('send-transactional-email', {
-          body: {
-            type: 'registration_confirmation',
-            runnerEmail: runner.email,
-            runnerName: runner.name || 'Runner',
-            eventName: eventSummary.name,
-            eventDate: eventSummary.date,
-            location: eventSummary.location,
-            categoryName: category?.name ?? '',
-            // Payment-first BIB: number unassigned until payment, so 'TBA'.
-            bibNumber: data?.bib_number || 'TBA',
-            eventUrl: `${window.location.origin}/runner/events/${eventId}/bib`,
-          },
-        })
-        .then((res) => {
-          if (res.error || !res.data?.success) {
-            console.error('send-transactional-email failed:', res.error || res.data)
-          }
-        })
-        .catch((err) => {
-          console.error('send-transactional-email error:', err)
-        })
-
+      // Confirmation email + push (UC11 step 8, FR-29) are sent by the
+      // registrations_notify_confirmed trigger once payment lands and the
+      // BIB is assigned (migration 084) — nothing to send from here.
       router.refresh()
     })
   }
