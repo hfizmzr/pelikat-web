@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/hooks/use-auth"
+import { BADGE_DEFINITIONS } from "@/lib/badges-registry"
 import { Card, CardContent } from "@/components/ui/card"
 import { Award, X } from "lucide-react"
 
@@ -52,90 +53,16 @@ export function BadgeToast() {
         async (payload) => {
           const badgeKey = (payload.new as Record<string, string>).badge_key
 
-          const defs: Record<string, BadgeInfo> = {
-            first_run: {
-              badge_key: "first_run",
-              name: "First Run",
-              description: "Completed your first virtual run",
-              icon: "🏃",
-            },
-            "5k_distance": {
-              badge_key: "5k_distance",
-              name: "5K Club",
-              description: "Ran a total of 5 kilometers",
-              icon: "🎯",
-            },
-            "10k_distance": {
-              badge_key: "10k_distance",
-              name: "10K Club",
-              description: "Ran a total of 10 kilometers",
-              icon: "🏆",
-            },
-            "21k_distance": {
-              badge_key: "21k_distance",
-              name: "Half Marathon",
-              description: "Ran a total of 21.1 kilometers",
-              icon: "🥈",
-            },
-            "42k_distance": {
-              badge_key: "42k_distance",
-              name: "Full Marathon",
-              description: "Ran a total of 42.2 kilometers",
-              icon: "🌟",
-            },
-            "100k_distance": {
-              badge_key: "100k_distance",
-              name: "100K Club",
-              description: "Ran a total of 100 kilometers",
-              icon: "💎",
-            },
-            "5_runs": {
-              badge_key: "5_runs",
-              name: "5 Runs",
-              description: "Logged 5 virtual runs",
-              icon: "🏃‍♂️",
-            },
-            "10_runs": {
-              badge_key: "10_runs",
-              name: "10 Runs",
-              description: "Logged 10 virtual runs",
-              icon: "🏃‍♀️",
-            },
-            "25_runs": {
-              badge_key: "25_runs",
-              name: "25 Runs",
-              description: "Logged 25 virtual runs",
-              icon: "💪",
-            },
-            "50_runs": {
-              badge_key: "50_runs",
-              name: "50 Runs",
-              description: "Logged 50 virtual runs",
-              icon: "🔥",
-            },
-            streak_3: {
-              badge_key: "streak_3",
-              name: "3-Day Streak",
-              description: "Ran on 3 consecutive days",
-              icon: "📅",
-            },
-            streak_7: {
-              badge_key: "streak_7",
-              name: "7-Day Streak",
-              description: "Ran on 7 consecutive days",
-              icon: "🔥",
-            },
-            streak_30: {
-              badge_key: "streak_30",
-              name: "30-Day Streak",
-              description: "Ran on 30 consecutive days",
-              icon: "⚡",
-            },
-          }
-
-          const info = defs[badgeKey]
+          // Shared registry mirrors pelikat-api BADGE_RULES — unknown keys
+          // (rows inserted outside the engine) are silently ignored.
+          const info = BADGE_DEFINITIONS[badgeKey]
           if (info) {
-            setNewBadge(info)
+            setNewBadge({
+              badge_key: info.badge_key,
+              name: info.name,
+              description: info.description,
+              icon: info.icon,
+            })
             setVisible(true)
             setTimeout(() => setVisible(false), 6000)
           }

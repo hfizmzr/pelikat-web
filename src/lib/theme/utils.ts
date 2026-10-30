@@ -10,6 +10,13 @@ export function isPlainObject(v: unknown): v is Record<string, unknown> {
   )
 }
 
+/**
+ * Stored-token HEX contract (Global Constraints / spec §4.3: ^#[0-9a-fA-F]{6}$)
+ * — the ONE shared instance (validate/resolve/theme-editor). color.ts's own
+ * runtime regex is looser (`#` optional) and intentionally stays private.
+ */
+export const HEX_RE = /^#[0-9a-fA-F]{6}$/
+
 /** Font URL allowlist — spec §5.4, enforced here (app layer). The DB-layer
  *  charset check is bypassable via `https://host/../x` (Task 1 review pin);
  *  URL normalization + the .woff2 check below close that path. */

@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { MerchVariant } from '@/lib/merch'
+import { type MerchVariant, compareVariants } from '@/lib/merch'
 import { isConfirmedStatus } from '@/lib/registration-status'
 
 export type StoreProduct = {
@@ -25,15 +25,6 @@ export type StoreData = {
   registrationPaid: boolean
   salesClosed: boolean
   products: StoreProduct[]
-}
-
-const SIZE_ORDER = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL']
-
-function compareVariants(a: MerchVariant, b: MerchVariant) {
-  const sa = SIZE_ORDER.indexOf(a.size?.toUpperCase() ?? '')
-  const sb = SIZE_ORDER.indexOf(b.size?.toUpperCase() ?? '')
-  if (sa !== sb) return (sa === -1 ? 99 : sa) - (sb === -1 ? 99 : sb)
-  return `${a.size ?? ''}${a.color ?? ''}`.localeCompare(`${b.size ?? ''}${b.color ?? ''}`)
 }
 
 // Today's date in Malaysia, as YYYY-MM-DD (matches merch_checkout's cut-off)

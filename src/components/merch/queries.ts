@@ -3,6 +3,7 @@ import type { OrderRow } from '@/components/merch/order-table'
 import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
 import {
   MERCH_SOLD_STATUSES,
+  compareVariants,
   variantLabel,
   type MerchOrder,
   type MerchProduct,
@@ -114,13 +115,4 @@ export async function getMerchHubData(supabase: SupabaseClient, eventId: string)
   const error = productsRes.error ?? ordersRes.error ?? salesRes.error ?? null
 
   return { products, orders, sales, paidOrders, pendingOrders, error }
-}
-
-const SIZE_ORDER = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']
-
-function compareVariants(a: { size: string | null; color: string | null }, b: { size: string | null; color: string | null }) {
-  const ai = SIZE_ORDER.indexOf((a.size ?? '').toUpperCase())
-  const bi = SIZE_ORDER.indexOf((b.size ?? '').toUpperCase())
-  if (ai !== bi) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
-  return `${a.size ?? ''}${a.color ?? ''}`.localeCompare(`${b.size ?? ''}${b.color ?? ''}`)
 }

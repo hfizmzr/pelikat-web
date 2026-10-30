@@ -40,16 +40,19 @@ describe('Reliability: Virtual Events Schema (067)', () => {
   })
 
   it('create wizard collects + persists target_distance_km for virtual events', () => {
+    // Both routes render the shared form component — the wiring lives there.
     for (const page of ['src/app/organizer/events/new/page.tsx', 'src/app/organizer/mobile/events/new/page.tsx']) {
-      const createPage = read(...page.split('/'))
-      // Required numeric input, shown only for virtual.
-      expect(createPage).toContain("formData.event_type === 'virtual' && (")
-      expect(createPage).toContain('Target Distance (KM)')
-      expect(createPage).toContain('min="0.1"')
-      // Server-side validation + INSERT persistence.
-      expect(createPage).toContain('Target distance is required for virtual runs')
-      expect(createPage).toContain("target_distance_km: formData.event_type === 'virtual' ? Number(formData.target_km) : null")
+      const route = read(...page.split('/'))
+      expect(route).toContain('NewEventForm')
     }
+    const createPage = read('src', 'components', 'events', 'new-event-form.tsx')
+    // Required numeric input, shown only for virtual.
+    expect(createPage).toContain("formData.event_type === 'virtual' && (")
+    expect(createPage).toContain('Target Distance (KM)')
+    expect(createPage).toContain('min="0.1"')
+    // Server-side validation + INSERT persistence.
+    expect(createPage).toContain('Target distance is required for virtual runs')
+    expect(createPage).toContain("target_distance_km: formData.event_type === 'virtual' ? Number(formData.target_km) : null")
   })
 
   it('log_run grew an additive p_event_id param with a confirmed-registration guard (068)', () => {

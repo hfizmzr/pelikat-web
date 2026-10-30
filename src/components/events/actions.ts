@@ -1,5 +1,6 @@
 'use server'
 
+import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { DjangoApiError, fetchDjangoApi } from '@/lib/django'
 import { isConfirmedStatus } from '@/lib/registration-status'
@@ -19,6 +20,7 @@ import { getOrganizerSubscriptionPrice } from '@/lib/subscription'
 import { validateThemeConfig } from '@/lib/theme/validate'
 import { cleanupThemeAssets } from '@/lib/theme/assets'
 import { isPlainObject } from '@/lib/theme/utils'
+import { MERCH_SIZE_PRESETS } from '@/lib/merch'
 import type { ThemeTokens } from '@/lib/theme/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -253,50 +255,18 @@ export async function cancelRegistration(eventId: string) {
 export async function generateConsentCode(registrationId: string) {
   const { supabase } = await requireAuth()
 
-  const { data: registration, error: regError } = await supabase
+  const { error: regError } = await supabase
     .from('registrations')
-    .select('id, organizer_id')
+    .select('id')
     .eq('id', registrationId)
     .single()
 
-  if (regError || !registration) throw new Error('Registration not found')
+  if (regError) throw new Error('Registration not found')
 
   return fetchDjangoApi('/ai/qr/consent-code', {
     method: 'POST',
     body: JSON.stringify({ registration_id: registrationId }),
   })
-}
-
-export async function exportRegistrationsCsv(
-  registrations: {
-    bib_number: string | null
-    checked_in: boolean
-    payment_status: string
-    guest_name: string | null
-    guest_phone: string | null
-    registration_role: string
-    runner_profiles: { full_name: string; phone: string } | null
-    race_categories: { name: string } | null
-  }[]
-) {
-  'use server'
-
-  const { user } = await requireAuth()
-  void user
-
-  const headers = ['BIB', 'Name', 'Role', 'Category', 'Phone', 'Payment', 'Checked In']
-  const rows = registrations.map((reg) => [
-    reg.bib_number ?? '',
-    reg.guest_name || reg.runner_profiles?.full_name || '',
-    reg.registration_role,
-    reg.race_categories?.name || '',
-    reg.guest_phone || reg.runner_profiles?.phone || '',
-    reg.payment_status,
-    reg.checked_in ? 'Yes' : 'No',
-  ])
-
-  const escapeCsv = (val: string) => `"${val.replace(/"/g, '""')}"`
-  return [headers, ...rows].map((row) => row.map(escapeCsv).join(',')).join('\n')
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -493,6 +463,17 @@ export async function createCategory(eventId: string, formData: FormData) {
   const { error } = await supabase.from('race_categories').insert({
     event_id: eventId,
     organizer_id: event.organizer_id,
+    ...parseCategoryForm(formData),
+  })
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/organizer/events/${eventId}/categories`)
+}
+
+/** Shared FormData → race_categories column mapping for create/update. */
+function parseCategoryForm(formData: FormData) {
+  return {
     name: formData.get('name') as string,
     gender: (formData.get('gender') as string) || null,
     min_age: formData.get('min_age') ? parseInt(formData.get('min_age') as string) : null,
@@ -501,11 +482,7 @@ export async function createCategory(eventId: string, formData: FormData) {
     bib_start: formData.get('bib_start') ? parseInt(formData.get('bib_start') as string) : 1,
     max_slots: formData.get('max_slots') ? parseInt(formData.get('max_slots') as string) : null,
     price: formData.get('price') ? parseFloat(formData.get('price') as string) : 0,
-  })
-
-  if (error) throw new Error(error.message)
-
-  revalidatePath(`/organizer/events/${eventId}/categories`)
+  }
 }
 
 export async function updateCategory(
@@ -517,16 +494,7 @@ export async function updateCategory(
 
   const { error } = await supabase
     .from('race_categories')
-    .update({
-      name: formData.get('name') as string,
-      gender: (formData.get('gender') as string) || null,
-      min_age: formData.get('min_age') ? parseInt(formData.get('min_age') as string) : null,
-      max_age: formData.get('max_age') ? parseInt(formData.get('max_age') as string) : null,
-      bib_prefix: (formData.get('bib_prefix') as string) || null,
-      bib_start: formData.get('bib_start') ? parseInt(formData.get('bib_start') as string) : 1,
-      max_slots: formData.get('max_slots') ? parseInt(formData.get('max_slots') as string) : null,
-      price: formData.get('price') ? parseFloat(formData.get('price') as string) : 0,
-    })
+    .update(parseCategoryForm(formData))
     .eq('id', categoryId)
 
   if (error) throw new Error(error.message)
@@ -551,7 +519,7 @@ export async function deleteCategory(categoryId: string, eventId: string) {
 // REPC Actions
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
+const SHIRT_SIZES = MERCH_SIZE_PRESETS
 
 function parseInventoryQuantity(value: FormDataEntryValue | null) {
   if (typeof value !== 'string' || value.trim() === '') return 0
@@ -617,6 +585,53 @@ export async function updateEventShirtInventory(eventId: string, formData: FormD
   revalidatePath(`/organizer/events/${eventId}/checkin`)
 }
 
+/** Common failure shape for REPC check-in results. */
+function failResult(message: string, bibNumber: string | null): RepcCheckInResult {
+  return {
+    success: false,
+    message,
+    registrationId: null,
+    bibNumber,
+    runnerName: null,
+    shirtSize: null,
+    remainingQty: null,
+    alreadyCheckedIn: false,
+  }
+}
+
+type BibRegRow = { id?: string; runner_id: string | null; bib_number: string | null }
+
+/**
+ * BIB lookup with case-insensitive fallback: exact match first, then ilike.
+ * Single source for the REPC check-in and photo-confirm flows.
+ */
+async function findRegistrationByBibLoose(
+  supabase: SupabaseClient,
+  eventId: string,
+  bibNumber: string,
+  select: string
+): Promise<{ data: BibRegRow | null; error: PostgrestError | null }> {
+  const exact = await supabase
+    .from('registrations')
+    .select(select)
+    .eq('event_id', eventId)
+    .eq('bib_number', bibNumber)
+    .maybeSingle()
+
+  if (exact.data || exact.error) {
+    return { data: exact.data as BibRegRow | null, error: exact.error }
+  }
+
+  const loose = await supabase
+    .from('registrations')
+    .select(select)
+    .eq('event_id', eventId)
+    .ilike('bib_number', bibNumber)
+    .maybeSingle()
+
+  return { data: loose.data as BibRegRow | null, error: loose.error }
+}
+
 export async function checkInRegistrationByBib(
   eventId: string,
   bibNumber: string
@@ -625,61 +640,22 @@ export async function checkInRegistrationByBib(
   const cleanedBibNumber = bibNumber.trim()
 
   if (!cleanedBibNumber) {
-    return {
-      success: false,
-      message: 'Enter a BIB number.',
-      registrationId: null,
-      bibNumber: null,
-      runnerName: null,
-      shirtSize: null,
-      remainingQty: null,
-      alreadyCheckedIn: false,
-    }
+    return failResult('Enter a BIB number.', null)
   }
 
-  let { data: registration, error: registrationError } = await supabase
-    .from('registrations')
-    .select('runner_id, bib_number')
-    .eq('event_id', eventId)
-    .eq('bib_number', cleanedBibNumber)
-    .maybeSingle()
-
-  if (!registration && !registrationError) {
-    const fallback = await supabase
-      .from('registrations')
-      .select('runner_id, bib_number')
-      .eq('event_id', eventId)
-      .ilike('bib_number', cleanedBibNumber)
-      .maybeSingle()
-
-    registration = fallback.data
-    registrationError = fallback.error
-  }
+  const { data: registration, error: registrationError } = await findRegistrationByBibLoose(
+    supabase,
+    eventId,
+    cleanedBibNumber,
+    'runner_id, bib_number'
+  )
 
   if (registrationError) {
-    return {
-      success: false,
-      message: registrationError.message,
-      registrationId: null,
-      bibNumber: cleanedBibNumber,
-      runnerName: null,
-      shirtSize: null,
-      remainingQty: null,
-      alreadyCheckedIn: false,
-    }
+    return failResult(registrationError.message, cleanedBibNumber)
   }
 
   if (!registration?.runner_id || !registration.bib_number) {
-    return {
-      success: false,
-      message: 'Registration not found.',
-      registrationId: null,
-      bibNumber: cleanedBibNumber,
-      runnerName: null,
-      shirtSize: null,
-      remainingQty: null,
-      alreadyCheckedIn: false,
-    }
+    return failResult('Registration not found.', cleanedBibNumber)
   }
 
   const {
@@ -697,16 +673,7 @@ export async function checkInRegistrationByBib(
 
   if (error) {
     console.error(`${REPC_CHECK_IN_RPC} RPC error:`, { message: error.message, eventId, bib: registration.bib_number })
-    return {
-      success: false,
-      message: error.message,
-      registrationId: null,
-      bibNumber: registration.bib_number,
-      runnerName: null,
-      shirtSize: null,
-      remainingQty: null,
-      alreadyCheckedIn: false,
-    }
+    return failResult(error.message, registration.bib_number)
   }
 
   const result = normalizeRepcCheckInResult((data?.[0] ?? null) as RepcCheckInRpcRow | null)
@@ -840,27 +807,14 @@ async function findRegistrationForBib(
   eventId: string,
   bibNumber: string
 ) {
-  let { data: registration, error: registrationError } = await supabase
-    .from('registrations')
-    .select('id, runner_id, bib_number')
-    .eq('event_id', eventId)
-    .eq('bib_number', bibNumber)
-    .maybeSingle()
-
-  if (!registration && !registrationError) {
-    const fallback = await supabase
-      .from('registrations')
-      .select('id, runner_id, bib_number')
-      .eq('event_id', eventId)
-      .ilike('bib_number', bibNumber)
-      .maybeSingle()
-
-    registration = fallback.data
-    registrationError = fallback.error
-  }
-
-  if (registrationError) throw new Error(registrationError.message)
-  return registration
+  const { data, error } = await findRegistrationByBibLoose(
+    supabase,
+    eventId,
+    bibNumber,
+    'id, runner_id, bib_number'
+  )
+  if (error) throw new Error(error.message)
+  return data
 }
 
 export async function confirmReviewPhoto(

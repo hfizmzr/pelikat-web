@@ -32,7 +32,7 @@ export async function generateMetadata({
       .eq('id', id)
       .maybeSingle()
     if (!event) return { title: FALLBACK_TITLE }
-    const { labels: themedLabels } = await getSurfaceTheme(event, supabase)
+    const themedLabels = (await getSurfaceTheme(event, supabase))?.labels ?? null
     const bibLabel = (themedLabels ?? resolveLabels(null)).bib_label
     return { title: `${event.name} - ${bibLabel} - Pelikat` }
   } catch {
@@ -80,7 +80,7 @@ export default async function RunnerBibPage({
   // is CSS-vars-only); labels null → resolveLabels(null) = the full platform
   // fallback map. Double-resolve with EventThemeScope is the accepted P3 data
   // flow for server components.
-  const { labels: themedLabels } = await getSurfaceTheme(event, supabase)
+  const themedLabels = (await getSurfaceTheme(event, supabase))?.labels ?? null
   const labels = themedLabels ?? resolveLabels(null)
 
   const isCheckedIn = Boolean(registration.checked_in)

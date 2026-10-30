@@ -17,7 +17,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ArrowUpDown, Download, MoreHorizontal, Pencil, RefreshCw, Search, Store, Trash2, UserCog, X } from "lucide-react"
+import { Download, MoreHorizontal, Pencil, RefreshCw, Search, Store, Trash2, UserCog, X } from "lucide-react"
+import { rowsToCsv } from '@/lib/utils'
+import { getInitials, INITIALS_COLORS, ITEMS_PER_PAGE, TableSortHeader, TablePagination } from './table-shared'
 import type { Organizer } from './types'
 
 // ─── CSV export helper ────────────────────────────────────────────────────────
@@ -30,9 +32,9 @@ function exportOrganizersCSV(organizers: Organizer[]) {
     o.is_active ? 'Yes' : 'No',
     o.sub_expires_at ? new Date(o.sub_expires_at).toLocaleDateString() : '',
     new Date(o.created_at).toLocaleDateString(),
-  ].map((v) => `"${String(v).replace(/"/g, '""')}"`))
+  ])
 
-  const csv = [headers, ...rows].map((r) => r.join(',')).join('\n')
+  const csv = rowsToCsv(headers, rows)
   const blob = new Blob([csv], { type: 'text/csv' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -56,25 +58,8 @@ type SortKey = 'name' | 'slug' | 'contact_email' | 'is_active' | 'sub_expires_at
 type SortDirection = 'asc' | 'desc'
 type StatusFilter = 'all' | 'active' | 'inactive' | 'expiring' | 'expired'
 
-const ITEMS_PER_PAGE = 25
-
-// ─── Color palette for organizer initials ────────────────────────────────────
-const ORG_COLORS = [
-  { bg: 'bg-primary/20', text: 'text-primary' },
-  { bg: 'bg-primary/20', text: 'text-primary' },
-  { bg: 'bg-success/20', text: 'text-success' },
-  { bg: 'bg-red-500/10 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
-  { bg: 'bg-primary/20', text: 'text-primary' },
-]
-
-function getInitials(name: string) {
-  return name
-    .split(' ')
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
+// ─── Color palette ───────────────────────────────────────────────────────────
+const ORG_COLORS = INITIALS_COLORS
 
 function getSubscriptionStatus(organizer: Organizer) {
   if (!organizer.is_active) {
@@ -98,31 +83,6 @@ function getSubscriptionStatus(organizer: Organizer) {
 }
 
 // ─── Sort column header ───────────────────────────────────────────────────────
-function SortHeader({
-  label,
-  sortKeyVal,
-  onSort,
-  className,
-}: {
-  label: string
-  sortKeyVal: SortKey
-  onSort: (key: SortKey) => void
-  className?: string
-}) {
-  return (
-    <th className={`py-3 px-4 ${className ?? ''}`}>
-      <button
-        className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-muted-foreground transition-colors font-inter"
-        onClick={() => onSort(sortKeyVal)}
-      >
-        {label}
-        <ArrowUpDown className="h-3 w-3 opacity-60" />
-      </button>
-    </th>
-  )
-}
-
-// ─── Main component ───────────────────────────────────────────────────────────
 export function OrganizerTable({
   organizers,
   loading,
@@ -294,12 +254,12 @@ export function OrganizerTable({
             were unreachable. Class-only fix: value-light columns (Slug, Sub
             Expires, Created) drop below md (the wrapper already has
             overflow-x-auto, so scrolling is scale-safe at any ≥md width). */}
-            <SortHeader label="Organization" sortKeyVal="name" onSort={handleSort} />
-            <SortHeader label="Slug" sortKeyVal="slug" onSort={handleSort} className="hidden md:table-cell" />
-            <SortHeader label="Email" sortKeyVal="contact_email" onSort={handleSort} />
-            <SortHeader label="Status" sortKeyVal="is_active" onSort={handleSort} />
-            <SortHeader label="Sub Expires" sortKeyVal="sub_expires_at" onSort={handleSort} className="hidden md:table-cell" />
-            <SortHeader label="Created" sortKeyVal="created_at" onSort={handleSort} className="hidden md:table-cell" />
+            <TableSortHeader label="Organization" onSort={() => handleSort("name")} />
+            <TableSortHeader label="Slug" onSort={() => handleSort("slug")} className="hidden md:table-cell" />
+            <TableSortHeader label="Email" onSort={() => handleSort("contact_email")} />
+            <TableSortHeader label="Status" onSort={() => handleSort("is_active")} />
+            <TableSortHeader label="Sub Expires" onSort={() => handleSort("sub_expires_at")} className="hidden md:table-cell" />
+            <TableSortHeader label="Created" onSort={() => handleSort("created_at")} className="hidden md:table-cell" />
               <th className="py-3 px-4 text-right">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Actions</span>
               </th>
@@ -477,52 +437,33 @@ export function OrganizerTable({
       </div>
 
       {/* ── Pagination ────────────────────────────────────────────────── */}
-      {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-          <p className="text-[12px] text-muted-foreground font-inter">
-            Showing{' '}
-            <span className="text-foreground font-semibold">
-              {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-              {Math.min(currentPage * ITEMS_PER_PAGE, filteredOrganizers.length)}
-            </span>{' '}
-            of{' '}
-            <span className="text-foreground font-semibold">{filteredOrganizers.length}</span>{' '}
-            organizers
-          </p>
-          <div className="flex items-center gap-1">
-            <button
-              className="px-3 py-1.5 rounded-lg bg-card hover:bg-accent text-muted-foreground text-[12px] transition-colors border border-border/30 disabled:opacity-40 disabled:cursor-not-allowed font-inter"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-            >
-              Previous
-            </button>
-            {Array.from({ length: Math.min(totalPages, 7) }, (_, j) => {
-              const page = j + 1
-              return (
-                <button
-                  key={page}
-                  className={`px-3 py-1.5 rounded-lg text-[12px] transition-colors font-inter ${
-                    currentPage === page
-                      ? 'bg-primary text-primary-foreground font-bold'
-                      : 'bg-card hover:bg-accent text-muted-foreground border border-border/30'
-                  }`}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </button>
-              )
-            })}
-            <button
-              className="px-3 py-1.5 rounded-lg bg-card hover:bg-accent text-muted-foreground text-[12px] transition-colors border border-border/30 disabled:opacity-40 disabled:cursor-not-allowed font-inter"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      <TablePagination
+        rankedTotal={filteredOrganizers.length}
+        total={filteredOrganizers.length}
+        noun="organizers"
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPrev={() => setCurrentPage(currentPage - 1)}
+        onNext={() => setCurrentPage(currentPage + 1)}
+        middle={
+          Array.from({ length: Math.min(totalPages, 7) }, (_, j) => {
+            const page = j + 1
+            return (
+              <button
+                key={page}
+                className={`px-3 py-1.5 rounded-lg text-[12px] transition-colors font-inter ${
+                  currentPage === page
+                    ? 'bg-primary text-primary-foreground font-bold'
+                    : 'bg-card hover:bg-accent text-muted-foreground border border-border/30'
+                }`}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </button>
+            )
+          })
+        }
+      />
     </div>
   )
 }

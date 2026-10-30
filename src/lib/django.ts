@@ -17,7 +17,7 @@ export class DjangoApiError extends Error {
 // env_file). There are still no fallback keys anywhere — a missing config
 // fails the individual request (and any real fetch) loudly instead of
 // breaking `pnpm run build`.
-export function requireEnv(name: 'DJANGO_URL' | 'INTERNAL_API_KEY'): string {
+function requireEnv(name: 'DJANGO_URL' | 'INTERNAL_API_KEY'): string {
   const value = process.env[name]
   if (!value) throw new Error('INTERNAL_API_KEY / DJANGO_URL not configured')
   return value

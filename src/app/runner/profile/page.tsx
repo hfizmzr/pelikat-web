@@ -410,7 +410,6 @@ export default function RunnerProfilePage() {
         </section>
 
         <DocumentCapture
-          userId={user?.id || ""}
           uploadBlocked={icBlockReason}
           currentDocument={{
             path: profile?.ic_document_path || null,

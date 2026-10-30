@@ -42,6 +42,37 @@ function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback
 }
 
+/** Reprocess confirmation dialog, shared by both uploader screens. */
+function ReprocessConfirm({
+  trigger,
+  title,
+  description,
+  onConfirm,
+}: {
+  trigger: React.ReactNode
+  title: string
+  description: string
+  onConfirm: () => void
+}) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>
+            Reprocess Uploads
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
 export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [state, setState] = useState<UploadState>('idle')
@@ -111,16 +142,16 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
     }
   }
 
-  const handleRunAutoTagging = () => {
-    if (!batchId || storagePaths.length === 0) return
-
+  // Shared messaging/state core of both auto-tagging runs — identical
+  // processing state, progress and summary handling.
+  const runAutoTagging = (trigger: () => Promise<PhotoProcessingSummary>) => {
     setState('processing')
     setProgress(90)
     setErrorMsg(null)
 
     startTransition(async () => {
       try {
-        const summary = await triggerPhotoProcessing(eventId, organizerId, storagePaths, batchId)
+        const summary = await trigger()
         setProcessingSummary(summary)
         setProgress(100)
         setState('done')
@@ -129,6 +160,12 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
         setState('error')
       }
     })
+  }
+
+  const handleRunAutoTagging = () => {
+    if (!batchId || storagePaths.length === 0) return
+
+    runAutoTagging(() => triggerPhotoProcessing(eventId, organizerId, storagePaths, batchId))
   }
 
   const handleLoadExistingBatches = async () => {
@@ -190,17 +227,7 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
     setErrorMsg(null)
     setState('processing')
 
-    startTransition(async () => {
-      try {
-        const summary = await triggerPhotoProcessingForPrefix(eventId, organizerId, selectedExistingPrefix, nextBatchId)
-        setProcessingSummary(summary)
-        setProgress(100)
-        setState('done')
-      } catch (err: unknown) {
-        setErrorMsg(getErrorMessage(err, 'AI processing trigger failed'))
-        setState('error')
-      }
-    })
+    runAutoTagging(() => triggerPhotoProcessingForPrefix(eventId, organizerId, selectedExistingPrefix, nextBatchId))
   }
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -346,29 +373,17 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+                <ReprocessConfirm
+                  trigger={
                     <Button size="sm" type="button" disabled={isPending || !selectedExistingPrefix}>
                       <ImageIcon className="mr-2 h-4 w-4" />
                       Reprocess Uploads
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Reprocess uploads?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will reprocess the selected upload folder and replace existing AI tags for the same images.
-                        Runner galleries will not receive duplicate rows for the same stored image.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleRunExistingAutoTagging}>
-                        Reprocess Uploads
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  }
+                  title="Reprocess uploads?"
+                  description="This will reprocess the selected upload folder and replace existing AI tags for the same images. Runner galleries will not receive duplicate rows for the same stored image."
+                  onConfirm={handleRunExistingAutoTagging}
+                />
 
                 {existingBatches.length > 0 && (
                   <Badge variant="outline">
@@ -506,27 +521,16 @@ export function PhotoUploader({ eventId, organizerId }: PhotoUploaderProps) {
                 Retry Auto Tagging
               </Button>
             )}
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <ReprocessConfirm
+              trigger={
                 <Button variant="outline" size="sm" disabled={isPending || !selectedExistingPrefix}>
                 Reprocess Existing Uploads
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Run auto tagging again?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will reprocess the selected existing upload folder and replace previous AI tags for matching images.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleRunExistingAutoTagging}>
-                    Reprocess Uploads
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              }
+              title="Run auto tagging again?"
+              description="This will reprocess the selected existing upload folder and replace previous AI tags for matching images."
+              onConfirm={handleRunExistingAutoTagging}
+            />
             <Button variant="outline" size="sm" onClick={handleReset}>
               Upload Different Photos
             </Button>

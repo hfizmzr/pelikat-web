@@ -98,18 +98,24 @@ export default function RunnerTracker() {
     }
   }, [accumulatePoint])
 
-  const startTracking = useCallback(() => {
-    pointsRef.current = []
-    setGpsPointCount(0)
-    setElapsed(0)
-    setGpsDistance(0)
-
+  // Shared geo-interval setup used by both start and resume: watch GPS,
+  // flip to tracking, and tick the elapsed counter.
+  const resume = useCallback(() => {
     startWatching()
     setState("tracking")
     timerRef.current = setInterval(() => {
       setElapsed((prev) => prev + 1)
     }, 1000)
   }, [startWatching])
+
+  const startTracking = useCallback(() => {
+    pointsRef.current = []
+    setGpsPointCount(0)
+    setElapsed(0)
+    setGpsDistance(0)
+
+    resume()
+  }, [resume])
 
   const pauseTracking = useCallback(() => {
     clearTimers()
@@ -117,12 +123,8 @@ export default function RunnerTracker() {
   }, [clearTimers])
 
   const resumeTracking = useCallback(() => {
-    startWatching()
-    setState("tracking")
-    timerRef.current = setInterval(() => {
-      setElapsed((prev) => prev + 1)
-    }, 1000)
-  }, [startWatching])
+    resume()
+  }, [resume])
 
   const finishTracking = useCallback(() => {
     clearTimers()

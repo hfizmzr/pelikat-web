@@ -12,6 +12,7 @@ const read = (...parts: string[]) =>
 
 const migration = read('supabase', 'migrations', '066_complimentary_registrations.sql')
 const actions = read('src', 'components', 'events', 'actions.ts')
+const registrationsClient = read('src', 'components', 'events', 'registrations-client.tsx')
 const runnerDetail = read('src', 'app', 'runner', 'events', '[id]', 'page.tsx')
 const adminPage = read('src', 'app', 'admin', 'registrations', 'page.tsx')
 const registeredSection = read('src', 'components', 'events', 'registered-events-section.tsx')
@@ -114,16 +115,16 @@ describe('Reliability: confirmed predicate (paid OR waived)', () => {
 })
 
 describe('Reliability: CSV export guest columns', () => {
-  it('exportRegistrationsCsv includes guest_name and registration_role', () => {
-    expect(actions).toContain('guest_name: string | null')
-    expect(actions).toContain('registration_role: string')
-    expect(actions).toContain("['BIB', 'Name', 'Role', 'Category', 'Phone', 'Payment', 'Checked In']")
-    expect(actions).toContain('reg.guest_name || reg.runner_profiles?.full_name')
-    expect(actions).toContain('reg.registration_role,')
+  it('registrations CSV client util includes guest_name and registration_role', () => {
+    expect(registrationsClient).toContain('guest_name: string | null')
+    expect(registrationsClient).toContain('registration_role: string')
+    expect(registrationsClient).toContain("['BIB', 'Name', 'Role', 'Category', 'Phone', 'Payment', 'Checked In']")
+    expect(registrationsClient).toContain('reg.guest_name || reg.runner_profiles?.full_name')
+    expect(registrationsClient).toContain('reg.registration_role,')
   })
 
   it('bib_number is nullable in the export signature (virtual/no-bib rows)', () => {
-    expect(actions).toContain('bib_number: string | null')
+    expect(registrationsClient).toContain('bib_number: string | null')
   })
 })
 
@@ -147,9 +148,6 @@ describe('Reliability: organizer status filter', () => {
   it('phone columns fall back to guest_phone before the profile phone', () => {
     const client = read('src', 'components', 'events', 'registrations-client.tsx')
     expect(client).toContain('reg.guest_phone || reg.runner_profiles?.phone ||')
-    const actionsCsv = read('src', 'components', 'events', 'actions.ts')
-    expect(actionsCsv).toContain('guest_phone: string | null')
-    expect(actionsCsv).toContain('reg.guest_phone || reg.runner_profiles?.phone ||')
   })
 
   it('partial import successes surface even when a batch RPC fails', () => {

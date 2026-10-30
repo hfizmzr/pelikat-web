@@ -56,10 +56,6 @@ function eventIdPrefix(eventId: string): string {
   return eventId.split('-')[0]?.replace(/[^A-Za-z0-9]/g, '') || 'Event'
 }
 
-function headingFamily(eventId: string): string {
-  return `ET-${eventIdPrefix(eventId)}-Heading`
-}
-
 /**
  * Font URL allowlist lives in utils.ts (`themeFontUrlOk`) — the ONE shared
  * §5.4 enforcement point, consumed by css/validate/resolve. buildFontFace
@@ -96,7 +92,7 @@ function fontFace(
   } catch {
     return ''
   }
-  const family = variant === 'Heading' ? headingFamily(eventId) : `ET-${eventIdPrefix(eventId)}-Body`
+  const family = `ET-${eventIdPrefix(eventId)}-${variant}`
   return [
     '@font-face {',
     `  font-family: ${family};`,

@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function OrganizerEventDetailLoading() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 py-6">
       <div className="flex items-center gap-4">
         <Skeleton className="h-9 w-9 rounded-md" />
         <div className="space-y-2">

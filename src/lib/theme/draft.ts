@@ -12,21 +12,16 @@
 import { LABEL_KEYS } from './labels'
 import { isPlainObject } from './utils'
 import type { ThemeTokens } from './types'
+import { COLOR_KEYS, ASSET_KEYS, TYPOGRAPHY_KEYS } from './types'
 
+// Sections the P1 editor edits (colors + vocabulary) — `meta` is not part of
+// the draft (validate.ts/076 shape it exactly).
 const SECTION_KEYS = ['colors', 'typography', 'assets', 'vocabulary'] as const
 
 // Canonical key order for the sections the P1 editor edits (colors +
 // vocabulary). jsonb row order is not stable; rebuilding in this order keeps
-// equality checks stable. Same list as validate.ts/resolve.ts (kept local,
-// mirroring the codebase's per-module self-containment).
-const COLOR_KEYS = ['primary', 'secondary', 'accent', 'background', 'foreground', 'ring'] as const
-
-// P2 Task 7: the editor now ALSO edits assets + typography — those sections
-// are allowlist-projected (known keys, string values only; unknown keys are
-// rejected, explicit nulls never carried) instead of passing through
-// verbatim. Mirror of validate.ts key lists (kept local).
-const ASSET_KEYS = ['banner_url', 'logo_url', 'badge_icon_url', 'certificate_background_url'] as const
-const TYPOGRAPHY_KEYS = ['heading_font_url', 'body_font_url'] as const
+// equality checks stable. Sub-key lists come from types.ts (the ONE const
+// source shared with validate.ts/resolve.ts).
 
 const STRING_KEYS: Record<'assets' | 'typography', readonly string[]> = {
   assets: ASSET_KEYS,

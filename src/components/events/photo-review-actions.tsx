@@ -1,11 +1,6 @@
 'use client'
 
-import { useActionState, useEffect } from 'react'
-import type { ReactNode } from 'react'
-import { useFormStatus } from 'react-dom'
-import { useRouter } from 'next/navigation'
-import { CheckCircle, Loader2, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { CheckCircle, Trash2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -13,24 +8,7 @@ import {
   discardReviewPhoto,
   type ReviewPhotoActionState,
 } from '@/components/events/actions'
-
-const initialState: ReviewPhotoActionState = { status: 'idle' }
-
-function SubmitButton({
-  children,
-  variant = 'default',
-}: {
-  children: ReactNode
-  variant?: 'default' | 'outline' | 'destructive'
-}) {
-  const { pending } = useFormStatus()
-
-  return (
-    <Button type="submit" size="sm" variant={variant} disabled={pending}>
-      {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : children}
-    </Button>
-  )
-}
+import { PhotoSubmitButton, usePhotoAction } from '@/components/events/photo-action'
 
 interface PhotoReviewActionsProps {
   eventId: string
@@ -45,16 +23,10 @@ export function PhotoReviewActions({
   storagePath,
   detectedBib,
 }: PhotoReviewActionsProps) {
-  const router = useRouter()
-  const [confirmState, confirmAction] = useActionState(confirmReviewPhoto, initialState)
-  const [discardState, discardAction] = useActionState(discardReviewPhoto, initialState)
-  const latestState = confirmState.status !== 'idle' ? confirmState : discardState
-
-  useEffect(() => {
-    if (latestState.status === 'success') {
-      router.refresh()
-    }
-  }, [latestState.status, router])
+  const [confirmState, confirmAction] = usePhotoAction(confirmReviewPhoto)
+  const [discardState, discardAction] = usePhotoAction(discardReviewPhoto)
+  const latestState: ReviewPhotoActionState =
+    confirmState.status !== 'idle' ? confirmState : discardState
 
   return (
     <div className="space-y-3">
@@ -75,20 +47,20 @@ export function PhotoReviewActions({
               className="h-9"
             />
           </div>
-          <SubmitButton>
+          <PhotoSubmitButton>
             <CheckCircle className="h-4 w-4" />
             Confirm
-          </SubmitButton>
+          </PhotoSubmitButton>
         </form>
 
         <form action={discardAction}>
           <input type="hidden" name="eventId" value={eventId} />
           <input type="hidden" name="photoTagId" value={photoTagId} />
           <input type="hidden" name="storagePath" value={storagePath} />
-          <SubmitButton variant="outline">
+          <PhotoSubmitButton variant="outline">
             <Trash2 className="h-4 w-4" />
             Reject
-          </SubmitButton>
+          </PhotoSubmitButton>
         </form>
       </div>
 

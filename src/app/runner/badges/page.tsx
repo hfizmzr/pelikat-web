@@ -1,22 +1,15 @@
-import type { LucideIcon } from "lucide-react"
-import { AlarmClock, ArrowLeft, Award, BadgeCheck, Flame, Frown, Medal, Star, Trophy } from "lucide-react"
+import type { Metadata } from 'next'
+import { ArrowLeft, Frown, Medal, Trophy } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { BADGE_DEFINITIONS } from '@/lib/badges-registry'
 import Link from 'next/link'
 import { BadgeCertificateButton } from '@/components/gamification/certificate-download'
-import type { Metadata } from 'next'
+
+// Registry lives in lib/badges-registry.ts, mirrored from pelikat-api// BADGE_RULES; unknown keys fall back to the raw badge_key rendering.
 
 export const metadata: Metadata = {
   title: 'Badges - Pelikat',
   description: 'Your achievements and milestones',
-}
-
-const badgeDefinitions: Record<string, { name: string; description: string; icon: LucideIcon; color: string }> = {
-  first_run: { name: 'First Run', description: 'Completed your first virtual run', icon: Flame, color: '#ef4444' },
-  '5k_club': { name: '5K Club', description: 'Ran a total of 5 kilometers', icon: Star, color: '#22c55e' },
-  '10k_club': { name: '10K Club', description: 'Ran a total of 10 kilometers', icon: Award, color: '#0f9b9b' },
-  'marathon_club': { name: 'Marathon Club', description: 'Ran a total of 42.195 kilometers', icon: Medal, color: '#0ea5e9' },
-  event_complete: { name: 'Event Finisher', description: 'Completed a race event', icon: BadgeCheck, color: '#0f9b9b' },
-  early_bird: { name: 'Early Bird', description: 'Registered early for an event', icon: AlarmClock, color: '#0ea5e9' },
 }
 
 export default async function RunnerBadgesPage() {
@@ -62,7 +55,10 @@ export default async function RunnerBadgesPage() {
 
         <div className="grid grid-cols-2 gap-3 mt-4">
           {badges?.map((badge) => {
-            const def = badgeDefinitions[badge.badge_key] || {
+            const reg = BADGE_DEFINITIONS[badge.badge_key]
+            const def = reg
+              ? { name: reg.name, description: reg.description, icon: reg.lucideIcon, color: reg.color }
+              : {
               name: badge.badge_key.replace('_', ' '),
               description: 'Achievement badge',
               icon: Trophy,

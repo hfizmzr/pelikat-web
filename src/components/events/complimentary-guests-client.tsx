@@ -68,7 +68,10 @@ export function ComplimentaryGuestsClient({
 
   const selectedCategory = categories.find(c => c.id === categoryId)
 
-  async function submitAll(guests: { name: string; email: string; phone: string }[]) {
+  // Single-guest form submits directly — deliberately not via importRows,
+  // whose success path clears the staged CSV import state (importedRows +
+  // file input), which would clobber an unsubmitted bulk import.
+  async function submitSingle(guest: { name: string; email: string; phone: string }) {
     setBusy(true)
     setError(null)
     const { data, error: rpcError } = await supabase.rpc(
@@ -77,8 +80,8 @@ export function ComplimentaryGuestsClient({
         p_event_id: eventId,
         p_category_id: categoryId,
         p_role: role,
-        p_guests: guests,
-      }
+        p_guests: [guest],
+      },
     )
     setBusy(false)
     if (rpcError) {
@@ -86,11 +89,10 @@ export function ComplimentaryGuestsClient({
       return
     }
     setResults(data as RpcResult)
+    // Clear the single form's fields on success (no-op when empty).
     setSingleName('')
     setSingleEmail('')
     setSinglePhone('')
-    setImportedRows(null)
-    if (fileRef.current) fileRef.current.value = ''
     router.refresh()
   }
 
@@ -100,7 +102,7 @@ export function ComplimentaryGuestsClient({
       setError('Name is required')
       return
     }
-    submitAll([{ name: singleName.trim(), email: singleEmail.trim(), phone: singlePhone.trim() }])
+    submitSingle({ name: singleName.trim(), email: singleEmail.trim(), phone: singlePhone.trim() })
   }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -140,8 +142,9 @@ export function ComplimentaryGuestsClient({
   }
 
   /** Honor per-row category/role columns by batching into separate RPC calls. */
-  async function importRows() {
-    if (!importedRows) return
+  async function importRows(rowsArg?: GuestRow[]) {
+    const rows = rowsArg ?? importedRows
+    if (!rows || !rows.length) return
     setBusy(true)
     setError(null)
     // Batch rows by (category, role) — per-row CSV "category"/"role" columns
@@ -153,7 +156,7 @@ export function ComplimentaryGuestsClient({
     // the failed batches avoids the already-added "Already in this
     // event" false positives from successful batches).
     const failedBatchGuests: GuestRow[] = []
-    for (const g of importedRows) {
+    for (const g of rows) {
       const catName = g.category.toLowerCase()
       const match = catName
         ? categories.find(c => c.name.toLowerCase() === catName)
@@ -284,7 +287,7 @@ export function ComplimentaryGuestsClient({
           <div className="rounded-md border border-border">
             <div className="flex items-center justify-between border-b border-border px-4 py-2">
               <span className="text-sm font-medium">{importedRows.length} guests ready to import</span>
-              <Button size="sm" onClick={importRows} disabled={busy}>
+              <Button size="sm" onClick={() => importRows()} disabled={busy}>
                 {busy ? 'Importing…' : 'Import'}
               </Button>
             </div>

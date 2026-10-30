@@ -397,9 +397,7 @@ export default function RunnerRunLogPage() {
               {runLogs.map((log) => (
                 <div key={log.id} className="bg-card rounded-2xl border border-border/60 p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      log.gps_data ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary'
-                    }`}>
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 text-primary">
                       {log.gps_data ? (
                         <Satellite className="size-[20px]" />
                       ) : (

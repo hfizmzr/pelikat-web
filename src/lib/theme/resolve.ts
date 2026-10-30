@@ -14,18 +14,20 @@ import {
   oklchToString,
   contrastRatio,
   pickForeground,
-  relativeLuminance,
+  companionRatio,
   deriveDarkVariant,
   PLATFORM_BG_HEX,
 } from './color'
 import { LABEL_KEYS, resolveLabels } from './labels'
-import { isPlainObject, themeFontUrlOk, assetValueOk } from './utils'
+import { isPlainObject, themeFontUrlOk, assetValueOk, HEX_RE } from './utils'
 import type { BrandSlot, ResolvedTheme, ThemeTokens } from './types'
-
-// Stored-token HEX contract (Global Constraints / spec §4.3: ^#[0-9a-fA-F]{6}$).
-// color.ts's own regex is looser (`#` optional) and private; resolve validates
-// the stored contract verbatim.
-const HEX_RE = /^#[0-9a-fA-F]{6}$/
+import {
+  SECTION_KEYS,
+  COLOR_KEYS,
+  TYPOGRAPHY_KEYS,
+  ASSET_KEYS,
+  META_KEYS,
+} from './types'
 
 // Platform dark foreground — assigned DIRECTLY to fgDark for themed slots.
 // Carried requirement (Task 6 review): never call pickForeground on an oklch
@@ -34,12 +36,6 @@ const HEX_RE = /^#[0-9a-fA-F]{6}$/
 // impossible; dark variants (L ∈ [0.68, 0.82]) always measure ≥ ~6.9:1
 // against it, so the companion is safe by construction.
 const DARK_FG = 'oklch(0.145 0 0)'
-
-const COLOR_KEYS = ['primary', 'secondary', 'accent', 'background', 'foreground', 'ring'] as const
-const TYPOGRAPHY_KEYS = ['heading_font_url', 'body_font_url'] as const
-const ASSET_KEYS = ['banner_url', 'logo_url', 'badge_icon_url', 'certificate_background_url'] as const
-const META_KEYS = ['version'] as const
-const SECTION_KEYS = ['colors', 'typography', 'assets', 'vocabulary', 'meta'] as const
 
 // Platform tokens — mirror src/app/globals.css (:root / .dark). Keep in sync.
 const PLATFORM_SLOTS: Record<'primary' | 'secondary' | 'accent' | 'ring', BrandSlot> = {
@@ -151,26 +147,6 @@ function brandSlot(hex: string): BrandSlot {
   }
 }
 
-/**
- * Ruling #10 (P2 Task 5) — light-mode `-foreground` companion ratio for a HEX
- * fill: the fill paired with its computed companion `pickForeground(fill)`.
- * A WHITE pick passes by construction (pickForeground returns white only when
- * it reaches ≥4.5:1). A dark pick (`oklch(0.145 0 0)`) is unparseable by
- * HEX-only contrastRatio (it would silently return 1), so measure the fill's
- * WCAG luminance against the dark-fg constant's EXACT luminance: a neutral
- * OKLab gray's linear channel — hence its relative luminance — is L³ = 0.145³.
- */
-const WHITE_FG = '#ffffff' // color.ts's private WHITE constant (stable)
-const DARK_FG_LUMINANCE = 0.145 ** 3
-
-function companionRatio(fill: string): number {
-  if (pickForeground(fill) === WHITE_FG) return contrastRatio(fill, WHITE_FG)
-  const y = relativeLuminance(fill)
-  const hi = Math.max(y, DARK_FG_LUMINANCE)
-  const lo = Math.min(y, DARK_FG_LUMINANCE)
-  return (hi + 0.05) / (lo + 0.05)
-}
-
 function platformTheme(warnings: string[]): ResolvedTheme {
   return {
     primary: PLATFORM_SLOTS.primary,
@@ -196,25 +172,23 @@ export async function getResolvedTheme(
   eventRow: EventThemeInput,
 ): Promise<ResolvedTheme> {
   try {
-    return (await resolveTheme(supabase, eventRow)).resolved
+    return await resolveTheme(supabase, eventRow)
   } catch (err) {
     return platformTheme([`theme resolution failed unexpectedly: ${String(err)}`])
   }
 }
 
 /**
- * P4 Task 4 (e-cert payload) — the same never-degrade resolution as
- * getResolvedTheme, plus the RAW merged token projection (preset ⊕ config)
- * that the derived slots came from. Needed because ResolvedTheme carries
- * oklch brand slots — the cert payload wants the validated HEX colors and
- * the RAW stored `certificate_background_url` key name Django's contract
- * expects (the resolved .assets slot carries the same value raw, P4 Task 5).
- * Never throws; null only when resolution itself failed internally.
+ * The same resolution as getResolvedTheme, but null instead of the platform
+ * theme when resolution itself failed internally — the nullable variant the
+ * surface helper needs for its "unexpected failure → null" contract (the
+ * caller renders platform defaults rather than a degraded record). Never
+ * throws.
  */
-export async function getResolvedThemeParts(
+export async function getResolvedThemeOrNull(
   supabase: SupabaseClient,
   eventRow: EventThemeInput,
-): Promise<{ resolved: ResolvedTheme; tokens: ThemeTokens } | null> {
+): Promise<ResolvedTheme | null> {
   try {
     return await resolveTheme(supabase, eventRow)
   } catch {
@@ -390,7 +364,7 @@ export function deriveTheme(
 async function resolveTheme(
   supabase: SupabaseClient,
   eventRow: EventThemeInput,
-): Promise<{ resolved: ResolvedTheme; tokens: ThemeTokens }> {
+): Promise<ResolvedTheme> {
   const loadWarnings: string[] = []
 
   const presetId =
@@ -447,14 +421,5 @@ async function resolveTheme(
   // config shape-guards + warnings live inside deriveTheme; the theme_config
   // value is handed over raw (garbage → platform + warning, never a throw).
   const derived = deriveTheme(presetTokens, (eventRow.theme_config ?? null) as ThemeTokens | null, loadedId)
-  const resolved = { ...derived, warnings: [...loadWarnings, ...derived.warnings] }
-  // P4 Task 4 — raw merged projection for non-CSS consumers (e-cert): the
-  // SAME merge deriveTheme ran; same mergeThemeConfig contract (unknown /
-  // non-object sections contribute nothing), so garbage configs yield
-  // preset-only tokens here exactly like the derivation saw.
-  const tokens = mergeThemeConfig(
-    presetTokens,
-    isPlainObject(eventRow.theme_config) ? (eventRow.theme_config as ThemeTokens) : null,
-  )
-  return { resolved, tokens }
+  return { ...derived, warnings: [...loadWarnings, ...derived.warnings] }
 }
