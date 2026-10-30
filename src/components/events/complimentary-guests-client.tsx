@@ -68,11 +68,32 @@ export function ComplimentaryGuestsClient({
 
   const selectedCategory = categories.find(c => c.id === categoryId)
 
-  async function submitAll(guests: { name: string; email: string; phone: string }[]) {
-    // Single-guest form submits fold into the batch pipeline as a one-row
-    // batch with empty category/role columns — those resolve to the form's
-    // selected category/role inside importRows.
-    await importRows(guests.map(g => ({ ...g, category: '', role: '' })))
+  // Single-guest form submits directly — deliberately not via importRows,
+  // whose success path clears the staged CSV import state (importedRows +
+  // file input), which would clobber an unsubmitted bulk import.
+  async function submitSingle(guest: { name: string; email: string; phone: string }) {
+    setBusy(true)
+    setError(null)
+    const { data, error: rpcError } = await supabase.rpc(
+      'organizer_add_complimentary_registrations',
+      {
+        p_event_id: eventId,
+        p_category_id: categoryId,
+        p_role: role,
+        p_guests: [guest],
+      },
+    )
+    setBusy(false)
+    if (rpcError) {
+      setError(rpcError.message)
+      return
+    }
+    setResults(data as RpcResult)
+    // Clear the single form's fields on success (no-op when empty).
+    setSingleName('')
+    setSingleEmail('')
+    setSinglePhone('')
+    router.refresh()
   }
 
   function handleSingleSubmit(e: React.FormEvent) {
@@ -81,7 +102,7 @@ export function ComplimentaryGuestsClient({
       setError('Name is required')
       return
     }
-    submitAll([{ name: singleName.trim(), email: singleEmail.trim(), phone: singlePhone.trim() }])
+    submitSingle({ name: singleName.trim(), email: singleEmail.trim(), phone: singlePhone.trim() })
   }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -186,11 +207,6 @@ export function ComplimentaryGuestsClient({
     }
     setImportedRows(null)
     if (fileRef.current) fileRef.current.value = ''
-    // Single-guest form reuses this success path — clear its fields too
-    // (no-op when empty).
-    setSingleName('')
-    setSingleEmail('')
-    setSinglePhone('')
     router.refresh()
   }
 

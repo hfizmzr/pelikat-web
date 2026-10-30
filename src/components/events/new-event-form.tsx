@@ -27,6 +27,7 @@ interface FormErrors {
   name?: string
   event_date?: string
   target_km?: string
+  submit?: string
 }
 
 function createEmptyInventory(): Record<ShirtSize, string> {
@@ -92,16 +93,34 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
         .single()
       if (error) throw error
 
-      if (formData.event_type === 'physical') {
-        const inventoryRows = SHIRT_SIZES.map((size) => ({
-          event_id: event.id,
-          organizer_id: organizerId,
-          size,
-          initial_qty: parseInventoryQuantity(shirtInventory[size]),
-          claimed_qty: 0,
-        }))
-        const { error: inventoryError } = await supabase.from('event_shirt_inventory').upsert(inventoryRows, { onConflict: 'event_id,size' })
-        if (inventoryError) throw inventoryError
+      try {
+        if (formData.event_type === 'physical') {
+          const inventoryRows = SHIRT_SIZES.map((size) => ({
+            event_id: event.id,
+            organizer_id: organizerId,
+            size,
+            initial_qty: parseInventoryQuantity(shirtInventory[size]),
+            claimed_qty: 0,
+          }))
+          const { error: inventoryError } = await supabase.from('event_shirt_inventory').upsert(inventoryRows, { onConflict: 'event_id,size' })
+          if (inventoryError) throw inventoryError
+        }
+      } catch (setupError) {
+        // The event insert succeeded but its setup failed — remove the
+        // half-created event and confirm the cleanup actually happened
+        // (an RLS/constraint failure would otherwise leave a duplicate
+        // on retry).
+        const { data: deleted, error: deleteError } = await supabase
+          .from('events')
+          .delete()
+          .eq('id', event.id)
+          .select('id')
+        if (deleteError || !deleted?.length) {
+          throw new Error(
+            'Event setup failed and it could not be removed automatically — check your event list for a leftover draft.'
+          )
+        }
+        throw setupError
       }
 
       await logAudit(supabase, 'organizer_create_event', event.id, { name: formData.name, event_date: formData.event_date, event_type: formData.event_type })
@@ -114,6 +133,11 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
       }
     } catch (error) {
       console.error('Error creating event:', error)
+      setErrors({
+        submit: error instanceof Error && error.message
+          ? `Failed to create event: ${error.message}`
+          : 'Failed to create event. Please try again.',
+      })
     } finally {
       setLoading(false)
     }
@@ -294,6 +318,9 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
             )}
 
             {/* Actions */}
+            {errors.submit && (
+              <p className="text-[12px] text-red-500 dark:text-red-300" role="alert">{errors.submit}</p>
+            )}
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
