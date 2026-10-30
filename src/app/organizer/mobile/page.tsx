@@ -4,6 +4,8 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { MobileLogoutButton } from '@/components/organizer/mobile-logout-button'
 
 async function getOrganizerDashboardData() {
   const cookieStore = await cookies()
@@ -138,6 +140,12 @@ export default async function OrganizerMobileHome() {
         <div className="text-center">
           <Lock className="size-[48px] mb-3 block" />
           <p className="text-[14px]">Session expired. Please log in.</p>
+          <Link
+            href="/login"
+            className="mt-4 inline-block px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold"
+          >
+            Log in
+          </Link>
         </div>
       </div>
     )
@@ -170,6 +178,8 @@ export default async function OrganizerMobileHome() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle className="w-10 h-10 flex items-center justify-center rounded-full" />
+            <MobileLogoutButton />
             <button className="relative w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
               <Bell className="size-[22px]" />
               <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary ring-2 ring-background" />

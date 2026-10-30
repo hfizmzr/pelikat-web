@@ -4,8 +4,9 @@ import { ArrowLeft, ChevronDown, CircleAlert, CircleCheck, Keyboard, LoaderCircl
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import DocumentCapture from "@/components/profile/document-capture";
+import { ThemeSelect } from "@/components/theme-toggle";
 import { deleteRunnerAccount, storeEncryptedIc } from "@/lib/actions/account";
-import { profileIcBlockReason, profileSaveErrors } from "@/lib/profile-validation";
+import { profileGateMissing, profileIcBlockReason, profileSaveErrors } from "@/lib/profile-validation";
 import { validateIdentityInput } from "@/lib/nric";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -46,6 +47,7 @@ export default function RunnerProfilePage() {
     full_name: string
     dob: string
     gender: string
+    phone: string
     pdpa_agreed: boolean | null
   } | null>(null);
   const savedIncomplete = profileIcBlockReason({
@@ -60,6 +62,17 @@ export default function RunnerProfilePage() {
       : savedIncomplete
         ? "Save your profile before uploading your document."
         : null;
+
+  // What the proxy's runner-route gate still needs, from the SAVED row —
+  // without this the gate silently bounces every nav link back here.
+  const gateMissing = profileGateMissing(
+    lastSavedProfile && {
+      ...lastSavedProfile,
+      ic_encrypted: profile?.ic_encrypted,
+      ic_document_path: profile?.ic_document_path,
+    }
+  );
+  const [saveNotice, setSaveNotice] = useState<string | null>(null);
 
   const [icInput, setIcInput] = useState("");
   const [icSaving, setIcSaving] = useState(false);
@@ -97,10 +110,11 @@ export default function RunnerProfilePage() {
           full_name: data.full_name || "",
           dob: data.dob || "",
           gender: data.gender || "",
+          phone: data.phone || "",
           pdpa_agreed: data.pdpa_agreed ?? null,
         });
       } else {
-        setLastSavedProfile({ full_name: "", dob: "", gender: "", pdpa_agreed: null });
+        setLastSavedProfile({ full_name: "", dob: "", gender: "", phone: "", pdpa_agreed: null });
       }
       setLoading(false);
     };
@@ -135,6 +149,7 @@ export default function RunnerProfilePage() {
     }
     setSaving(true);
     setSaveError(null);
+    setSaveNotice(null);
 
     try {
       const { error } = await supabase.from("runner_profiles").upsert({
@@ -155,12 +170,24 @@ export default function RunnerProfilePage() {
       }
       // The DB row is now authoritative — refresh the IC-gate snapshot so
       // the gate reflects what storeEncryptedIc will validate.
-      setLastSavedProfile({
+      const saved = {
         full_name: formData.full_name.trim(),
         dob: formData.dob,
         gender: formData.gender,
+        phone: formData.phone,
         pdpa_agreed: pdpaChecked,
+      };
+      setLastSavedProfile(saved);
+      // The proxy would just bounce /runner back here, so stay and say why.
+      const stillMissing = profileGateMissing({
+        ...saved,
+        ic_encrypted: profile?.ic_encrypted,
+        ic_document_path: profile?.ic_document_path,
       });
+      if (stillMissing.length > 0) {
+        setSaveNotice(`Saved. To unlock the app, still add: ${stillMissing.join(", ")}.`);
+        return;
+      }
       // Navigate so the proxy profile gate re-evaluates — router.refresh()
       // doesn't re-run the middleware/proxy on the client.
       router.push("/runner");
@@ -256,7 +283,16 @@ export default function RunnerProfilePage() {
       </header>
 
       <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto pb-24">
-        
+
+        {gateMissing.length > 0 && (
+          <div role="status" className="flex items-start gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-[13px] text-amber-600 dark:text-amber-400">
+            <CircleAlert className="size-[18px] shrink-0 mt-0.5" />
+            <span>
+              <span className="font-bold">Finish your profile to unlock Pelikat.</span>{" "}
+              Still needed: {gateMissing.join(", ")}. Save your details first, then add your IC/passport below.
+            </span>
+          </div>
+        )}
         {/* Personal Info */}
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
           <div className="p-5 border-b border-border/60">
@@ -315,7 +351,6 @@ export default function RunnerProfilePage() {
                 value={formData.dob}
                 onChange={(e) => updateField("dob", e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
-                style={{ colorScheme: 'dark' }}
               />
             </div>
             <div className="flex flex-col gap-1.5 relative">
@@ -411,6 +446,7 @@ export default function RunnerProfilePage() {
 
         <DocumentCapture
           uploadBlocked={icBlockReason}
+          onDocumentChange={(path) => setProfile((prev) => ({ ...prev, ic_document_path: path }))}
           currentDocument={{
             path: profile?.ic_document_path || null,
             mime: profile?.ic_document_mime || null,
@@ -528,6 +564,20 @@ export default function RunnerProfilePage() {
         {saveError && (
           <p className="text-[12px] text-red-500 dark:text-red-300 mt-2 text-center">{saveError}</p>
         )}
+        {saveNotice && !saveError && (
+          <p className="text-[12px] text-amber-600 dark:text-amber-400 mt-2 text-center">{saveNotice}</p>
+        )}
+
+        {/* Appearance */}
+        <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
+          <div className="p-5 border-b border-border/60">
+            <h2 className="text-[16px] font-bold text-foreground">Appearance</h2>
+            <p className="text-[12px] text-muted-foreground">Saved on this device</p>
+          </div>
+          <div className="p-5">
+            <ThemeSelect />
+          </div>
+        </section>
 
         <button
           onClick={handleLogout}

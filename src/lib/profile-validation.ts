@@ -50,3 +50,29 @@ export function profileIcBlockReason(profile: {
   if (!isPdpaAgreed(profile.pdpa_agreed)) return PROFILE_INCOMPLETE_MESSAGE
   return null
 }
+
+/**
+ * Fields the runner-route gate (src/proxy.ts) still needs, as human labels.
+ * Empty array = profile complete, runner routes unlocked. Keep in sync with
+ * the proxy: it is the authority, this only explains it to the runner.
+ */
+export function profileGateMissing(profile: {
+  full_name?: string | null
+  dob?: string | null
+  gender?: string | null
+  phone?: string | null
+  pdpa_agreed?: boolean | null
+  ic_encrypted?: string | null
+  ic_document_path?: string | null
+} | null): string[] {
+  const missing: string[] = []
+  if (!profile?.full_name) missing.push("full name")
+  if (!profile?.dob) missing.push("date of birth")
+  if (!profile?.gender) missing.push("gender")
+  if (!profile?.phone) missing.push("phone number")
+  if (!isPdpaAgreed(profile?.pdpa_agreed)) missing.push("PDPA consent")
+  if (!profile?.ic_encrypted && !profile?.ic_document_path) {
+    missing.push("IC/passport (upload or enter manually)")
+  }
+  return missing
+}
