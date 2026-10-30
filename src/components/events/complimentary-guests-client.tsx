@@ -69,29 +69,10 @@ export function ComplimentaryGuestsClient({
   const selectedCategory = categories.find(c => c.id === categoryId)
 
   async function submitAll(guests: { name: string; email: string; phone: string }[]) {
-    setBusy(true)
-    setError(null)
-    const { data, error: rpcError } = await supabase.rpc(
-      'organizer_add_complimentary_registrations',
-      {
-        p_event_id: eventId,
-        p_category_id: categoryId,
-        p_role: role,
-        p_guests: guests,
-      }
-    )
-    setBusy(false)
-    if (rpcError) {
-      setError(rpcError.message)
-      return
-    }
-    setResults(data as RpcResult)
-    setSingleName('')
-    setSingleEmail('')
-    setSinglePhone('')
-    setImportedRows(null)
-    if (fileRef.current) fileRef.current.value = ''
-    router.refresh()
+    // Single-guest form submits fold into the batch pipeline as a one-row
+    // batch with empty category/role columns — those resolve to the form's
+    // selected category/role inside importRows.
+    await importRows(guests.map(g => ({ ...g, category: '', role: '' })))
   }
 
   function handleSingleSubmit(e: React.FormEvent) {
@@ -140,8 +121,9 @@ export function ComplimentaryGuestsClient({
   }
 
   /** Honor per-row category/role columns by batching into separate RPC calls. */
-  async function importRows() {
-    if (!importedRows) return
+  async function importRows(rowsArg?: GuestRow[]) {
+    const rows = rowsArg ?? importedRows
+    if (!rows || !rows.length) return
     setBusy(true)
     setError(null)
     // Batch rows by (category, role) — per-row CSV "category"/"role" columns
@@ -153,7 +135,7 @@ export function ComplimentaryGuestsClient({
     // the failed batches avoids the already-added "Already in this
     // event" false positives from successful batches).
     const failedBatchGuests: GuestRow[] = []
-    for (const g of importedRows) {
+    for (const g of rows) {
       const catName = g.category.toLowerCase()
       const match = catName
         ? categories.find(c => c.name.toLowerCase() === catName)
@@ -204,6 +186,11 @@ export function ComplimentaryGuestsClient({
     }
     setImportedRows(null)
     if (fileRef.current) fileRef.current.value = ''
+    // Single-guest form reuses this success path — clear its fields too
+    // (no-op when empty).
+    setSingleName('')
+    setSingleEmail('')
+    setSinglePhone('')
     router.refresh()
   }
 
@@ -284,7 +271,7 @@ export function ComplimentaryGuestsClient({
           <div className="rounded-md border border-border">
             <div className="flex items-center justify-between border-b border-border px-4 py-2">
               <span className="text-sm font-medium">{importedRows.length} guests ready to import</span>
-              <Button size="sm" onClick={importRows} disabled={busy}>
+              <Button size="sm" onClick={() => importRows()} disabled={busy}>
                 {busy ? 'Importing…' : 'Import'}
               </Button>
             </div>

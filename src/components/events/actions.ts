@@ -255,13 +255,13 @@ export async function cancelRegistration(eventId: string) {
 export async function generateConsentCode(registrationId: string) {
   const { supabase } = await requireAuth()
 
-  const { data: registration, error: regError } = await supabase
+  const { error: regError } = await supabase
     .from('registrations')
-    .select('id, organizer_id')
+    .select('id')
     .eq('id', registrationId)
     .single()
 
-  if (regError || !registration) throw new Error('Registration not found')
+  if (regError) throw new Error('Registration not found')
 
   return fetchDjangoApi('/ai/qr/consent-code', {
     method: 'POST',
