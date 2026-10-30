@@ -21,6 +21,7 @@ import { validateThemeConfig } from '@/lib/theme/validate'
 import { cleanupThemeAssets } from '@/lib/theme/assets'
 import { isPlainObject } from '@/lib/theme/utils'
 import { MERCH_SIZE_PRESETS } from '@/lib/merch'
+import type { PhotoBatch } from '@/lib/photo-batches'
 import type { ThemeTokens } from '@/lib/theme/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -692,60 +693,6 @@ export async function checkInRegistrationByBib(
 // Photo Actions
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type PhotoProcessingSummary = {
-  batchId: string
-  processed: number
-  savedTags: number
-  auto: number
-  review: number
-  confirmed: number
-  discarded: number
-  failed: number
-  totalTags: number
-}
-
-type PhotoProcessingApiResult = {
-  processed?: number
-  saved_tags?: number
-  results?: { error?: unknown }[]
-}
-
-async function getPhotoProcessingSummary(
-  eventId: string,
-  batchId: string,
-  apiResult: PhotoProcessingApiResult
-): Promise<PhotoProcessingSummary> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('photo_tags')
-    .select('status')
-    .eq('event_id', eventId)
-    .eq('batch_id', batchId)
-
-  if (error) throw new Error(error.message)
-
-  const counts = {
-    auto: 0,
-    review: 0,
-    confirmed: 0,
-    discarded: 0,
-  }
-
-  for (const row of data ?? []) {
-    const status = row.status as keyof typeof counts
-    if (status in counts) counts[status] += 1
-  }
-
-  return {
-    batchId,
-    processed: apiResult.processed ?? 0,
-    savedTags: apiResult.saved_tags ?? data?.length ?? 0,
-    failed: apiResult.results?.filter((result) => Boolean(result.error)).length ?? 0,
-    totalTags: data?.length ?? 0,
-    ...counts,
-  }
-}
-
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /**
@@ -777,7 +724,7 @@ async function requireEventPhotoOwner(eventId: string, batchId: string) {
     throw new Error('You can only run AI photo tagging for your own events.')
   }
 
-  return { organizerId, eventFolder: `${user.id}/${eventId}` }
+  return { organizerId, userId: user.id, eventFolder: `${user.id}/${eventId}` }
 }
 
 /** True when `path` is `folder` itself or sits inside it, with no `..` hops. */
@@ -787,12 +734,16 @@ function isInsideFolder(path: string, folder: string) {
   return trimmed === folder || trimmed.startsWith(`${folder}/`)
 }
 
+/**
+ * Queue an uploaded batch for the background photo worker (FR-16).
+ * Returns as soon as Django has queued it; progress lives in photo_batches.
+ */
 export async function triggerPhotoProcessing(
   eventId: string,
   storagePaths: string[],
   batchId = crypto.randomUUID()
-): Promise<PhotoProcessingSummary> {
-  const { organizerId, eventFolder } = await requireEventPhotoOwner(eventId, batchId)
+): Promise<PhotoBatch> {
+  const { organizerId, userId, eventFolder } = await requireEventPhotoOwner(eventId, batchId)
 
   if (
     !Array.isArray(storagePaths) ||
@@ -802,44 +753,47 @@ export async function triggerPhotoProcessing(
     throw new Error('Photos must be uploaded to this event before they can be tagged.')
   }
 
-  const result = await fetchDjangoApi('/ai/photos/process', {
+  const batch: PhotoBatch = await fetchDjangoApi('/ai/photos/process', {
     method: 'POST',
     body: JSON.stringify({
       batch_id: batchId,
       event_id: eventId,
       organizer_id: organizerId,
+      created_by: userId,
       storage_paths: storagePaths,
     }),
   })
 
   revalidatePath(`/organizer/events/${eventId}/photos`)
-  return getPhotoProcessingSummary(eventId, batchId, result)
+  return batch
 }
 
+/** Queue every photo already uploaded under `prefix` as one reprocess batch. */
 export async function triggerPhotoProcessingForPrefix(
   eventId: string,
   prefix: string,
   batchId = crypto.randomUUID()
-): Promise<PhotoProcessingSummary> {
-  const { organizerId, eventFolder } = await requireEventPhotoOwner(eventId, batchId)
+): Promise<PhotoBatch> {
+  const { organizerId, userId, eventFolder } = await requireEventPhotoOwner(eventId, batchId)
 
   if (typeof prefix !== 'string' || !isInsideFolder(prefix, eventFolder)) {
     throw new Error('You can only reprocess uploads for this event.')
   }
 
-  const result = await fetchDjangoApi('/ai/photos/process-prefix', {
+  const batch: PhotoBatch = await fetchDjangoApi('/ai/photos/process-prefix', {
     method: 'POST',
     body: JSON.stringify({
       batch_id: batchId,
       event_id: eventId,
       organizer_id: organizerId,
+      created_by: userId,
       bucket: 'race-photos',
       prefix,
     }),
   })
 
   revalidatePath(`/organizer/events/${eventId}/photos`)
-  return getPhotoProcessingSummary(eventId, batchId, result)
+  return batch
 }
 
 export type ReviewPhotoActionState = {

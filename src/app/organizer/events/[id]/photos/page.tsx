@@ -8,11 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { notFound } from 'next/navigation'
 import { PhotoUploader } from '@/components/events/photo-uploader'
 import { PhotoBatchFilter } from '@/components/events/photo-batch-filter'
+import { PhotoBatchList } from '@/components/events/photo-batch-list'
 import { PhotoReviewActions } from '@/components/events/photo-review-actions'
 import { PhotoGalleryTagActions } from '@/components/events/photo-gallery-tag-actions'
 import { PhotoRestoreActions } from '@/components/events/photo-restore-actions'
 import { PhotoPreviewDialog } from '@/components/events/photo-preview-dialog'
 import type { Metadata } from 'next'
+import { PHOTO_BATCH_COLUMNS, RECENT_PHOTO_BATCH_LIMIT, type PhotoBatch } from '@/lib/photo-batches'
 
 export const metadata: Metadata = {
   title: 'Photo Management - Pelikat',
@@ -239,6 +241,13 @@ export default async function OrganizerEventPhotosPage({
   if (!event) {
     notFound()
   }
+
+  const { data: recentBatches } = await supabase
+    .from('photo_batches')
+    .select(PHOTO_BATCH_COLUMNS)
+    .eq('event_id', event.id)
+    .order('created_at', { ascending: false })
+    .limit(RECENT_PHOTO_BATCH_LIMIT)
 
   const requestedReviewPage = parsePage(query.reviewPage)
   const requestedGalleryPage = parsePage(query.galleryPage)
@@ -680,13 +689,26 @@ export default async function OrganizerEventPhotosPage({
             <div>
               <CardTitle>Upload Photos</CardTitle>
               <CardDescription>
-                Upload race photos. The AI pipeline will detect BIB numbers and tag runners automatically.
+                Upload race photos. They are queued for AI tagging as soon as the upload finishes.
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <PhotoUploader eventId={event.id} />
+        </CardContent>
+      </Card>
+
+      <Card className="border-border">
+        <CardHeader>
+          <CardTitle>Processing Batches</CardTitle>
+          <CardDescription>
+            Photos are tagged in the background, so you can leave this page. Each batch shows how many
+            photos were auto-tagged, flagged for review, had no BIB, or failed.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PhotoBatchList eventId={event.id} initialBatches={(recentBatches ?? []) as PhotoBatch[]} />
         </CardContent>
       </Card>
 

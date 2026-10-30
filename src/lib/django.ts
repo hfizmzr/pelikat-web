@@ -55,6 +55,8 @@ export async function fetchDjangoApi(endpoint: string, options: RequestInit = {}
       const parsed = JSON.parse(text)
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         if (typeof parsed.message === 'string') message = parsed.message
+        // /ai/* views answer {error: "..."} instead
+        else if (typeof parsed.error === 'string') message = parsed.error
         errors = parsed.errors
       }
     } catch {

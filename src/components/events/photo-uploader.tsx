@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -27,14 +28,14 @@ import { Upload, Loader2, CheckCircle2, AlertCircle, ImageIcon, X } from 'lucide
 import {
   triggerPhotoProcessing,
   triggerPhotoProcessingForPrefix,
-  type PhotoProcessingSummary,
 } from '@/components/events/actions'
+import type { PhotoBatch } from '@/lib/photo-batches'
 
 interface PhotoUploaderProps {
   eventId: string
 }
 
-type UploadState = 'idle' | 'uploading' | 'uploaded' | 'processing' | 'done' | 'error'
+type UploadState = 'idle' | 'uploading' | 'queuing' | 'queued' | 'error'
 type ExistingBatch = { id: string; prefix: string }
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -73,13 +74,14 @@ function ReprocessConfirm({
 }
 
 export function PhotoUploader({ eventId }: PhotoUploaderProps) {
+  const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [state, setState] = useState<UploadState>('idle')
   const [progress, setProgress] = useState(0)
   const [uploadedCount, setUploadedCount] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
   const [batchId, setBatchId] = useState<string | null>(null)
-  const [processingSummary, setProcessingSummary] = useState<PhotoProcessingSummary | null>(null)
+  const [queuedBatch, setQueuedBatch] = useState<PhotoBatch | null>(null)
   const [storagePaths, setStoragePaths] = useState<string[]>([])
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [existingBatches, setExistingBatches] = useState<ExistingBatch[]>([])
@@ -111,7 +113,7 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
     setProgress(0)
     setErrorMsg(null)
     setBatchId(nextBatchId)
-    setProcessingSummary(null)
+    setQueuedBatch(null)
     setStoragePaths([])
 
     const paths: string[] = []
@@ -120,7 +122,8 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
       for (let i = 0; i < fileArray.length; i++) {
         const file = fileArray[i]
         const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-        const path = `${userData.user.id}/${eventId}/${nextBatchId}/${Date.now()}-${i}-${safeName}`
+        // The batch folder plus the index keep every path unique.
+        const path = `${userData.user.id}/${eventId}/${nextBatchId}/${i}-${safeName}`
 
         const { error } = await supabase.storage
           .from('race-photos')
@@ -134,37 +137,39 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
       }
 
       setStoragePaths(paths)
-      setState('uploaded')
     } catch (err: unknown) {
       setErrorMsg(getErrorMessage(err, 'Upload failed'))
       setState('error')
+      return
     }
+
+    queueAutoTagging(() => triggerPhotoProcessing(eventId, paths, nextBatchId))
   }
 
-  // Shared messaging/state core of both auto-tagging runs — identical
-  // processing state, progress and summary handling.
-  const runAutoTagging = (trigger: () => Promise<PhotoProcessingSummary>) => {
-    setState('processing')
-    setProgress(90)
+  // Both entry points only queue the batch; the photo worker tags it in the
+  // background and the Processing Batches list tracks it (FR-16 / FR-20).
+  const queueAutoTagging = (trigger: () => Promise<PhotoBatch>) => {
+    setState('queuing')
     setErrorMsg(null)
 
     startTransition(async () => {
       try {
-        const summary = await trigger()
-        setProcessingSummary(summary)
-        setProgress(100)
-        setState('done')
+        setQueuedBatch(await trigger())
+        setState('queued')
+        router.refresh()
       } catch (err: unknown) {
-        setErrorMsg(getErrorMessage(err, 'AI processing trigger failed'))
+        setErrorMsg(getErrorMessage(err, 'Could not queue AI tagging'))
         setState('error')
       }
     })
   }
 
-  const handleRunAutoTagging = () => {
+  // Same batch id as the failed attempt: if Django did queue it, this
+  // returns that batch instead of queuing the photos twice.
+  const handleRetryQueue = () => {
     if (!batchId || storagePaths.length === 0) return
 
-    runAutoTagging(() => triggerPhotoProcessing(eventId, storagePaths, batchId))
+    queueAutoTagging(() => triggerPhotoProcessing(eventId, storagePaths, batchId))
   }
 
   const handleLoadExistingBatches = async () => {
@@ -218,15 +223,12 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
 
     const nextBatchId = crypto.randomUUID()
     setBatchId(nextBatchId)
-    setProcessingSummary(null)
+    setQueuedBatch(null)
     setStoragePaths([])
     setUploadedCount(0)
     setTotalCount(0)
-    setProgress(90)
-    setErrorMsg(null)
-    setState('processing')
 
-    runAutoTagging(() => triggerPhotoProcessingForPrefix(eventId, selectedExistingPrefix, nextBatchId))
+    queueAutoTagging(() => triggerPhotoProcessingForPrefix(eventId, selectedExistingPrefix, nextBatchId))
   }
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -241,7 +243,7 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
     setUploadedCount(0)
     setTotalCount(0)
     setBatchId(null)
-    setProcessingSummary(null)
+    setQueuedBatch(null)
     setStoragePaths([])
     setCurrentUserId(null)
     setExistingBatches([])
@@ -380,7 +382,7 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
                     </Button>
                   }
                   title="Reprocess uploads?"
-                  description="This will reprocess the selected upload folder and replace existing AI tags for the same images. Runner galleries will not receive duplicate rows for the same stored image."
+                  description="This queues the selected upload folder for AI tagging again and replaces earlier AI tags for the same images. Tags you confirmed or rejected are kept, and runner galleries won't get duplicate photos."
                   onConfirm={handleRunExistingAutoTagging}
                 />
 
@@ -399,7 +401,7 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
         </div>
       )}
 
-      {(state === 'uploading' || state === 'processing') && (
+      {(state === 'uploading' || state === 'queuing') && (
         <div className="rounded-lg border border-border p-6 space-y-4">
           <div className="flex items-center gap-3">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -407,90 +409,40 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
               <p className="text-sm font-medium">
                 {state === 'uploading'
                   ? `Uploading photos… (${uploadedCount}/${totalCount})`
-                  : 'Running AI auto tagging…'}
+                  : 'Queuing photos for AI tagging…'}
               </p>
-              <p className="text-xs text-muted-foreground">Please wait, do not close this page</p>
+              <p className="text-xs text-muted-foreground">
+                {state === 'uploading' ? 'Please keep this page open until the upload finishes' : 'Almost done'}
+              </p>
             </div>
           </div>
-          <Progress value={progress} className="h-2" />
-          <p className="text-xs text-muted-foreground text-right">{progress}%</p>
+          {state === 'uploading' && (
+            <>
+              <Progress value={progress} className="h-2" />
+              <p className="text-xs text-muted-foreground text-right">{progress}%</p>
+            </>
+          )}
         </div>
       )}
 
-      {state === 'uploaded' && (
-        <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-blue-500" />
-            <div>
-              <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
-                {uploadedCount} photo{uploadedCount !== 1 ? 's' : ''} uploaded to Supabase
-              </p>
-              {batchId && (
-                <p className="text-xs text-muted-foreground">Batch ID: {batchId}</p>
-              )}
-            </div>
-            <Badge variant="outline" className="ml-auto">Ready for AI</Badge>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={handleRunAutoTagging} disabled={isPending}>
-              {isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <ImageIcon className="mr-2 h-4 w-4" />
-              )}
-              Run Auto Tagging
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleReset}>
-              Upload Different Photos
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {state === 'done' && (
+      {state === 'queued' && (
         <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-6 space-y-3">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 text-green-500" />
             <div>
               <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                {uploadedCount > 0
-                  ? `${uploadedCount} photo${uploadedCount !== 1 ? 's' : ''} uploaded and tagged successfully`
-                  : 'Reprocessing completed for existing uploads'}
+                {queuedBatch?.total ?? 0} photo{queuedBatch?.total !== 1 ? 's' : ''} queued for AI tagging
               </p>
               {batchId && (
-                <p className="text-xs text-muted-foreground">Batch ID: {batchId}</p>
+                <p className="text-xs text-muted-foreground">Batch {batchId.slice(0, 8)}</p>
               )}
             </div>
-            <Badge variant="outline" className="ml-auto">AI Tagging Complete</Badge>
+            <Badge variant="outline" className="ml-auto">In background</Badge>
           </div>
           <p className="text-xs text-muted-foreground">
-            The AI pipeline finished and saved the batch results.
-            Refresh the gallery below to see the latest results.
+            Tagging runs in the background. You can leave this page; progress and results show under
+            Processing Batches.
           </p>
-          {processingSummary && (
-            <div className="grid gap-2 sm:grid-cols-5">
-              <div className="rounded-md border border-border bg-background/60 p-3">
-                <p className="text-xs text-muted-foreground">Processed</p>
-                <p className="text-lg font-semibold">{processingSummary.processed}</p>
-              </div>
-              <div className="rounded-md border border-green-500/30 bg-green-500/10 p-3">
-                <p className="text-xs text-muted-foreground">Auto-tagged</p>
-                <p className="text-lg font-semibold text-green-600">{processingSummary.auto}</p>
-              </div>
-              <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3">
-                <p className="text-xs text-muted-foreground">Needs review</p>
-                <p className="text-lg font-semibold text-amber-600">{processingSummary.review}</p>
-              </div>
-              <div className="rounded-md border border-muted bg-background/60 p-3">
-                <p className="text-xs text-muted-foreground">No match</p>
-                <p className="text-lg font-semibold">{processingSummary.discarded}</p>
-              </div>
-              <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3">
-                <p className="text-xs text-muted-foreground">Failed</p>
-                <p className="text-lg font-semibold text-destructive">{processingSummary.failed}</p>
-              </div>
-            </div>
-          )}
           <Button variant="outline" size="sm" onClick={handleReset}>
             <ImageIcon className="mr-2 h-4 w-4" />
             Upload More Photos
@@ -504,20 +456,20 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
             <AlertCircle className="h-5 w-5 text-destructive" />
             <div>
               <p className="text-sm font-medium text-destructive">
-                {storagePaths.length > 0 || currentUserId ? 'Auto tagging failed' : 'Upload failed'}
+                {storagePaths.length > 0 || currentUserId ? 'Could not queue AI tagging' : 'Upload failed'}
               </p>
               <p className="text-xs text-muted-foreground">{errorMsg}</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
             {storagePaths.length > 0 && (
-              <Button size="sm" onClick={handleRunAutoTagging} disabled={isPending}>
+              <Button size="sm" onClick={handleRetryQueue} disabled={isPending}>
                 {isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <ImageIcon className="mr-2 h-4 w-4" />
                 )}
-                Retry Auto Tagging
+                Retry Queuing
               </Button>
             )}
             <ReprocessConfirm
@@ -527,7 +479,7 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
                 </Button>
               }
               title="Run auto tagging again?"
-              description="This will reprocess the selected existing upload folder and replace previous AI tags for matching images."
+              description="This queues the selected upload folder for AI tagging again. Tags you confirmed or rejected are kept."
               onConfirm={handleRunExistingAutoTagging}
             />
             <Button variant="outline" size="sm" onClick={handleReset}>
