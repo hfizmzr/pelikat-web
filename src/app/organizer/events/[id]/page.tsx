@@ -156,7 +156,7 @@ export default async function OrganizerEventDetailPage({
   return (
     // px gutters (post-P4 audit finding #2): stat cards + tab panels were
     // flush to the viewport at mobile — sibling organizer pages wrap in px-6.
-    <div className="space-y-6 px-4 sm:px-6">
+    <div className="space-y-6 px-4 sm:px-6 py-6">
       {/* Header wrap (audit #1/#4): the actions row overflowed the 390px
       viewport (Settings clipped, Copy/Analytics off-canvas) — stack under
       sm so every action is reachable; title column needs min-w-0 or the

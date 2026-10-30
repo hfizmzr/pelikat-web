@@ -114,7 +114,7 @@ export default async function OrganizerEventAnalyticsPage({
     )
 
   return (
-    <div className="space-y-6 px-4 sm:px-6">
+    <div className="space-y-6 px-4 sm:px-6 py-6">
       <div className="flex items-center gap-4">
         <Link href={`/organizer/events/${id}`}>
           <ArrowLeft className="h-5 w-5 text-muted-foreground hover:text-foreground" />

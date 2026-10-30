@@ -67,7 +67,7 @@ export default async function OrganizerEventRegistrationsPage({
   }
 
   return (
-    <div className="space-y-6 px-4 sm:px-6">
+    <div className="space-y-6 px-4 sm:px-6 py-6">
       <ComplimentaryGuestsClient
         eventId={id}
         categories={(categories ?? []) as { id: string; name: string }[]}
