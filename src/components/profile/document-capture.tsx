@@ -5,7 +5,6 @@ import { useState, useRef, useCallback } from 'react'
 import { deleteDocument } from '@/lib/actions/account'
 
 interface Props {
-  userId: string
   /** Non-empty when the profile preconditions fail — upload is blocked. */
   uploadBlocked?: string | null
   currentDocument: {

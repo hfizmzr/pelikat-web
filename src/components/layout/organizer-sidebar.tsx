@@ -1,7 +1,7 @@
 'use client'
 
 import type { LucideIcon } from "lucide-react"
-import { Badge, Building2, ChevronsUpDown, CirclePlus, ClipboardCheck, Flag, Images, Landmark, LayoutDashboard, LogOut, Menu, QrCode, Settings2, Shirt, Smartphone, TrendingUp, Trophy } from "lucide-react"
+import { Badge, Building2, ChevronsUpDown, CirclePlus, Flag, Landmark, LayoutDashboard, LogOut, Menu, QrCode, Settings2, Shirt, Smartphone, TrendingUp } from "lucide-react"
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -85,13 +85,11 @@ function SidebarContent({ pathname }: { pathname: string }) {
   const router = useRouter()
   const [orgName, setOrgName] = useState<string>('My Organization')
   const [userName, setUserName] = useState<string>('Organizer')
-  const [, setUserEmail] = useState<string>('')
 
   useEffect(() => {
     async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      setUserEmail(user.email || '')
 
       const { data: profile } = await supabase
         .from('runner_profiles')
@@ -234,14 +232,3 @@ export function OrganizerMobileNav() {
   )
 }
 
-export function getOrganizerEventNavItems(eventId: string) {
-  return [
-    { title: 'Overview', href: `/organizer/events/${eventId}`, icon: LayoutDashboard, exact: true },
-    { title: 'Categories & Waves', href: `/organizer/events/${eventId}/categories`, icon: Flag },
-    { title: 'Registrations', href: `/organizer/events/${eventId}/registrations`, icon: Badge },
-    { title: 'REPC Station', href: `/organizer/events/${eventId}/repc`, icon: QrCode },
-    { title: 'Check-in', href: `/organizer/events/${eventId}/checkin`, icon: ClipboardCheck },
-    { title: 'Photos', href: `/organizer/events/${eventId}/photos`, icon: Images },
-    { title: 'Leaderboard', href: `/organizer/events/${eventId}/leaderboard`, icon: Trophy },
-  ]
-}
