@@ -95,6 +95,20 @@ export function formatRM(value: number) {
   return `RM ${Number(value).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
+// Canonical sort order for merch variant sizes (superset incl. 2XL).
+const MERCH_SIZE_SORT_ORDER = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL']
+
+/** Sort merch variants by size order, then size+color text. */
+export function compareVariants(
+  a: { size: string | null; color: string | null },
+  b: { size: string | null; color: string | null }
+) {
+  const ai = MERCH_SIZE_SORT_ORDER.indexOf((a.size ?? '').toUpperCase())
+  const bi = MERCH_SIZE_SORT_ORDER.indexOf((b.size ?? '').toUpperCase())
+  if (ai !== bi) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
+  return `${a.size ?? ''}${a.color ?? ''}`.localeCompare(`${b.size ?? ''}${b.color ?? ''}`)
+}
+
 export function merchImageUrl(path: string | null) {
   if (!path) return null
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${MERCH_IMAGE_BUCKET}/${path}`

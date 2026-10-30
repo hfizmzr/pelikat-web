@@ -5,8 +5,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { logAudit } from '@/lib/audit'
+import { MERCH_SIZE_PRESETS } from '@/lib/merch'
 
-const SHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
+const SHIRT_SIZES = MERCH_SIZE_PRESETS
 
 type ShirtSize = (typeof SHIRT_SIZES)[number]
 

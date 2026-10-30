@@ -19,6 +19,8 @@ import { getOrganizerSubscriptionPrice } from '@/lib/subscription'
 import { validateThemeConfig } from '@/lib/theme/validate'
 import { cleanupThemeAssets } from '@/lib/theme/assets'
 import { isPlainObject } from '@/lib/theme/utils'
+import { MERCH_SIZE_PRESETS } from '@/lib/merch'
+import { rowsToCsv } from '@/lib/utils'
 import type { ThemeTokens } from '@/lib/theme/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -295,8 +297,7 @@ export async function exportRegistrationsCsv(
     reg.checked_in ? 'Yes' : 'No',
   ])
 
-  const escapeCsv = (val: string) => `"${val.replace(/"/g, '""')}"`
-  return [headers, ...rows].map((row) => row.map(escapeCsv).join(',')).join('\n')
+  return rowsToCsv(headers, rows)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -551,7 +552,7 @@ export async function deleteCategory(categoryId: string, eventId: string) {
 // REPC Actions
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
+const SHIRT_SIZES = MERCH_SIZE_PRESETS
 
 function parseInventoryQuantity(value: FormDataEntryValue | null) {
   if (typeof value !== 'string' || value.trim() === '') return 0

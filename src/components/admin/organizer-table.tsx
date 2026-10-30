@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ArrowUpDown, Download, MoreHorizontal, Pencil, RefreshCw, Search, Store, Trash2, UserCog, X } from "lucide-react"
+import { rowsToCsv } from '@/lib/utils'
 import type { Organizer } from './types'
 
 // ─── CSV export helper ────────────────────────────────────────────────────────
@@ -30,9 +31,9 @@ function exportOrganizersCSV(organizers: Organizer[]) {
     o.is_active ? 'Yes' : 'No',
     o.sub_expires_at ? new Date(o.sub_expires_at).toLocaleDateString() : '',
     new Date(o.created_at).toLocaleDateString(),
-  ].map((v) => `"${String(v).replace(/"/g, '""')}"`))
+  ])
 
-  const csv = [headers, ...rows].map((r) => r.join(',')).join('\n')
+  const csv = rowsToCsv(headers, rows)
   const blob = new Blob([csv], { type: 'text/csv' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

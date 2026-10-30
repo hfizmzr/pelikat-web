@@ -1,5 +1,6 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
+import { formatRM } from '@/lib/merch'
 
 /**
  * Single-tier organizer subscription price, read from platform_settings
@@ -63,5 +64,5 @@ export async function getOrganizerSubscriptionPrice(
 
 /** Format a MYR decimal amount, e.g. formatMYR(99) → "RM 99.00". */
 export function formatMYR(amount: number): string {
-  return `RM ${amount.toFixed(2)}`
+  return formatRM(amount)
 }

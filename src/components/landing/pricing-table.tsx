@@ -2,12 +2,12 @@ import Link from "next/link"
 import type { CSSProperties } from "react"
 import { Check } from "lucide-react"
 import type { OrganizerSubscriptionPrice } from "@/lib/subscription"
+import { formatRM } from "@/lib/merch"
 import { cn } from "@/lib/utils"
 import styles from "./landing.module.css"
 
 export function formatPrice(price: OrganizerSubscriptionPrice) {
-  const amount = Number.isInteger(price.amount) ? String(price.amount) : price.amount.toFixed(2)
-  return `RM${amount}`
+  return formatRM(price.amount)
 }
 
 export function PricingTable({ price }: { price: OrganizerSubscriptionPrice }) {

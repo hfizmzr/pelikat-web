@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog'
 import { Banknote, Clock, Download, Loader2, Pencil, ReceiptText, RefreshCw, Search, SearchX, Tag, UserPlus, Users, X } from "lucide-react"
 import { toast } from 'sonner'
+import { rowsToCsv } from '@/lib/utils'
 
 interface Registration {
   id: string
@@ -58,9 +59,9 @@ function exportRegistrationsToCSV(regs: Registration[]) {
     r.checked_in ? 'YES' : 'NO',
     r.checked_in_at ? new Date(r.checked_in_at).toISOString() : '',
     new Date(r.created_at).toISOString(),
-  ].map((v) => `"${String(v).replace(/"/g, '""')}"`))
+  ])
 
-  const csv = [headers, ...rows].map((r) => r.join(',')).join('\n')
+  const csv = rowsToCsv(headers, rows)
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

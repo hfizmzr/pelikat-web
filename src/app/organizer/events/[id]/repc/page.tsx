@@ -4,6 +4,7 @@ import { ArrowLeft, ClipboardCheck, QrCode, Shirt, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { RepcInventoryForm } from '@/components/events/repc-inventory-form'
 import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
+import { MERCH_SIZE_PRESETS } from '@/lib/merch'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
   description: 'Race entry pack collection inventory management',
 }
 
-const SHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
+const SHIRT_SIZES = MERCH_SIZE_PRESETS
 
 type ShirtSize = (typeof SHIRT_SIZES)[number]
 
