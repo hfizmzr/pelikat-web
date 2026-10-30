@@ -7,7 +7,34 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Search, Download } from 'lucide-react'
-import { exportRegistrationsCsv } from '@/components/events/actions'
+import { rowsToCsv } from '@/lib/utils'
+
+// Matches the rows shape passed to the (previously server-side) CSV export.
+function registrationsToCsv(
+  registrations: {
+    bib_number: string | null
+    checked_in: boolean
+    payment_status: string
+    guest_name: string | null
+    guest_phone: string | null
+    registration_role: string
+    runner_profiles: { full_name: string; phone: string } | null
+    race_categories: { name: string } | null
+  }[]
+) {
+  const headers = ['BIB', 'Name', 'Role', 'Category', 'Phone', 'Payment', 'Checked In']
+  const rows = registrations.map((reg) => [
+    reg.bib_number ?? '',
+    reg.guest_name || reg.runner_profiles?.full_name || '',
+    reg.registration_role,
+    reg.race_categories?.name || '',
+    reg.guest_phone || reg.runner_profiles?.phone || '',
+    reg.payment_status,
+    reg.checked_in ? 'Yes' : 'No',
+  ])
+
+  return rowsToCsv(headers, rows)
+}
 
 type Registration = {
   id: string
@@ -56,7 +83,7 @@ export function RegistrationsClient({
   }, [registrations, searchQuery, statusFilter])
 
   const handleExport = async () => {
-    const csv = await exportRegistrationsCsv(filtered)
+    const csv = registrationsToCsv(filtered)
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
