@@ -746,13 +746,61 @@ async function getPhotoProcessingSummary(
   }
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * Gate for the Django photo pipeline, which writes photo_tags with the
+ * service-role key (RLS bypassed). The caller must own the event; the
+ * organizer id comes from the verified session, never from the client.
+ * Returns the only storage folder the caller may process — the same
+ * `{uid}/{eventId}` folder the race-photos upload policy allows.
+ */
+async function requireEventPhotoOwner(eventId: string, batchId: string) {
+  const { supabase, user } = await requireAuth()
+  const organizerId = user.app_metadata?.organizer_id
+
+  if (typeof organizerId !== 'string' || !organizerId) {
+    throw new Error('Only organizers can run AI photo tagging.')
+  }
+  if (!UUID_RE.test(eventId) || !UUID_RE.test(batchId)) {
+    throw new Error('Invalid event or batch id.')
+  }
+
+  const { data: event, error } = await supabase
+    .from('events')
+    .select('id, organizer_id')
+    .eq('id', eventId)
+    .maybeSingle()
+
+  if (error) throw new Error(error.message)
+  if (!event || event.organizer_id !== organizerId) {
+    throw new Error('You can only run AI photo tagging for your own events.')
+  }
+
+  return { organizerId, eventFolder: `${user.id}/${eventId}` }
+}
+
+/** True when `path` is `folder` itself or sits inside it, with no `..` hops. */
+function isInsideFolder(path: string, folder: string) {
+  const trimmed = path.replace(/\/+$/, '')
+  if (trimmed.split('/').some((segment) => segment === '..' || segment === '.')) return false
+  return trimmed === folder || trimmed.startsWith(`${folder}/`)
+}
+
 export async function triggerPhotoProcessing(
   eventId: string,
-  organizerId: string,
   storagePaths: string[],
   batchId = crypto.randomUUID()
 ): Promise<PhotoProcessingSummary> {
-  await requireAuth()
+  const { organizerId, eventFolder } = await requireEventPhotoOwner(eventId, batchId)
+
+  if (
+    !Array.isArray(storagePaths) ||
+    storagePaths.length === 0 ||
+    !storagePaths.every((path) => typeof path === 'string' && isInsideFolder(path, eventFolder))
+  ) {
+    throw new Error('Photos must be uploaded to this event before they can be tagged.')
+  }
 
   const result = await fetchDjangoApi('/ai/photos/process', {
     method: 'POST',
@@ -770,11 +818,14 @@ export async function triggerPhotoProcessing(
 
 export async function triggerPhotoProcessingForPrefix(
   eventId: string,
-  organizerId: string,
   prefix: string,
   batchId = crypto.randomUUID()
 ): Promise<PhotoProcessingSummary> {
-  await requireAuth()
+  const { organizerId, eventFolder } = await requireEventPhotoOwner(eventId, batchId)
+
+  if (typeof prefix !== 'string' || !isInsideFolder(prefix, eventFolder)) {
+    throw new Error('You can only reprocess uploads for this event.')
+  }
 
   const result = await fetchDjangoApi('/ai/photos/process-prefix', {
     method: 'POST',

@@ -686,7 +686,7 @@ export default async function OrganizerEventPhotosPage({
           </div>
         </CardHeader>
         <CardContent>
-          <PhotoUploader eventId={event.id} organizerId={event.organizer_id} />
+          <PhotoUploader eventId={event.id} />
         </CardContent>
       </Card>
 
