@@ -709,9 +709,13 @@ values
    now() - interval '160 days',
    '{"ver":2,"iv":"c2VudGluZWwtaXY=","ct":"c2VudGluZWwtcnVubmVyLTEwLW5ldmVyLWEtcmVhbC1pYw==","tag":"c2VudGluZWwtdGFn"}')
 -- ★ targeted upsert (not `do nothing`): re-runs CONVERGE already-seeded rows
---   onto the demo sentinel so the gate stays open for these demo runners.
---   Nothing else on the row is rewritten. (id …051..…05a / user …c1..…ca)
-on conflict (user_id) do update set ic_encrypted = excluded.ic_encrypted;
+--   onto the demo state so the gate stays open for these demo runners.
+--   ic_encrypted converges only NULL→sentinel (COALESCE): an existing
+--   non-null value — e.g. a real IC a demo runner entered after seeding —
+--   is PRESERVED verbatim on re-runs. Nothing else on the row is rewritten.
+--   (id …051..…05a / user …c1..…ca)
+on conflict (user_id) do update set
+  ic_encrypted = coalesce(runner_profiles.ic_encrypted, excluded.ic_encrypted);
 
 -- ── runner11 — partial demo profile (incomplete on purpose) ──────────────
 --    bare name (passes the 072 trimmed ≥2 check) → gate banner shows the

@@ -64,6 +64,10 @@ preserved in the @db-specialist orchestrator session of 2026-10-20.
 
 Password for **every** seeded account: **`Pelikat-Dev-2026!`**
 
+> Context: all `@pelikat.test` accounts are **synthetic academic FYP demo
+> fixtures** on a non-production dev project; all real admin access uses
+> Google OAuth (the `@gmail.com` admin logins have no password).
+
 > **Credential handling — STANDING RULE (no rotation).** `Pelikat-Dev-2026!` is
 > the **permanent, fixed** password for ALL 19 seeded `@pelikat.test` accounts
 > (3 admins + 5 organizers + 11 runners) — on **local** environments seeded by
