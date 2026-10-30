@@ -15,6 +15,30 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 
+/** Shared sidebar nav data: signed-in user + active organizer count + logout. */
+function useAdminNavData() {
+  const supabase = createClient()
+  const router = useRouter()
+  const [user, setUser] = useState<User | null>(null)
+  const [activeOrgCount, setActiveOrgCount] = useState(0)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+    supabase
+      .from('organizers')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true)
+      .then(({ count }) => setActiveOrgCount(count ?? 0))
+  }, [supabase])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login?switchAccount=1')
+  }
+
+  return { user, activeOrgCount, handleLogout }
+}
+
 // ─── Nav structure matching new design ──────────────────────────────────────
 interface NavItem {
   title: string
@@ -190,24 +214,7 @@ function SidebarContent({
 // ─── Desktop Sidebar ──────────────────────────────────────────────────────────
 export function AdminSidebar() {
   const pathname = usePathname()
-  const supabase = createClient()
-  const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
-  const [activeOrgCount, setActiveOrgCount] = useState(0)
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user))
-    supabase
-      .from('organizers')
-      .select('id', { count: 'exact', head: true })
-      .eq('is_active', true)
-      .then(({ count }) => setActiveOrgCount(count ?? 0))
-  }, [supabase])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login?switchAccount=1')
-  }
+  const { user, activeOrgCount, handleLogout } = useAdminNavData()
 
   return (
     <div className="flex h-full w-64 flex-col">
@@ -219,24 +226,7 @@ export function AdminSidebar() {
 // ─── Mobile Nav (Sheet) ───────────────────────────────────────────────────────
 export function AdminMobileNav() {
   const pathname = usePathname()
-  const supabase = createClient()
-  const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
-  const [activeOrgCount, setActiveOrgCount] = useState(0)
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user))
-    supabase
-      .from('organizers')
-      .select('id', { count: 'exact', head: true })
-      .eq('is_active', true)
-      .then(({ count }) => setActiveOrgCount(count ?? 0))
-  }, [supabase])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login?switchAccount=1')
-  }
+  const { user, activeOrgCount, handleLogout } = useAdminNavData()
 
   return (
     <Sheet>
