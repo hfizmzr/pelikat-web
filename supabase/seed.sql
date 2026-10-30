@@ -4,7 +4,8 @@
 --
 -- PURPOSE
 --   Seeds a complete, realistic demo dataset for the Pelikat running-event
---   platform: 3 admins, 5 organizers (one per lifecycle state), 10 runners,
+--   platform: 3 admins, 5 organizers (one per lifecycle state), 11 runners
+--   (10 completed + 1 intentionally incomplete gate-locked demo runner),
 --   10 events (past / active / future × physical / virtual), 42 registrations,
 --   payments, REPC kit-collection, merch store, run logs, badges, photo tags
 --   and audit entries. All UUIDs are FIXED, so re-runs converge to the same
@@ -219,8 +220,15 @@ values
    '{"role":"runner"}', '{"full_name":"Gopal Krishnan"}', now() - interval '170 days', now() - interval '170 days', '', '', '', '', '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000ca', 'authenticated', 'authenticated',
    'runner10@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
-   '{"role":"runner"}', '{"full_name":"Farah Nadia binti Ahmad"}', now() - interval '160 days', now() - interval '160 days', '', '', '', '', '', '', '', '')
+   '{"role":"runner"}', '{"full_name":"Farah Nadia binti Ahmad"}', now() - interval '160 days', now() - interval '160 days', '', '', '', '', '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000'::uuid, 'd0e5e000-0000-4000-8000-0000000000cb', 'authenticated', 'authenticated',
+   'runner11@pelikat.test', crypt('Pelikat-Dev-2026!', gen_salt('bf', 10)), now(),
+   '{"role":"runner"}', '{"full_name":"Nadia Iman binti Mahmud"}', now() - interval '150 days', now() - interval '150 days', '', '', '', '', '', '', '', '')
 -- ★ targeted upsert as above (runners block).
+-- runner11 (…cb, profile …05b below) is the INCOMPLETE-PROFILE demo: the
+-- runner_profiles row is seeded with full_name only, so the profile gate in
+-- src/proxy.ts stays closed for it on purpose ("Still needed: date of
+-- birth, gender, phone number, PDPA consent, IC/passport").
 on conflict (id) do update
   set encrypted_password = excluded.encrypted_password,
       email_confirmed_at = excluded.email_confirmed_at,
@@ -286,6 +294,10 @@ values
    now(), now(), now()),
   ('d0e5e000-0000-4000-8000-0000000000ca', 'd0e5e000-0000-4000-8000-0000000000ca', 'd0e5e000-0000-4000-8000-0000000000ca', 'email',
    jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000ca', 'email', 'runner10@pelikat.test', 'email_verified', true),
+   now(), now(), now()),
+  -- runner11 — incomplete-profile demo (gate-locked by design)
+  ('d0e5e000-0000-4000-8000-0000000000cb', 'd0e5e000-0000-4000-8000-0000000000cb', 'd0e5e000-0000-4000-8000-0000000000cb', 'email',
+   jsonb_build_object('sub', 'd0e5e000-0000-4000-8000-0000000000cb', 'email', 'runner11@pelikat.test', 'email_verified', true),
    now(), now(), now())
 on conflict do nothing;
 
@@ -626,47 +638,94 @@ on conflict do nothing;
 -- §7 RUNNER PROFILES  (one per runner auth user; ★ user_id unique anchor)
 --    Inserted BEFORE registrations so the claim_guest_registrations trigger
 --    fires on an empty registrations table (no accidental auto-claims).
---    NOTE (migration 070): ic_encrypted / ic_document_* are deliberately NOT
---    seeded — no ic-documents objects are seeded either, so the ic-doc proxy
---    gate stays consistently closed. Do not add fake IC columns here: the
---    070 guard silently NULLs them on non-privileged INSERT, and a seeded
---    ic_document_path without a real .enc object would break the proxy flow.
--- ════════════════════════════════════════════════════════════════════════════
+-- ── 10 completed runners ──────────────────────────────────────────────────
+--    NOTE (migration 070 + profile gate in src/proxy.ts): a runner passes
+--    the gate only when the profile row has full_name, dob, gender, phone,
+--    pdpa_agreed AND (ic_encrypted OR ic_document_path). To satisfy it in
+--    demo, each of the 10 runners gets a FAKE ic_encrypted SENTINEL — a
+--    shape-valid AES-GCM v2 envelope (per-runner distinct ct); it is never
+--    decrypted at runtime (only non-null matters), so fake filler is safe
+--    and it has no storage dependency.
+--    ic_document_* stay NULL BY DESIGN: a seeded ic_document_path without
+--    a real storage .enc object would break the ic-doc proxy flow.
+--    The 070 col guard NULLs IC columns on non-privileged writes; seeding
+--    runs as postgres, so the sentinels pass through. runner11 (…05b,
+--    user_id …cb) is seeded PARTIAL below — name only — to demo the
+--    gate-locked state ("Still needed: date of birth, gender, phone
+--    number, PDPA consent, IC/passport").
 insert into public.runner_profiles
   (id, user_id, full_name, phone, dob, gender, t_shirt_size, pdpa_agreed,
-   emergency_contact_name, emergency_contact_phone, is_deleted, created_at)
+   emergency_contact_name, emergency_contact_phone, is_deleted, created_at,
+   ic_encrypted)
 values
   ('d0e5e000-0000-4000-8000-000000000051', 'd0e5e000-0000-4000-8000-0000000000c1',
    'Adam Faizal bin Harun', '+6012-2013456', '1990-03-14', 'M', 'M', true,
-   'Salmah binti Idris', '+6012-3014567', false, now() - interval '250 days'),
+   'Salmah binti Idris', '+6012-3014567', false,
+   now() - interval '250 days',
+   '{"ver":2,"iv":"c2VudGluZWwtaXY=","ct":"c2VudGluZWwtcnVubmVyLTAxLW5ldmVyLWEtcmVhbC1pYw==","tag":"c2VudGluZWwtdGFn"}'),
   ('d0e5e000-0000-4000-8000-000000000052', 'd0e5e000-0000-4000-8000-0000000000c2',
    'Nurul Aisyah binti Zulkifli', '+6013-2024567', '1993-07-22', 'F', 'S', true,
-   'Zulkifli bin Hassan', '+6013-3025678', false, now() - interval '240 days'),
+   'Zulkifli bin Hassan', '+6013-3025678', false,
+   now() - interval '240 days',
+   '{"ver":2,"iv":"c2VudGluZWwtaXY=","ct":"c2VudGluZWwtcnVubmVyLTAyLW5ldmVyLWEtcmVhbC1pYw==","tag":"c2VudGluZWwtdGFn"}'),
   ('d0e5e000-0000-4000-8000-000000000053', 'd0e5e000-0000-4000-8000-0000000000c3',
    'Tan Wei Ming', '+6016-2035678', '1985-11-02', 'M', 'L', true,
-   'Tan Ah Kow', '+6016-3036789', false, now() - interval '230 days'),
+   'Tan Ah Kow', '+6016-3036789', false,
+   now() - interval '230 days',
+   '{"ver":2,"iv":"c2VudGluZWwtaXY=","ct":"c2VudGluZWwtcnVubmVyLTAzLW5ldmVyLWEtcmVhbC1pYw==","tag":"c2VudGluZWwtdGFn"}'),
   ('d0e5e000-0000-4000-8000-000000000054', 'd0e5e000-0000-4000-8000-0000000000c4',
    'Priya Darshini', '+6017-2046789', '1996-01-30', 'F', 'XS', true,
-   'Rajesh Kumar', '+6017-3047890', false, now() - interval '220 days'),
+   'Rajesh Kumar', '+6017-3047890', false,
+   now() - interval '220 days',
+   '{"ver":2,"iv":"c2VudGluZWwtaXY=","ct":"c2VudGluZWwtcnVubmVyLTA0LW5ldmVyLWEtcmVhbC1pYw==","tag":"c2VudGluZWwtdGFn"}'),
   ('d0e5e000-0000-4000-8000-000000000055', 'd0e5e000-0000-4000-8000-0000000000c5',
    'Muhammad Hafiz bin Roslan', '+6018-2057890', '2000-09-18', 'M', 'XL', true,
-   'Roslan bin Mat Amin', '+6018-3058901', false, now() - interval '210 days'),
+   'Roslan bin Mat Amin', '+6018-3058901', false,
+   now() - interval '210 days',
+   '{"ver":2,"iv":"c2VudGluZWwtaXY=","ct":"c2VudGluZWwtcnVubmVyLTA1LW5ldmVyLWEtcmVhbC1pYw==","tag":"c2VudGluZWwtdGFn"}'),
   ('d0e5e000-0000-4000-8000-000000000056', 'd0e5e000-0000-4000-8000-0000000000c6',
    'Lim Siew Ling', '+6019-2068901', '1988-05-09', 'F', 'XXL', true,
-   'Lim Chong Wei', '+6019-3069012', false, now() - interval '200 days'),
+   'Lim Chong Wei', '+6019-3069012', false,
+   now() - interval '200 days',
+   '{"ver":2,"iv":"c2VudGluZWwtaXY=","ct":"c2VudGluZWwtcnVubmVyLTA2LW5ldmVyLWEtcmVhbC1pYw==","tag":"c2VudGluZWwtdGFn"}'),
   ('d0e5e000-0000-4000-8000-000000000057', 'd0e5e000-0000-4000-8000-0000000000c7',
    'Ahmad Zulkarnain bin Omar', '+6012-2079012', '1978-02-14', 'M', 'M', true,
-   'Omar bin Sharif', '+6012-3070123', false, now() - interval '190 days'),
+   'Omar bin Sharif', '+6012-3070123', false,
+   now() - interval '190 days',
+   '{"ver":2,"iv":"c2VudGluZWwtaXY=","ct":"c2VudGluZWwtcnVubmVyLTA3LW5ldmVyLWEtcmVhbC1pYw==","tag":"c2VudGluZWwtdGFn"}'),
   ('d0e5e000-0000-4000-8000-000000000058', 'd0e5e000-0000-4000-8000-0000000000c8',
    'Chloe Wong Mei Ling', '+6013-2080123', '2001-12-05', 'F', 'S', true,
-   'Wong Kah Seng', '+6013-3081234', false, now() - interval '180 days'),
+   'Wong Kah Seng', '+6013-3081234', false,
+   now() - interval '180 days',
+   '{"ver":2,"iv":"c2VudGluZWwtaXY=","ct":"c2VudGluZWwtcnVubmVyLTA4LW5ldmVyLWEtcmVhbC1pYw==","tag":"c2VudGluZWwtdGFn"}'),
   ('d0e5e000-0000-4000-8000-000000000059', 'd0e5e000-0000-4000-8000-0000000000c9',
    'Gopal Krishnan', '+6016-2091234', '1992-08-27', 'M', 'M', true,
-   'Krishnan s/o Muthu', '+6016-3092345', false, now() - interval '170 days'),
+   'Krishnan s/o Muthu', '+6016-3092345', false,
+   now() - interval '170 days',
+   '{"ver":2,"iv":"c2VudGluZWwtaXY=","ct":"c2VudGluZWwtcnVubmVyLTA5LW5ldmVyLWEtcmVhbC1pYw==","tag":"c2VudGluZWwtdGFn"}'),
   ('d0e5e000-0000-4000-8000-00000000005a', 'd0e5e000-0000-4000-8000-0000000000ca',
    'Farah Nadia binti Ahmad', '+6017-2102345', '1995-04-11', 'F', 'M', true,
-   'Ahmad bin Zaid', '+6017-3103456', false, now() - interval '160 days')
-on conflict do nothing;
+   'Ahmad bin Zaid', '+6017-3103456', false,
+   now() - interval '160 days',
+   '{"ver":2,"iv":"c2VudGluZWwtaXY=","ct":"c2VudGluZWwtcnVubmVyLTEwLW5ldmVyLWEtcmVhbC1pYw==","tag":"c2VudGluZWwtdGFn"}')
+-- ★ targeted upsert (not `do nothing`): re-runs CONVERGE already-seeded rows
+--   onto the demo sentinel so the gate stays open for these demo runners.
+--   Nothing else on the row is rewritten. (id …051..…05a / user …c1..…ca)
+on conflict (user_id) do update set ic_encrypted = excluded.ic_encrypted;
+
+-- ── runner11 — partial demo profile (incomplete on purpose) ──────────────
+--    bare name (passes the 072 trimmed ≥2 check) → gate banner shows the
+--    pre-filled name plus "Still needed: date of birth, gender, phone
+--    number, PDPA consent, IC/passport". Phone / dob / gender / pdpa / IC
+--    are all NULL/false by design. No registrations/badges/log rows exist
+--    for runner11 anywhere in this seeder. `do nothing` keeps the row from
+--    ever regressing a completed profile on re-run.
+insert into public.runner_profiles
+  (id, user_id, full_name, is_deleted, created_at)
+values
+  ('d0e5e000-0000-4000-8000-00000000005b', 'd0e5e000-0000-4000-8000-0000000000cb',
+   'Nadia Iman binti Mahmud', false, now() - interval '5 days')
+on conflict (user_id) do nothing;
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- §8 REGISTRATIONS  (42 rows)
