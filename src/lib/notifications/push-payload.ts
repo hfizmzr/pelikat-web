@@ -16,6 +16,9 @@ const FALLBACK_URL = '/runner/notifications'
 export function safeNotificationPath(value: unknown): string {
   if (typeof value !== 'string') return FALLBACK_URL
   if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return FALLBACK_URL
+  // URL parsing silently drops tabs/newlines ("/\t/evil.example" → "//evil.example"),
+  // so any control character or whitespace is rejected outright.
+  if (/[\s\u0000-\u001f\u007f]/.test(value)) return FALLBACK_URL
   return value
 }
 

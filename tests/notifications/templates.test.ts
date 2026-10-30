@@ -146,6 +146,10 @@ describe('push payload → service worker', () => {
     ['https://evil.example/phish', '/runner/notifications'],
     ['//evil.example', '/runner/notifications'],
     ['/\\evil.example', '/runner/notifications'],
+    ['/\t/evil.example', '/runner/notifications'],
+    ['/\n/evil.example', '/runner/notifications'],
+    ['/runner/events/e1 ', '/runner/notifications'],
+    ['/runner\u0000/x', '/runner/notifications'],
     [42, '/runner/notifications'],
   ])('safeNotificationPath(%s) → %s', (input, expected) => {
     expect(safeNotificationPath(input)).toBe(expected)

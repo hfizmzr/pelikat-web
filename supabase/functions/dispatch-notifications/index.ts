@@ -27,6 +27,8 @@ const MAX_ATTEMPTS = 5; // keep in sync with claim_notification_jobs
 const CLAIM_SIZE = 50;
 const RUN_BUDGET_MS = 50_000;
 const RESEND_SPACING_MS = 600; // Resend's default limit is 2 requests/second
+const RESEND_TIMEOUT_MS = 15_000;
+const PUSH_TIMEOUT_MS = 10_000;
 
 type EmailStatus = "pending" | "sent" | "failed" | "skipped";
 type PushStatus = EmailStatus | "no_device";
@@ -83,6 +85,9 @@ async function resendPost(url: string, key: string, body: unknown): Promise<Resp
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
+    // a stalled request must not hold up the whole batch; a timeout is a
+    // retriable failure (sendEmails catches it)
+    signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
   });
 }
 
@@ -222,7 +227,7 @@ async function deliverPushes(sb: SupabaseClient, rows: NotificationRow[], outcom
       const results = await Promise.all(
         devices.map(async (s) => {
           try {
-            const res = await sendPush(s, payload, vapid);
+            const res = await sendPush(s, payload, vapid, { timeoutMs: PUSH_TIMEOUT_MS });
             if (res.ok) used.add(s.id);
             else if (res.gone) gone.add(s.id);
             return res;

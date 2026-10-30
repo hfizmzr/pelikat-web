@@ -44,7 +44,11 @@ export function BroadcastComposer({ eventId, eventName, recipientCount, accountC
 
   const trimmedSubject = subject.trim()
   const trimmedBody = body.trim()
-  const canSend = trimmedSubject.length > 0 && trimmedBody.length > 0 && recipientCount > 0 && !isPending
+  const guestCount = recipientCount - accountCount
+  // Guests have no app account, so with Email off nothing can reach them
+  // (send_event_broadcast skips them too).
+  const audience = sendEmail ? recipientCount : accountCount
+  const canSend = trimmedSubject.length > 0 && trimmedBody.length > 0 && audience > 0 && !isPending
 
   const preview = useMemo(
     () =>
@@ -85,8 +89,12 @@ export function BroadcastComposer({ eventId, eventName, recipientCount, accountC
         <CardHeader>
           <CardTitle>Compose message</CardTitle>
           <CardDescription>
-            Goes to {recipientCount} confirmed runner{recipientCount === 1 ? '' : 's'}
-            {recipientCount > accountCount ? ` (${recipientCount - accountCount} guest${recipientCount - accountCount === 1 ? '' : 's'} by email only)` : ''}.
+            Goes to {audience} confirmed runner{audience === 1 ? '' : 's'}
+            {guestCount > 0 &&
+              (sendEmail
+                ? ` (${guestCount} guest${guestCount === 1 ? '' : 's'} by email only)`
+                : ` (${guestCount} guest${guestCount === 1 ? '' : 's'} skipped: guests can only get email)`)}
+            .
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -140,7 +148,7 @@ export function BroadcastComposer({ eventId, eventName, recipientCount, accountC
 
           <Button className="w-full" disabled={!canSend} onClick={() => setConfirmOpen(true)}>
             <Send className="mr-2 h-4 w-4" />
-            Send to {recipientCount} runner{recipientCount === 1 ? '' : 's'}
+            Send to {audience} runner{audience === 1 ? '' : 's'}
           </Button>
         </CardContent>
       </Card>
@@ -191,7 +199,9 @@ export function BroadcastComposer({ eventId, eventName, recipientCount, accountC
       <AlertDialog open={confirmOpen} onOpenChange={(o) => !isPending && setConfirmOpen(o)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Send to {recipientCount} runners?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Send to {audience} runner{audience === 1 ? '' : 's'}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
               &ldquo;{trimmedSubject}&rdquo; will be delivered by {channels}. Sent messages can&apos;t be recalled.
             </AlertDialogDescription>

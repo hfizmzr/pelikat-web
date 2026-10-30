@@ -168,10 +168,17 @@ export async function sendPush(
   sub: PushSubscriptionKeys,
   payload: string,
   vapid: VapidConfig,
-  options?: Parameters<typeof buildPushRequest>[3],
+  options: Parameters<typeof buildPushRequest>[3] & { timeoutMs?: number } = {},
 ): Promise<PushResult> {
-  const req = await buildPushRequest(sub, payload, vapid, options)
-  const res = await fetch(req.endpoint, { method: 'POST', headers: req.headers, body: req.body })
+  const { timeoutMs = 10_000, ...requestOptions } = options
+  const req = await buildPushRequest(sub, payload, vapid, requestOptions)
+  // throws on timeout; the dispatcher records it as a retriable failure
+  const res = await fetch(req.endpoint, {
+    method: 'POST',
+    headers: req.headers,
+    body: req.body,
+    signal: AbortSignal.timeout(timeoutMs),
+  })
   if (res.ok) return { ok: true }
   const text = (await res.text().catch(() => '')).slice(0, 300)
   // 404/410: the browser dropped the subscription — delete it

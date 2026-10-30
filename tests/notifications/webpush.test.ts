@@ -1,11 +1,12 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   b64urlDecode,
   b64urlEncode,
   buildPushRequest,
   encryptPayload,
   isAllowedPushEndpoint,
+  sendPush,
   vapidAuthorization,
 } from '../../supabase/functions/_shared/webpush'
 
@@ -128,5 +129,36 @@ describe('push endpoint allowlist', () => {
     ['not a url', false],
   ])('%s → %s', (endpoint, allowed) => {
     expect(isAllowedPushEndpoint(endpoint)).toBe(allowed)
+  })
+})
+
+describe('sendPush', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  // A push service that never answers: only the abort signal can end the request
+  function stubHangingFetch() {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url: string, init: RequestInit) =>
+          new Promise((_, reject) => init.signal?.addEventListener('abort', () => reject(init.signal?.reason)))
+      )
+    )
+  }
+
+  it('gives up on a stalled push service after the timeout', async () => {
+    stubHangingFetch()
+    const { config } = await vapidKeys()
+    const { sub } = await browserSubscription()
+    await expect(sendPush(sub, '{}', config, { timeoutMs: 20 })).rejects.toThrow()
+  })
+
+  it('flags 404/410 subscriptions as gone', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('expired', { status: 410 })))
+    const { config } = await vapidKeys()
+    const { sub } = await browserSubscription()
+    expect(await sendPush(sub, '{}', config)).toEqual({ ok: false, gone: true, status: 410, error: 'expired' })
   })
 })
