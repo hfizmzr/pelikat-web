@@ -309,6 +309,8 @@ export async function setResultsPublished(eventId: string, published: boolean) {
   if (error) throw new Error(error.message)
 
   revalidatePath(`/organizer/events/${eventId}`)
+  revalidatePath(`/organizer/events/${eventId}/leaderboard`)
+  revalidatePath('/runner/leaderboard')
 }
 
 export async function updateEventDates(

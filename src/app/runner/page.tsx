@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react"
-import { Award, Bell, Calendar, CalendarX, CheckCheck, Flame, Footprints, ShoppingBag, Tag, Tags, Trophy } from "lucide-react"
+import { Award, Calendar, CalendarX, CheckCheck, Flame, Footprints, ShoppingBag, Tag, Tags, Trophy } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
+import { NotificationBell } from '@/components/notifications/notification-bell'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
@@ -51,7 +52,7 @@ export default async function RunnerDashboard() {
     .eq('user_id', user?.id)
     .single()
 
-  const [totalRunDistance, { data: streakData }, { data: registrations }, { data: badges }] = await Promise.all([
+  const [totalRunDistance, { data: streakData }, { data: registrations }, { data: badges }, { count: unreadCount }] = await Promise.all([
     supabase
       .from('run_logs')
       .select('distance_km')
@@ -73,6 +74,10 @@ export default async function RunnerDashboard() {
       .eq('runner_id', profile?.id)
       .order('awarded_at', { ascending: false })
       .limit(5),
+    supabase
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .is('read_at', null),
   ])
 
   const upcomingEvents = registrations
@@ -100,10 +105,7 @@ export default async function RunnerDashboard() {
             </div>
             <p className="text-[11px] text-muted-foreground">Ready for your next run?</p>
           </div>
-          <button className="relative w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
-            <Bell className="size-[22px]" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-red-500 dark:bg-red-300 ring-2 ring-background" />
-          </button>
+          {user && <NotificationBell userId={user.id} initialUnread={unreadCount ?? 0} />}
         </div>
       </header>
 

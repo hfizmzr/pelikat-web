@@ -140,16 +140,20 @@ describe('Polish: Registration & Emails (Phase 2)', () => {
     expect(fn).toContain('EMAILS_DISABLED')
   })
 
-  it('confirmation email fires after successful registration', () => {
+  it('confirmation email fires once the registration is paid and has its BIB (FR-29)', () => {
+    const migration = read('supabase', 'migrations', '084_notifications.sql')
+    expect(migration).toContain('after insert or update of payment_status, bib_number on public.registrations')
+    expect(migration).toContain("if new.payment_status not in ('paid', 'waived') then")
+    expect(migration).toContain("if v_event.event_type <> 'virtual' and new.bib_number is null then")
+    expect(migration).toContain("'registration_confirmed:' || new.id")
+    // the client no longer sends it (it only ever had 'TBA' for the BIB)
     const actions = read(
       'src',
       'components',
       'events',
       'runner-registration-actions.tsx'
     )
-    expect(actions).toContain("invoke('send-transactional-email'")
-    expect(actions).toContain("type: 'registration_confirmation'")
-    expect(actions).toContain('bibNumber: data?.bib_number')
+    expect(actions).not.toContain("invoke('send-transactional-email'")
   })
 
   it('welcome email fires after organizer creation (UC01 step 5)', () => {

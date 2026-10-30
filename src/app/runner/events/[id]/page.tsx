@@ -300,11 +300,6 @@ export default async function RunnerEventDetailPage({
                   phone: profile?.phone ?? null,
                   icOnFile: !!(profile?.ic_encrypted || profile?.ic_document_path),
                 }}
-                eventSummary={{
-                  name: event.name,
-                  date: eventDate.toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-                  location: event.location,
-                }}
               />
             ) : (
               // Closed unregistered: 045 rejects new registrations, so no CTA —

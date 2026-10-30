@@ -7,6 +7,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
 import { PWAInstallPrompt } from '@/components/pwa/install-prompt'
+import { Toaster } from '@/components/ui/sonner'
 import Link from 'next/link'
 
 function BottomNavLink({
@@ -115,6 +116,7 @@ export default function RunnerLayout({
           </div>
         </nav>
       </div>
+      <Toaster richColors position="top-center" />
     </div>
   )
 }

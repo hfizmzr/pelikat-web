@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt, BarChart3, ClipboardList } from 'lucide-react'
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt, BarChart3, ClipboardList, Megaphone } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { EventSettingsPanel } from '@/components/events/event-settings-panel'
@@ -297,6 +297,12 @@ export default async function OrganizerEventDetailPage({
                     <Button variant="outline" className="w-full justify-start">
                       <Users className="mr-2 h-4 w-4" />
                       Leaderboard
+                    </Button>
+                  </Link>
+                  <Link href={`/organizer/events/${eventDetail.id}/messages`} className="block">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Megaphone className="mr-2 h-4 w-4" />
+                      Messages to Runners
                     </Button>
                   </Link>
                 </CardContent>
