@@ -75,6 +75,9 @@ export const FAMILY_FONT_URLS: Record<string, string> = {
   Barlow: 'https://fonts.gstatic.com/s/barlow/v13/7cHpv4kjgoGqM7E_DMs5.woff2',
 }
 
+const IMAGE_KINDS = new Set<string>(IMAGE_ASSET_KINDS)
+const FONT_KINDS_SET = new Set<string>(FONT_KINDS)
+
 const MIME_EXT: Record<string, string> = {
   'image/png': 'png',
   'image/jpeg': 'jpg',
@@ -104,7 +107,7 @@ export type ThemeAssetClient = {
 export function kindFromAssetKey(key: string): ThemeAssetKind | null {
   if (!key.endsWith('_url')) return null
   const kind = key.slice(0, -4)
-  if ((IMAGE_ASSET_KINDS as readonly string[]).includes(kind) || (FONT_KINDS as readonly string[]).includes(kind)) {
+  if (IMAGE_KINDS.has(kind) || FONT_KINDS_SET.has(kind)) {
     return kind as ThemeAssetKind
   }
   return null
@@ -186,7 +189,7 @@ export async function uploadThemeAsset(
     throw new Error('uploadThemeAsset: missing organizer or event id')
   }
   let ext: string
-  if ((IMAGE_ASSET_KINDS as readonly string[]).includes(kind)) {
+  if (IMAGE_KINDS.has(kind)) {
     const limits = ASSET_LIMITS[kind as AssetKind]
     if (file.size > limits.maxBytes) {
       throw new Error(
@@ -197,7 +200,7 @@ export async function uploadThemeAsset(
       throw new Error(`${kind}: only PNG, JPEG or WebP images are allowed (got ${file.type || 'unknown type'})`)
     }
     ext = MIME_EXT[file.type] ?? ''
-  } else if ((FONT_KINDS as readonly string[]).includes(kind)) {
+  } else if (FONT_KINDS_SET.has(kind)) {
     const name = (file as File).name ?? ''
     if (!/\.woff2$/i.test(name)) {
       throw new Error(`${kind}: only .woff2 font files are allowed (got ${name || 'unnamed file'})`)
@@ -212,7 +215,7 @@ export async function uploadThemeAsset(
 
   const bucket = client.storage.from(THEME_ASSET_BUCKET)
   const path = assetPath(organizerId, eventId, kind, ext, ts)
-  const contentType = (IMAGE_ASSET_KINDS as readonly string[]).includes(kind) ? file.type : 'font/woff2'
+  const contentType = IMAGE_KINDS.has(kind) ? file.type : 'font/woff2'
 
   let { error } = await bucket.upload(path, file, { upsert: true, contentType })
   if (error && conflict(error)) {

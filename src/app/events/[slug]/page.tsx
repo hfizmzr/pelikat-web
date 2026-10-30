@@ -86,7 +86,7 @@ async function loadPublicEvent(
  * viewport's themeColor must be a string even for unthemed events).
  */
 async function resolvePublicTheme(event: PublicEventRow, supabase: SupabaseClient) {
-  const { resolved } = await getSurfaceTheme(event, supabase)
+  const resolved = await getSurfaceTheme(event, supabase)
   return resolved ?? deriveTheme({}, null, null)
 }
 

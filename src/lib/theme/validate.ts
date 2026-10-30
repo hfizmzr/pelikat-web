@@ -14,14 +14,10 @@
  * Never throws (spec §5.5.4): unserializable/malformed input surfaces as
  * structured errors.
  */
-import { contrastRatio, hexToOklch, pickForeground, relativeLuminance, PLATFORM_BG_HEX } from './color'
+import { contrastRatio, hexToOklch, companionRatio, PLATFORM_BG_HEX } from './color'
 import { LABEL_KEYS } from './labels'
-import { isPlainObject, themeFontUrlOk, assetValueOk } from './utils'
-
-// Stored-token HEX contract (Global Constraints / spec §4.3: ^#[0-9a-fA-F]{6}$).
-// Same strict regex resolve.ts validates; color.ts's runtime regex is looser
-// (`#` optional) and private.
-const HEX_RE = /^#[0-9a-fA-F]{6}$/
+import { isPlainObject, themeFontUrlOk, assetValueOk, HEX_RE } from './utils'
+import { SECTION_KEYS, COLOR_KEYS, TYPOGRAPHY_KEYS, ASSET_KEYS } from './types'
 
 // 64 KB JSON cap (spec §4.3). The DB measures octet_length(jsonb::text) —
 // a few % apart from JSON.stringify's bytes at the exact boundary; the DB
@@ -35,11 +31,6 @@ const TINT_L_DARK: [number, number] = [0.05, 0.12]
 
 export type ThemeValidation = { ok: boolean; errors: string[]; warnings: string[] }
 
-const TOP_KEYS = ['colors', 'typography', 'assets', 'vocabulary', 'meta']
-const COLOR_KEYS = ['primary', 'secondary', 'accent', 'background', 'foreground', 'ring']
-const TYPOGRAPHY_KEYS = ['heading_font_url', 'body_font_url']
-const ASSET_KEYS = ['banner_url', 'logo_url', 'badge_icon_url', 'certificate_background_url']
-
 /** Serialized byte length, or null when unserializable (cyclic and friends). */
 function jsonBytes(config: unknown): number | null {
   try {
@@ -52,27 +43,7 @@ function jsonBytes(config: unknown): number | null {
 }
 
 /**
- * Ruling #10 (P2 Task 5) — light-mode `-foreground` companion ratio. MIRRORS
- * resolve.ts's companionRatio (same shape as the mirrored PLATFORM_BG_HEX
- * decision): fill paired with its computed companion `pickForeground(fill)`.
- * A WHITE pick passes by construction (pickForeground returns white only when
- * it reaches ≥4.5:1). A dark pick (`oklch(0.145 0 0)`) is unparseable by
- * HEX-only contrastRatio (it would silently return 1), so measure the fill's
- * WCAG luminance against the dark-fg constant's EXACT luminance: a neutral
- * OKLab gray's linear channel — hence its relative luminance — is L³ = 0.145³.
- */
-const WHITE_FG = '#ffffff' // color.ts's private WHITE constant (stable)
-const DARK_FG_LUMINANCE = 0.145 ** 3
-
-function companionRatio(fill: string): number {
-  if (pickForeground(fill) === WHITE_FG) return contrastRatio(fill, WHITE_FG)
-  const y = relativeLuminance(fill)
-  const hi = Math.max(y, DARK_FG_LUMINANCE)
-  const lo = Math.min(y, DARK_FG_LUMINANCE)
-  return (hi + 0.05) / (lo + 0.05)
-}
-
-/** §5.5 WCAG gate — primary keeps the SAME platform-background decision as
+ * §5.5 WCAG gate — primary keeps the SAME platform-background decision as
  * resolve.ts's precheck (color.ts PLATFORM_BG_HEX). Light-mode only: dark
  * variants (L ∈ [0.68, 0.82]) trivially clear 3:1 against the dark background.
  * secondary/accent (Ruling #10, P2 Task 5) mirror save-side the resolve
@@ -155,7 +126,7 @@ export function validateThemeConfig(config: unknown): ThemeValidation {
   }
 
   for (const key of Object.keys(config)) {
-    if (!TOP_KEYS.includes(key)) errors.push(`theme_config.${key}: unknown key — rejected`)
+    if (!(SECTION_KEYS as readonly string[]).includes(key)) errors.push(`theme_config.${key}: unknown key — rejected`)
   }
 
   // meta: {"version": 1} exactly when present (DB: only 'version' allowed,
@@ -182,7 +153,7 @@ export function validateThemeConfig(config: unknown): ThemeValidation {
       errors.push('colors: must be an object of HEX strings')
     } else {
       for (const key of Object.keys(colors)) {
-        if (!COLOR_KEYS.includes(key)) errors.push(`colors.${key}: unknown key — rejected`)
+        if (!(COLOR_KEYS as readonly string[]).includes(key)) errors.push(`colors.${key}: unknown key — rejected`)
       }
       const hexes: Record<string, string> = {}
       for (const key of COLOR_KEYS) {
@@ -210,7 +181,7 @@ export function validateThemeConfig(config: unknown): ThemeValidation {
       errors.push('typography: must be an object of https URLs')
     } else {
       for (const key of Object.keys(typography)) {
-        if (!TYPOGRAPHY_KEYS.includes(key)) errors.push(`typography.${key}: unknown key — rejected`)
+        if (!(TYPOGRAPHY_KEYS as readonly string[]).includes(key)) errors.push(`typography.${key}: unknown key — rejected`)
       }
       for (const key of TYPOGRAPHY_KEYS) {
         const raw = typography[key]
@@ -237,7 +208,7 @@ export function validateThemeConfig(config: unknown): ThemeValidation {
       errors.push('assets: must be an object of bucket paths or https URLs')
     } else {
       for (const key of Object.keys(assets)) {
-        if (!ASSET_KEYS.includes(key)) errors.push(`assets.${key}: unknown key — rejected`)
+        if (!(ASSET_KEYS as readonly string[]).includes(key)) errors.push(`assets.${key}: unknown key — rejected`)
       }
       for (const key of ASSET_KEYS) {
         const raw = assets[key]

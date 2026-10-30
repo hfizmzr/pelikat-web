@@ -4,9 +4,9 @@ import { fetchDjangoApi } from '@/lib/django'
 import { requireAuth } from '@/lib/auth/requireUser'
 import { isConfirmedStatus } from '@/lib/registration-status'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { getSurfaceTheme, type SurfaceEventInput, type SurfaceTheme } from '@/lib/theme/surface'
-import { isPlainObject } from '@/lib/theme/utils'
+import { getSurfaceTheme, hasThemeInput, type SurfaceEventInput } from '@/lib/theme/surface'
 import { storageAssetUrl } from '@/lib/theme/assets'
+import type { ResolvedTheme } from '@/lib/theme/types'
 
 interface CertResult {
   cert_url: string
@@ -29,8 +29,7 @@ interface CertResult {
  * - font_url is never sent (unknown keys are dropped server-side);
  * absent values are omitted keys, never empty strings or nulls.
  */
-function certThemeOf(surface: SurfaceTheme) {
-  const resolved = surface.resolved
+function certThemeOf(resolved: ResolvedTheme | null) {
   if (!resolved) return null
   const colors: Record<string, string> = {}
   for (const role of ['primary', 'secondary', 'accent'] as const) {
@@ -68,13 +67,7 @@ function certThemeOf(surface: SurfaceTheme) {
 async function eventCertTheme(supabase: SupabaseClient, event: SurfaceEventInput | null) {
   if (!event) return null
   // Same normalization getSurfaceTheme applies (''/non-string → no preset).
-  const presetId =
-    typeof event.theme_preset_id === 'string' && event.theme_preset_id.length > 0
-      ? event.theme_preset_id
-      : null
-  const configHasKeys =
-    isPlainObject(event.theme_config) && Object.keys(event.theme_config).length > 0
-  if (presetId === null && !configHasKeys) return null
+  if (!hasThemeInput(event.theme_preset_id, event.theme_config)) return null
   return certThemeOf(await getSurfaceTheme(event, supabase))
 }
 

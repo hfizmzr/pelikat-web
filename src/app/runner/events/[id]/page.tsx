@@ -60,7 +60,7 @@ export default async function RunnerEventDetailPage({
   // RLS client, so a hidden draft never reaches the service-role read below.
   // Shortcut: the joined name (owners/admins can read organizers) wins; the
   // service fetch only fills the runner path where RLS hides organizers.
-  const { labels: themedLabels } = await getSurfaceTheme(event, supabase)
+  const themedLabels = (await getSurfaceTheme(event, supabase))?.labels ?? null
   const labels = themedLabels ?? resolveLabels(null)
   const organizerName =
     (event.organizers?.name as string | undefined) ||

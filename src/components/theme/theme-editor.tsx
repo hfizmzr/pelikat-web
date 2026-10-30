@@ -21,11 +21,11 @@ import { ThemedImage, THEME_ASPECTS } from '@/components/theme/themed-image'
 import { validateThemeConfig } from '@/lib/theme/validate'
 import { deriveTheme } from '@/lib/theme/resolve'
 import { normalizeThemeDraft, seedThemeDraft, themeDraftEquals } from '@/lib/theme/draft'
+import { HEX_RE } from '@/lib/theme/utils'
 import {
   ASSET_LIMITS,
   FAMILY_FONT_URLS,
   FONT_LIMIT,
-  IMAGE_ASSET_KINDS,
   storageAssetUrl,
   uploadThemeAsset,
   type AssetKind,
@@ -65,8 +65,6 @@ const ROLE_LABELS: Record<ColorRole, string> = {
 }
 
 // Same strict HEX contract the tokens use (validate.ts / 076).
-const HEX_RE = /^#[0-9a-fA-F]{6}$/
-
 // ── Assets section (P2 Task 7, spec §6/§8) ───────────────────────────────────
 // Aspect keys are the exported THEME_ASPECTS from Task 6 (note: the badge
 // key is `badge`, the kind is `badge_icon` — mapped explicitly here).
@@ -232,15 +230,8 @@ export function ThemeEditor({
     })
   }
 
-  // One assign-callback per kind/slot keeps the shared uploader dumb about
-  // where the public URL lands (assets vs typography slot).
-  const assigners = new Map<ThemeAssetKind, (url: string) => void>(
-    [
-      ...ASSET_ROWS.map((row) => [row.kind, (url: string) => setAssetUrl(row.key, url)] as const),
-      ...FONT_SLOTS.map((slot) => [slot.kind, (url: string) => setFontUrl(slot.urlKey, url)] as const),
-    ],
-  )
-
+  // One lookup at upload time keeps the shared uploader dumb about where the
+  // public URL lands (assets vs typography slot) — no per-kind callback map.
   async function handleUpload(kind: ThemeAssetKind, file: File) {
     // CodeRabbit fix: uploads must not START while a save is running either —
     // the object an upload creates isn't in the config being saved, so
@@ -257,8 +248,10 @@ export function ThemeEditor({
       })
       // Task 11 rider: image asset values are stored (and drafted) as the
       // bucket-relative path; font slots stay absolute https (allowlist).
-      const value = (IMAGE_ASSET_KINDS as readonly string[]).includes(kind) ? result.path : result.publicUrl
-      assigners.get(kind)?.(value)
+      const slot = [...ASSET_ROWS, ...FONT_SLOTS].find((r) => r.kind === kind)
+      if (!slot) return
+      if ('key' in slot) setAssetUrl(slot.key, result.path)
+      else setFontUrl(slot.urlKey, result.publicUrl)
     } catch (err) {
       setUploadError({
         kind,
@@ -705,7 +698,6 @@ function AssetRow({
   onPick: (file: File) => void
   onRemove: () => void
 }) {
-  const rowError = error
   return (
     <div
       className="flex items-start gap-3 rounded-lg border border-border p-2.5"
@@ -725,7 +717,7 @@ function AssetRow({
           {url && <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">{url.split('/').pop()}</span>}
         </div>
         <p className="text-xs text-muted-foreground">{hint}</p>
-        {rowError && <p className="text-xs text-destructive">{rowError}</p>}
+        {error && <p className="text-xs text-destructive">{error}</p>}
         <div className="flex items-center gap-1.5">
           <Label
             htmlFor={`asset-${rowKey}`}

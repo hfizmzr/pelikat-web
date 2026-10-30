@@ -61,87 +61,85 @@ function surfaceEvent(theme_preset_id: string | null, theme_config: unknown) {
 }
 
 describe('getSurfaceTheme', () => {
-  it('null presets AND null config → BOTH nulls, zero DB queries (spy)', async () => {
+  it('null presets AND null config → null, zero DB queries (spy)', async () => {
     const client = fakeSupabase(null)
     const result = await getSurfaceTheme(surfaceEvent(null, null), client)
-    expect(result.resolved).toBeNull()
-    expect(result.labels).toBeNull()
+    expect(result).toBeNull()
     expect(client.queryCalls).toBe(0)
   })
 
-  it('hostile non-object config (no preset id) → nulls platform-defaults fast path, zero queries, never throws', async () => {
+  it('hostile non-object config (no preset id) → null platform-defaults fast path, zero queries, never throws', async () => {
     const client = fakeSupabase(null)
     for (const cfg of [42, 'x', [], new Map()]) {
       const result = await getSurfaceTheme(surfaceEvent(null, cfg), client)
-      expect(result.resolved).toBeNull()
-      expect(result.labels).toBeNull()
+      expect(result).toBeNull()
     }
     expect(client.queryCalls).toBe(0)
   })
 
   it('empty-object config {} (no preset id) → non-null platform ResolvedTheme + fallback labels, zero queries', async () => {
     const client = fakeSupabase(null)
-    const result = await getSurfaceTheme(surfaceEvent(null, {}), client)
-    // {} IS a plain object → the null-null fast path does NOT fire, but a
+    const resolved = await getSurfaceTheme(surfaceEvent(null, {}), client)
+    // {} IS a plain object → the null fast path does NOT fire, but a
     // preset-less empty config contributes nothing: full platform resolution
-    // (never nulls), the complete fallback label map, and still zero DB access.
-    expect(result.resolved).not.toBeNull()
-    expect(result.resolved?.primary.light).toBe(PLATFORM.primaryLight)
-    expect(result.resolved?.primary.dark).toBe(PLATFORM.primaryDark)
-    expect(Object.keys(result.labels!).sort()).toEqual([...LABEL_KEYS].sort())
-    expect(result.labels?.bib_label).toBe('Bib Number')
-    expect(result.labels?.medal_label).toBe('Medal')
-    expect(result.labels?.run_label).toBe('Run')
+    // (never null), the complete fallback label map, and still zero DB access.
+    expect(resolved).not.toBeNull()
+    expect(resolved?.primary.light).toBe(PLATFORM.primaryLight)
+    expect(resolved?.primary.dark).toBe(PLATFORM.primaryDark)
+    const labels = resolved?.labels
+    expect(Object.keys(labels!).sort()).toEqual([...LABEL_KEYS].sort())
+    expect(labels?.bib_label).toBe('Bib Number')
+    expect(labels?.medal_label).toBe('Medal')
+    expect(labels?.run_label).toBe('Run')
     expect(client.queryCalls).toBe(0)
   })
 
   it('preset row → resolved + full 6-label map (override wins, fallbacks fill)', async () => {
     const client = fakeSupabase({ id: PRESET_ID, tokens: BATIK })
-    const result = await getSurfaceTheme(
+    const resolved = await getSurfaceTheme(
       surfaceEvent(PRESET_ID, { vocabulary: { bib_label: 'Nombor Larian' } }),
       client,
     )
-    expect(result.resolved).not.toBeNull()
-    expect(result.labels).toEqual(result.resolved?.labels)
+    expect(resolved).not.toBeNull()
     // all six keys present, plain strings
-    expect(Object.keys(result.labels!).sort()).toEqual([...LABEL_KEYS].sort())
-    expect(result.labels?.bib_label).toBe('Nombor Larian')
-    expect(result.labels?.medal_label).toBe('Pingat')
+    expect(Object.keys(resolved!.labels).sort()).toEqual([...LABEL_KEYS].sort())
+    expect(resolved?.labels.bib_label).toBe('Nombor Larian')
+    expect(resolved?.labels.medal_label).toBe('Pingat')
     // platform fallbacks for keys the preset does not set
-    expect(result.labels?.checkpoint_label).toBe('Checkpoint')
-    expect(result.labels?.run_label).toBe('Run')
-    expect(result.labels?.participant_label).toBe('Participant')
-    expect(result.labels?.certificate_label).toBe('Certificate')
+    expect(resolved?.labels.checkpoint_label).toBe('Checkpoint')
+    expect(resolved?.labels.run_label).toBe('Run')
+    expect(resolved?.labels.participant_label).toBe('Participant')
+    expect(resolved?.labels.certificate_label).toBe('Certificate')
     // themed color flowed through (fgDark = DARK_FG constant, not derived)
-    expect(result.resolved?.primary.light).toBe(oklchToString(hexToOklch('#9C4A1A')))
-    expect(result.resolved?.primary.fgDark).toBe('oklch(0.145 0 0)')
+    expect(resolved?.primary.light).toBe(oklchToString(hexToOklch('#9C4A1A')))
+    expect(resolved?.primary.fgDark).toBe('oklch(0.145 0 0)')
   })
 
   it('degraded config (with preset) → resolved-with-platform tokens + labels fallback map, never throws', async () => {
     const client = fakeSupabase({ id: PRESET_ID, tokens: BATIK })
-    const result = await getSurfaceTheme(
+    const resolved = await getSurfaceTheme(
       surfaceEvent(PRESET_ID, { colors: { primary: 'not-a-hex' }, vocabulary: { bib_label: 42 } }),
       client,
     )
     // degraded color host-side → platform tokens, still a full resolution
-    expect(result.resolved?.primary.light).toBe(PLATFORM.primaryLight)
-    expect(result.resolved?.primary.dark).toBe(PLATFORM.primaryDark)
-    expect(result.resolved?.warnings.some((w) => w.includes('colors.primary'))).toBe(true)
-    // labels degrade to the fallback map — never nulls while resolution succeeds
-    expect(Object.keys(result.labels!).sort()).toEqual([...LABEL_KEYS].sort())
-    expect(result.labels?.bib_label).toBe('Bib Number')
-    expect(result.labels?.medal_label).toBe('Pingat') // preset vocab survives
+    expect(resolved?.primary.light).toBe(PLATFORM.primaryLight)
+    expect(resolved?.primary.dark).toBe(PLATFORM.primaryDark)
+    expect(resolved?.warnings.some((w) => w.includes('colors.primary'))).toBe(true)
+    // labels degrade to the fallback map — never null while resolution succeeds
+    expect(Object.keys(resolved!.labels).sort()).toEqual([...LABEL_KEYS].sort())
+    expect(resolved?.labels.bib_label).toBe('Bib Number')
+    expect(resolved?.labels.medal_label).toBe('Pingat') // preset vocab survives
   })
 
   it('client failure (preset query throws) → resolved degrades inside getResolvedTheme; labels never null', async () => {
     const client = fakeSupabase(null, new Error('boom'))
-    const result = await getSurfaceTheme(surfaceEvent(PRESET_ID, null), client)
-    expect(result.resolved?.primary.light).toBe(PLATFORM.primaryLight)
-    expect(result.labels?.bib_label).toBe('Bib Number')
-    expect(result.resolved?.warnings.length).toBeGreaterThan(0)
+    const resolved = await getSurfaceTheme(surfaceEvent(PRESET_ID, null), client)
+    expect(resolved?.primary.light).toBe(PLATFORM.primaryLight)
+    expect(resolved?.labels.bib_label).toBe('Bib Number')
+    expect(resolved?.warnings.length).toBeGreaterThan(0)
   })
 
-  it('full-surface fuzz: hostile event inputs never throw', async () => {
+  it('full-surface fuzz: hostile event inputs never throw, always full resolution', async () => {
     const garbage: { id: string; theme_preset_id: string | null; theme_config: unknown }[] = [
       surfaceEvent(PRESET_ID, null),
       surfaceEvent(PRESET_ID, [null]),
@@ -151,7 +149,7 @@ describe('getSurfaceTheme', () => {
     ]
     for (const ev of garbage) {
       await expect(getSurfaceTheme(ev, fakeSupabase(null))).resolves.toMatchObject({
-        resolved: expect.anything(),
+        primary: expect.anything(),
         labels: expect.anything(),
       })
     }

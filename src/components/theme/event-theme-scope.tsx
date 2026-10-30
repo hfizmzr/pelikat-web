@@ -16,19 +16,13 @@
 import type { ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getResolvedTheme, type EventThemeInput } from '@/lib/theme/resolve'
+import { hasThemeInput } from '@/lib/theme/surface'
 import { buildStyleVars, buildFontFace } from '@/lib/theme/css'
-import { isPlainObject } from '@/lib/theme/utils'
 import { storageAssetUrl } from '@/lib/theme/assets'
 import { ThemedImage, THEME_ASPECTS } from '@/components/theme/themed-image'
 
 /** Event row subset the scope consumes — `id` drives the font family + var bindings. */
 type EventWithTheme = EventThemeInput & { id: string }
-
-/** No-theme predicate: no preset reference AND no (non-empty) override config. */
-function hasTheme(event: EventWithTheme): boolean {
-  if (typeof event.theme_preset_id === 'string' && event.theme_preset_id.length > 0) return true
-  return isPlainObject(event.theme_config) && Object.keys(event.theme_config).length > 0
-}
 
 export async function EventThemeScope({
   event,
@@ -44,7 +38,7 @@ export async function EventThemeScope({
    * unaffected — the early return happens before this prop is ever consulted). */
   showAssets?: boolean
 }) {
-  if (!hasTheme(event)) return <>{children}</>
+  if (!hasThemeInput(event.theme_preset_id, event.theme_config)) return <>{children}</>
 
   // getResolvedTheme never throws — any failure degrades to the platform
   // theme (spec §5.5), so the wrapper always carries valid oklch vars.

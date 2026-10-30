@@ -71,7 +71,8 @@ function sanitizeHtmlMarkup(input: string): string {
   return withoutTags.replace(/[<>]/g, '')
 }
 
-/** Platform fallback for a key; unknown keys → '' (ignored). */
+/** Platform fallback for a key; unknown keys → '' (kept: tests pin the
+ * unknown-key contract for this exported helper). */
 export function fallbackLabel(key: string): string {
   return (LABEL_KEYS as readonly string[]).includes(key)
     ? FALLBACKS[key as LabelKey]
@@ -87,7 +88,7 @@ export function resolveLabels(raw: Record<string, string> | null): Record<LabelK
   for (const key of LABEL_KEYS) {
     const value = raw?.[key]
     const clean = typeof value === 'string' ? sanitizeLabel(value) : ''
-    out[key] = clean.length > 0 ? clean : fallbackLabel(key)
+    out[key] = clean.length > 0 ? clean : FALLBACKS[key]
   }
   return out
 }

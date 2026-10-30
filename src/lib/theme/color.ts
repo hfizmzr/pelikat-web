@@ -123,6 +123,25 @@ export function pickForeground(fill: string): string {
   return DARK_FOREGROUND
 }
 
+/**
+ * Ruling #10 (P2 Task 5) — light-mode `-foreground` companion ratio for a HEX
+ * fill: the fill paired with its computed companion `pickForeground(fill)`.
+ * A WHITE pick passes by construction (pickForeground returns white only when
+ * it reaches ≥4.5:1). A dark pick (`oklch(0.145 0 0)`) is unparseable by
+ * HEX-only contrastRatio (it would silently return 1), so measure the fill's
+ * WCAG luminance against the dark-fg constant's EXACT luminance: a neutral
+ * OKLab gray's linear channel — hence its relative luminance — is L³ = 0.145³.
+ */
+const DARK_FOREGROUND_LUMINANCE = 0.145 ** 3
+
+export function companionRatio(fill: string): number {
+  if (pickForeground(fill) === WHITE) return contrastRatio(fill, WHITE)
+  const y = relativeLuminance(fill)
+  const hi = Math.max(y, DARK_FOREGROUND_LUMINANCE)
+  const lo = Math.min(y, DARK_FOREGROUND_LUMINANCE)
+  return (hi + 0.05) / (lo + 0.05)
+}
+
 // Platform dark heuristic (spec §5.2 / globals.css light→dark): same hue,
 // L clamped to [0.68, 0.82], chroma ×0.85 capped at 0.20.
 const DARK_L_MIN = 0.68

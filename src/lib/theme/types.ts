@@ -17,6 +17,29 @@ export type LabelKey =
   | 'certificate_label'
 
 /**
+ * The token-JSONB key sets (Global Constraints / 076 validator) — the ONE
+ * const source, consumed by validate.ts, resolve.ts and draft.ts (previous
+ * per-module copies deleted). labels.ts still owns `vocabulary`'s LABEL_KEYS.
+ */
+export const SECTION_KEYS = ['colors', 'typography', 'assets', 'vocabulary', 'meta'] as const
+export const COLOR_KEYS = [
+  'primary',
+  'secondary',
+  'accent',
+  'background',
+  'foreground',
+  'ring',
+] as const
+export const TYPOGRAPHY_KEYS = ['heading_font_url', 'body_font_url'] as const
+export const ASSET_KEYS = [
+  'banner_url',
+  'logo_url',
+  'badge_icon_url',
+  'certificate_background_url',
+] as const
+export const META_KEYS = ['version'] as const
+
+/**
  * §4.2 token contract (JSONB, `meta.version: 1`).
  *
  * The DB validator (`validate_theme_tokens(tokens, true)`, Task 1) enforces
