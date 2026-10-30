@@ -143,7 +143,7 @@ export default async function OrganizerEventRepcPage({
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <Link href={`/organizer/events/${event.id}`}>
