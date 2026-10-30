@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/hooks/use-auth'
 import { createClient } from '@/lib/supabase/client'
+import { getInitials } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,16 +15,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { LogOut, Repeat2, User, Settings } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-
-function getInitials(name: string | null | undefined) {
-  if (!name) return 'U'
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
 
 export function UserMenu() {
   const supabase = createClient()

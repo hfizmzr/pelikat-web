@@ -295,9 +295,11 @@ describe('Polish: E-Certificates & Re-Registration (Phase 5)', () => {
 
     const button = read('src', 'components', 'gamification', 'certificate-download.tsx')
     expect(button).toContain('Download Certificate')
+    // The flow lives in the shared component; check the popup behavior there.
+    const flow = read('src', 'components', 'gamification', 'cert-download-button.tsx')
     // popup opens synchronously in the click handler, not after the await
-    expect(button).toContain("window.open('', '_blank'")
-    expect(button).toContain('setFallbackUrl')
+    expect(flow).toContain("window.open('', '_blank'")
+    expect(flow).toContain('setFallbackUrl')
   })
 
   it('run-log badge toast links fresh certs after award (UC14)', () => {

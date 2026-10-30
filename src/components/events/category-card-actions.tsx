@@ -23,15 +23,9 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Pencil, Trash2, Loader2 } from 'lucide-react'
 import { updateCategory, deleteCategory } from '@/components/events/actions'
+import { CategoryFormFields } from '@/components/events/category-form-fields'
 
 interface Category {
   id: string
@@ -134,111 +128,13 @@ export function CategoryCardActions({ category, eventId }: CategoryCardActionsPr
           </DialogHeader>
 
           <form onSubmit={handleEdit} className="space-y-4 mt-2">
-            {/* Name */}
-            <div className="grid gap-1.5">
-              <Label htmlFor={`edit-name-${category.id}`}>Category Name *</Label>
-              <Input
-                id={`edit-name-${category.id}`}
-                name="name"
-                defaultValue={category.name}
-                required
-                disabled={isUpdating}
-              />
-            </div>
-
-            {/* Gender + BIB Prefix */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-1.5">
-                <Label>Gender</Label>
-                <Select value={gender} onValueChange={setGender} disabled={isUpdating}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Open" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Mixed">Mixed / Open</SelectItem>
-                    <SelectItem value="M">Male</SelectItem>
-                    <SelectItem value="F">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor={`edit-bib-prefix-${category.id}`}>BIB Prefix</Label>
-                <Input
-                  id={`edit-bib-prefix-${category.id}`}
-                  name="bib_prefix"
-                  defaultValue={category.bib_prefix ?? ''}
-                  maxLength={5}
-                  disabled={isUpdating}
-                />
-              </div>
-            </div>
-
-            {/* Age range */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-1.5">
-                <Label htmlFor={`edit-min-age-${category.id}`}>Min Age</Label>
-                <Input
-                  id={`edit-min-age-${category.id}`}
-                  name="min_age"
-                  type="number"
-                  min={0}
-                  max={120}
-                  defaultValue={category.min_age ?? ''}
-                  disabled={isUpdating}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor={`edit-max-age-${category.id}`}>Max Age</Label>
-                <Input
-                  id={`edit-max-age-${category.id}`}
-                  name="max_age"
-                  type="number"
-                  min={0}
-                  max={120}
-                  defaultValue={category.max_age ?? ''}
-                  disabled={isUpdating}
-                />
-              </div>
-            </div>
-
-            {/* Price + Max Slots + BIB Start */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-1.5">
-                <Label htmlFor={`edit-price-${category.id}`}>Price (RM)</Label>
-                <Input
-                  id={`edit-price-${category.id}`}
-                  name="price"
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  defaultValue={category.price ?? 0}
-                  disabled={isUpdating}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor={`edit-max-slots-${category.id}`}>Max Slots</Label>
-                <Input
-                  id={`edit-max-slots-${category.id}`}
-                  name="max_slots"
-                  type="number"
-                  min={1}
-                  defaultValue={category.max_slots ?? ''}
-                  placeholder="Unlimited"
-                  disabled={isUpdating}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor={`edit-bib-start-${category.id}`}>BIB Start</Label>
-                <Input
-                  id={`edit-bib-start-${category.id}`}
-                  name="bib_start"
-                  type="number"
-                  min={1}
-                  defaultValue={category.bib_start ?? 1}
-                  disabled={isUpdating}
-                />
-              </div>
-            </div>
+            <CategoryFormFields
+              idPrefix={`edit-${category.id}`}
+              values={category}
+              gender={gender}
+              onGenderChange={setGender}
+              disabled={isUpdating}
+            />
 
             {editError && (
               <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">

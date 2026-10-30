@@ -5,6 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/** Two-letter display initials ("Maya Ling" → "ML"); null/empty → "U". */
+export function getInitials(name: string | null | undefined) {
+  if (!name) return 'U'
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
 /** Quote+escape a single CSV cell (RFC 4180 style — quotes doubled). */
 const csvCell = (value: unknown) => `"${String(value).replace(/"/g, '""')}"`
 

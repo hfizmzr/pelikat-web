@@ -8,7 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ArrowUpDown, CircleCheck, Inbox, Trash2, UserSearch, X } from "lucide-react"
+import { CircleCheck, Inbox, Trash2, UserSearch, X } from "lucide-react"
+import { getInitials, INITIALS_COLORS, ITEMS_PER_PAGE, TableSortHeader, TablePagination } from './table-shared'
 import type { Organizer } from './types'
 
 interface ApplicantTableProps {
@@ -22,46 +23,8 @@ interface ApplicantTableProps {
 type SortKey = 'name' | 'contact_email' | 'created_at'
 type SortDirection = 'asc' | 'desc'
 
-const ITEMS_PER_PAGE = 25
-
 // ─── Obsidian Velocity applicant color palette ───────────────────────────────
-const APPLICANT_COLORS = [
-  { bg: 'bg-primary/20', text: 'text-primary' },
-  { bg: 'bg-success/20', text: 'text-success' },
-  { bg: 'bg-primary/20', text: 'text-primary' },
-  { bg: 'bg-red-500/10 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
-]
-
-function getInitials(name: string) {
-  return name
-    .split(' ')
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
-
-function SortHeader({
-  label,
-  sortKeyVal,
-  onSort,
-}: {
-  label: string
-  sortKeyVal: SortKey
-  onSort: (key: SortKey) => void
-}) {
-  return (
-    <th className="py-3 px-4">
-      <button
-        className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-muted-foreground transition-colors font-inter"
-        onClick={() => onSort(sortKeyVal)}
-      >
-        {label}
-        <ArrowUpDown className="h-3 w-3 opacity-60" />
-      </button>
-    </th>
-  )
-}
+const APPLICANT_COLORS = INITIALS_COLORS
 
 export function ApplicantTable({
   applicants,
@@ -212,9 +175,9 @@ export function ApplicantTable({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-border/30">
-              <SortHeader label="Applicant" sortKeyVal="name" onSort={handleSort} />
-              <SortHeader label="Email" sortKeyVal="contact_email" onSort={handleSort} />
-              <SortHeader label="Applied" sortKeyVal="created_at" onSort={handleSort} />
+              <TableSortHeader label="Applicant" onSort={() => handleSort("name")} />
+              <TableSortHeader label="Email" onSort={() => handleSort("contact_email")} />
+              <TableSortHeader label="Applied" onSort={() => handleSort("created_at")} />
               <th className="py-3 px-4 text-right">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Actions</span>
               </th>
@@ -292,39 +255,20 @@ export function ApplicantTable({
       </div>
 
       {/* ── Pagination ────────────────────────────────────────────────── */}
-      {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-          <p className="text-[12px] text-muted-foreground font-inter">
-            Showing{' '}
-            <span className="text-foreground font-semibold">
-              {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-              {Math.min(currentPage * ITEMS_PER_PAGE, sortedApplicants.length)}
-            </span>{' '}
-            of{' '}
-            <span className="text-foreground font-semibold">{sortedApplicants.length}</span>{' '}
-            applicants
-          </p>
-          <div className="flex items-center gap-1">
-            <button
-              className="px-3 py-1.5 rounded-lg bg-card hover:bg-accent text-muted-foreground text-[12px] transition-colors border border-border/30 disabled:opacity-40 disabled:cursor-not-allowed font-inter"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-            >
-              Previous
-            </button>
-            <span className="px-3 text-[12px] text-muted-foreground font-inter">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              className="px-3 py-1.5 rounded-lg bg-card hover:bg-accent text-muted-foreground text-[12px] transition-colors border border-border/30 disabled:opacity-40 disabled:cursor-not-allowed font-inter"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      <TablePagination
+        rankedTotal={sortedApplicants.length}
+        total={sortedApplicants.length}
+        noun="applicants"
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPrev={() => setCurrentPage(currentPage - 1)}
+        onNext={() => setCurrentPage(currentPage + 1)}
+        middle={
+          <span className="px-3 text-[12px] text-muted-foreground font-inter">
+            Page {currentPage} of {totalPages}
+          </span>
+        }
+      />
     </div>
   )
 }
