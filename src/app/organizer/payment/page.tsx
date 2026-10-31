@@ -38,6 +38,19 @@ export default function OrganizerPaymentPage() {
   } | null>(null)
 
   useEffect(() => {
+    let cancelled = false
+
+    async function subExpiryActive(): Promise<boolean> {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user?.app_metadata?.organizer_id) return false
+      const { data } = await supabase
+        .from('organizers')
+        .select('sub_expires_at')
+        .eq('id', user.app_metadata.organizer_id)
+        .single()
+      return !!data?.sub_expires_at && new Date(data.sub_expires_at) > new Date()
+    }
+
     async function loadOrganizer() {
       const { data: { user } } = await supabase.auth.getUser()
 
@@ -71,20 +84,36 @@ export default function OrganizerPaymentPage() {
 
       if (data) {
         setOrganizer(data)
-        // Returning from the HitPay hosted checkout: the signed webhook
-        // (not the redirect) extends sub_expires_at server-side. Show
-        // success only when the server-confirmed expiry is in the future.
-        if (
-          data.sub_expires_at &&
-          new Date(data.sub_expires_at) > new Date()
-        ) {
-          setSuccess(true)
-        }
       }
       setLoading(false)
+
+      // Returning from the HitPay hosted checkout: the signed webhook (not
+      // the redirect) extends sub_expires_at server-side. Show success only
+      // when the server-confirmed expiry is in the future. One mount read
+      // races the webhook, so poll briefly (same pattern as the runner
+      // payment page) — stop on success, cap ~30s. Errors after success
+      // are moot: nothing flips success back to false.
+      let alreadyActive =
+        !!data?.sub_expires_at && new Date(data.sub_expires_at) > new Date()
+      if (alreadyActive) {
+        setSuccess(true)
+        return
+      }
+      for (let i = 0; i < 10; i++) {
+        await new Promise((r) => setTimeout(r, 3000))
+        if (cancelled) return
+        alreadyActive = await subExpiryActive()
+        if (alreadyActive) {
+          setSuccess(true)
+          return
+        }
+      }
     }
 
     loadOrganizer()
+    return () => {
+      cancelled = true
+    }
   }, [router, supabase])
 
   const handlePayment = async () => {
