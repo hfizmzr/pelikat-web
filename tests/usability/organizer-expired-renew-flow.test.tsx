@@ -12,14 +12,12 @@ vi.mock('@/lib/supabase/client', () => ({
   createClient: () => ({
     auth: {
       getUser: async () => {
-        console.log('DBG role=', window.__orgTestRole, 'path=', window.__orgTestPathname)
         return {
           data: { user: { id: 'u-1', app_metadata: { role: window.__orgTestRole } } },
         }
       },
     },
     from: (table: string) => {
-      console.log('DBG from', table, 'path=', window.__orgTestPathname)
       return {
         select: () => ({
           eq: () => ({
@@ -93,19 +91,15 @@ describe('organizer layout routing guards', () => {
     renderLayout('/organizer/payment', 'expired', {
       sub_expires_at: '2026-10-26T00:00:00Z',
     })
-    await waitFor(() => expect(push).toBeDefined())
     await settle()
-    expect(push).not.toHaveBeenCalledWith('/organizer/subscription-expired')
-    expect(push).not.toHaveBeenCalledWith('/organizer/payment')
+    expect(push).not.toHaveBeenCalled()
   })
 
   it('expired organizer elsewhere still bounces to subscription-expired', async () => {
     renderLayout('/organizer/events', 'expired', {
       sub_expires_at: '2026-10-26T00:00:00Z',
     })
-    await waitFor(() => expect(push).toBeDefined())
-    await settle()
-    expect(push).toHaveBeenCalledWith('/organizer/subscription-expired')
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/organizer/subscription-expired'))
   })
 
   it('first-sub organizer (sub NULL) on non-payment hub gets pushed to payment', async () => {
