@@ -40,7 +40,10 @@ export default function OrganizerLayout({
       const role = getUserRole(user)
 
       if (role === 'expired') {
-        if (!pathname.startsWith('/organizer/subscription-expired')) {
+        if (
+          !pathname.startsWith('/organizer/subscription-expired') &&
+          !pathname.startsWith('/organizer/payment')
+        ) {
           router.push('/organizer/subscription-expired')
         }
         return
