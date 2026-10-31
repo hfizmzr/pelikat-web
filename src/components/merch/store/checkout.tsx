@@ -86,7 +86,12 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
         router.refresh()
         return
       }
-      router.push(result.data.redirectUrl)
+      // Items are now reserved in the pending order — the cart's job is
+      // done. HitPay hosted checkout is off-app: full navigation (never a
+      // client-side route). Confirmation is webhook-driven; the redirect
+      // back lands on the order details page.
+      cart.clear()
+      window.location.href = result.data.checkoutUrl
     })
   }
 

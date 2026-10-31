@@ -126,7 +126,6 @@ export default async function RunnerMerchOrderPage({
               orderId={order.id}
               eventId={order.event_id}
               expiresAt={order.expires_at}
-              method={order.payment_method}
             />
           )}
 
