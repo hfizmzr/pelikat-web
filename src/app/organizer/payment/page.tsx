@@ -28,6 +28,7 @@ export default function OrganizerPaymentPage() {
   const [organizer, setOrganizer] = useState<Organizer | null>(null)
   const [isPaying, setIsPaying] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [starting, setStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   // DB-configured single-tier price (public config endpoint, always fresh).
@@ -38,6 +39,19 @@ export default function OrganizerPaymentPage() {
   } | null>(null)
 
   useEffect(() => {
+    let cancelled = false
+
+    async function subExpiryActive(): Promise<boolean> {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user?.app_metadata?.organizer_id) return false
+      const { data } = await supabase
+        .from('organizers')
+        .select('sub_expires_at')
+        .eq('id', user.app_metadata.organizer_id)
+        .single()
+      return !!data?.sub_expires_at && new Date(data.sub_expires_at) > new Date()
+    }
+
     async function loadOrganizer() {
       const { data: { user } } = await supabase.auth.getUser()
 
@@ -71,20 +85,36 @@ export default function OrganizerPaymentPage() {
 
       if (data) {
         setOrganizer(data)
-        // Returning from the HitPay hosted checkout: the signed webhook
-        // (not the redirect) extends sub_expires_at server-side. Show
-        // success only when the server-confirmed expiry is in the future.
-        if (
-          data.sub_expires_at &&
-          new Date(data.sub_expires_at) > new Date()
-        ) {
-          setSuccess(true)
-        }
       }
       setLoading(false)
+
+      // Returning from the HitPay hosted checkout: the signed webhook (not
+      // the redirect) extends sub_expires_at server-side. Show success only
+      // when the server-confirmed expiry is in the future. One mount read
+      // races the webhook, so poll briefly (same pattern as the runner
+      // payment page) — stop on success, cap ~30s. Errors after success
+      // are moot: nothing flips success back to false.
+      let alreadyActive =
+        !!data?.sub_expires_at && new Date(data.sub_expires_at) > new Date()
+      if (alreadyActive) {
+        setSuccess(true)
+        return
+      }
+      for (let i = 0; i < 10; i++) {
+        await new Promise((r) => setTimeout(r, 3000))
+        if (cancelled) return
+        alreadyActive = await subExpiryActive()
+        if (alreadyActive) {
+          setSuccess(true)
+          return
+        }
+      }
     }
 
     loadOrganizer()
+    return () => {
+      cancelled = true
+    }
   }, [router, supabase])
 
   const handlePayment = async () => {
@@ -177,6 +207,22 @@ export default function OrganizerPaymentPage() {
     setIsPaying(false)
   }
 
+  // Post-renewal: the access-token hook re-stamps the role from the DB on
+  // refresh, so navigate to the dashboard only once the session no longer
+  // carries the stale `expired` claim (which would redirect right back).
+  const goToDashboard = async () => {
+    if (starting) return
+    setStarting(true)
+    const { error: refreshError } = await supabase.auth.refreshSession()
+    if (refreshError) {
+      setError(refreshError.message)
+      setStarting(false)
+      return
+    }
+    router.push('/organizer')
+    router.refresh()
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-muted/30">
@@ -230,8 +276,17 @@ export default function OrganizerPaymentPage() {
                 </span>
               </div>
             </div>
-            <Button className="w-full" onClick={() => router.push('/organizer')}>
-              Go to Dashboard
+            {error && (
+              <div className="rounded-md bg-destructive/10 border border-destructive/30 px-3 py-2 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+            <Button
+              className="w-full"
+              onClick={goToDashboard}
+              disabled={starting}
+            >
+              {starting ? 'Starting…' : 'Go to Dashboard'}
             </Button>
           </CardContent>
         </Card>

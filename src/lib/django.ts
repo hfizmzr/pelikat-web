@@ -39,9 +39,18 @@ export async function fetchDjangoApi(endpoint: string, options: RequestInit = {}
     ...options.headers,
   };
 
+  // Bounded timeout for every Django call (notably POST /payments/create,
+  // which fronts an outbound HitPay request): if Django accepts the request
+  // but never answers, the fetch aborts and the caller's normal failure path
+  // runs (e.g. startMerchCheckout surfaces the reserved orderId) instead of
+  // hanging until the platform timeout. Kept SHORTER than the api-side 20s
+  // HitPay outbound window so the web request never outlives the worker.
+  const DJANGO_FETCH_TIMEOUT_MS = 15_000
+
   const response = await fetch(`${djangoUrl}${endpoint}`, {
     ...options,
     headers,
+    signal: AbortSignal.timeout(DJANGO_FETCH_TIMEOUT_MS),
   });
 
   if (!response.ok) {

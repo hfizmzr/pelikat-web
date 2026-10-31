@@ -8,7 +8,10 @@ import { MERCH_IMAGE_BUCKET, type MerchOrderStatus } from '@/lib/merch'
 // from Server Actions in production, and these messages are meant for the organizer.
 export type MerchActionResult<T = undefined> =
   | { ok: true; data: T }
-  | { ok: false; error: string }
+  // `orderId` is only set where the failure hides an order that
+  // merch_checkout already reserved (startMerchCheckout): the caller must
+  // route to that order instead of starting a second checkout.
+  | { ok: false; error: string; orderId?: string }
 
 export type MerchVariantInput = {
   id?: string

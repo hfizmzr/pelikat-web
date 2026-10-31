@@ -1,11 +1,11 @@
 'use client'
 
 import { CircleAlert, Lock, Timer, TimerOff } from "lucide-react"
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { cancelMerchCheckout } from '@/components/merch/store-actions'
-import type { MerchPaymentMethod } from '@/lib/merch'
+import { createClient } from '@/lib/supabase/client'
+import { cancelMerchCheckout, resumeMerchCheckout } from '@/components/merch/store-actions'
 import { ReservationCountdown, useReservationTimer } from './reservation-countdown'
 import { Notice } from './store-ui'
 
@@ -13,17 +13,50 @@ export function PendingOrderActions({
   orderId,
   eventId,
   expiresAt,
-  method,
 }: {
   orderId: string
   eventId: string
   expiresAt: string | null
-  method: MerchPaymentMethod | null
 }) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const { expired } = useReservationTimer(expiresAt)
+
+  // HitPay can return the runner before the webhook confirms payment, and
+  // the order page read the status once server-side. While the order is
+  // still pending, keep watching the authoritative merch_orders row and
+  // re-render when it leaves pending (same pattern as the runner payment
+  // page). The status is never flipped locally, and the watch is capped
+  // at 10 tries × 3 s so it never polls forever.
+  useEffect(() => {
+    const supabase = createClient()
+    let attempts = 0
+    let inFlight = false
+
+    const poll = window.setInterval(async () => {
+      if (inFlight) return
+      if (attempts >= 10) {
+        window.clearInterval(poll)
+        return
+      }
+      attempts += 1
+      inFlight = true
+      const { data: order } = await supabase
+        .from('merch_orders')
+        .select('status')
+        .eq('id', orderId)
+        .maybeSingle()
+      inFlight = false
+      const next = (order as { status?: string } | null)?.status
+      if (next && next !== 'pending') {
+        window.clearInterval(poll)
+        router.refresh()
+      }
+    }, 3000)
+
+    return () => window.clearInterval(poll)
+  }, [orderId, router])
 
   function cancel() {
     setError(null)
@@ -46,6 +79,19 @@ export function PendingOrderActions({
     )
   }
 
+  function resume() {
+    setError(null)
+    startTransition(async () => {
+      const result = await resumeMerchCheckout(orderId)
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      // HitPay hosted checkout is off-app: full navigation.
+      window.location.href = result.data.checkoutUrl
+    })
+  }
+
   return (
     <div className="flex flex-col gap-3">
       {expiresAt && (
@@ -58,13 +104,15 @@ export function PendingOrderActions({
           {error}
         </Notice>
       )}
-      <Link
-        href={`/runner/merch/pay/${orderId}${method ? `?method=${method}` : ''}`}
-        className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2"
+      <button
+        type="button"
+        onClick={resume}
+        disabled={isPending}
+        className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-40"
       >
         <Lock className="size-[18px]" />
         Continue to payment
-      </Link>
+      </button>
       <button
         type="button"
         onClick={cancel}

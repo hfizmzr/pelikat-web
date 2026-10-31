@@ -79,9 +79,9 @@ export async function PATCH(request: Request) {
           { status: 400 }
         )
       }
-      if (!Number.isInteger(durationDays) || durationDays < 1) {
+      if (!Number.isInteger(durationDays) || durationDays < 1 || durationDays > 3650) {
         return NextResponse.json(
-          { success: false, error: 'Subscription duration must be a whole number of days (at least 1)' },
+          { success: false, error: 'Subscription duration must be a whole number of days from 1 to 3650' },
           { status: 400 }
         )
       }

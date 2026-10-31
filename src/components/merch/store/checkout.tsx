@@ -83,10 +83,23 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
       })
       if (!result.ok) {
         setError(result.error)
+        if (result.orderId) {
+          // The payment-request POST failed, but merch_checkout already
+          // reserved stock in this pending order — the cart must not
+          // start a second checkout. Resume the SAME order from its order
+          // page ("Continue to payment" there calls resumeMerchCheckout).
+          cart.clear()
+          router.push(`/runner/merch/orders/${result.orderId}`)
+        }
         router.refresh()
         return
       }
-      router.push(result.data.redirectUrl)
+      // Items are now reserved in the pending order — the cart's job is
+      // done. HitPay hosted checkout is off-app: full navigation (never a
+      // client-side route). Confirmation is webhook-driven; the redirect
+      // back lands on the order details page.
+      cart.clear()
+      window.location.href = result.data.checkoutUrl
     })
   }
 
