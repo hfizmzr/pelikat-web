@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { AlertCircle, Mail, LogOut, Loader2 } from 'lucide-react'
+import { AlertCircle, Mail, LogOut, Loader2, CreditCard } from 'lucide-react'
 
 interface Organizer {
   id: string
@@ -102,15 +103,22 @@ export default function SubscriptionExpiredPage() {
 
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">
-              To renew your subscription, please contact the platform admin.
+              Renew your subscription below to restore workspace access. If you
+              have any payment issues, contact the admin.
             </p>
           </div>
 
           <div className="flex flex-col gap-3">
             <Button asChild size="lg">
+              <Link href="/organizer/payment">
+                <CreditCard className="mr-2 h-4 w-4" />
+                Renew Subscription
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
               <a href={mailtoLink}>
                 <Mail className="mr-2 h-4 w-4" />
-                Email Admin
+                Email Admin Instead
               </a>
             </Button>
             <Button variant="outline" onClick={handleSignOut}>
