@@ -104,8 +104,10 @@ export async function startMerchCheckout(
     return { ok: true, data: { orderId: order.order_id, checkoutUrl } }
   } catch (e) {
     console.error('merch HitPay checkout failed:', e)
-    // The order stays pending; the runner can retry from their order page
-    return { ok: false, error: checkoutError(e) }
+    // merch_checkout already reserved stock in this pending order — carry
+    // its id so the retry routes to that order and resumes payment for
+    // it (resumeMerchCheckout never creates a second order).
+    return { ok: false, error: checkoutError(e), orderId: order.order_id }
   }
 }
 

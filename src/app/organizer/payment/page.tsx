@@ -28,6 +28,7 @@ export default function OrganizerPaymentPage() {
   const [organizer, setOrganizer] = useState<Organizer | null>(null)
   const [isPaying, setIsPaying] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [starting, setStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   // DB-configured single-tier price (public config endpoint, always fresh).
@@ -206,6 +207,17 @@ export default function OrganizerPaymentPage() {
     setIsPaying(false)
   }
 
+  // Post-renewal: the access-token hook re-stamps the role from the DB on
+  // refresh, so navigate to the dashboard only once the session no longer
+  // carries the stale `expired` claim (which would redirect right back).
+  const goToDashboard = async () => {
+    if (starting) return
+    setStarting(true)
+    await supabase.auth.refreshSession()
+    router.push('/organizer')
+    router.refresh()
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-muted/30">
@@ -259,8 +271,12 @@ export default function OrganizerPaymentPage() {
                 </span>
               </div>
             </div>
-            <Button className="w-full" onClick={() => router.push('/organizer')}>
-              Go to Dashboard
+            <Button
+              className="w-full"
+              onClick={goToDashboard}
+              disabled={starting}
+            >
+              {starting ? 'Starting…' : 'Go to Dashboard'}
             </Button>
           </CardContent>
         </Card>

@@ -1,9 +1,10 @@
 'use client'
 
 import { CircleAlert, Lock, Timer, TimerOff } from "lucide-react"
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { cancelMerchCheckout, resumeMerchCheckout } from '@/components/merch/store-actions'
 import { ReservationCountdown, useReservationTimer } from './reservation-countdown'
 import { Notice } from './store-ui'
@@ -21,6 +22,41 @@ export function PendingOrderActions({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const { expired } = useReservationTimer(expiresAt)
+
+  // HitPay can return the runner before the webhook confirms payment, and
+  // the order page read the status once server-side. While the order is
+  // still pending, keep watching the authoritative merch_orders row and
+  // re-render when it leaves pending (same pattern as the runner payment
+  // page). The status is never flipped locally, and the watch is capped
+  // at 10 tries × 3 s so it never polls forever.
+  useEffect(() => {
+    const supabase = createClient()
+    let attempts = 0
+    let inFlight = false
+
+    const poll = window.setInterval(async () => {
+      if (inFlight) return
+      if (attempts >= 10) {
+        window.clearInterval(poll)
+        return
+      }
+      attempts += 1
+      inFlight = true
+      const { data: order } = await supabase
+        .from('merch_orders')
+        .select('status')
+        .eq('id', orderId)
+        .maybeSingle()
+      inFlight = false
+      const next = (order as { status?: string } | null)?.status
+      if (next && next !== 'pending') {
+        window.clearInterval(poll)
+        router.refresh()
+      }
+    }, 3000)
+
+    return () => window.clearInterval(poll)
+  }, [orderId, router])
 
   function cancel() {
     setError(null)
