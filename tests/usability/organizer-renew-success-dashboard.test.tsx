@@ -107,4 +107,17 @@ describe('post-renewal Go-to-Dashboard session refresh', () => {
     expect(refreshSession).toHaveBeenCalledTimes(1)
     expect(push).toHaveBeenCalledTimes(1)
   })
+
+  it('a failed refreshSession surfaces the error and skips navigation', async () => {
+    refreshSession.mockResolvedValueOnce({ data: {}, error: { message: 'Refresh Token Not Found' } })
+    render(<OrganizerPaymentPage />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /Go to Dashboard/i }))
+
+    await screen.findByText('Refresh Token Not Found')
+    expect(push).not.toHaveBeenCalled()
+    expect(h.refresh).not.toHaveBeenCalled()
+    // the guard clears so the user can retry the navigation
+    await screen.findByRole('button', { name: /Go to Dashboard/i })
+  })
 })

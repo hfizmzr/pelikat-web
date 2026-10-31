@@ -213,7 +213,12 @@ export default function OrganizerPaymentPage() {
   const goToDashboard = async () => {
     if (starting) return
     setStarting(true)
-    await supabase.auth.refreshSession()
+    const { error: refreshError } = await supabase.auth.refreshSession()
+    if (refreshError) {
+      setError(refreshError.message)
+      setStarting(false)
+      return
+    }
     router.push('/organizer')
     router.refresh()
   }
@@ -271,6 +276,11 @@ export default function OrganizerPaymentPage() {
                 </span>
               </div>
             </div>
+            {error && (
+              <div className="rounded-md bg-destructive/10 border border-destructive/30 px-3 py-2 text-sm text-destructive">
+                {error}
+              </div>
+            )}
             <Button
               className="w-full"
               onClick={goToDashboard}

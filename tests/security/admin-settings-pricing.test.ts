@@ -104,6 +104,18 @@ describe('Security: /api/admin/settings PATCH pricing', () => {
     expect(settingsUpdate).not.toHaveBeenCalled()
   })
 
+  it('400s duration_days above the confirm_payment clamp of 3650', async () => {
+    for (const bad of [3651, 5000]) {
+      const response = await settingsPATCH(
+        req({ settings: { organizer_subscription_price: { ...VALID, duration_days: bad } } })
+      )
+      expect(response.status).toBe(400)
+      const body = await response.json()
+      expect(body.error).toBe('Subscription duration must be a whole number of days from 1 to 3650')
+    }
+    expect(settingsUpdate).not.toHaveBeenCalled()
+  })
+
   it('404s an unknown non-pricing setting key cleanly (no RLS 500)', async () => {
     settingsEq.mockResolvedValueOnce({ error: null, count: 0 })
     const response = await settingsPATCH(
