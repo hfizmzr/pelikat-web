@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void } | undefined;
+
 serve(async (req) => {
   try {
     const body = await req.json();
@@ -50,9 +52,26 @@ serve(async (req) => {
       const currentRole = claims.app_metadata?.role;
       const currentOrganizerId = claims.app_metadata?.organizer_id;
       if (currentRole !== role || currentOrganizerId !== organizerId) {
-        await adminClient.auth.admin.updateUserById(userId, {
-          app_metadata: { organizer_id: organizerId, role },
-        });
+        // GoTrue is blocked on this hook while it issues the token, so
+        // awaiting an Auth admin write for the same user stalls until the
+        // 5 s hook timeout (422 on every role change). The claims below
+        // already carry the new role; persist app_metadata after we answer.
+        const persist = adminClient.auth.admin
+          .updateUserById(userId, {
+            app_metadata: { organizer_id: organizerId, role },
+          })
+          .then(({ error }) => {
+            if (error) console.error("custom-access-token-hook app_metadata sync failed:", error);
+          })
+          .catch((err) => {
+            console.error("custom-access-token-hook app_metadata sync failed:", err);
+          });
+
+        if (typeof EdgeRuntime !== "undefined" && EdgeRuntime) {
+          EdgeRuntime.waitUntil(persist);
+        } else {
+          await persist;
+        }
       }
     }
 
