@@ -13,6 +13,12 @@
 --   bib N10-002 is already checked in, so the active path returns
 --   "already checked in" without writing anything.
 --   d0e5…026 Virtual 21K (Penang Pacers) supplies a second organizer id.
+--
+-- merch_collect_for_runner is internal only since 063 (no execute for
+-- authenticated): callers reach it through repc_check_in_with_merch. Its
+-- inactive-organizer guard sits behind the check-in guard on that path, so
+-- check 05 calls it directly as the session owner with the organizer's JWT
+-- claims set (auth.jwt() reads the claims, not the role).
 -- ============================================================================
 
 do $test$
@@ -44,9 +50,13 @@ begin
   select * into r from public.repc_check_in_registration(v_event, v_runner, v_bib);
   v_log := v_log || format(E'\n01 active organizer check-in: success=%s message=%s  [expect t, Runner is already checked in]', r.success, r.message);
 
+  select * into r from public.repc_check_in_with_merch(v_event, v_runner, v_bib);
+  v_log := v_log || format(E'\n02 active organizer check-in with merch: success=%s merch ran=%s  [expect t, t]',
+    r.success, r.merch is not null);
+
   begin perform public.merch_collect_for_runner(v_event, v_runner);
-    v_log := v_log || E'\n02 active organizer merch hand-over: allowed  [expect allowed]';
-  exception when others then v_log := v_log || E'\n02 active organizer merch hand-over: FAIL ' || sqlerrm; end;
+    v_log := v_log || E'\n02b direct merch_collect_for_runner as authenticated: FAIL allowed (063 made it internal only)';
+  exception when insufficient_privilege then v_log := v_log || E'\n02b direct merch_collect_for_runner as authenticated refused  [expect refused]'; end;
 
   -- ── another organizer's event: still refused by the ownership check ──
   perform set_config('request.jwt.claims', json_build_object('sub', v_org_user, 'role', 'authenticated',
@@ -64,9 +74,11 @@ begin
   select * into r from public.repc_check_in_registration(v_event, v_runner, v_bib);
   v_log := v_log || format(E'\n04 inactive organizer check-in: success=%s message=%s  [expect f, Organizer subscription is not active]', r.success, r.message);
 
+  reset role;
   begin perform public.merch_collect_for_runner(v_event, v_runner);
-    v_log := v_log || E'\n05 inactive organizer merch hand-over: FAIL allowed';
-  exception when others then v_log := v_log || E'\n05 inactive organizer merch hand-over refused: ' || sqlerrm || '  [expect Organizer subscription is not active]'; end;
+    v_log := v_log || E'\n05 inactive organizer merch hand-over (internal call): FAIL allowed';
+  exception when others then v_log := v_log || E'\n05 inactive organizer merch hand-over (internal call) refused: ' || sqlerrm || '  [expect Organizer subscription is not active]'; end;
+  set local role authenticated;
 
   select * into r from public.repc_check_in_with_merch(v_event, v_runner, v_bib);
   v_log := v_log || format(E'\n06 inactive organizer check-in with merch: success=%s message=%s merch=%s  [expect f, Organizer subscription is not active, <NULL>]',
@@ -78,13 +90,13 @@ begin
   select * into r from public.repc_check_in_registration(v_event, v_runner, v_bib);
   v_log := v_log || format(E'\n07 admin check-in on inactive organizer event: success=%s message=%s  [expect t, Runner is already checked in]', r.success, r.message);
 
-  begin perform public.merch_collect_for_runner(v_event, v_runner);
-    v_log := v_log || E'\n08 admin merch hand-over: allowed  [expect allowed]';
-  exception when others then v_log := v_log || E'\n08 admin merch hand-over: FAIL ' || sqlerrm; end;
+  select * into r from public.repc_check_in_with_merch(v_event, v_runner, v_bib);
+  v_log := v_log || format(E'\n08 admin check-in with merch on inactive organizer event: success=%s merch ran=%s  [expect t, t]',
+    r.success, r.merch is not null);
   reset role;
 
-  -- ── grants survived create or replace ──
-  v_log := v_log || format(E'\n09 authenticated can execute: check_in=%s merch_collect=%s with_merch=%s  [expect t, t, t]',
+  -- ── grants survived create or replace (merch_collect stays internal, 063) ──
+  v_log := v_log || format(E'\n09 authenticated can execute: check_in=%s merch_collect=%s with_merch=%s  [expect t, f, t]',
     has_function_privilege('authenticated', 'public.repc_check_in_registration(uuid, uuid, text, boolean, text, text)', 'execute'),
     has_function_privilege('authenticated', 'public.merch_collect_for_runner(uuid, uuid)', 'execute'),
     has_function_privilege('authenticated', 'public.repc_check_in_with_merch(uuid, uuid, text, boolean, text, text)', 'execute'));
