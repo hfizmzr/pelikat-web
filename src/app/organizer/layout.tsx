@@ -37,7 +37,19 @@ export default function OrganizerLayout({
     if (pathname.startsWith('/organizer/apply')) return
     async function checkRole() {
       const { data: { user } } = await supabase.auth.getUser()
-      const role = getUserRole(user)
+      let role = getUserRole(user)
+
+      // The access-token hook syncs app_metadata after it answers, so right
+      // after a renewal the stored role can still read 'expired' for a
+      // moment. organizers.is_active is the source of truth the hook uses.
+      if (role === 'expired') {
+        const { data: org } = await supabase
+          .from('organizers')
+          .select('is_active')
+          .eq('id', user?.app_metadata?.organizer_id)
+          .maybeSingle()
+        if (org?.is_active) role = 'organizer'
+      }
 
       if (role === 'expired') {
         if (

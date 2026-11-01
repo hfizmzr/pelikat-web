@@ -102,6 +102,15 @@ describe('organizer layout routing guards', () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith('/organizer/subscription-expired'))
   })
 
+  it('stale expired role after renewal (organizer already active) is not bounced', async () => {
+    renderLayout('/organizer', 'expired', {
+      is_active: true,
+      sub_expires_at: '2027-11-01T00:00:00Z',
+    })
+    await settle()
+    expect(push).not.toHaveBeenCalled()
+  })
+
   it('first-sub organizer (sub NULL) on non-payment hub gets pushed to payment', async () => {
     renderLayout('/organizer', 'organizer', { sub_expires_at: null })
     await settle()
