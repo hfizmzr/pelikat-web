@@ -13,8 +13,9 @@ import { goto, login } from './helpers'
 const CYBERJAYA_SLUG = 'cyberjaya-green-run-8df2ee4b'
 
 /**
- * runner1's registered active event (seeded registration 06a → event id
- * d0e5e000-0000-4000-8000-000000000025 "Virtual 60K Straits Challenge").
+ * runner1's registered active event (seeded registration 07c — seed.sql:814,
+ * paid — → event id d0e5e000-0000-4000-8000-000000000025 "Virtual 60K Straits
+ * Challenge").
  */
 const VIRTUAL_60K_ID = 'd0e5e000-0000-4000-8000-000000000025'
 /**
