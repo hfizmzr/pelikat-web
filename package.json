@@ -19,6 +19,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:pwa": "playwright test --config=playwright.pwa.config.ts",
     "test:k6": "k6 run k6/load-test.js",
+    "test:k6:auth": "k6 run k6/load-test.auth.js",
     "test:k6:local": "k6 run k6/load-test.local.js"
   },
   "dependencies": {
@@ -82,6 +83,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.4.0",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^9",
     "eslint-config-next": "^16.3.8",
     "jsdom": "^26.0.0",
