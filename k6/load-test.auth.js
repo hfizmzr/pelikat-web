@@ -92,26 +92,17 @@ export default function (data) {
     },
   };
 
-  // Authenticated app page (middleware session check + SSR). redirects: 0 so
-  // an auth regression surfaces as a 307 (failing check) instead of silently
-  // auto-following to /login's 200.
+  // status-only check() entries: latency is enforced by the
+  // http_req_duration thresholds above, and anything else mixed into the
+  // `checks` aggregate would dilute the rate>0.99 gate.
   const runner = http.get(`${BASE_URL}/runner`, { ...authHeaders, redirects: 0, tags: { name: 'runner home' } });
-  check(runner, {
-    'Runner home 200 (authed)': (r) => r.status === 200,
-    'Runner home < 500ms': (r) => r.timings.duration < 500,
-  });
+  check(runner, { 'Runner home 200 (authed)': (r) => r.status === 200 });
 
   const exploring = http.get(`${BASE_URL}/runner/events`, { ...authHeaders, redirects: 0, tags: { name: 'runner events' } });
-  check(exploring, {
-    'Explore events 200 (authed)': (r) => r.status === 200,
-    'Explore events < 500ms': (r) => r.timings.duration < 500,
-  });
+  check(exploring, { 'Explore events 200 (authed)': (r) => r.status === 200 });
 
   const board = http.get(`${BASE_URL}/runner/leaderboard?event_id=all`, { ...authHeaders, redirects: 0, tags: { name: 'leaderboard' } });
-  check(board, {
-    'Leaderboard 200 (authed)': (r) => r.status === 200,
-    'Leaderboard < 500ms': (r) => r.timings.duration < 500,
-  });
+  check(board, { 'Leaderboard 200 (authed)': (r) => r.status === 200 });
 
   // Authenticated Supabase REST read (RLS as the runner) — the same call the
   // client bundle performs while hydrating the leaderboard.
@@ -119,17 +110,11 @@ export default function (data) {
     `${SB_URL}/rest/v1/leaderboard_virtual?select=full_name,total_km&limit=50`,
     { headers: { apikey: APIKEY, Authorization: `Bearer ${data.accessToken}` }, tags: { name: 'leaderboard rest' } },
   );
-  check(rest, {
-    'Leaderboard REST 200': (r) => r.status === 200,
-    'Leaderboard REST < 500ms': (r) => r.timings.duration < 500,
-  });
+  check(rest, { 'Leaderboard REST 200': (r) => r.status === 200 });
 
   // Public event page as a shared surface with load-test.js.
   const event = http.get(`${BASE_URL}/events/${PUBLIC_SLUG}`, { tags: { name: 'event page' } });
-  check(event, {
-    'Event page 200': (r) => r.status === 200,
-    'Event page < 500ms': (r) => r.timings.duration < 500,
-  });
+  check(event, { 'Event page 200': (r) => r.status === 200 });
 
   sleep(Math.random() * 1.5 + 0.5);
 }
