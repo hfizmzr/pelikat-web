@@ -59,19 +59,27 @@ export function setup() {
   if (!session.access_token) {
     throw new Error('Password login failed — check K6_SUPABASE_URL/K6_SUPABASE_ANON_KEY/K6_TEST_EMAIL/K6_PASSWORD.');
   }
-  const cookieValue = 'base64-' + httpEnc.b64encode(JSON.stringify(session));
+  // 'rawurl' (base64-URL) matters: unicode seeds (full_name with non-ASCII)
+  // make std base64 emit '+'/'/', which @supabase/ssr's decoder rejects →
+  // silent 307 to /login. base64-URL is also what supabase-js writes natively.
+  const cookieValue = 'base64-' + httpEnc.b64encode(JSON.stringify(session), 'rawurl');
   return { cookie: `${authCookieName}=${cookieValue}`, accessToken: session.access_token };
 }
 
 export const options = {
   stages: [
-    { duration: '15s', target: Math.min(MAX_VUS * 0.3, 50) },
-    { duration: '30s', target: MAX_VUS },
+    // Integer targets only — k6 rejects fractional stage targets (small
+    // K6_VUS values like 3 make 0.3 * VUS fractional without the ceil).
+    { duration: '15s', target: Math.min(Math.ceil(MAX_VUS * 0.3), 50) },
+    { duration: '30s', target: Math.min(MAX_VUS, 500) },
     { duration: '10s', target: 0 },
   ],
   thresholds: {
     http_req_duration: ['p(95)<500'],
     http_req_failed: ['rate<0.01'],
+    // Gate on the check() pass-rate so an auth regression that slips through
+    // status-map checks (e.g. a cookie the server ignores) fails the run.
+    checks: ['rate>0.99'],
   },
 };
 
@@ -84,20 +92,22 @@ export default function (data) {
     },
   };
 
-  // Authenticated app page (middleware session check + SSR).
-  const runner = http.get(`${BASE_URL}/runner`, { ...authHeaders, tags: { name: 'runner home' } });
+  // Authenticated app page (middleware session check + SSR). redirects: 0 so
+  // an auth regression surfaces as a 307 (failing check) instead of silently
+  // auto-following to /login's 200.
+  const runner = http.get(`${BASE_URL}/runner`, { ...authHeaders, redirects: 0, tags: { name: 'runner home' } });
   check(runner, {
     'Runner home 200 (authed)': (r) => r.status === 200,
     'Runner home < 500ms': (r) => r.timings.duration < 500,
   });
 
-  const exploring = http.get(`${BASE_URL}/runner/events`, { ...authHeaders, tags: { name: 'runner events' } });
+  const exploring = http.get(`${BASE_URL}/runner/events`, { ...authHeaders, redirects: 0, tags: { name: 'runner events' } });
   check(exploring, {
     'Explore events 200 (authed)': (r) => r.status === 200,
     'Explore events < 500ms': (r) => r.timings.duration < 500,
   });
 
-  const board = http.get(`${BASE_URL}/runner/leaderboard?event_id=all`, { ...authHeaders, tags: { name: 'leaderboard' } });
+  const board = http.get(`${BASE_URL}/runner/leaderboard?event_id=all`, { ...authHeaders, redirects: 0, tags: { name: 'leaderboard' } });
   check(board, {
     'Leaderboard 200 (authed)': (r) => r.status === 200,
     'Leaderboard < 500ms': (r) => r.timings.duration < 500,
