@@ -1,0 +1,11 @@
+services:
+  web:
+    image: ghcr.io/hfizmzr/pelikat-web:staging
+    pull_policy: always # redeploy must fetch the newest :staging image even with an unchanged git ref
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env                    # load all env vars from .env
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
