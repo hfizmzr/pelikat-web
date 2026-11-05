@@ -1,11 +1,23 @@
+# Portainer stack UI env is the single source of truth (env_file is removed because
+# Portainer Git stacks pull this compose from GitHub, where .env is gitignored).
 services:
   web:
     image: docker.io/hfizmzr/pelikat-web:staging
     pull_policy: always # redeploy must fetch the newest :staging image even with an unchanged git ref
     ports:
       - "3000:3000"
-    env_file:
-      - .env                    # load all env vars from .env
     environment:
       - NODE_ENV=production
+      # hard-fail passthroughs so a misconfigured stack surfaces immediately
+      - DJANGO_URL=${DJANGO_URL:?DJANGO_URL not set in Portainer stack env}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY:?INTERNAL_API_KEY not set in Portainer stack env}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:?NEXT_PUBLIC_SUPABASE_URL not set in Portainer stack env}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:?NEXT_PUBLIC_SUPABASE_ANON_KEY not set in Portainer stack env}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
+      - PAYMENT_PROVIDER=${PAYMENT_PROVIDER:-}
+      - NEXT_PUBLIC_PAYMENT_PROVIDER=${NEXT_PUBLIC_PAYMENT_PROVIDER:-}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - NEXT_PUBLIC_VAPID_PUBLIC_KEY=${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-}
+      - NEXT_PUBLIC_TUNNEL_URL=${NEXT_PUBLIC_TUNNEL_URL:-}
     restart: unless-stopped
