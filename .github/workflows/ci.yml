@@ -5,8 +5,9 @@ permissions: { contents: read }
 # Serialize runs per ref: with cancel-in-progress:false GitHub keeps at most ONE
 # pending run in this group — a newer push while a run is queued/replaced means
 # intermediate SHAs may be skipped (no strict FIFO ordering is guaranteed).
-# Group runs never overlap; whichever run remains last (the latest SHA's) wins
-# the mutable :staging tag when it finishes.
+# Group runs never overlap; whichever run remains last wins the mutable
+# :staging tag when it finishes. The last run is not guaranteed to be the
+# newest SHA.
 concurrency:
   group: "staging-${{ github.ref }}"
   cancel-in-progress: false
@@ -79,6 +80,8 @@ jobs:
             NEXT_PUBLIC_PWA_GATE=false
             NEXT_PUBLIC_SUPABASE_URL=${{ vars.NEXT_PUBLIC_SUPABASE_URL || '' }}
             NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' }}
+            NEXT_PUBLIC_PAYMENT_PROVIDER=${{ vars.NEXT_PUBLIC_PAYMENT_PROVIDER || '' }}
+            NEXT_PUBLIC_VAPID_PUBLIC_KEY=${{ vars.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '' }}
           tags: |
             hfizmzr/pelikat-web:staging
             hfizmzr/pelikat-web:sha-${{ github.sha }}
