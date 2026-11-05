@@ -1,6 +1,6 @@
 services:
   web:
-    image: ghcr.io/hfizmzr/pelikat-web:staging
+    image: docker.io/hfizmzr/pelikat-web:staging
     pull_policy: always # redeploy must fetch the newest :staging image even with an unchanged git ref
     ports:
       - "3000:3000"
