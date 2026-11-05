@@ -2,8 +2,11 @@ name: CI
 
 permissions: { contents: read }
 
-# Serialize runs per ref: concurrency without cancel-in-progress is plain FIFO,
-# so runs queue in submission order and the newest SHA always finishes last & wins.
+# Serialize runs per ref: with cancel-in-progress:false GitHub keeps at most ONE
+# pending run in this group — a newer push while a run is queued/replaced means
+# intermediate SHAs may be skipped (no strict FIFO ordering is guaranteed).
+# Group runs never overlap; whichever run remains last (the latest SHA's) wins
+# the mutable :staging tag when it finishes.
 concurrency:
   group: "staging-${{ github.ref }}"
   cancel-in-progress: false
