@@ -2,6 +2,12 @@ name: CI
 
 permissions: { contents: read }
 
+# Serialize runs per ref so an older run cannot finish last and overwrite
+# the mutable :staging tag (or redeploy an obsolete image).
+concurrency:
+  group: "staging-${{ github.ref }}"
+  cancel-in-progress: false
+
 on:
   push:
     branches: [main]
@@ -68,6 +74,8 @@ jobs:
           push: true
           build-args: |
             NEXT_PUBLIC_PWA_GATE=false
+            NEXT_PUBLIC_SUPABASE_URL=${{ vars.NEXT_PUBLIC_SUPABASE_URL || '' }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' }}
           tags: |
             ghcr.io/hfizmzr/pelikat-web:staging
             ghcr.io/hfizmzr/pelikat-web:sha-${{ github.sha }}
