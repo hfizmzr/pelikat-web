@@ -2,7 +2,7 @@
  * Build-safety regression for the docker `next build` crash: service-role.ts
  * used to call createClient at module load, so page-data collection (which
  * imports it via /events/[slug] → safe-name) threw "supabaseKey is required."
- * in the Dockerfile.prod builder stage that only receives the 3 NEXT_PUBLIC
+ * in the Dockerfile.prod builder stage that receives only the NEXT_PUBLIC_*
  * build-args. The module is now a lazy Proxy; these tests pin the contract:
  * import is always safe, first access builds exactly once, missing key fails
  * loudly at access time (no silent fallback to the public client).
