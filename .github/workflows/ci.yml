@@ -1,5 +1,7 @@
 name: CI
 
+permissions: { contents: read }
+
 on:
   push:
     branches: [main]
@@ -81,7 +83,7 @@ jobs:
     steps:
       - name: Trigger Portainer stack redeploy
         if: env.WEBHOOK_URL != ''
-        run: curl --fail --silent --show-error --max-time 30 -X POST "$WEBHOOK_URL"
+        run: curl --fail -s -o /dev/null --max-time 30 -X POST "$WEBHOOK_URL"
 
       - name: Skip deploy (webhook not configured)
         if: env.WEBHOOK_URL == ''
