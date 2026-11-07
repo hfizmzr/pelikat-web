@@ -5,6 +5,10 @@ services:
       dockerfile: Dockerfile.prod
       args:
         - NEXT_PUBLIC_PWA_GATE=${NEXT_PUBLIC_PWA_GATE:-false}
+        # Build-time and runtime provider must stay equal: build from the same
+        # NEXT_PUBLIC_PAYMENT_PROVIDER value that PAYMENT_PROVIDER gets in .env.
+        # Runtime PAYMENT_PROVIDER still arrives via env_file (.env).
+        - NEXT_PUBLIC_PAYMENT_PROVIDER=${NEXT_PUBLIC_PAYMENT_PROVIDER:-mock}
     ports:
       - "3000:3000"
     env_file:
