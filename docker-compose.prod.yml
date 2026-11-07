@@ -5,6 +5,10 @@ services:
       dockerfile: Dockerfile.prod
       args:
         - NEXT_PUBLIC_PWA_GATE=${NEXT_PUBLIC_PWA_GATE:-false}
+        # Build-time and runtime provider must stay equal: this build arg is
+        # REQUIRED so Compose fails fast unless NEXT_PUBLIC_PAYMENT_PROVIDER is
+        # set to the same value as PAYMENT_PROVIDER (runtime, via env_file .env).
+        - NEXT_PUBLIC_PAYMENT_PROVIDER=${NEXT_PUBLIC_PAYMENT_PROVIDER:?set NEXT_PUBLIC_PAYMENT_PROVIDER to the same value as PAYMENT_PROVIDER}
     ports:
       - "3000:3000"
     env_file:

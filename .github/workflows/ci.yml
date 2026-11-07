@@ -70,6 +70,21 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # Docker Hub images are public; Portainer only needs :staging (mutable, repulled)
+      # Fail fast: NEXT_PUBLIC_* values are inlined into the client bundle at
+      # build time, so an unset/invalid payment provider would only explode at
+      # runtime on payment pages (parsePaymentProvider in src/lib/payments/mock.ts).
+      - name: Validate payment provider build var
+        env:
+          NEXT_PUBLIC_PAYMENT_PROVIDER: ${{ vars.NEXT_PUBLIC_PAYMENT_PROVIDER }}
+        run: |
+          case "$NEXT_PUBLIC_PAYMENT_PROVIDER" in
+            mock|hitpay) ;;
+            *)
+              echo "::error::NEXT_PUBLIC_PAYMENT_PROVIDER repo variable must be set to 'mock' or 'hitpay' (empty/invalid value would throw at runtime on payment pages)."
+              exit 1
+              ;;
+          esac
+
       - name: Build and push staging image
         uses: docker/build-push-action@v6
         with:

@@ -25,12 +25,22 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # NEXT_PUBLIC_* vars are inlined into the client bundle at build time,
-# so deploy-specific values must arrive as build args (default: off).
+# so deploy-specific values must arrive as build args. The payment
+# provider must never end up empty/invalid in the bundle: the default
+# below matches parsePaymentProvider()'s unset default (served as 'mock'
+# at runtime via PAYMENT_PROVIDER), and the guard before `build` makes
+# any explicit empty/invalid value fail loudly instead of at runtime.
 ARG NEXT_PUBLIC_PWA_GATE=false
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
-ARG NEXT_PUBLIC_PAYMENT_PROVIDER
+ARG NEXT_PUBLIC_PAYMENT_PROVIDER=mock
 ARG NEXT_PUBLIC_VAPID_PUBLIC_KEY
+# Fail the build (not the app at runtime) if the provider is empty/invalid.
+RUN case "$NEXT_PUBLIC_PAYMENT_PROVIDER" in \
+      mock|hitpay) ;; \
+      *) echo "ERROR: NEXT_PUBLIC_PAYMENT_PROVIDER build arg must be 'mock' or 'hitpay', got \"$NEXT_PUBLIC_PAYMENT_PROVIDER\"" >&2; exit 1 ;; \
+    esac
+
 ENV NEXT_PUBLIC_PWA_GATE=$NEXT_PUBLIC_PWA_GATE
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY

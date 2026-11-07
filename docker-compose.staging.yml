@@ -8,8 +8,10 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      # DJANGO_URL defaults to the internal Docker DNS name (both stacks join the
+      # external pelikat-shared network); an explicit Portainer env value still wins.
+      - DJANGO_URL=${DJANGO_URL:-http://api:8000}
       # hard-fail passthroughs so a misconfigured stack surfaces immediately
-      - DJANGO_URL=${DJANGO_URL:?DJANGO_URL not set in Portainer stack env}
       - INTERNAL_API_KEY=${INTERNAL_API_KEY:?INTERNAL_API_KEY not set in Portainer stack env}
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:?NEXT_PUBLIC_SUPABASE_URL not set in Portainer stack env}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:?NEXT_PUBLIC_SUPABASE_ANON_KEY not set in Portainer stack env}
@@ -21,3 +23,12 @@ services:
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-}
       - NEXT_PUBLIC_TUNNEL_URL=${NEXT_PUBLIC_TUNNEL_URL:-}
     restart: unless-stopped
+    networks:
+      - pelikat-shared
+
+# External network shared with the api staging stack in Portainer
+# (create once on the host: docker network create pelikat-shared).
+networks:
+  pelikat-shared:
+    external: true
+    name: pelikat-shared
