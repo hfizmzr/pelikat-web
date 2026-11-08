@@ -23,13 +23,13 @@
 import { assetValueOk, isPlainObject } from './utils'
 
 /** Storage bucket (locked, spec §6). */
-export const THEME_ASSET_BUCKET = 'event-themes'
+const THEME_ASSET_BUCKET = 'event-themes'
 
 /** Image asset kinds — the stored `assets` keys carry a `_url` suffix. */
-export const IMAGE_ASSET_KINDS = ['banner', 'logo', 'badge_icon', 'certificate_background'] as const
+const IMAGE_ASSET_KINDS = ['banner', 'logo', 'badge_icon', 'certificate_background'] as const
 export type AssetKind = (typeof IMAGE_ASSET_KINDS)[number]
 
-export const IMAGE_ASSET_KEYS = [
+const IMAGE_ASSET_KEYS = [
   'banner_url',
   'logo_url',
   'badge_icon_url',
@@ -38,7 +38,7 @@ export const IMAGE_ASSET_KEYS = [
 export type ImageAssetKey = (typeof IMAGE_ASSET_KEYS)[number]
 
 /** Font upload kinds — stored in `typography.heading_font_url`/`body_font_url`. */
-export const FONT_KINDS = ['heading_font', 'body_font'] as const
+const FONT_KINDS = ['heading_font', 'body_font'] as const
 export type FontKind = (typeof FONT_KINDS)[number]
 export type FontSlotKey = 'heading_font_url' | 'body_font_url'
 
@@ -104,7 +104,7 @@ export type ThemeAssetClient = {
   }
 }
 
-export function kindFromAssetKey(key: string): ThemeAssetKind | null {
+function kindFromAssetKey(key: string): ThemeAssetKind | null {
   if (!key.endsWith('_url')) return null
   const kind = key.slice(0, -4)
   if (IMAGE_KINDS.has(kind) || FONT_KINDS_SET.has(kind)) {

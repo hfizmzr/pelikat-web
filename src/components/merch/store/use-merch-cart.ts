@@ -66,7 +66,7 @@ function subscribe(listener: () => void) {
   }
 }
 
-export function clearMerchCart(eventId: string) {
+function clearMerchCart(eventId: string) {
   save(eventId, EMPTY)
 }
 

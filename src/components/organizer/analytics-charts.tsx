@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts'
 
-export interface EventStat {
+interface EventStat {
   name: string
   total: number
   paid: number
@@ -14,7 +14,7 @@ export interface EventStat {
   revenue: number
 }
 
-export interface Demographics {
+interface Demographics {
   gender: { label: string; value: number }[]
   ageGroups: { label: string; value: number }[]
   shirtSizes: { label: string; value: number }[]

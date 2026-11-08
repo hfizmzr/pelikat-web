@@ -5,13 +5,4 @@
 // hitpay checkout is created server-side (Django /payments/* funnel),
 // and confirmation only ever arrives via the signed webhook.
 
-export {
-  getPaymentProvider,
-  getServerPaymentProvider,
-  createCheckout,
-  confirmPayment,
-  type PaymentProvider,
-  type CheckoutInput,
-  type CheckoutSession,
-  type PaymentConfirmation,
-} from './mock'
+export { getPaymentProvider, getServerPaymentProvider } from './mock'

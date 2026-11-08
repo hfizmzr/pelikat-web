@@ -49,7 +49,7 @@ export type MerchProduct = {
   merch_variants: MerchVariant[]
 }
 
-export type MerchOrderItem = {
+type MerchOrderItem = {
   quantity: number
   unit_price: number
   merch_variants: {
@@ -178,7 +178,7 @@ export type MerchCartLine = {
   quantity: number
 }
 
-export type RunnerMerchOrderItem = {
+type RunnerMerchOrderItem = {
   id: string
   quantity: number
   unit_price: number
