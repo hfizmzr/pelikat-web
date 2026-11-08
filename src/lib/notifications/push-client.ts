@@ -12,14 +12,14 @@ export type PushSupport =
   | 'ios-needs-install' // iOS/iPadOS 16.4+: only available from the Home Screen app
   | 'not-configured' // NEXT_PUBLIC_VAPID_PUBLIC_KEY missing
 
-export const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ''
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ''
 
-export function isIosDevice(nav: Pick<Navigator, 'userAgent' | 'maxTouchPoints'> = navigator): boolean {
+function isIosDevice(nav: Pick<Navigator, 'userAgent' | 'maxTouchPoints'> = navigator): boolean {
   // iPadOS reports a Mac user agent; touch points give it away
   return /iPad|iPhone|iPod/.test(nav.userAgent) || (/Macintosh/.test(nav.userAgent) && nav.maxTouchPoints > 1)
 }
 
-export function isStandaloneDisplay(): boolean {
+function isStandaloneDisplay(): boolean {
   const nav = navigator as Navigator & { standalone?: boolean }
   return window.matchMedia?.('(display-mode: standalone)').matches || nav.standalone === true
 }
@@ -33,7 +33,7 @@ export function getPushSupport(): PushSupport {
   return hasApis ? 'supported' : 'unsupported'
 }
 
-export function urlBase64ToUint8Array(base64Url: string): Uint8Array<ArrayBuffer> {
+function urlBase64ToUint8Array(base64Url: string): Uint8Array<ArrayBuffer> {
   const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
   const raw = atob(base64 + '='.repeat((4 - (base64.length % 4)) % 4))
   const out = new Uint8Array(new ArrayBuffer(raw.length))

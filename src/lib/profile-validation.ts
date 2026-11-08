@@ -4,7 +4,7 @@
  * client- and server-action side; the DB CHECK remains the final authority.
  */
 
-export const MIN_FULL_NAME_LENGTH = 2
+const MIN_FULL_NAME_LENGTH = 2
 
 export function isValidFullName(name: string | null | undefined): boolean {
   return (name ?? "").trim().length >= MIN_FULL_NAME_LENGTH

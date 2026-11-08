@@ -10,7 +10,7 @@ export type RepcCheckInResult = {
   merch?: MerchHandover | null
 }
 
-export type MerchHandoverOrder = { orderNumber: string; itemCount: number }
+type MerchHandoverOrder = { orderNumber: string; itemCount: number }
 
 // Merch orders handed over at this scan, and paid orders the organizer hasn't packed yet
 export type MerchHandover = {

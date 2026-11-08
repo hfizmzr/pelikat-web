@@ -15,7 +15,6 @@ const actions = read('src', 'components', 'events', 'actions.ts')
 const registrationsClient = read('src', 'components', 'events', 'registrations-client.tsx')
 const runnerDetail = read('src', 'app', 'runner', 'events', '[id]', 'page.tsx')
 const adminPage = read('src', 'app', 'admin', 'registrations', 'page.tsx')
-const registeredSection = read('src', 'components', 'events', 'registered-events-section.tsx')
 
 describe('Reliability: Complimentary Registrations (066)', () => {
   it('payment_status check admits the waived status', () => {
@@ -101,11 +100,6 @@ describe('Reliability: confirmed predicate (paid OR waived)', () => {
     // checkout is only ever created for pending registrations.
     expect(actions).toContain('if (isConfirmedStatus(registration.payment_status))')
     expect(actions).toContain('return { ok: true, alreadyPaid: true }')
-  })
-
-  it('registered-events section union admits waived and styles it as confirmed', () => {
-    expect(registeredSection).toContain("'pending' | 'paid' | 'refunded' | 'waived'")
-    expect(registeredSection).toContain('isConfirmedStatus(reg.payment_status)')
   })
 
   it('admin registrations page union admits waived and styles it as confirmed', () => {

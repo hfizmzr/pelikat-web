@@ -12,7 +12,7 @@ export type StoreProduct = {
   merch_variants: MerchVariant[]
 }
 
-export type StoreEvent = {
+type StoreEvent = {
   id: string
   name: string
   event_date: string
