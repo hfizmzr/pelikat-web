@@ -13,7 +13,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       // Full-universe gate: restrict instrumentation to src so the percent
-      // denominator covers all 245 src files, not just the 67 loaded by tests.
+      // denominator covers all 244 src files, not just the 67 loaded by tests.
       include: ["src/**/*.{ts,tsx}"],
       reporter: ["text", "json", "html"],
       reportsDirectory: "./coverage",
