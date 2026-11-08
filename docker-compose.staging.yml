@@ -22,7 +22,22 @@ services:
       - NEXT_PUBLIC_VAPID_PUBLIC_KEY=${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-}
       - NEXT_PUBLIC_TUNNEL_URL=${NEXT_PUBLIC_TUNNEL_URL:-}
+      # next start does NOT log requests by default (only errors); Next's
+      # internal `debug` package does when this env is set. Default is the
+      # narrow verified namespace `next:router-server:main` — two short lines
+      # per request (path + sanitized headers, no secrets). Portainer can
+      # override; set to e.g. `off` or empty to silence. We deliberately do
+      # NOT bounce Django-style semantics off DEBUG=1 (that would enable the
+      # entire very-noisy next:* namespace).
+      - DEBUG=${DEBUG:-next:router-server:main}
     restart: unless-stopped
+    # 16GB VPS: per-container json-file retention ceiling — verbose staging
+    # logs must not fill the disk (5×10MB rotated per container).
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     networks:
       - pelikat-shared
 
