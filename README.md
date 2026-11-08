@@ -1,5 +1,7 @@
 # Pelikat Web
 
+> **`staging` branch note:** `staging` mirrors `main` and builds the `:staging` Docker image (Portainer deploy webhook) so the web container stays synchronized with `pelikat-api`'s `staging` deployment branch. Feature work lands on `main`.
+
 > Next.js 16 frontend for the Pelikat platform: race-event registrations and payments for runners, event management for organizers, and platform administration. Uses Supabase (Postgres + Auth + Storage) and the Django `pelikat-api` backend. PWA-enabled (Serwist).
 
 ## Stack
