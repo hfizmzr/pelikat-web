@@ -14,7 +14,7 @@ concurrency:
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   pull_request:
     branches: [main]
 
@@ -51,7 +51,7 @@ jobs:
 
   docker:
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
     permissions:
       contents: read # Docker Hub (docker.io) is the registry now; GITHUB_TOKEN/push-packages scope no longer needed
@@ -103,7 +103,7 @@ jobs:
 
   deploy:
     needs: docker
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
     permissions:
       contents: read
