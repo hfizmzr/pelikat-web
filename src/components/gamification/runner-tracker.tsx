@@ -184,7 +184,7 @@ export default function RunnerTracker() {
             </div>
             <div className="text-center flex flex-col gap-2">
               <h2 className="text-[24px] font-bold text-foreground">Ready to Run</h2>
-              <p className="text-[14px] text-muted-foreground">Your GPS route will be captured in the background.</p>
+              <p className="text-[14px] text-muted-foreground">Your GPS route is captured while this screen stays open.</p>
             </div>
             <button
               onClick={startTracking}

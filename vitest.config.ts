@@ -18,10 +18,12 @@ export default defineConfig({
       reporter: ["text", "json", "html"],
       reportsDirectory: "./coverage",
       exclude: ["node_modules/", "tests/", "e2e/", "public/"],
-      // Full-universe measured floors (2026-11-03 v8 run with the include
-      // above): lines 22.14 / statements 21.76 / branches 21.07 / functions
-      // 13.79 — rounded down. (The previous 70/70/65/65 gate silently
-      // measured only the files tests happen to load.)
+      // Full-universe measured floors (verified 2026-11-10 v8 run over all
+      // 244 src files, 60 test files / 689 tests): statements 22.10 /
+      // branches 21.32 / functions 14.08 / lines 22.49 — rounded down.
+      // Thresholds track that run so a silently shrunken test universe or
+      // a dropped feature branch fails the gate. (The previous 70/70/65/65
+      // gate silently measured only the files tests happen to load.)
       thresholds: {
         statements: 21,
         branches: 21,
