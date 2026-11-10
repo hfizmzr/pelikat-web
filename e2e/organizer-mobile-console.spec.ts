@@ -32,8 +32,11 @@ test.describe('organizer mobile console (FR-69)', () => {
     await login(page, 'klcityrunners@pelikat.test')
 
     await goto(page, '/organizer/mobile/events')
-    await expect(page.getByText('Upcoming & Active')).toBeVisible()
-    await expect(page.getByText('Past Events')).toBeVisible()
+    // Strict-mode guard: under full-parallel load the headings can be
+    // duplicated in the DOM (same flake hardened in auth.spec.ts with
+    // .first()), so select the first heading match explicitly.
+    await expect(page.getByRole('heading', { name: 'Upcoming & Active' }).first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Past Events' }).first()).toBeVisible()
 
     // Scan entry point out of the events list
     await expect(page.getByRole('link', { name: /Check-in/ }).first()).toBeVisible()
