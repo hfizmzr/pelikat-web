@@ -27,7 +27,7 @@ async function getActiveEventOpsData() {
     .select(`
       id, name, status, event_date, location,
       race_categories(id, name, max_slots, bib_prefix),
-      registrations(id, payment_status, checked_in, created_at, race_category_id)
+      registrations(id, payment_status, checked_in, created_at, category_id)
     `)
     .eq('organizer_id', organizerId)
     .in('status', ['active', 'published'])
@@ -42,8 +42,7 @@ async function getActiveEventOpsData() {
     payment_status: string
     checked_in: boolean
     created_at: string
-    race_category_id: string | null
-  }>
+    category_id: string | null  }>
   const cats = (activeEvent.race_categories || []) as Array<{
     id: string
     name: string
@@ -59,7 +58,7 @@ async function getActiveEventOpsData() {
 
   // Category breakdown
   const catBreakdown = cats.map((cat) => {
-    const catRegs = regs.filter((r) => r.race_category_id === cat.id)
+    const catRegs = regs.filter((r) => r.category_id === cat.id)
     return {
       id: cat.id,
       name: cat.name,

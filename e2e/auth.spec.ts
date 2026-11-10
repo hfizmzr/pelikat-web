@@ -25,9 +25,11 @@ test.describe('Security: Authentication', () => {
     
     expect(page.url()).toContain('/login')
     
-    // Should show login form
-    const form = await page.locator('form').count()
-    expect(form).toBeGreaterThan(0)
+    // Should show login form. The sign-in form is client-rendered (0 <form>
+    // in the server HTML) and WebKit/Mobile-Safari hydrate measurably later
+    // than Chromium under load, so an instant count() races hydration —
+    // wait for it with a web-first assertion instead.
+    await expect(page.locator('form').first()).toBeVisible({ timeout: 15000 })
   })
 
   test('register page is accessible without auth', async ({ page }) => {

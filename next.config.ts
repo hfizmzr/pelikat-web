@@ -62,6 +62,10 @@ const appOrigin = process.env.NEXT_PUBLIC_APP_URL
 const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: __dirname,
+  // NFR04: Next's default X-Powered-By advertising header off; standard
+  // hardening headers served via headers() below. CSP intentionally NOT
+  // rolled here (high breakage risk with Supabase/Stripe frames — follow-up).
+  poweredByHeader: false,
   turbopack: {},
   webpack(config, options: WebpackHookOptions) {
     webpackDefineApi = options.webpack?.DefinePlugin;
@@ -94,6 +98,10 @@ const nextConfig: NextConfig = {
             key: "Cache-Control",
             value: "no-store, max-age=0",
           },
+          // NFR04 baseline hardening (no CSP here — see comment above).
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "same-origin" },
         ],
       },
     ]
