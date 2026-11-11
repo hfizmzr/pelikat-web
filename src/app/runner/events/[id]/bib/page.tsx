@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { fetchDjangoApi } from '@/lib/django'
 import { BibActionButtons } from '@/components/events/bib-action-buttons'
+import { RaceDayScheduleCard } from '@/components/runner/race-day-schedule-card'
 import { EventThemeScope } from '@/components/theme/event-theme-scope'
 import { getSurfaceTheme } from '@/lib/theme/surface'
 import { resolveLabels } from '@/lib/theme/labels'
@@ -67,7 +68,7 @@ export default async function RunnerBibPage({
       .single(),
     supabase
       .from('events')
-      .select('id, name, event_date, location, theme_preset_id, theme_config')
+      .select('id, name, event_date, location, start_time, flag_off_time, cutoff_time, theme_preset_id, theme_config')
       .eq('id', id)
       .single(),
   ])
@@ -228,6 +229,15 @@ export default async function RunnerBibPage({
               <li>Ensure your screen brightness is turned up.</li>
               <li>Take a screenshot as a backup.</li>
             </ol>
+          </div>
+
+          {/* FR-54: same schedule source as the event detail page (migration 092) */}
+          <div className="w-full">
+            <RaceDayScheduleCard
+              startTime={(event.start_time as string | null) ?? null}
+              flagOffTime={(event.flag_off_time as string | null) ?? null}
+              cutoffTime={(event.cutoff_time as string | null) ?? null}
+            />
           </div>
 
         </div>

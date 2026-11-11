@@ -54,3 +54,35 @@ test('organizer aggregate analytics demographics: shirt-size + age views (FR-34/
   await expect(page.getByText('Age Groups')).toBeVisible()
   await expect(page.getByText('T-Shirt Sizes')).toBeVisible()
 })
+
+// FR-34/35 author caveat: the shirt-size + age-distribution views are NOT
+// rendered on the per-event analytics page — they live only on the aggregate
+// hub (/organizer/analytics, demographics tab). This test pins the real
+// authoring journey: from a per-event analytics page the aggregate
+// demographics view is reachable through the hub nav (sidebar on desktop
+// viewports, hamburger menu sheet on mobile) and renders both charts.
+test('per-event analytics reaches the aggregate demographics views (FR-34/35 author caveat)', async ({ page }) => {
+  await login(page, 'klcityrunners@pelikat.test')
+  await goto(page, `/organizer/events/${KL_NIGHT_RUN_ID}/analytics`)
+  await expect(page.getByRole('heading', { name: /Analytics — KL City Night Run 2026/ })).toBeVisible()
+
+  // Hub nav: sidebar link exists server-side on ≥lg viewports; on mobile
+  // viewports it mounts inside the hamburger Sheet.
+  const analyticsLink = page.getByRole('link', { name: 'Telemetry & Analytics' })
+  if ((await analyticsLink.count()) === 0) {
+    await page.locator('header button').first().click()
+  }
+  await expect(analyticsLink).toBeVisible()
+  await analyticsLink.click()
+
+  // Radix Sheet does not auto-close on in-portal Link navigation — the modal
+  // keeps the page root aria-hidden (role queries can't see page headings
+  // until it is dismissed), so close it before asserting.
+  await page.waitForURL((url) => url.pathname === '/organizer/analytics', { timeout: 15000 })
+  await page.keyboard.press('Escape')
+
+  await expect(page.getByRole('heading', { name: 'Telemetry & Analytics' })).toBeVisible({ timeout: 15000 })
+  await page.getByRole('button', { name: 'demographics' }).click()
+  await expect(page.getByText('T-Shirt Sizes')).toBeVisible()
+  await expect(page.getByText('Age Groups')).toBeVisible()
+})

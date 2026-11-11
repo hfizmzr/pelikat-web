@@ -1,6 +1,6 @@
 import { defaultCache } from "@serwist/next/worker";
-import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { CacheFirst, CacheableResponsePlugin, ExpirationPlugin, Serwist } from "serwist";
+import type { PrecacheEntry, SerwistGlobalConfig, RouteMatchCallbackOptions } from "serwist";
+import { CacheFirst, CacheableResponsePlugin, ExpirationPlugin, NetworkFirst, Serwist } from "serwist";
 import {
   THEME_ASSET_CACHE_NAME,
   THEME_ASSET_MAX_AGE_SECONDS,
@@ -56,12 +56,37 @@ const themeAssetRuntimeCache = (() => {
   ];
 })();
 
+// FR-39/NFR03: offline digital BIB. NetworkFirst runtime caching for the
+// /runner/events/{uuid}/bib DOCUMENT route only — after one online visit the
+// server-rendered pass (BIB card + number) is cached, so an offline reload
+// renders it from the cache instead of failing. navigationPreload stays on:
+// Workbox's strategy handles a failed preload response by falling back to
+// cache. Matcher is a callback (request.mode === 'navigate') + a tight UUID
+// pathname regex, so /bib/consent, other routes and cross-origin requests
+// never match. Headers stay no-store — Cache API storage is not governed by
+// HTTP cache headers, so no next.config change is needed.
+const BIB_NAV_MATCHER: RegExp = /^\/runner\/events\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/bib\/?$/;
+const bibPageRuntimeCache = [
+  {
+    matcher: ({ request, url }: RouteMatchCallbackOptions) =>
+      request.mode === "navigate" && BIB_NAV_MATCHER.test(url.pathname),
+    handler: new NetworkFirst({
+      cacheName: "bib-pages",
+      plugins: [
+        // [0, 200]: same rationale as the theme-asset rule — [0] covers the
+        // opaque-response edge; the document route is same-origin 200 today.
+        new CacheableResponsePlugin({ statuses: [0, 200] }),
+      ],
+    }),
+  },
+];
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: [...themeAssetRuntimeCache, ...defaultCache],
+  runtimeCaching: [...bibPageRuntimeCache, ...themeAssetRuntimeCache, ...defaultCache],
 });
 
 serwist.addEventListeners();

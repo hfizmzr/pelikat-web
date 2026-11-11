@@ -136,6 +136,63 @@ test.describe('Runner: digital BIB + proxy consent', () => {
   })
 })
 
+test.describe('Runner: dashboard → digital BIB navigation (FR-38)', () => {
+  test('runner navigates Home → Explore → event → View Bib Number → BIB card + QR', async ({ page }) => {
+    await login(page, RUNNER)
+    await goto(page, '/runner')
+
+    // Bottom nav pill: Explore → /runner/events.
+    await page.getByRole('link', { name: 'Explore' }).click()
+    await page.waitForURL((url) => url.pathname === '/runner/events', { timeout: 15000 })
+
+    // E3's seed date ("tomorrow" at seed time) has drifted into the past on
+    // the cloud stack, so the default Upcoming tab hides it — switch to All.
+    await page.getByRole('link', { name: 'All', exact: true }).click()
+    await page.waitForURL((url) => url.searchParams.get('period') === 'all', { timeout: 15000 })
+
+    // E3 (physical, checked-in PH21-001) card under "Your Registered Events".
+    await page.getByRole('link', { name: /Putrajaya Heritage Half Marathon/ }).first().click()
+    await page.waitForURL((url) => url.pathname === `/runner/events/${E3_ID}`, { timeout: 15000 })
+
+    // The themed bib label for E3 (Hidden Village preset) does not override
+    // the platform bib_label, so the CTA copy is the default 'View Bib Number'.
+    await page.getByRole('link', { name: 'View Bib Number' }).click()
+    await page.waitForURL((url) => url.pathname.endsWith('/bib'), { timeout: 15000 })
+
+    await expect(page.getByText('PH21-001').first()).toBeVisible({ timeout: 15000 })
+    // Server-rendered secure QR: inline <svg> inside the white pass container.
+    await expect(page.locator('div.bg-white svg').first()).toBeVisible()
+  })
+})
+
+test.describe('Runner: race-day schedule card (FR-54)', () => {
+  test('seeded times render on E3 event + bib pages; all-NULL virtual event shows TBA', async ({ page }) => {
+    await login(page, RUNNER)
+
+    // E3 Putrajaya Heritage Half: 05:30 / 06:00 / 10:30 (seed §17).
+    // Time-text locators take .first(): both the event page and the BIB page
+    // render the same card, and route-transition overlap can briefly keep
+    // both copies in the DOM (same strict-mode pattern as 66da594).
+    await goto(page, `/runner/events/${E3_ID}`)
+    await expect(page.getByRole('heading', { name: 'Race-Day Schedule' }).first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('5:30 AM').first()).toBeVisible()
+    await expect(page.getByText('6:00 AM').first()).toBeVisible()
+    await expect(page.getByText('10:30 AM').first()).toBeVisible()
+    // The legacy hardcoded hero copy is gone — the card replaced it.
+    await expect(page.getByText('Starts at 6:00 AM')).toHaveCount(0)
+
+    // Same data source on the BIB pass (offline companion).
+    await goto(page, `/runner/events/${E3_ID}/bib`)
+    await expect(page.getByRole('heading', { name: 'Race-Day Schedule' }).first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('5:30 AM').first()).toBeVisible()
+
+    // E9 (100K New Year Virtual): all three columns NULL → single TBA line.
+    await goto(page, `/runner/events/${E9_ID}`)
+    await expect(page.getByRole('heading', { name: 'Race-Day Schedule' }).first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('Schedule to be announced').first()).toBeVisible()
+  })
+})
+
 test.describe('Runner: storefront order journey (E9)', () => {
   test('organizer lists a product, runner checks out, order appears and is cancelled', async ({ page }) => {
     // Six server-rendered page loads + two logins — Mobile Safari hydration
@@ -215,12 +272,38 @@ test.describe('Security: unauthenticated access', () => {
 })
 
 test.describe('Offline BIB access (FR-39/NFR03)', () => {
-  // Documented honest skip — recon verdict 2026-11-11: NOT achievable today.
-  // The prod service worker (src/app/sw.ts) precaches static assets only
-  // (no navigation fallback route) and pages/APIs are served no-store, so a
-  // signed-in BIB page cannot render while offline. No fake offline test is
-  // included; this skip keeps the gap explicit in test counts.
-  test.skip('runner can open their digital BIB while offline', () => {
-    // Skipped: requires SW navigation fallback + cacheable dynamic pages.
+  // WebKit/Safari-only honest skip: Playwright's WebKit does not replay a
+  // service-worker-cached navigation on an offline reload (documented
+  // WebKit SW limitation hit in earlier recon) — the cached document is not
+  // consulted for navigation requests, so the offline reload fails there.
+  // Chromium, Mobile Chrome and Firefox exercise the real flow below.
+  test.skip(({ browserName }) => browserName === 'webkit', 'WebKit offline reload behind SW: cached navigation not served (documented limitation)')
+
+  test('runner can reload their digital BIB while offline (SW NetworkFirst cache)', async ({ page, context }) => {
+    test.setTimeout(120_000)
+
+    // Online visit 1: login + let the SW install/activate (skipWaiting).
+    await login(page, RUNNER)
+    await goto(page, `/runner/events/${E3_ID}/bib`)
+    await expect(page.getByText('PH21-001').first()).toBeVisible({ timeout: 15000 })
+    await page.evaluate(() => navigator.serviceWorker.ready.then(() => {}))
+
+    // Online visit 2: now SW-controlled → NetworkFirst caches the document.
+    await page.reload()
+    await expect(page.getByText('PH21-001').first()).toBeVisible({ timeout: 15000 })
+    // Deterministic gate: wait until the SW actually wrote the navigation
+    // response into its 'bib-pages' Cache API entry (no sleeps).
+    await page.waitForFunction(async () => {
+      const cache = await caches.open('bib-pages').catch(() => null)
+      if (!cache) return false
+      return Boolean(await cache.match(location.pathname))
+    }, undefined, { timeout: 20000 })
+
+    // Offline reload — the BIB pass renders from the SW cache.
+    await context.setOffline(true)
+    await page.reload()
+    await expect(page.getByText('PH21-001').first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('Checked In').first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Race-Day Schedule' })).toBeVisible()
   })
 })

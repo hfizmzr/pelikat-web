@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { RunnerRegistrationActions } from '@/components/events/runner-registration-actions'
 import { CancelRegistrationButton } from '@/components/events/cancel-registration-button'
 import { VirtualCertificateButton } from '@/components/gamification/virtual-certificate-button'
+import { RaceDayScheduleCard } from '@/components/runner/race-day-schedule-card'
 import { EventThemeScope } from '@/components/theme/event-theme-scope'
 import { getSurfaceTheme } from '@/lib/theme/surface'
 import { resolveLabels } from '@/lib/theme/labels'
@@ -146,9 +147,14 @@ export default async function RunnerEventDetailPage({
                 <span className="text-[14px] font-bold text-foreground">
                   {eventDate.toLocaleDateString('en-MY', { weekday: 'long', year: 'numeric' })}
                 </span>
-                <span className="text-[12px] text-muted-foreground">Starts at 6:00 AM</span>
               </div>
             </div>
+
+            <RaceDayScheduleCard
+              startTime={(event.start_time as string | null) ?? null}
+              flagOffTime={(event.flag_off_time as string | null) ?? null}
+              cutoffTime={(event.cutoff_time as string | null) ?? null}
+            />
           
             {event.location && (
               <div className="flex items-center gap-4 bg-card p-4 rounded-2xl border border-border/60">
