@@ -390,3 +390,100 @@ describe('Reliability: sentinel runbook precision (migration 065)', () => {
     expect(migration065.split('$$')).toHaveLength(1)
   })
 })
+
+describe('Reliability: runner merch store checkout (migration 062 — merch)', () => {
+  const merch = read('supabase', 'migrations', '062_merch_store_checkout.sql')
+  const merchBody = norm(merch)
+
+  it('reserves stock for exactly 15 minutes (expires_at minted at checkout)', () => {
+    expect(merchBody).toContain("v_expires_at timestamptz := now() + interval '15 minutes'")
+    // the pending order is inserted with that reservation timestamp
+    expect(merchBody).toContain("values ( v_runner_id, v_event.organizer_id, p_event_id, v_total, 'pending', v_expires_at, p_payment_method )")
+    // unpaid reservations are released and restocked by the release job
+    expect(merchBody).toContain("cancel_reason = 'expired'")
+    expect(merchBody).toContain('perform public.merch_restock_orders(v_ids);')
+  })
+
+  it('gates checkout on a paid race registration for the same event', () => {
+    expect(merchBody).toContain(
+      'if not exists ( select 1 from public.registrations r where r.event_id = p_event_id and r.runner_id = v_runner_id and r.payment_status = \'paid\' )'
+    )
+    expect(merchBody).toContain(
+      "raise exception 'Complete your race registration payment before buying merch'"
+    )
+    // sales also close on the event date (Asia/Kuala_Lumpur cut-off)
+    expect(merchBody).toContain(
+      "if v_event.event_date < (now() at time zone 'Asia/Kuala_Lumpur')::date then raise exception 'Merch sales for this event have closed'"
+    )
+  })
+
+  it('prices the order server-side from merch_products and decrements stock under row locks', () => {
+    // the caller never supplies a price — the total comes from the DB
+    expect(merchBody).toContain(
+      'select sum(c.quantity * p.price)::numeric(12, 2) into v_total'
+    )
+    // variants are locked in a fixed order (id) so concurrent checkouts cannot deadlock
+    expect(merchBody).toContain('order by v.id for update;')
+    expect(merchBody).toContain('set stock = v.stock - c.quantity')
+  })
+
+  it('enforces max 20 distinct lines and quantities of 1–10', () => {
+    expect(merchBody).toContain(
+      "if cardinality(v_variant_ids) > 20 then raise exception 'Too many different items in one order (max 20)'"
+    )
+    expect(merchBody).toContain(
+      'where q is null or q < 1 or q > 10'
+    )
+    expect(merchBody).toContain(
+      "raise exception 'Quantity per item must be between 1 and 10'"
+    )
+  })
+
+  it('holds at most one pending reservation per runner per event (earlier one is cancelled + restocked)', () => {
+    expect(merchBody).toContain("cancel_reason = 'replaced'")
+    expect(merchBody).toContain('perform public.merch_restock_orders(v_previous_reserved);')
+  })
+
+  it('merch_confirm_payment is security definer, idempotent on payment_ref and service_role-only', () => {
+    expect(merch).toContain('security definer')
+    expect(merchBody).toContain(
+      'if v_order.payment_ref = p_payment_ref then return query select v_order.order_number, v_order.status; return;'
+    )
+    expect(merchBody).toContain("raise exception 'Order % is %, payment not applied'")
+    // gateway-callback surface: revoked from everyone, granted to service_role only
+    expect(merch).toContain(
+      'revoke all on function public.merch_confirm_payment(uuid, text, text) from public, anon, authenticated;'
+    )
+    expect(merch).toContain(
+      'grant execute on function public.merch_confirm_payment(uuid, text, text) to service_role;'
+    )
+  })
+
+  it('UNIQUE partial index pins one payment_ref per order', () => {
+    expect(merch).toContain(
+      'create unique index if not exists merch_orders_payment_ref_key\n  on public.merch_orders (payment_ref) where payment_ref is not null;'
+    )
+  })
+
+  it('merch_update_order_status is the organizer-owned bulk RPC (uuid[])', () => {
+    expect(merch).toContain(
+      'create or replace function public.merch_update_order_status(\n  p_order_ids uuid[],\n  p_status text\n)\nreturns int'
+    )
+    // organizer scoping + transition gate live in the RPC, not the app
+    expect(merchBody).toContain('v_organizer_id uuid := public.get_my_organizer_id();')
+    expect(merchBody).toContain("when 'cancelled' then array['pending', 'confirmed', 'ready']")
+    // cancelling a reserved pending order returns its stock (bulk restock)
+    expect(merchBody).toContain('perform public.merch_restock_orders(v_restock);')
+    expect(merchBody).toContain("when p_status = 'cancelled' then 'cancelled_by_organizer'")
+  })
+
+  it('merch_release_expired_orders runs every minute via pg_cron', () => {
+    expect(merch).toContain(
+      "select cron.schedule(\n  'merch-release-expired-orders',\n  '* * * * *',\n  'select public.merch_release_expired_orders()'\n);"
+    )
+    // only reserved pending orders whose reservation lapsed are released
+    expect(merchBody).toContain(
+      "where status = 'pending' and expires_at is not null and expires_at < now() for update skip locked"
+    )
+  })
+})
