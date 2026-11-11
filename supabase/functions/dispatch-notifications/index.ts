@@ -18,15 +18,20 @@ import {
   type NotificationJob,
 } from "../_shared/notification-templates.ts";
 import { isAllowedPushEndpoint, sendPush, type VapidConfig } from "../_shared/webpush.ts";
+// Batch/retry logic extracted to _shared/dispatch.ts for Node unit tests
+// (EXT-5); the transport (fetch + timeouts) stays wired here.
+import {
+  MAX_ATTEMPTS,
+  computeRetryState,
+  deliverEmails,
+  shouldClaimNextBatch,
+  type EmailTransport,
+} from "../_shared/dispatch.ts";
 
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void } | undefined;
 
-const RESEND_API = "https://api.resend.com/emails";
-const RESEND_BATCH_API = "https://api.resend.com/emails/batch";
-const MAX_ATTEMPTS = 5; // keep in sync with claim_notification_jobs
 const CLAIM_SIZE = 50;
 const RUN_BUDGET_MS = 50_000;
-const RESEND_SPACING_MS = 600; // Resend's default limit is 2 requests/second
 const RESEND_TIMEOUT_MS = 15_000;
 const PUSH_TIMEOUT_MS = 10_000;
 
@@ -48,10 +53,6 @@ interface Outcome {
   push_error?: string | null;
 }
 
-type SendResult = { ok: true } | { ok: false; retriable: boolean; error: string };
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
@@ -67,7 +68,7 @@ function safeEqual(a: string, b: string): boolean {
 // A failed attempt stays pending (the 5-minute lease is the backoff)
 // until it runs out of attempts.
 function failure(row: NotificationRow, error: string): { status: "pending" | "failed"; error: string } {
-  return { status: row.attempts >= MAX_ATTEMPTS ? "failed" : "pending", error: error.slice(0, 500) };
+  return { status: computeRetryState(row.attempts, MAX_ATTEMPTS).status, error: error.slice(0, 500) };
 }
 
 // ── email ────────────────────────────────────────────────────────
@@ -86,53 +87,13 @@ async function resendPost(url: string, key: string, body: unknown): Promise<Resp
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
     // a stalled request must not hold up the whole batch; a timeout is a
-    // retriable failure (sendEmails catches it). The signal also covers the
+    // retriable failure (deliverEmails catches it). The signal also covers the
     // body read, so callers must not let res.text() throw.
     signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
   });
 }
 
-function classify(res: Response, detail: string): SendResult {
-  if (res.ok) return { ok: true };
-  return { ok: false, retriable: res.status === 429 || res.status >= 500, error: `${res.status} ${detail}`.trim() };
-}
-
-async function sendEmails(emails: OutgoingEmail[], key: string, from: string): Promise<Map<string, SendResult>> {
-  const results = new Map<string, SendResult>();
-  for (let i = 0; i < emails.length; i += 100) {
-    const chunk = emails.slice(i, i + 100);
-    if (i > 0) await sleep(RESEND_SPACING_MS);
-    let res: Response;
-    try {
-      res = await resendPost(RESEND_BATCH_API, key, chunk.map(({ to, subject, html, text }) => ({ from, to, subject, html, text })));
-    } catch (err) {
-      for (const e of chunk) results.set(e.id, { ok: false, retriable: true, error: String(err) });
-      continue;
-    }
-    const detail = res.ok ? "" : (await res.text().catch(() => "")).slice(0, 300);
-    const batch = classify(res, detail);
-    if (batch.ok || batch.retriable) {
-      for (const e of chunk) results.set(e.id, batch);
-      continue;
-    }
-    // A 4xx rejects the whole batch (e.g. one bad address, or the
-    // onboarding@resend.dev sender that may only mail the account owner):
-    // retry one by one so each recipient gets its own outcome.
-    console.warn("resend batch rejected, sending individually:", detail);
-    for (const e of chunk) {
-      await sleep(RESEND_SPACING_MS);
-      try {
-        const single = await resendPost(RESEND_API, key, { from, to: e.to, subject: e.subject, html: e.html, text: e.text });
-        results.set(e.id, classify(single, single.ok ? "" : (await single.text().catch(() => "")).slice(0, 300)));
-      } catch (err) {
-        results.set(e.id, { ok: false, retriable: true, error: String(err) });
-      }
-    }
-  }
-  return results;
-}
-
-async function deliverEmails(rows: NotificationRow[], outcomes: Map<string, Outcome>, siteUrl: string) {
+async function dispatchEmails(rows: NotificationRow[], outcomes: Map<string, Outcome>, siteUrl: string) {
   const pending = rows.filter((r) => r.email_status === "pending");
   if (pending.length === 0) return;
 
@@ -153,7 +114,15 @@ async function deliverEmails(rows: NotificationRow[], outcomes: Map<string, Outc
   }
 
   const from = `Pelikat <${Deno.env.get("FROM_EMAIL") || "notifications@pelikat.com"}>`;
-  const results = await sendEmails(outgoing, key, from);
+  const transport: EmailTransport = {
+    // fetch + timeout + body read stay at the call site; _shared/dispatch.ts
+    // holds only the pure batch/retry logic.
+    async post(url, body) {
+      const res = await resendPost(url, key, body);
+      return { status: res.status, text: res.ok ? "" : (await res.text().catch(() => "")).slice(0, 300) };
+    },
+  };
+  const results = await deliverEmails(outgoing, from, transport);
   for (const r of pending) {
     const result = results.get(r.id);
     if (!result) continue;
@@ -259,7 +228,7 @@ async function deliverPushes(sb: SupabaseClient, rows: NotificationRow[], outcom
 
 async function processBatch(sb: SupabaseClient, rows: NotificationRow[], siteUrl: string) {
   const outcomes = new Map<string, Outcome>();
-  await Promise.all([deliverEmails(rows, outcomes, siteUrl), deliverPushes(sb, rows, outcomes)]);
+  await Promise.all([dispatchEmails(rows, outcomes, siteUrl), deliverPushes(sb, rows, outcomes)]);
 
   const tally = { email_sent: 0, email_failed: 0, push_sent: 0, push_no_device: 0, retry: 0 };
   await Promise.all(
@@ -289,8 +258,9 @@ async function dispatch() {
   const siteUrl = Deno.env.get("SITE_URL") || "https://pelikat.com";
   const started = Date.now();
   let claimed = 0;
+  let lastBatchSize: number | null = null;
 
-  while (Date.now() - started < RUN_BUDGET_MS) {
+  while (shouldClaimNextBatch({ lastBatchSize, elapsedMs: Date.now() - started, budgetMs: RUN_BUDGET_MS, claimSize: CLAIM_SIZE })) {
     const { data, error } = await sb.rpc("claim_notification_jobs", { p_limit: CLAIM_SIZE });
     if (error) {
       console.error("dispatch-notifications: claim failed", error.message);
@@ -299,9 +269,9 @@ async function dispatch() {
     const rows = (data ?? []) as NotificationRow[];
     if (rows.length === 0) break;
     claimed += rows.length;
+    lastBatchSize = rows.length;
     const tally = await processBatch(sb, rows, siteUrl);
     console.log("dispatch-notifications batch", { claimed: rows.length, ...tally });
-    if (rows.length < CLAIM_SIZE) break;
   }
   return claimed;
 }
