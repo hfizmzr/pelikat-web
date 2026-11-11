@@ -17,9 +17,12 @@ test.describe('organizer mobile console (FR-69)', () => {
 
     // Console shell + active-event ops panel (earliest published event
     // for klcityrunners = Putrajaya Heritage Half Marathon, seed …023)
-    await expect(page.getByText('Race Console')).toBeVisible()
-    await expect(page.getByText('Critical Ops Status')).toBeVisible()
-    await expect(page.getByText('Category Breakdown')).toBeVisible()
+    // Strict-mode guard: under full-parallel load duplicated DOM subtrees
+    // can resolve multi-match locators (same flake hardened in commit
+    // 781eab9), so select the first match explicitly.
+    await expect(page.getByText('Race Console').first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Critical Ops Status' }).first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Category Breakdown' }).first()).toBeVisible()
 
     // Bottom-nav tabs render (the console IS a tab in the mobile shell)
     const nav = page.locator('nav')
@@ -42,6 +45,6 @@ test.describe('organizer mobile console (FR-69)', () => {
     await expect(page.getByRole('link', { name: /Check-in/ }).first()).toBeVisible()
 
     await goto(page, '/organizer/mobile/merch')
-    await expect(page.getByText('Merch Hub')).toBeVisible()
+    await expect(page.getByText('Merch Hub').first()).toBeVisible()
   })
 })
