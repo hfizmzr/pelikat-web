@@ -1405,3 +1405,35 @@ create policy "organizer deletes own event theme assets" on storage.objects
   );
 
 commit;
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- §17 RACE-DAY SCHEDULE SEED TIMES  (migration 092 columns — FR-54)
+--    Adds plausible race-day times to the 5 seeded PHYSICAL events; the 5
+--    virtual events are deliberately left NULL (no flag-off concept — the
+--    FR-54 UI hides the schedule section when all three columns are NULL).
+--    Idempotent: guarded by the fixed event UUIDs, so re-runs converge to
+--    the same state. Additive only — UPDATEs on the fixed seed rows.
+--      • KL City Night Run (21)              — night 10K: late flag-off
+--      • Putrajaya Heritage Half (23)        — standard dawn half
+--      • Cyberjaya Green Run (24)            — family 10K + 3K kids
+--      • JB Ultra Marathon (27)              — earliest start, longest cutoff
+--      • Borneo Highland Trail (28)          — trail course, generous cutoff
+-- ════════════════════════════════════════════════════════════════════════════
+
+update public.events as e
+set start_time     = v.start_time,
+    flag_off_time  = v.flag_off_time,
+    cutoff_time    = v.cutoff_time
+from (values
+  ('d0e5e000-0000-4000-8000-000000000021'::uuid,
+   '18:00'::time, '20:30'::time, '23:30'::time),
+  ('d0e5e000-0000-4000-8000-000000000023'::uuid,
+   '05:30'::time, '06:00'::time, '10:30'::time),
+  ('d0e5e000-0000-4000-8000-000000000024'::uuid,
+   '06:30'::time, '07:00'::time, '10:00'::time),
+  ('d0e5e000-0000-4000-8000-000000000027'::uuid,
+   '04:30'::time, '05:00'::time, '14:00'::time),
+  ('d0e5e000-0000-4000-8000-000000000028'::uuid,
+   '05:30'::time, '06:00'::time, '15:00'::time)
+) as v(id, start_time, flag_off_time, cutoff_time)
+where e.id = v.id;
