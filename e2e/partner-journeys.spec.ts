@@ -125,7 +125,8 @@ test.describe('Runner: digital BIB + proxy consent', () => {
     await goto(page, `/runner/events/${E3_ID}/bib`)
 
     await expect(page.getByText('Checked In').first()).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText('PH21-001')).toBeVisible()
+    // The BIB number renders in two layouts (mobile card + desktop ticket).
+    await expect(page.getByText('PH21-001').first()).toBeVisible()
 
     // Navigate to the consent page but DO NOT generate/consume a code.
     await page.getByRole('link', { name: 'Generate Proxy Collection Code' }).click()
