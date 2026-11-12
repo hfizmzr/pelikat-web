@@ -75,9 +75,15 @@ export function BibActionButtons({
       textarea.style.opacity = '0'
       document.body.appendChild(textarea)
       textarea.select()
-      document.execCommand('copy')
+      // execCommand signals failure with `false` (it doesn't throw) — only
+      // claim success when it actually copied.
+      const copied = document.execCommand('copy')
       textarea.remove()
-      toast.success('Link copied to clipboard!')
+      if (copied) {
+        toast.success('Link copied to clipboard!')
+      } else {
+        toast.error('Could not copy the link — share it from the address bar instead.')
+      }
     } catch {
       toast.error('Could not copy the link — share it from the address bar instead.')
     }
