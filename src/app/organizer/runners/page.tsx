@@ -13,46 +13,71 @@ export const metadata: Metadata = {
 
 const EXPORT_HEADERS = ['BIB Number', 'Runner Name', 'Event', 'Category', 'Payment Status', 'Checked In', 'Registration Date'] as const
 
+// Shape of a many-to-one registration embed: OBJECT (or null), not an array.
+type DirectoryRegistration = {
+  id: string
+  bib_number: string | null
+  payment_status: string
+  checked_in: boolean | null
+  created_at: string
+  runner_id: string | null
+  events: { name: string | null } | null
+  race_categories: { name: string | null; bib_prefix: string | null } | null
+}
+
+// Export completeness: page through ALL of the organizer's registrations
+// (PostgREST range pagination) so the CSV includes every row, not just the
+// first page. The UI table stays capped at its display limit (below).
+async function fetchAllRegistrations(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  organizerId: string | undefined,
+): Promise<DirectoryRegistration[]> {
+  const PAGE_SIZE = 1000
+  const all: DirectoryRegistration[] = []
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data } = await supabase
+      .from('registrations')
+      .select(`
+        id, bib_number, payment_status, checked_in, created_at, runner_id,
+        events(id, name, event_date),
+        race_categories(id, name, bib_prefix)
+      `)
+      .eq('organizer_id', organizerId)
+      .order('created_at', { ascending: false })
+      .range(from, from + PAGE_SIZE - 1)
+    if (!data || data.length === 0) break
+    all.push(...(data as unknown as DirectoryRegistration[]))
+    if (data.length < PAGE_SIZE) break
+  }
+  return all
+}
+
 export default async function OrganizerRunnersPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const organizerId = user?.app_metadata?.organizer_id
 
-  const { data: registrations } = await supabase
-    .from('registrations')
-    .select(`
-      id, bib_number, payment_status, checked_in, created_at, runner_id,
-      events(id, name, event_date),
-      race_categories(id, name, bib_prefix)
-    `)
-    .eq('organizer_id', organizerId)
-    .order('created_at', { ascending: false })
-    .limit(100)
+  // One paginated fetch serves BOTH consumers: the UI table keeps its
+  // 100-row display cap (slice below), while the CSV export covers the
+  // complete set — a 101st registration must still export.
+  const allRegistrations = await fetchAllRegistrations(supabase, organizerId)
 
-  // Re-attach runner names via the organizer-safe view (raw
-  // runner_profiles rows / embeds are no longer organizer-readable)
+  // Runner names resolve for BOTH the table and the full export set.
   const profileById = await getSafeRunnerProfiles(
     supabase,
-    (registrations ?? []).map(reg => (reg as { runner_id?: string | null }).runner_id)
+    allRegistrations.map(reg => reg.runner_id)
   )
 
-  const rows: RunnerDirectoryRow[] = (registrations ?? []).map((reg) => {
-    const r = reg as {
-      id: string
-      bib_number: string | null
-      payment_status: string
-      events?: { name: string | null }[] | null
-      race_categories?: { name: string | null; bib_prefix: string | null }[] | null
-    }
-    const profile = profileById.get((reg as { runner_id?: string | null }).runner_id ?? '')
+  const rows: RunnerDirectoryRow[] = allRegistrations.slice(0, 100).map((r) => {
+    const profile = profileById.get(r.runner_id ?? '')
     return {
       id: r.id,
       bib_number: r.bib_number,
       payment_status: r.payment_status,
       runnerName: profile?.full_name ?? null,
-      eventName: r.events?.[0]?.name ?? null,
-      categoryName: r.race_categories?.[0]?.name ?? null,
-      bibPrefix: r.race_categories?.[0]?.bib_prefix ?? null,
+      eventName: r.events?.name ?? null,
+      categoryName: r.race_categories?.name ?? null,
+      bibPrefix: r.race_categories?.bib_prefix ?? null,
     }
   })
 
@@ -63,21 +88,15 @@ export default async function OrganizerRunnersPage() {
 
   // Audit #8: Export CSV was dead — reuse the admin export pattern
   // (rowsToCsv + Blob download, via the shared ExportCsvButton).
-  const exportRows = (registrations ?? []).map((reg) => {
-    const r = reg as {
-      bib_number: string | null
-      checked_in: boolean | null
-      payment_status: string
-      created_at: string
-      events?: { name: string | null }[] | null
-      race_categories?: { name: string | null }[] | null
-    }
-    const profile = profileById.get((reg as { runner_id?: string | null }).runner_id ?? '')
+  // CodeRabbit fix: export reads the FULL paginated set (fetchAllRegistrations),
+  // not the display-capped page — a 101st registration must still export.
+  const exportRows = allRegistrations.map((r) => {
+    const profile = profileById.get(r.runner_id ?? '')
     return [
       r.bib_number || '',
       profile?.full_name || 'Unknown',
-      r.events?.[0]?.name || '',
-      r.race_categories?.[0]?.name || '',
+      r.events?.name || '',
+      r.race_categories?.name || '',
       r.payment_status,
       r.checked_in ? 'YES' : 'NO',
       new Date(r.created_at).toISOString(),

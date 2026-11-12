@@ -10,14 +10,17 @@ import { useRouter } from 'next/navigation'
 // their active state and scope the sections, and ⌘K opens a command palette
 // (nav commands, filtered by typed text — no cmdk dep needed for this size).
 
-type Filter = 'all' | 'runners' | 'waves' | 'merch' | 'transactions'
+type Filter = 'all' | 'runners' | 'waves' | 'merch' | 'activity'
 
 const FILTERS: { key: Filter; label: string }[] = [
   { key: 'all', label: 'All Records' },
   { key: 'runners', label: 'Runners' },
   { key: 'waves', label: 'Race Waves' },
   { key: 'merch', label: 'Merch SKUs' },
-  { key: 'transactions', label: 'Transactions' },
+  // CodeRabbit fix: this pill has always scoped the recent-registrations
+  // list + the registration-velocity chart — no transaction/payment data
+  // is loaded in the console. Label renamed to match what it filters.
+  { key: 'activity', label: 'Recent Activity' },
 ]
 
 type Section = 'waves' | 'recent' | 'velocity' | 'events' | 'merch'
@@ -27,7 +30,7 @@ const SECTIONS_FOR: Record<Filter, Section[]> = {
   runners: ['recent', 'events'],
   waves: ['waves'],
   merch: ['merch'],
-  transactions: ['recent', 'velocity'],
+  activity: ['recent', 'velocity'],
 }
 
 export interface ConsoleActiveEvent {
@@ -51,6 +54,10 @@ export interface ConsoleRecent {
   runnerName: string | null
   eventName: string | null
   categoryName: string | null
+  // CodeRabbit fix: searchable fields the input promises. bib → BIB search;
+  // id → payment reference (registration payments use the registration id
+  // as reference_number — components/events/actions.ts).
+  bib: string | null
 }
 export interface ConsoleEventCard {
   id: string
@@ -188,7 +195,9 @@ export function OrganizerConsole({
     q === '' || vals.some(v => (v ?? '').toLowerCase().includes(q))
 
   const filteredWaves = waves.filter(w => matches(w.name))
-  const filteredRecent = recent.filter(r => matches(r.runnerName, r.eventName, r.categoryName, r.paymentStatus))
+  const filteredRecent = recent.filter(r =>
+    matches(r.runnerName, r.eventName, r.categoryName, r.paymentStatus, r.bib, r.id)
+  )
   const filteredEvents = events.filter(e => matches(e.name, e.location, e.status))
   const filteredMerch = merch.filter(m => matches(m.name, m.eventName))
 

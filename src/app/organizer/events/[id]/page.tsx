@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { isConfirmedStatus } from '@/lib/registration-status'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,7 +34,7 @@ type Registration = {
   checked_in: boolean | null
   payment_status: string | null
   runner_profiles: { full_name: string | null } | null
-  race_categories: { name: string | null } | null
+  race_categories: { name: string | null; price: number | null } | null
 }
 
 type EventStatus = 'draft' | 'published' | 'closed'
@@ -139,17 +138,41 @@ export default async function OrganizerEventDetailPage({
   const myOrganizerId = user?.app_metadata?.organizer_id
   const canEdit = typeof myOrganizerId === 'string' && eventDetail.organizer_id === myOrganizerId
 
+  // Amounts actually charged: the payments ledger (migration 059) stores the
+  // checkout-time amount per registration (order_type='registration',
+  // status='completed' once HitPay confirms). Paid registrations without a
+  // ledger row (mock-payment flow flips payment_status directly) fall back to
+  // the category's current price. Waived registrations are never charged, so
+  // they are excluded from revenue entirely.
+  const registrationIds = registrations.map((registration) => registration.id)
+  const amountByRegistration = new Map<string, number>()
+  if (registrationIds.length > 0) {
+    const { data: completedPayments } = await supabase
+      .from('payments')
+      .select('registration_id, amount')
+      .eq('order_type', 'registration')
+      .eq('status', 'completed')
+      .in('registration_id', registrationIds)
+    for (const payment of completedPayments ?? []) {
+      const p = payment as { registration_id: string | null; amount: number | null }
+      if (p.registration_id) amountByRegistration.set(p.registration_id, Number(p.amount ?? 0))
+    }
+  }
+
   const stats = {
     totalRegistrations: registrations.length,
     checkedIn: registrations.filter((registration) => registration.checked_in).length,
     categories: raceCategories.length,
-    // Revenue mirrors the financial page: confirmed registrations × category price.
+    // Revenue = amounts actually collected from PAID registrations only
+    // (ledger amount where recorded, category price otherwise). Waived
+    // registrations are complimentary — no charge, no revenue.
     revenue: registrations
-      .filter((registration) => isConfirmedStatus(registration.payment_status))
-      .reduce((sum, registration) => {
-        const reg = registration as unknown as { race_categories?: { price?: number | null } | null }
-        return sum + Number(reg.race_categories?.price ?? 0)
-      }, 0),
+      .filter((registration) => registration.payment_status === 'paid')
+      .reduce(
+        (sum, registration) =>
+          sum + (amountByRegistration.get(registration.id) ?? Number(registration.race_categories?.price ?? 0)),
+        0,
+      ),
   }
 
   const statusVariant = STATUS_VARIANTS

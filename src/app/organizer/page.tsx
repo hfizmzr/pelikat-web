@@ -21,7 +21,7 @@ export default async function OrganizerDashboard() {
       .select(`
         id, name, status, event_date, location,
         race_categories(id, name, max_slots, bib_prefix),
-        registrations(id, payment_status, checked_in, category_id)
+        registrations(id, payment_status, checked_in, category_id, bib_number)
       `)
       .eq('organizer_id', organizerId)
       .order('event_date', { ascending: true })
@@ -29,7 +29,7 @@ export default async function OrganizerDashboard() {
     supabase
       .from('registrations')
       .select(`
-        id, payment_status, created_at, runner_id,
+        id, payment_status, created_at, runner_id, bib_number,
         events(name),
         race_categories(name)
       `)
@@ -98,20 +98,26 @@ export default async function OrganizerDashboard() {
 
   // Recent registrations, names resolved + dates pre-formatted
   const recent = (recentRegistrations ?? []).map((reg) => {
-    const r = reg as {
+    const r = reg as unknown as {
       id: string
       payment_status: string
       created_at: string
-      events?: { name: string | null }[] | null
-      race_categories?: { name: string | null }[] | null
+      bib_number: string | null
+      // Many-to-one embeds return an OBJECT (or null), not an array — the
+      // generated supabase types mis-model the cardinality as one-to-many,
+      // so the cast goes through unknown (same shape the event-detail and
+      // financial pages read).
+      events?: { name: string | null } | null
+      race_categories?: { name: string | null } | null
     }
     return {
       id: r.id,
       paymentStatus: r.payment_status,
       createdAtLabel: new Date(r.created_at).toLocaleDateString('en-MY'),
       runnerName: recentProfileById.get((reg as { runner_id?: string | null }).runner_id ?? '')?.full_name ?? null,
-      eventName: r.events?.[0]?.name ?? null,
-      categoryName: r.race_categories?.[0]?.name ?? null,
+      eventName: r.events?.name ?? null,
+      categoryName: r.race_categories?.name ?? null,
+      bib: r.bib_number ?? null,
     }
   })
 
@@ -130,12 +136,14 @@ export default async function OrganizerDashboard() {
   })
 
   const merch = (merchProducts ?? []).map((p) => {
-    const m = p as {
+    const m = p as unknown as {
       id: string
       name: string
       price: number | null
       is_active: boolean | null
-      events?: { name: string | null }[] | null
+      // Many-to-one embed — object (or null), not an array. merch_variants
+      // stays an array (one-to-many).
+      events?: { name: string | null } | null
       merch_variants?: { stock: number | null }[] | null
     }
     return {
@@ -143,7 +151,7 @@ export default async function OrganizerDashboard() {
       name: m.name,
       price: Number(m.price ?? 0),
       isActive: !!m.is_active,
-      eventName: m.events?.[0]?.name ?? null,
+      eventName: m.events?.name ?? null,
       stock: (m.merch_variants ?? []).reduce((a, v) => a + Number(v.stock ?? 0), 0),
     }
   })
