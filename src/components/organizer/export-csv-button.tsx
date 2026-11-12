@@ -1,7 +1,6 @@
 'use client'
 
-import { Download, LoaderCircle } from "lucide-react"
-import { useState } from 'react'
+import { Download } from "lucide-react"
 import { rowsToCsv } from '@/lib/utils'
 
 /**
@@ -9,6 +8,10 @@ import { rowsToCsv } from '@/lib/utils'
  * the admin side's exportRegistrationsToCSV pattern, extracted so server
  * pages can pass serializable rows instead of wiring handlers). Also used by
  * the runner directory's Export CSV and the financial page's Export Report.
+ *
+ * No spinner state: the blob construction is synchronous, so an
+ * exporting/disabled state could never paint before the click handler
+ * returns (removed as dead code).
  */
 export function ExportCsvButton({
   filename,
@@ -23,27 +26,20 @@ export function ExportCsvButton({
   children?: React.ReactNode
   className?: string
 }) {
-  const [exporting, setExporting] = useState(false)
-
   const handleExport = () => {
-    setExporting(true)
-    try {
-      const csv = rowsToCsv(headers, rows)
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = filename
-      a.click()
-      URL.revokeObjectURL(url)
-    } finally {
-      setExporting(false)
-    }
+    const csv = rowsToCsv(headers, rows)
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
-    <button onClick={handleExport} disabled={exporting} className={className}>
-      {exporting ? <LoaderCircle className="size-[18px] animate-spin" /> : <Download className="size-[18px]" />}
+    <button onClick={handleExport} className={className}>
+      <Download className="size-[18px]" />
       {children}
     </button>
   )

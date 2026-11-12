@@ -21,7 +21,7 @@ export default async function OrganizerDashboard() {
       .select(`
         id, name, status, event_date, location,
         race_categories(id, name, max_slots, bib_prefix),
-        registrations(id, payment_status, checked_in)
+        registrations(id, payment_status, checked_in, category_id)
       `)
       .eq('organizer_id', organizerId)
       .order('event_date', { ascending: true })
@@ -83,15 +83,18 @@ export default async function OrganizerDashboard() {
     .gte('created_at', thirtyDaysAgo)
     .order('created_at', { ascending: true })
 
-  // Group into days for simple bar chart. Dates are formatted SERVER-SIDE and
-  // passed as strings — the console renders from a client component, and
+  // Group into days for simple bar chart. Keys are ISO dates (yyyy-MM-dd,
+  // server-local timezone) so the client can filter the 30d/14d/today
+  // windows by string comparison; the console renders the day-of-month
+  // label by slicing the key. Dates are formatted SERVER-SIDE and passed as
+  // strings — the console renders from a client component, and
   // locale/timezone formatting would otherwise hydrate differently.
   const dayMap: Record<string, number> = {}
   velocityData?.forEach(r => {
-    const day = new Date(r.created_at).toLocaleDateString('en-MY', { day: '2-digit', month: 'short' })
+    const day = new Date(r.created_at).toLocaleDateString('en-CA')
     dayMap[day] = (dayMap[day] || 0) + 1
   })
-  const velocityDays = Object.entries(dayMap).slice(-14)
+  const velocityDays = Object.entries(dayMap)
 
   // Recent registrations, names resolved + dates pre-formatted
   const recent = (recentRegistrations ?? []).map((reg) => {
@@ -156,11 +159,16 @@ export default async function OrganizerDashboard() {
       } : null}
       waves={(activeCategories ?? []).map(c => {
         const cat = c as { id: string; name: string; bib_prefix: string | null; max_slots: number | null }
-        return { id: cat.id, name: cat.name, bibPrefix: cat.bib_prefix, maxSlots: cat.max_slots }
+        // Real per-wave fill: count the active event's registrations by
+        // category (category_id rides along on the existing registrations
+        // join — no extra query).
+        const regCount = (activeEvent?.registrations || []).filter(
+          (r: { category_id?: string | null }) => r.category_id === cat.id
+        ).length
+        return { id: cat.id, name: cat.name, bibPrefix: cat.bib_prefix, maxSlots: cat.max_slots, regCount }
       })}
       recent={recent}
       velocityDays={velocityDays}
-      velocityTotal={velocityData?.length || 0}
       events={eventCards}
       merch={merch}
       kpis={{

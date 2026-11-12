@@ -42,6 +42,7 @@ export interface ConsoleWave {
   name: string
   bibPrefix: string | null
   maxSlots: number | null
+  regCount: number
 }
 export interface ConsoleRecent {
   id: string
@@ -140,7 +141,6 @@ export function OrganizerConsole({
   waves,
   recent,
   velocityDays,
-  velocityTotal,
   events,
   merch,
   kpis,
@@ -149,7 +149,6 @@ export function OrganizerConsole({
   waves: ConsoleWave[]
   recent: ConsoleRecent[]
   velocityDays: [string, number][]
-  velocityTotal: number
   events: ConsoleEventCard[]
   merch: ConsoleMerchItem[]
   kpis: {
@@ -165,6 +164,10 @@ export function OrganizerConsole({
   const [filter, setFilter] = useState<Filter>('all')
   const [query, setQuery] = useState('')
   const [paletteOpen, setPaletteOpen] = useState(false)
+  // Audit: the 30/14/today segmented control was inert (active index
+  // hardcoded). Local state + derived series — the full 30-day buckets are
+  // already client-side, no extra fetching.
+  const [velocityRange, setVelocityRange] = useState<30 | 14 | 1>(30)
 
   // Real Ctrl/Cmd+K for the ⌘K chip
   useEffect(() => {
@@ -188,6 +191,25 @@ export function OrganizerConsole({
   const filteredRecent = recent.filter(r => matches(r.runnerName, r.eventName, r.categoryName, r.paymentStatus))
   const filteredEvents = events.filter(e => matches(e.name, e.location, e.status))
   const filteredMerch = merch.filter(m => matches(m.name, m.eventName))
+
+  // Velocity window: bucket keys are ISO dates (ascending) from the server.
+  // For 30 days the full series is used verbatim (initial render path — no
+  // Date work, so server/client markup stays identical); 14-day and today
+  // cutoffs are only computed after a click, so client-local "today" can't
+  // diverge from the server-rendered output.
+  const velocitySeries = velocityRange === 30
+    ? velocityDays
+    : velocityDays.filter(([day]) => {
+        const cutoff = new Date()
+        cutoff.setDate(cutoff.getDate() - (velocityRange - 1))
+        return day >= cutoff.toLocaleDateString('en-CA')
+      })
+  const velocityCount = velocitySeries.reduce((a, [, v]) => a + v, 0)
+  const velocityWindowLabel = velocityRange === 30
+    ? 'in the last 30 days'
+    : velocityRange === 14
+    ? 'in the last 14 days'
+    : 'today'
 
   const sectionHidden = (s: Section): boolean => {
     switch (s) {
@@ -424,12 +446,14 @@ export function OrganizerConsole({
               zone at the audited 1440 viewport, so it is dropped. */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {filteredWaves.map((cat, i) => {
-                  const colors = ['bg-primary', 'bg-primary', 'bg-success', 'bg-muted-foreground']
                   const dotColors = ['bg-primary', 'bg-primary', 'bg-success', 'bg-muted-foreground']
+                  // Real fill from per-wave registration counts (server-side
+                  // join on registrations.category_id).
                   const fillPercent = cat.maxSlots
-                    ? Math.round((0 / cat.maxSlots) * 100) // placeholder until we join regs
+                    ? Math.min(Math.round((cat.regCount / cat.maxSlots) * 100), 100)
                     : 0
-                  const isAlmostFull = fillPercent >= 90
+                  const remaining = cat.maxSlots ? Math.max(cat.maxSlots - cat.regCount, 0) : null
+                  const isAlmostFull = remaining !== null && fillPercent >= 90
 
                   return (
                     <div key={cat.id} className="p-4 rounded-xl bg-card flex flex-col justify-between gap-4">
@@ -444,20 +468,20 @@ export function OrganizerConsole({
                           </span>
                         </div>
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${isAlmostFull ? 'bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300' : 'bg-primary/15 text-primary'}`}>
-                          {fillPercent}%
+                          {cat.maxSlots ? `${fillPercent}%` : `${cat.regCount} / ∞`}
                         </span>
                       </div>
                       <div>
                         <div className="flex justify-between text-[10px] text-muted-foreground mb-1.5 font-medium">
-                          <span>0 of {cat.maxSlots || '?'} slots</span>
+                          <span>{cat.regCount} of {cat.maxSlots || '∞'} slots</span>
                           <span className={isAlmostFull ? 'text-red-500 dark:text-red-300' : 'text-muted-foreground'}>
-                            {cat.maxSlots ? cat.maxSlots : '?'} left
+                            {remaining !== null ? `${remaining} left` : '∞ left'}
                           </span>
                         </div>
                         <div className="w-full bg-accent rounded-full h-1.5 overflow-hidden">
                           <div
-                            className={`h-full rounded-full ${colors[i % colors.length]}`}
-                            style={{ width: `${Math.max(fillPercent, 2)}%` }}
+                            className="h-full rounded-full bg-primary"
+                            style={{ width: `${cat.maxSlots ? Math.max(fillPercent, 2) : 0}%` }}
                           />
                         </div>
                       </div>
@@ -537,12 +561,16 @@ export function OrganizerConsole({
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-[22px] leading-[28px] tracking-[-0.015em] font-semibold text-foreground">Registration Velocity</h2>
-                <p className="text-[12px] leading-[16px] text-muted-foreground mt-0.5">Daily sign-up trends over the last 14 days.</p>
+                <p className="text-[12px] leading-[16px] text-muted-foreground mt-0.5">Daily sign-up trends for the selected window.</p>
               </div>
               <div className="flex items-center gap-1 bg-card p-1 rounded-lg border border-muted">
-                {['30 Days', '14 Days', 'Today'].map((t, i) => (
-                  <button key={t} className={`px-2 py-1 text-[10px] leading-[14px] rounded font-medium transition-colors ${i === 0 ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
-                    {t}
+                {([[30, '30 Days'], [14, '14 Days'], [1, 'Today']] as const).map(([range, label]) => (
+                  <button
+                    key={label}
+                    onClick={() => setVelocityRange(range)}
+                    className={`px-2 py-1 text-[10px] leading-[14px] rounded font-medium transition-colors ${velocityRange === range ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    {label}
                   </button>
                 ))}
               </div>
@@ -553,7 +581,7 @@ export function OrganizerConsole({
                 <div className="flex flex-col">
                   <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-foreground">Daily Signups</span>
                   <span className="text-[12px] leading-[16px] text-muted-foreground">
-                    {velocityTotal} registrations in the last 30 days
+                    {velocityCount} registrations {velocityWindowLabel}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -564,13 +592,13 @@ export function OrganizerConsole({
                 </div>
               </div>
               <div className="w-full h-44 flex items-end justify-between gap-1 pt-6 px-1">
-                {velocityDays.map(([label, count]) => {
-                  const isPeak = count === Math.max(...velocityDays.map(([, v]) => v))
+                {velocitySeries.length > 0 ? velocitySeries.map(([label, count]) => {
+                  const isPeak = count === Math.max(...velocitySeries.map(([, v]) => v))
                   // Audit #13: percentage heights resolve to 0 inside the
                   // auto-height flex columns below (bars never mounted), so
                   // size bars in px against the fixed h-44 plot area
                   // (~120px usable above the label row).
-                  const heightPct = Math.round((count / maxVelocity(velocityDays)) * 100)
+                  const heightPct = Math.round((count / maxVelocity(velocitySeries)) * 100)
                   const barHeight = Math.max(Math.round((heightPct / 100) * 120), 5)
                   return (
                     <div key={label} className="flex-1 flex flex-col items-center gap-1 group">
@@ -579,11 +607,15 @@ export function OrganizerConsole({
                         style={{ height: `${barHeight}px` }}
                       />
                       <span className={`text-[9px] ${isPeak ? 'text-success font-semibold' : 'text-muted-foreground'}`}>
-                        {label.split(' ')[0]}
+                        {label.slice(-2)}
                       </span>
                     </div>
                   )
-                })}
+                }) : (
+                  <div className="flex-1 h-full flex items-center justify-center text-[12px] text-muted-foreground">
+                    No registrations {velocityWindowLabel}
+                  </div>
+                )}
               </div>
             </div>
           </section>
