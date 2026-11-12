@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { isConfirmedStatus } from '@/lib/registration-status'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -142,6 +143,13 @@ export default async function OrganizerEventDetailPage({
     totalRegistrations: registrations.length,
     checkedIn: registrations.filter((registration) => registration.checked_in).length,
     categories: raceCategories.length,
+    // Revenue mirrors the financial page: confirmed registrations × category price.
+    revenue: registrations
+      .filter((registration) => isConfirmedStatus(registration.payment_status))
+      .reduce((sum, registration) => {
+        const reg = registration as unknown as { race_categories?: { price?: number | null } | null }
+        return sum + Number(reg.race_categories?.price ?? 0)
+      }, 0),
   }
 
   const statusVariant = STATUS_VARIANTS
@@ -244,7 +252,7 @@ export default async function OrganizerEventDetailPage({
             <CardTitle className="text-sm font-medium">Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$0</div>
+            <div className="text-2xl font-bold">RM {stats.revenue.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </CardContent>
         </Card>
       </div>

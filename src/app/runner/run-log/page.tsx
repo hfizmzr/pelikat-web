@@ -138,9 +138,12 @@ export default function RunnerRunLogPage() {
   }, [])
 
   const handleAddRun = async () => {
-    if (!profile || !newRun.distance_km || parseFloat(newRun.distance_km) <= 0) return
-    setSubmitting(true)
     setLogError(null)
+    if (!profile) return
+    if (!newRun.distance_km || parseFloat(newRun.distance_km) <= 0) {
+      setLogError('Distance is required — enter how far you ran.')
+      return
+    }
 
     const durationSec =
       parseInt(newRun.duration_hours) * 3600 +
@@ -149,9 +152,10 @@ export default function RunnerRunLogPage() {
 
     if (durationSec <= 0) {
       setLogError('Enter a time greater than 0.')
-      setSubmitting(false)
       return
     }
+
+    setSubmitting(true)
 
     // Server-side validation + pace calculation via log_run RPC (FR-61)
     const { data, error } = await supabase.rpc('log_run', {

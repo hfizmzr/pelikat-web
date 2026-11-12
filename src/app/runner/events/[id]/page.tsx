@@ -77,6 +77,16 @@ export default async function RunnerEventDetailPage({
   const isRegistered = !!registration
   const isVirtual = (event.event_type as string | null) === 'virtual'
 
+  // "Open" = published AND inside the reg window (null/absent bounds stay
+  // open). Same derivation as the public /events/[slug] page — the
+  // register_for_event RPC (058) rejects out-of-window submits with a 400,
+  // so gate the CTA here before any submit is attempted.
+  const now = new Date()
+  const registrationOpen =
+    event.status === 'published' &&
+    (event.reg_open == null || new Date(event.reg_open) <= now) &&
+    (event.reg_close == null || new Date(event.reg_close) >= now)
+
   // Virtual run progress: logged distance for this event vs target
   const { data: myLogs } = isVirtual && isRegistered
     ? await supabase.from('run_logs').select('distance_km').eq('event_id', id).eq('runner_id', profile?.id)
@@ -284,7 +294,7 @@ export default async function RunnerEventDetailPage({
                   )}
                 </div>
               </div>
-            ) : event.status === 'published' ? (
+            ) : registrationOpen ? (
               <RunnerRegistrationActions
                 eventId={event.id}
                 categories={raceCategories}
@@ -302,8 +312,10 @@ export default async function RunnerEventDetailPage({
                 }}
               />
             ) : (
-              // Closed unregistered: 045 rejects new registrations, so no CTA —
-              // neutral card instead. Registered runners keep their view above.
+              // Closed unregistered: 045 rejects new registrations (RPC also
+              // rejects out-of-window submits with a 400 — this card is the
+              // upfront gate), so no CTA — neutral card instead. Registered
+              // runners keep their view above.
               <div className="p-5 rounded-2xl bg-card border border-border/60">
                 <p className="text-[14px] text-muted-foreground">
                   Registration is closed for this event.
