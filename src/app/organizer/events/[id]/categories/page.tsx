@@ -49,15 +49,17 @@ export default async function OrganizerEventCategoriesPage({
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href={`/organizer/events/${id}`}>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold tracking-tight">Race Categories</h1>
           <p className="text-muted-foreground">Manage categories for {event.name}</p>
         </div>
-        <AddCategoryDialog eventId={id} />
+        <div className="shrink-0">
+          <AddCategoryDialog eventId={id} />
+        </div>
       </div>
 
       {/* Category grid */}
