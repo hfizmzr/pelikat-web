@@ -1,3 +1,5 @@
+// Covers: FR-55–FR-56 (UC13 personal bib-matched gallery + event filter) — runner gallery
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prerender } from 'react-dom/static'
 

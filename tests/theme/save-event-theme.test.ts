@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 save theme)
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 /**

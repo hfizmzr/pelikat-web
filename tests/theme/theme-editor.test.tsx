@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 theme editor)
+
 import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from 'vitest'
 import { prerender } from 'react-dom/static'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'

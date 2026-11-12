@@ -1,3 +1,5 @@
+// Covers: NFR11 (installable PWA: manifest/icons/theme-color) — PWA install
+
 import { test, expect } from '@playwright/test'
 
 test.describe('Usability: PWA Install', () => {

@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 theme assets §6 limits/paths) — asset upload gates
+
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import {
   ASSET_LIMITS,

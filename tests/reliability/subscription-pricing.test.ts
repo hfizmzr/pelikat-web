@@ -1,3 +1,5 @@
+// Covers: FR-02 (UC02 subscription pricing) — subscription pricing reliability
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 /**

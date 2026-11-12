@@ -1,3 +1,5 @@
+// Covers: FR-65 (badge/e-certificate share affordance) — BadgeCertificateButton
+
 /**
  * FR-65: e-certificate/badge social-share affordance on the badges page.
  * The generated cert URL is a 24h signed link (cert.ts), so the share

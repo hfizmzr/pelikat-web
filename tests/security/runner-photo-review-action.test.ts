@@ -1,3 +1,5 @@
+// Covers: FR-21 (UC05 review-queue corrections), FR-58 (UC13 report mis-tagged photo) — photo review action
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**

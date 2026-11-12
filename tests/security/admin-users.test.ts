@@ -1,3 +1,5 @@
+// Covers: FR-01 (UC01 organizer accounts), FR-04 (role claims), NFR05 — /api/admin/users RBAC
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 /**

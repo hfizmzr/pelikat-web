@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 theme validation)
+
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { validateThemeConfig } from '@/lib/theme/validate'
 import { assetValueOk } from '@/lib/theme/utils'

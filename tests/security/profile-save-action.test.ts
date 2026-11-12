@@ -1,3 +1,5 @@
+// Covers: FR-43–FR-44 (UC10 profile validation/field keys) — profile save action
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { PROFILE_INCOMPLETE_MESSAGE } from '@/lib/profile-validation'
 

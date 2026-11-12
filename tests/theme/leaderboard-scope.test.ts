@@ -1,3 +1,5 @@
+// Covers: FR-67–FR-68 (UC15 scoped leaderboard)
+
 import { describe, it, expect } from 'vitest'
 import { scopedLeaderboardEventId } from '@/app/runner/leaderboard/scope'
 

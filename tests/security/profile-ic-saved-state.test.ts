@@ -1,3 +1,5 @@
+// Covers: FR-45 (UC10 IC gate from saved snapshot), NFR06 — profile IC saved state
+
 import { describe, it, expect } from "vitest"
 import { readFileSync } from "fs"
 import { join } from "path"

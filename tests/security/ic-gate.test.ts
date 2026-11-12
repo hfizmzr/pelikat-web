@@ -1,3 +1,5 @@
+// Covers: FR-45 (UC10 IC/passport encryption), NFR06 — IC gate
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { proxy } from '@/proxy'
 import type { NextRequest } from 'next/server'

@@ -1,3 +1,5 @@
+// Covers: FR-09–FR-12 (UC04 registration core, paid/waived predicate + CSV export) — complimentary registrations
+
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'

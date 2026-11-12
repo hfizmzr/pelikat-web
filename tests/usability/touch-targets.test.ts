@@ -1,3 +1,5 @@
+// Covers: 44px touch-target accessibility (PWA usability supplement — no FR/NFR row)
+
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'fs'
 import { join } from 'path'

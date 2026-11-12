@@ -1,3 +1,5 @@
+// Covers: FR-70–FR-71 (UC16 cart/checkout UI) — payments checkout
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, act, waitFor, cleanup, fireEvent } from '@testing-library/react'
 import { readFileSync } from 'fs'

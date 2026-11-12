@@ -1,3 +1,5 @@
+// Covers: FR-37–FR-41 (UC08 merch hub: listings, stock, orders, fulfillment, sales summary) — hub manager
+
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react'
 

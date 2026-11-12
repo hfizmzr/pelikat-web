@@ -1,3 +1,5 @@
+// Covers: FR-02–FR-03 (UC02), FR-06–FR-08 (UC03 KPI cards + audit log) — admin portal journeys
+
 import { test, expect } from '@playwright/test'
 import { goto, login } from './helpers'
 

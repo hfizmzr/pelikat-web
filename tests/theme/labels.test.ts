@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 theme label vocabulary)
+
 import { describe, it, expect } from 'vitest'
 import { LABEL_KEYS, sanitizeLabel, sanitizeDraftLabel, fallbackLabel, resolveLabels, labelPreview } from '@/lib/theme/labels'
 

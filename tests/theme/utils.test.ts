@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 theme utilities)
+
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { isPlainObject, themeFontUrlOk, assetValueOk } from '@/lib/theme/utils'
 

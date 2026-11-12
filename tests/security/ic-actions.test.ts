@@ -1,3 +1,5 @@
+// Covers: FR-45 (UC10 IC/passport encryption), NFR06 — IC actions
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**

@@ -1,3 +1,5 @@
+// Covers: FR-71 (UC16 checkout via gateway), NFR10 — merch checkout retry
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // ── Hoisted mocks ───────────────────────────────────────────────

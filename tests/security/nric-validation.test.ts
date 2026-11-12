@@ -1,3 +1,5 @@
+// Covers: FR-45 (UC10 NRIC/passport rules), NFR06 — NRIC validation
+
 import { describe, it, expect } from 'vitest'
 import {
   validateNric,

@@ -1,3 +1,5 @@
+// Covers: FR-59, FR-60 (UC14 manual virtual-run entry + pace validation), FR-63 (GPS polyline) — run-log journey
+
 import { test, expect } from '@playwright/test'
 import { goto, login } from './helpers'
 

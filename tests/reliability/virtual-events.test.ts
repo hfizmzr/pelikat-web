@@ -1,3 +1,5 @@
+// Covers: FR-59–FR-63 (UC14 virtual run) — virtual events schema/UI/certificate auth
+
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'

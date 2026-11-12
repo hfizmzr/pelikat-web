@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 theme live preview) — MiniThemePreview
+
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { prerender } from 'react-dom/static'
 import { MiniThemePreview } from '@/components/theme/mini-theme-preview'

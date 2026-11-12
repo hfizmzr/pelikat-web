@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 theme derivation)
+
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { deriveTheme } from '@/lib/theme/resolve'
 import type { ThemeTokens } from '@/lib/theme/types'

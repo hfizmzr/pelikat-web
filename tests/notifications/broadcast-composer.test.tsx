@@ -1,3 +1,5 @@
+// Covers: EXT-3 (UC-EXT broadcast to segments) — broadcast composer
+
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 

@@ -1,3 +1,5 @@
+// Covers: FR-54 (UC13 live race-day schedule card)
+
 /**
  * FR-54: RaceDayScheduleCard contract — the migration-092 race-day schedule
  * columns (start_time / flag_off_time / cutoff_time, all nullable) render as

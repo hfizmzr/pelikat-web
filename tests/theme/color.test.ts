@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 theme color derivation)
+
 import { describe, it, expect } from 'vitest'
 import {
   hexToOklch,

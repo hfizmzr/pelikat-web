@@ -1,3 +1,5 @@
+// Covers: FR-13 + FR-13a (UC04 Batik Heritage preset → preview → save → self-heal) — organizer theme journey
+
 import { test, expect } from '@playwright/test'
 import { goto, login } from './helpers'
 

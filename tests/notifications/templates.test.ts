@@ -1,3 +1,5 @@
+// Covers: EXT-4 (UC-EXT templated email/push) — notification templates
+
 import { describe, expect, it } from 'vitest'
 import {
   buildPushPayload,

@@ -1,3 +1,5 @@
+// Covers: FR-05 (service-role key absent from client bundle)
+
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'fs'
 import { join } from 'path'

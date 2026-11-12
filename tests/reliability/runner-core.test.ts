@@ -1,3 +1,5 @@
+// Covers: FR-09–FR-12 (UC04 event core), FR-46–FR-47 (UC11 registration/BIB), FR-62 (UC14 e-cert download), FR-67–FR-68 (UC15 leaderboard/publish gate) — runner core lifecycle
+
 import { describe, it, expect } from 'vitest'
 import { readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'

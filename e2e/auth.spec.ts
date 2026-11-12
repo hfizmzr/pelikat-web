@@ -1,3 +1,5 @@
+// Covers: FR-42 (UC10 Google OAuth sign-in), FR-05 (service-role-key bundle scan), NFR05 — auth journeys
+
 import { test, expect } from '@playwright/test'
 
 test.describe('Security: Authentication', () => {

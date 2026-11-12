@@ -1,3 +1,5 @@
+// Covers: NFR01 (bounded Django API timeout / response resilience)
+
 import { describe, it, expect, vi, afterEach } from 'vitest'
 
 // Exercises the REAL fetchDjangoApi (no @/lib/django mock): the hang

@@ -1,3 +1,5 @@
+// Covers: FR-69 (UC15 organizer mobile PWA console, 5 tabs) — mobile console journeys
+
 import { test, expect } from '@playwright/test'
 import { goto, login } from './helpers'
 

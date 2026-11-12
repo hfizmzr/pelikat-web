@@ -1,3 +1,5 @@
+// Covers: FR-04 (role claims from app_metadata), NFR05 — role claim
+
 import { describe, expect, it } from 'vitest'
 import { getUserRole } from '@/lib/auth/requireRole'
 

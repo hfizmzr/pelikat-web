@@ -1,3 +1,5 @@
+// Covers: FR-33–FR-36 (UC09 analytics: registration chart, demographics, check-in rate) — organizer analytics
+
 import { test, expect } from '@playwright/test'
 import { goto, login } from './helpers'
 

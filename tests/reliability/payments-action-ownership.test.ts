@@ -1,3 +1,5 @@
+// Covers: FR-71 (UC16 confirm-payment ownership guard), NFR05, NFR10 — 061 contract
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // ── Module mocks ─────────────────────────────────────────────

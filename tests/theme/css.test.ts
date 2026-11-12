@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 theme CSS generation)
+
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'

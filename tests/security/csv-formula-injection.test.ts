@@ -1,3 +1,5 @@
+// Covers: NFR04 (CSV formula-injection guard) — export sanitization
+
 import { describe, it, expect } from 'vitest'
 import { rowsToCsv } from '@/lib/utils'
 

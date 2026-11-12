@@ -1,3 +1,5 @@
+// Covers: EXT-5 (UC-EXT retry/batch delivery) — dispatch.ts batch/retry logic
+
 // @vitest-environment node
 // EXT-5: unit tests for the pure notification dispatch batch/retry logic
 // extracted to supabase/functions/_shared/dispatch.ts. The HTTP transport

@@ -1,3 +1,5 @@
+// Covers: FR-02 (UC02 admin subscription/pricing settings) — admin settings security
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 /**

@@ -1,3 +1,5 @@
+// Covers: FR-47 (UC11 runner event detail) — RunnerEventDetailPage
+
 /**
  * P3 Task 4: runner event-detail page consumes getSurfaceTheme labels.
  * Prerender (async server component) asserts:

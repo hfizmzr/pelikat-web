@@ -1,3 +1,5 @@
+// Covers: NFR12 (loading indicators) — loading states
+
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { Suspense } from 'react'

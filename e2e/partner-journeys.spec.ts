@@ -1,3 +1,5 @@
+// Covers: FR-20–FR-21 (UC05), FR-23–FR-24 (UC06), FR-38–FR-39 (UC12), FR-54–FR-55, FR-57 (UC13), FR-69–FR-73 (UC16) — partner journeys across 8 scopes
+
 import { test, expect } from '@playwright/test'
 import { goto, login } from './helpers'
 

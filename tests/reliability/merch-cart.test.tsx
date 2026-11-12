@@ -1,3 +1,5 @@
+// Covers: FR-69–FR-73 (UC16 merch store: browse, cart, checkout args, confirmation, history), NFR10 — runner storefront/cart
+
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor, act, renderHook } from '@testing-library/react'
 

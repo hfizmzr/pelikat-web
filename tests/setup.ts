@@ -1,3 +1,5 @@
+// Covers: shared vitest setup (test-env bootstrap) — not an FR-covered test file
+
 import { expect } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
 

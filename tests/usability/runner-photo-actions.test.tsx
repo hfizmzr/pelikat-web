@@ -1,3 +1,5 @@
+// Covers: FR-57–FR-58 (UC13 download/share + report) — runner photo actions
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, cleanup, waitFor, fireEvent, act } from '@testing-library/react'
 

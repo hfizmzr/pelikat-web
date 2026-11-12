@@ -1,3 +1,5 @@
+// Covers: FR-43–FR-44 (UC10 profile validation/field keys) — profile validation
+
 import { describe, expect, it } from 'vitest'
 import {
   isValidFullName,

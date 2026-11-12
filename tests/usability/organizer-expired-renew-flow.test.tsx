@@ -1,3 +1,5 @@
+// Covers: FR-02 (UC02 expired subscription renewal flow)
+
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest'
 import { render, act, cleanup, waitFor } from '@testing-library/react'
 

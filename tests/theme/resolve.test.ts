@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 theme resolution)
+
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { mergeThemeConfig, getResolvedTheme } from '@/lib/theme/resolve'

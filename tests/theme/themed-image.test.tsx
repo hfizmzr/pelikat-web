@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 themed image handling)
+
 import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ThemedImage, THEME_ASPECTS } from '@/components/theme/themed-image'

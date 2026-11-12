@@ -1,3 +1,5 @@
+// Covers: FR-48 (UC10 PDPA account deletion) — fail-closed ordering
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**

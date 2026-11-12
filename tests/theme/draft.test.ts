@@ -1,3 +1,5 @@
+// Covers: FR-13 + FR-13a (UC04 draft event + theme)
+
 import { describe, it, expect } from 'vitest'
 import { seedThemeDraft, normalizeThemeDraft, themeDraftEquals } from '@/lib/theme/draft'
 

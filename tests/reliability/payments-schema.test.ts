@@ -1,3 +1,5 @@
+// Covers: FR-71 (UC16 checkout invariants), NFR10 — migration 062 schema pins
+
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'

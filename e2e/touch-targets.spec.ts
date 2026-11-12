@@ -1,3 +1,5 @@
+// Covers: 44px touch-target accessibility (PWA usability supplement — no FR/NFR row)
+
 import { test, expect } from '@playwright/test'
 
 test.describe('Usability: Touch Targets', () => {

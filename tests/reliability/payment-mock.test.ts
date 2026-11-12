@@ -1,3 +1,5 @@
+// Covers: FR-71 (UC16 checkout via gateway, mock provider), NFR10 — mock payment provider
+
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { join } from 'path'

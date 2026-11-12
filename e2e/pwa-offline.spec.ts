@@ -1,3 +1,5 @@
+// Covers: NFR03 (BIB offline via PWA, SW registration + offline guards) — PWA offline
+
 import { test, expect, type Page } from '@playwright/test'
 
 /**

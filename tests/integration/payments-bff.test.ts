@@ -1,3 +1,5 @@
+// Covers: FR-71 (UC16 checkout via gateway), NFR10 — payments BFF (refund API + HitPay checkout action)
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'

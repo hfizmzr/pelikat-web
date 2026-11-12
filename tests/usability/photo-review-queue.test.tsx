@@ -1,3 +1,5 @@
+// Covers: FR-15 (UC05 bulk upload → Storage), FR-20 (batch status/stats), FR-21 (review-queue corrections) — photo review queue
+
 import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest'
 import { render, screen, cleanup, waitFor, fireEvent, act } from '@testing-library/react'
 import type { PhotoBatch } from '@/lib/photo-batches'

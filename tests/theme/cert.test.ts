@@ -1,3 +1,5 @@
+// Covers: FR-62 (UC14 e-certificate generation/download) — cert actions
+
 import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest'
 
 // ── Module mocks (same pattern as tests/reliability/payments-action-ownership.test.ts) ──

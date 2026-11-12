@@ -1,3 +1,5 @@
+// Covers: shared Playwright helpers (seeded-event sign-in/shortcuts) — support file, no direct FR coverage
+
 import type { Page } from '@playwright/test'
 
 /**

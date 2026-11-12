@@ -1,3 +1,5 @@
+// Covers: EXT-3, EXT-6 (UC-EXT broadcast delivery + integrity) — migration 085 review-fixes SQL pins
+
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'

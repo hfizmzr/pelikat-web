@@ -1,3 +1,5 @@
+// Covers: FR-02 (UC02 renewal success dashboard)
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react'
 

@@ -1,3 +1,5 @@
+// Covers: FR-05 (service-role key absent from client bundle) — build safety
+
 /**
  * Build-safety regression for the docker `next build` crash: service-role.ts
  * used to call createClient at module load, so page-data collection (which

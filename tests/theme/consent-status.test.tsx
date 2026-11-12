@@ -1,3 +1,5 @@
+// Covers: FR-41 (UC12 consent status), FR-52–FR-53 (UC13 copy/share consent + status) — consent status UI
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, cleanup, waitFor, fireEvent, act } from '@testing-library/react'
 

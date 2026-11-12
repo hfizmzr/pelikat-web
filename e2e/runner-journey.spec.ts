@@ -1,3 +1,5 @@
+// Covers: FR-47 (UC11 My Registration), FR-67–FR-68 (UC15 leaderboard + publish gate) — runner journey on a published virtual event
+
 import { test, expect } from '@playwright/test'
 import { goto, login } from './helpers'
 

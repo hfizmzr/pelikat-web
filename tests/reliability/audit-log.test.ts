@@ -1,3 +1,5 @@
+// Covers: FR-08 (UC03 append-only audit log) — audit-log suite
+
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { join } from 'path'

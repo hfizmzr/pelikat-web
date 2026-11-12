@@ -1,3 +1,5 @@
+// Covers: FR-23–FR-27 (UC06 REPC check-in, UC07 proxy collection), NFR10 — REPC check-in RPC
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'

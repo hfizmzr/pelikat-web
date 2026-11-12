@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 per-event theme scoping)
+
 import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest'
 import { prerender } from 'react-dom/static'
 import type { SupabaseClient } from '@supabase/supabase-js'

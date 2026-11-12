@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 theme surfaces)
+
 import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getSurfaceTheme } from '@/lib/theme/surface'

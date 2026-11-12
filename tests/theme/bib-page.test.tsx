@@ -1,3 +1,5 @@
+// Covers: FR-37 (UC12 BIB card), FR-50–FR-51 (UC13 race-day BIB QR/check-in status), FR-54 (race-day schedule card) — BIB page
+
 /**
  * P3 Task 4: the bib pass joins the themed surfaces. Prerender (async server
  * component) asserts: EventThemeScope vars wrap the page, labels driven by

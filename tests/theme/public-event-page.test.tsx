@@ -1,3 +1,5 @@
+// Covers: FR-13 (UC04 themed public page), FR-46–FR-47 (UC11 registration entry points) — PublicEventPage
+
 /**
  * P3 Task 5: the public /events/[slug] route + the organizer Copy Public
  * Event Link button. Prerender (async server component) asserts:

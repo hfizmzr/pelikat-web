@@ -1,3 +1,5 @@
+// Covers: EXT-2 (UC-EXT web push VAPID aes128gcm + settings) — RFC 8291/8292 crypto
+
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {

@@ -1,3 +1,5 @@
+// Covers: FR-72–FR-73 (UC16 order confirmation/status), NFR12 — order status polling
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, waitFor } from '@testing-library/react'
 

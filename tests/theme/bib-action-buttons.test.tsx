@@ -1,3 +1,5 @@
+// Covers: FR-40 (UC12 download/print BIB) — BIB action buttons
+
 /**
  * P3 Task 4: BibActionButtons props contract — the themed bib label is
  * THREADED as a prop from the server bib page (no client-side theme fetch)

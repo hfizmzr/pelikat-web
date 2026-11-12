@@ -1,3 +1,5 @@
+// Covers: FR-45 (UC10 IC/passport encryption), NFR06 — IC encrypt route
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { POST } from '@/app/api/documents/encrypt/route'
 

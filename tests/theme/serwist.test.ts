@@ -1,3 +1,5 @@
+// Covers: FR-39 (UC12 PWA offline cache of BIB), NFR03 (BIB offline via PWA) — Serwist SW rules
+
 import { describe, it, expect } from 'vitest'
 import {
   THEME_ASSET_PATH_PREFIX,

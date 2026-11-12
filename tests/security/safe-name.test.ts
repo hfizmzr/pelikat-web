@@ -1,3 +1,5 @@
+// Covers: NFR04 (safe organizer name sanitization / service-role binding)
+
 /**
  * P3 Task 4: safeOrganizerName — service-role organizer-name recovery used by
  * runner pages AFTER the event row's visibility gate. The helper's own
