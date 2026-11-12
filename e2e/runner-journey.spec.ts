@@ -6,13 +6,16 @@ import { goto, login } from './helpers'
 /**
  * Slug pin (how it was found): slugs are NOT seeded — migrations 077/080
  * auto-derive them as kebab-case(name) + '-' + md5(event_id)[:8] (seed.sql
- * §5.1 documents this). For event id d0e5e000-0000-4000-8000-000000000024
- * ("Cyberjaya Green Run", the active physical event with a seed-stable
- * registration window) that is:
- *   kebab("Cyberjaya Green Run") + '-' + md5(id)[:8] = "8df2ee4b"
+ * §5.1 documents this). For event id d0e5e000-0000-4000-8000-000000000027
+ * ("JB Ultra Marathon 2027", the FUTURE physical event whose seeded reg
+ * window stays open until ~Jan 2027) that is:
+ *   kebab("JB Ultra Marathon 2027") + '-' + md5(id)[:8] = "d97c91d8"
  * Verified live against the running app: /events/<slug> 200 + <title>.
+ * (Originally pinned to Cyberjaya Green Run, whose seed window
+ * `current_date + 23` expired 12 Nov 2026 — remote Supabase staging is
+ * read-only for agents, so the pin moved to a long-window FUTURE event.)
  */
-const CYBERJAYA_SLUG = 'cyberjaya-green-run-8df2ee4b'
+const JB_ULTRA_SLUG = 'jb-ultra-marathon-2027-d97c91d8'
 
 /**
  * runner1's registered active event (seeded registration 07c — seed.sql:814,
@@ -28,8 +31,8 @@ const VIRTUAL_60K_ID = 'd0e5e000-0000-4000-8000-000000000025'
 const MERDEKA_ID = 'd0e5e000-0000-4000-8000-000000000022'
 
 test('runner sees the public event page', async ({ page }) => {
-  await goto(page, `/events/${CYBERJAYA_SLUG}`)
-  await expect(page.getByRole('heading', { name: 'Cyberjaya Green Run' })).toBeVisible()
+  await goto(page, `/events/${JB_ULTRA_SLUG}`)
+  await expect(page.getByRole('heading', { name: 'JB Ultra Marathon 2027' })).toBeVisible()
   await expect(page.getByText('About the Race')).toBeVisible()
   // published + inside the reg window → registration CTA
   await expect(page.getByRole('link', { name: 'Register for this Event' })).toBeVisible()

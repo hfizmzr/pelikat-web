@@ -134,7 +134,8 @@ test.describe('Runner: digital BIB + proxy consent', () => {
     await page.getByRole('link', { name: 'Generate Proxy Collection Code' }).click()
     await page.waitForURL((url) => url.pathname.endsWith('/bib/consent'), { timeout: 15000 })
     await expect(page.getByRole('heading', { name: 'Proxy Collection' })).toBeVisible({ timeout: 15000 })
-    await expect(page.getByRole('button', { name: 'Generate Code' })).toBeVisible()
+    // Either state is valid: no code yet → "Generate Code"; active code → "Generate New Code".
+    await expect(page.getByRole('button', { name: /Generate (New )?Code/ })).toBeVisible()
   })
 })
 
