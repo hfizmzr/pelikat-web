@@ -1,12 +1,13 @@
 'use client'
 
-import { Bell, CirclePlus } from "lucide-react"
+import { CirclePlus } from "lucide-react"
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
 import { OrganizerSidebar, OrganizerMobileNav } from '@/components/layout/organizer-sidebar'
+import { NotificationBell } from '@/components/notifications/notification-bell'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -114,13 +115,10 @@ export default function OrganizerLayout({
             {/* Right actions */}
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <button
-                className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                title="Notifications"
-              >
-                <Bell className="size-[20px]" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-border" />
-              </button>
+              {/* Notifications inbox: same data source as the runner bell
+              (notifications table, user-scoped RLS); links to the organizer
+              inbox page instead of dead-spanning. */}
+              <NotificationBell href="/organizer/notifications" />
               <Link
                 href="/organizer/events/new"
                 className="px-4 py-1.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-primary transition-all "

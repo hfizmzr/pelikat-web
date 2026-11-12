@@ -1,7 +1,10 @@
 'use client'
 
 import { Bell, Building2, CreditCard, LoaderCircle, Save, Webhook } from "lucide-react"
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 export default function OrganizerSettingsPage() {
   const [notifEmail, setNotifEmail] = useState(true)
@@ -9,10 +12,71 @@ export default function OrganizerSettingsPage() {
   const [webhookEnabled, setWebhookEnabled] = useState(false)
   const [saving, setSaving] = useState(false)
 
+  // Audit #9: the Organization Profile form never pre-filled (placeholders
+  // only, Save wrote blanks). Load the organizer row on mount and write the
+  // same columns back on Save. organizers has no phone column, so that
+  // placeholder-only field is dropped.
+  const [profile, setProfile] = useState({ name: '', slug: '', contact_email: '' })
+  const [profileLoading, setProfileLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    async function loadProfile() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      const organizerId = user?.app_metadata?.organizer_id
+      if (!organizerId) {
+        setProfileLoading(false)
+        return
+      }
+      const { data } = await supabase
+        .from('organizers')
+        .select('name, slug, contact_email')
+        .eq('id', organizerId)
+        .maybeSingle()
+      if (!cancelled && data) {
+        setProfile({ name: data.name ?? '', slug: data.slug ?? '', contact_email: data.contact_email ?? '' })
+      }
+      if (!cancelled) setProfileLoading(false)
+    }
+    void loadProfile()
+    return () => { cancelled = true }
+  }, [])
+
   const handleSave = async () => {
     setSaving(true)
-    await new Promise(r => setTimeout(r, 800))
-    setSaving(false)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      const organizerId = user?.app_metadata?.organizer_id
+      if (!organizerId) {
+        toast.error('Not signed in as an organizer.')
+        return
+      }
+      // Only send fields that have values — contact_email/slug are UNIQUE
+      // columns and an empty string would collide (or blank out real data).
+      const update: Record<string, string> = {}
+      if (profile.name.trim()) update.name = profile.name.trim()
+      if (profile.slug.trim()) update.slug = profile.slug.trim()
+      if (profile.contact_email.trim()) update.contact_email = profile.contact_email.trim()
+      if (Object.keys(update).length === 0) {
+        toast.error('Nothing to save — fill in at least one field.')
+        return
+      }
+      const { error } = await supabase
+        .from('organizers')
+        .update(update)
+        .eq('id', organizerId)
+      if (error) {
+        toast.error(error.message.includes('duplicate key')
+          ? 'That slug or contact email is already taken.'
+          : (error.message || 'Failed to save.'))
+        return
+      }
+      toast.success('Organization profile saved.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const sections = [
@@ -24,10 +88,9 @@ export default function OrganizerSettingsPage() {
       content: (
         <div className="flex flex-col gap-4">
           {[
-            { id: 'org-name', label: 'Organization Name', type: 'text', placeholder: 'Pelikat Batik Events', defaultValue: '' },
-            { id: 'org-slug', label: 'URL Slug', type: 'text', placeholder: 'pelikat-batik-events', defaultValue: '' },
-            { id: 'contact-email', label: 'Contact Email', type: 'email', placeholder: 'contact@yourorg.com', defaultValue: '' },
-            { id: 'contact-phone', label: 'Contact Phone', type: 'tel', placeholder: '+60 12-345 6789', defaultValue: '' },
+            { id: 'org-name', label: 'Organization Name', type: 'text', placeholder: 'Pelikat Batik Events', key: 'name' as const },
+            { id: 'org-slug', label: 'URL Slug', type: 'text', placeholder: 'pelikat-batik-events', key: 'slug' as const },
+            { id: 'contact-email', label: 'Contact Email', type: 'email', placeholder: 'contact@yourorg.com', key: 'contact_email' as const },
           ].map(f => (
             <div key={f.id} className="flex flex-col gap-1.5">
               <label htmlFor={f.id} className="text-[12px] leading-[16px] tracking-[0.02em] font-semibold text-muted-foreground">{f.label}</label>
@@ -35,8 +98,10 @@ export default function OrganizerSettingsPage() {
                 id={f.id}
                 type={f.type}
                 placeholder={f.placeholder}
-                defaultValue={f.defaultValue}
-                className="w-full px-3 py-2.5 bg-card border border-border rounded-lg text-foreground text-[14px] leading-[20px] focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 placeholder:text-border transition-colors"
+                value={profile[f.key]}
+                onChange={(e) => setProfile(prev => ({ ...prev, [f.key]: e.target.value }))}
+                disabled={profileLoading}
+                className="w-full px-3 py-2.5 bg-card border border-border rounded-lg text-foreground text-[14px] leading-[20px] focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 placeholder:text-border transition-colors disabled:opacity-60"
               />
             </div>
           ))}
@@ -142,9 +207,14 @@ export default function OrganizerSettingsPage() {
             <p className="text-[12px] text-muted-foreground">Your subscription grants access to unlimited events, priority support, and advanced analytics. Runner accounts are always free — runners pay only per event registration or merch order.</p>
           </div>
           <div className="flex gap-2">
-            <button className="px-4 py-2.5 bg-card hover:bg-card text-foreground text-[14px] font-medium rounded-lg border border-muted transition-colors">
+            {/* Audit #7: Manage Billing was dead — /organizer/payment is the
+            subscription destination (HitPay checkout + sub_expires_at). */}
+            <Link
+              href="/organizer/payment"
+              className="px-4 py-2.5 bg-card hover:bg-card text-foreground text-[14px] font-medium rounded-lg border border-muted transition-colors"
+            >
               Manage Billing
-            </button>
+            </Link>
             <button className="px-4 py-2.5 text-red-500 dark:text-red-300 hover:bg-red-500/10 dark:bg-red-300/10 text-[14px] font-medium rounded-lg transition-colors">
               Cancel Subscription
             </button>

@@ -133,10 +133,12 @@ describe('Reliability: organizer status filter', () => {
   })
 
   it('waived renders as a success (confirmed) badge in organizer tables', () => {
-    const runnersPage = read('src', 'app', 'organizer', 'runners', 'page.tsx')
-    expect(runnersPage).toContain("waived: 'text-success bg-success/15'")
-    const orgDashboard = read('src', 'app', 'organizer', 'page.tsx')
-    expect(orgDashboard).toContain("reg.payment_status === 'paid' || reg.payment_status === 'waived'")
+    // Runner directory table + console list moved to client components
+    // (audit #5/#6 refactor); the waived badge styling lives there now.
+    const runnerTable = read('src', 'components', 'organizer', 'runner-directory-table.tsx')
+    expect(runnerTable).toContain("waived: 'text-success bg-success/15'")
+    const consoleView = read('src', 'components', 'organizer', 'console-view.tsx')
+    expect(consoleView).toContain("reg.paymentStatus === 'paid' || reg.paymentStatus === 'waived'")
   })
 
   it('phone columns fall back to guest_phone before the profile phone', () => {

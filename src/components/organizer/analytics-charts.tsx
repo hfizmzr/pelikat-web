@@ -1,7 +1,7 @@
 'use client'
 
 import { BarChart3, Users, Wallet } from "lucide-react"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts'
@@ -29,6 +29,39 @@ export interface AnalyticsData {
 // Stitch color palette for charts
 const CHART_COLORS = ['#0f9b9b', '#22c55e', '#0ea5e9', '#ef4444', '#f8fafc']
 
+// True below the `md` breakpoint (768px) — matches the organizer layout's
+// sidebar collapse point. Starts false so SSR/hydration render the desktop
+// layout, then flips after mount (client-only, no hydration mismatch).
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+  return isMobile
+}
+
+// Long event names never fit horizontally on narrow screens — recharts'
+// default auto-interval drops the middle ticks, leaving only the first and
+// last labels (and orphaning the bars in between). On mobile we render every
+// tick rotated, with a truncated label so the rotation doesn't eat the chart.
+function useEventNameXAxisProps() {
+  const isMobile = useIsMobile()
+  if (!isMobile) return {}
+  return {
+    interval: 0 as const,
+    angle: -32,
+    textAnchor: 'end' as const,
+    height: 64,
+    tickMargin: 8,
+    tick: { fill: 'var(--muted-foreground)', fontSize: 10 },
+    tickFormatter: (value: string) => (value && value.length > 16 ? `${value.slice(0, 15)}…` : value),
+  }
+}
+
 type TooltipEntry = { color?: string; name?: string; value?: number | string }
 type RechartsTooltipProps = { active?: boolean; payload?: TooltipEntry[]; label?: string }
 
@@ -51,6 +84,7 @@ function CustomTooltip({ active, payload, label }: RechartsTooltipProps) {
 
 export default function OrganizerAnalyticsCharts({ data }: { data: AnalyticsData }) {
   const [activeTab, setActiveTab] = useState<'overview' | 'revenue' | 'demographics'>('overview')
+  const eventNameXAxisProps = useEventNameXAxisProps()
   const { eventStats, demographics, totalRevenue } = data
 
   const hasEvents = eventStats.length > 0
@@ -85,7 +119,13 @@ export default function OrganizerAnalyticsCharts({ data }: { data: AnalyticsData
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={eventStats} barCategoryGap="20%">
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
+                      tickLine={false}
+                      axisLine={false}
+                      {...eventNameXAxisProps}
+                    />
                     <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
                     <Tooltip content={<CustomTooltip />} cursor={{fill: 'var(--accent)', opacity: 0.4}} />
                     <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} formatter={(value) => <span className="text-muted-foreground font-medium">{value}</span>} />
@@ -146,7 +186,13 @@ export default function OrganizerAnalyticsCharts({ data }: { data: AnalyticsData
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={eventStats} barCategoryGap="30%">
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
+                      tickLine={false}
+                      axisLine={false}
+                      {...eventNameXAxisProps}
+                    />
                     <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `RM${v}`} />
                     <Tooltip content={<CustomTooltip />} cursor={{fill: 'var(--accent)', opacity: 0.4}} />
                     <Bar dataKey="revenue" name="Revenue" radius={[6, 6, 0, 0]} fill="#22c55e" />

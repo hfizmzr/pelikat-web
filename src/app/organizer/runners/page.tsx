@@ -1,7 +1,9 @@
-import { Badge, CircleCheck, Clock, Download, MoreHorizontal, Search, Users } from "lucide-react"
+import { Badge, CircleCheck, Clock, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import { isConfirmedStatus } from '@/lib/registration-status'
 import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
+import { ExportCsvButton } from '@/components/organizer/export-csv-button'
+import { RunnerDirectoryTable, type RunnerDirectoryRow } from '@/components/organizer/runner-directory-table'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -9,49 +11,97 @@ export const metadata: Metadata = {
   description: 'View and manage runner registrations and BIB assignments across all your events',
 }
 
+const EXPORT_HEADERS = ['BIB Number', 'Runner Name', 'Event', 'Category', 'Payment Status', 'Checked In', 'Registration Date'] as const
+
+// Shape of a many-to-one registration embed: OBJECT (or null), not an array.
+type DirectoryRegistration = {
+  id: string
+  bib_number: string | null
+  payment_status: string
+  checked_in: boolean | null
+  created_at: string
+  runner_id: string | null
+  events: { name: string | null } | null
+  race_categories: { name: string | null; bib_prefix: string | null } | null
+}
+
+// Export completeness: page through ALL of the organizer's registrations
+// (PostgREST range pagination) so the CSV includes every row, not just the
+// first page. The UI table stays capped at its display limit (below).
+async function fetchAllRegistrations(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  organizerId: string | undefined,
+): Promise<DirectoryRegistration[]> {
+  const PAGE_SIZE = 1000
+  const all: DirectoryRegistration[] = []
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data } = await supabase
+      .from('registrations')
+      .select(`
+        id, bib_number, payment_status, checked_in, created_at, runner_id,
+        events(id, name, event_date),
+        race_categories(id, name, bib_prefix)
+      `)
+      .eq('organizer_id', organizerId)
+      .order('created_at', { ascending: false })
+      .range(from, from + PAGE_SIZE - 1)
+    if (!data || data.length === 0) break
+    all.push(...(data as unknown as DirectoryRegistration[]))
+    if (data.length < PAGE_SIZE) break
+  }
+  return all
+}
+
 export default async function OrganizerRunnersPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const organizerId = user?.app_metadata?.organizer_id
 
-  const { data: registrations } = await supabase
-    .from('registrations')
-    .select(`
-      id, bib_number, payment_status, checked_in, created_at, runner_id,
-      events(id, name, event_date),
-      race_categories(id, name, bib_prefix)
-    `)
-    .eq('organizer_id', organizerId)
-    .order('created_at', { ascending: false })
-    .limit(100)
+  // One paginated fetch serves BOTH consumers: the UI table keeps its
+  // 100-row display cap (slice below), while the CSV export covers the
+  // complete set — a 101st registration must still export.
+  const allRegistrations = await fetchAllRegistrations(supabase, organizerId)
 
-  // Re-attach runner names via the organizer-safe view (raw
-  // runner_profiles rows / embeds are no longer organizer-readable)
+  // Runner names resolve for BOTH the table and the full export set.
   const profileById = await getSafeRunnerProfiles(
     supabase,
-    (registrations ?? []).map(reg => (reg as { runner_id?: string | null }).runner_id)
+    allRegistrations.map(reg => reg.runner_id)
   )
-  const registrationsWithProfiles = (registrations ?? []).map((reg) => ({
-    ...reg,
-    runner_profiles: {
-      ...(profileById.get((reg as { runner_id?: string | null }).runner_id ?? '') ?? null),
-      // raw view has no email column; column was already always null before
-      email: null as string | null,
-    },
-  }))
 
-  const total = registrations?.length || 0
-  const paid = registrations?.filter(r => isConfirmedStatus(r.payment_status)).length || 0
-  const pending = registrations?.filter(r => r.payment_status === 'pending').length || 0
-  const withBib = registrations?.filter(r => r.bib_number).length || 0
+  const rows: RunnerDirectoryRow[] = allRegistrations.slice(0, 100).map((r) => {
+    const profile = profileById.get(r.runner_id ?? '')
+    return {
+      id: r.id,
+      bib_number: r.bib_number,
+      payment_status: r.payment_status,
+      runnerName: profile?.full_name ?? null,
+      eventName: r.events?.name ?? null,
+      categoryName: r.race_categories?.name ?? null,
+      bibPrefix: r.race_categories?.bib_prefix ?? null,
+    }
+  })
 
-  const statusColor: Record<string, string> = {
-    paid: 'text-success bg-success/15',
-    waived: 'text-success bg-success/15',
-    pending: 'text-primary bg-primary/15',
-    failed: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/15',
-    refunded: 'text-muted-foreground bg-accent',
-  }
+  const total = rows.length
+  const paid = rows.filter(r => isConfirmedStatus(r.payment_status)).length
+  const pending = rows.filter(r => r.payment_status === 'pending').length
+  const withBib = rows.filter(r => r.bib_number).length
+
+  // Audit #8: Export CSV was dead — reuse the admin export pattern
+  // (rowsToCsv + Blob download, via the shared ExportCsvButton).
+  // CodeRabbit fix: export reads the FULL paginated set (fetchAllRegistrations),
+  // not the display-capped page — a 101st registration must still export.
+  const exportRows = allRegistrations.map((r) => {
+    const profile = profileById.get(r.runner_id ?? '')
+    return [
+      r.bib_number || '',
+      profile?.full_name || 'Unknown',
+      r.events?.name || '',
+      r.race_categories?.name || '',
+      r.payment_status,
+      r.checked_in ? 'YES' : 'NO',
+      new Date(r.created_at).toISOString(),
+    ] as const
+  })
 
   return (
     <div className="relative w-full min-h-full px-6 py-8 bg-background">
@@ -68,10 +118,9 @@ export default async function OrganizerRunnersPage() {
             <p className="text-[14px] leading-[20px] text-muted-foreground">All registrations and BIB assignments across your events.</p>
           </div>
           <div className="flex gap-2">
-            <button className="px-4 py-2.5 bg-card hover:bg-card text-foreground text-[14px] leading-[20px] tracking-[0.01em] font-medium rounded-lg flex items-center gap-2 transition-colors border border-muted">
-              <Download className="size-[18px]" />
+            <ExportCsvButton filename={`runners-${new Date().toISOString().slice(0, 10)}.csv`} headers={EXPORT_HEADERS} rows={exportRows}>
               Export CSV
-            </button>
+            </ExportCsvButton>
             <button className="px-4 py-2.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all ">
               <Badge className="size-[18px]" />
               Assign BIBs
@@ -97,89 +146,7 @@ export default async function OrganizerRunnersPage() {
           ))}
         </div>
 
-        {/* Search + filter */}
-        <div className="bg-card rounded-xl p-3 border border-muted flex items-center gap-3">
-          <Search className="text-muted-foreground size-[20px] ml-1" />
-          <input
-            className="flex-1 bg-transparent text-foreground text-[14px] leading-[20px] focus:outline-none placeholder:text-muted-foreground"
-            placeholder="Search by name, BIB number, email..."
-          />
-          <div className="flex gap-1.5">
-            {['All', 'Paid', 'Pending', 'No BIB'].map((f, i) => (
-              <button key={f} className={`px-2.5 py-1 rounded-lg text-[10px] leading-[14px] tracking-[0.05em] font-semibold transition-colors ${i === 0 ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-accent'}`}>
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="bg-card rounded-xl border border-muted overflow-x-auto">
-          <div className="min-w-[800px]">
-          <div className="grid grid-cols-[auto_1fr_1fr_auto_auto_auto] gap-0 text-[10px] leading-[14px] tracking-[0.05em] font-semibold text-muted-foreground uppercase px-5 py-3 border-b border-muted bg-card">
-            <div className="pr-4">#</div>
-            <div>Runner</div>
-            <div>Event / Category</div>
-            <div className="px-4 text-center">BIB</div>
-            <div className="px-4 text-center">Status</div>
-            <div className="text-right">Actions</div>
-          </div>
-
-          {registrationsWithProfiles.length > 0 ? (
-            <div className="divide-y divide-muted">
-              {registrationsWithProfiles.map((reg, i) => (
-                <div key={reg.id} className="grid grid-cols-[auto_1fr_1fr_auto_auto_auto] gap-0 items-center px-5 py-3 hover:bg-card transition-colors">
-                  <div className="pr-4 text-[12px] text-muted-foreground font-mono">{i + 1}</div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[12px] font-bold shrink-0">
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      {(((reg as any).runner_profiles as any)?.full_name || 'U').charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      <div className="text-[14px] leading-[20px] font-medium text-foreground">{((reg as any).runner_profiles as any)?.full_name || 'Unknown'}</div>
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      <div className="text-[11px] text-muted-foreground">{((reg as any).runner_profiles as any)?.email || '—'}</div>
-                    </div>
-                  </div>
-                  <div>
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    <div className="text-[13px] leading-[20px] text-muted-foreground">{((reg as any).events as any)?.name || '—'}</div>
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    <div className="text-[11px] text-muted-foreground">{((reg as any).race_categories as any)?.name || '—'}</div>
-                  </div>
-                  <div className="px-4 text-center">
-                    {reg.bib_number ? (
-                      <span className="px-2.5 py-1 rounded-lg bg-primary/15 text-primary text-[11px] font-mono font-semibold border border-primary/20">
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {((reg as any).race_categories as any)?.bib_prefix || ''}{reg.bib_number}
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-border">—</span>
-                    )}
-                  </div>
-                  <div className="px-4 text-center">
-                    <span className={`text-[10px] leading-[14px] px-2 py-0.5 rounded-full font-semibold ${statusColor[reg.payment_status] || statusColor.failed}`}>
-                      {reg.payment_status}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <button className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors">
-                      <MoreHorizontal className="size-[18px]" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-              <Badge className="size-[48px] mb-3" />
-              <p className="text-[14px] font-medium">No runners registered yet</p>
-              <p className="text-[12px] mt-1">Create and publish an event to accept registrations</p>
-            </div>
-          )}
-          </div>
-        </div>
+        <RunnerDirectoryTable rows={rows} />
       </div>
     </div>
   )

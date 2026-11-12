@@ -1,5 +1,6 @@
 'use client'
 import { Download, Share2 } from "lucide-react"
+import { toast } from 'sonner'
 
 /** P4 smoke carry: the download filename prefix is the RESOLVED bib label,
  * slugified — lowercase, non-alnum folded to '-', trimmed; empty/unset →
@@ -55,6 +56,39 @@ export function BibActionButtons({
     link.click()
   }
 
+  // Clipboard copy with a legacy fallback: navigator.clipboard is rejected in
+  // insecure contexts / without permission (writeText → NotAllowedError), so
+  // fall back to a hidden textarea + execCommand before giving up.
+  const copyLink = async () => {
+    const url = window.location.href
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copied to clipboard!')
+      return
+    } catch {
+      // fall through to the legacy path
+    }
+    try {
+      const textarea = document.createElement('textarea')
+      textarea.value = url
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      // execCommand signals failure with `false` (it doesn't throw) — only
+      // claim success when it actually copied.
+      const copied = document.execCommand('copy')
+      textarea.remove()
+      if (copied) {
+        toast.success('Link copied to clipboard!')
+      } else {
+        toast.error('Could not copy the link — share it from the address bar instead.')
+      }
+    } catch {
+      toast.error('Could not copy the link — share it from the address bar instead.')
+    }
+  }
+
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -63,11 +97,14 @@ export function BibActionButtons({
           text: `Check out my digital ${bibLabel ?? 'BIB'} ${bibNumber} for ${eventName}!`,
           url: window.location.href,
         })
-      } catch {}
-    } else {
-      await navigator.clipboard.writeText(window.location.href)
-      alert('Link copied to clipboard!')
+        return
+      } catch (err) {
+        // User cancelled the share sheet — treat as done. Any other failure
+        // (permission denied, etc.) falls back to clipboard copy below.
+        if (err instanceof DOMException && err.name === 'AbortError') return
+      }
     }
+    await copyLink()
   }
 
   return (

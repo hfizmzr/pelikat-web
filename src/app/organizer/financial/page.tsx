@@ -1,5 +1,6 @@
-import { Banknote, CircleCheck, Clock, Download, Flag, Info } from "lucide-react"
+import { Banknote, CircleCheck, Clock, Flag, Info } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
+import { ExportCsvButton } from '@/components/organizer/export-csv-button'
 import type { Metadata } from 'next'
 
 type FinancialRegistration = {
@@ -79,10 +80,18 @@ export default async function OrganizerFinancialPage() {
             <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-foreground">Financial Rails</h1>
             <p className="text-[14px] leading-[20px] text-muted-foreground">Revenue overview and connected payment gateway operations.</p>
           </div>
-          <button className="px-4 py-2.5 bg-card hover:bg-card text-foreground text-[14px] leading-[20px] font-medium rounded-lg flex items-center gap-2 border border-muted transition-colors">
-            <Download className="size-[18px]" />
+          {/* Audit #8: Export Report was dead — real CSV download via the
+          shared ExportCsvButton (per-event revenue + monthly trend). */}
+          <ExportCsvButton
+            filename={`financial-report-${new Date().toISOString().slice(0, 10)}.csv`}
+            headers={['Period', 'Type', 'Name', 'Paid Registrations', 'Revenue (RM)']}
+            rows={[
+              ...monthlyData.map(m => ['monthly', 'Monthly Revenue', m.label, null, Number(m.revenue.toFixed(2))] as const),
+              ...eventRevList.map(e => ['per-event', 'Revenue by Event', e.name, e.count, Number(e.revenue.toFixed(2))] as const),
+            ]}
+          >
             Export Report
-          </button>
+          </ExportCsvButton>
         </div>
 
         {/* Revenue KPIs */}
@@ -167,6 +176,11 @@ export default async function OrganizerFinancialPage() {
             {monthlyData.map(({ label, revenue }) => {
               const pct = Math.round((revenue / maxMonthly) * 100)
               const isBest = revenue === maxMonthly && revenue > 0
+              // Percentage heights resolve to 0 inside the auto-height flex
+              // columns below (audit #13: bars never mounted), so size the
+              // bars in px against the fixed h-44 plot area (~120px usable
+              // above the label row).
+              const barHeight = Math.max(Math.round((pct / 100) * 120), 6)
               return (
                 <div key={label} className="flex-1 flex flex-col items-center gap-2 group">
                   <span className={`text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity ${isBest ? 'text-success' : 'text-primary'}`}>
@@ -174,7 +188,7 @@ export default async function OrganizerFinancialPage() {
                   </span>
                   <div
                     className={`w-full rounded-t transition-all ${isBest ? 'bg-success group-hover:bg-success' : 'bg-primary/30 group-hover:bg-primary'}`}
-                    style={{ height: `${Math.max(pct, 3)}%` }}
+                    style={{ height: `${barHeight}px` }}
                   />
                   <span className={`text-[10px] ${isBest ? 'text-success font-semibold' : 'text-muted-foreground'}`}>{label}</span>
                 </div>
