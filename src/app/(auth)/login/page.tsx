@@ -7,6 +7,7 @@ import { Suspense, useState } from 'react'
 import { redirectAfterLogin } from '@/lib/auth/redirectAfterLogin'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 
 function LoginForm() {
   const supabase = createClient()
@@ -99,9 +100,9 @@ function LoginForm() {
           <label htmlFor="login-password" className="text-sm font-medium text-foreground">
             Password
           </label>
-          <Input
+          <PasswordInput
             id="login-password"
-            type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"

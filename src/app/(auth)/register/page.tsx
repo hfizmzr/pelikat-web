@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { redirectAfterLogin } from '@/lib/auth/redirectAfterLogin'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 
 export default function RegisterPage() {
   const supabase = createClient()
@@ -108,9 +109,9 @@ export default function RegisterPage() {
               <label htmlFor="register-password" className="text-sm font-medium text-foreground">
                 Password
               </label>
-              <Input
+              <PasswordInput
                 id="register-password"
-                type="password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="At least 8 characters"
@@ -122,9 +123,9 @@ export default function RegisterPage() {
               <label htmlFor="register-confirm-password" className="text-sm font-medium text-foreground">
                 Confirm password
               </label>
-              <Input
+              <PasswordInput
                 id="register-confirm-password"
-                type="password"
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter your password"
