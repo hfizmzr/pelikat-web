@@ -1,6 +1,6 @@
 'use client'
 
-import { BrandMark } from '@/components/brand-mark'
+import { BrandLink } from '@/components/brand-mark'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -75,7 +75,7 @@ export default function RegisterPage() {
         <div className="w-full flex flex-col gap-6">
           {/* Logo */}
           <div className="text-center mb-2">
-            <BrandMark className="mb-6" />
+            <BrandLink className="mb-6" />
             <h1 className="text-2xl font-medium text-foreground">Create your account</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Join Pelikat as a runner or organizer
@@ -155,10 +155,9 @@ export default function RegisterPage() {
           </p>
 
           <p className="text-xs text-muted-foreground text-center leading-relaxed">
-            By creating an account, you agree to our{' '}
-            <span className="text-primary underline underline-offset-2 cursor-pointer">Terms</span>
-            {' '}and{' '}
-            <span className="text-primary underline underline-offset-2 cursor-pointer">Privacy policy</span>.
+            {/* Plain text until real Terms / Privacy pages exist (no dead links). */}
+            By creating an account, you agree to our Terms and{' '}
+            <span className="whitespace-nowrap">Privacy policy</span>.
           </p>
         </div>
       </div>

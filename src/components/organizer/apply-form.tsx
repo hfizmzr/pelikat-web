@@ -75,7 +75,7 @@ export default function ApplyForm() {
 
   if (submitted) {
     return (
-      <div className="min-h-dvh flex items-center justify-center">
+      <div className="min-h-[calc(100dvh-3.5rem)] flex items-center justify-center">
         <Card className="max-w-md mx-auto border-border">
           <CardContent className="pt-6 text-center space-y-4">
             <div className="flex justify-center">
@@ -101,7 +101,7 @@ export default function ApplyForm() {
   }
 
   return (
-    <div className="min-h-dvh py-20 sm:py-24">
+    <div className="min-h-[calc(100dvh-3.5rem)] py-12 sm:py-16">
       <div className="mx-auto max-w-lg px-4 sm:px-6">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-medium tracking-tight text-foreground">

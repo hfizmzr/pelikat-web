@@ -5,7 +5,7 @@ import { Building2, ChartLine, LayoutGrid, Lock, LogOut, Menu, ShieldCheck, Togg
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { BrandMark } from '@/components/brand-mark'
+import { BrandLink } from '@/components/brand-mark'
 import {
   Sheet,
   SheetContent,
@@ -104,7 +104,7 @@ function SidebarContent({
   return (
     <div className="flex h-full w-64 flex-col overflow-y-auto border-r border-border bg-sidebar select-none scrollbar-none">
       <div className="flex h-16 shrink-0 items-center justify-between gap-2 px-5">
-        <BrandMark />
+        <BrandLink href="/admin" label="Admin dashboard" />
         <span className="text-[12px] text-muted-foreground">Admin</span>
       </div>
 
@@ -163,15 +163,24 @@ export function AdminSidebar() {
 export function AdminMobileNav() {
   const pathname = usePathname()
   const { user, activeOrgCount, handleLogout } = useAdminNavData()
+  const [open, setOpen] = useState(false)
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <button aria-label="Open menu" className="flex size-11 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors lg:hidden">
           <Menu className="size-5" strokeWidth={1.75} />
         </button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0 border-r border-border bg-sidebar">
+      <SheetContent
+        side="left"
+        className="w-64 p-0 border-r border-border bg-sidebar"
+        // Close the sheet when any link inside it is followed (nav items, the
+        // logo): the layout persists across navigations, so it would stay open.
+        onClickCapture={(e) => {
+          if ((e.target as HTMLElement).closest('a[href]')) setOpen(false)
+        }}
+      >
         <SidebarContent pathname={pathname} user={user} onLogout={handleLogout} activeOrgCount={activeOrgCount} />
       </SheetContent>
     </Sheet>

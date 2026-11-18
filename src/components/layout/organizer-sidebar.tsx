@@ -5,7 +5,7 @@ import { Flag, Landmark, LayoutDashboard, LogOut, Menu, QrCode, Settings2, Shirt
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { BrandMark } from '@/components/brand-mark'
+import { BrandLink } from '@/components/brand-mark'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -103,7 +103,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
   return (
     <div className="flex h-full w-64 flex-col border-r border-border bg-sidebar">
       <div className="flex h-16 shrink-0 items-center gap-2.5 px-5">
-        <BrandMark />
+        <BrandLink href="/organizer" label="Organizer dashboard" />
       </div>
 
       <div className="mx-3 mb-2 shrink-0 rounded-lg border border-border px-3 py-2.5">
@@ -151,15 +151,24 @@ export function OrganizerSidebar() {
 
 export function OrganizerMobileNav() {
   const pathname = usePathname()
+  const [open, setOpen] = useState(false)
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="lg:hidden text-foreground">
           <Menu className="size-5" strokeWidth={1.75} />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0 bg-sidebar border-r border-border">
+      <SheetContent
+        side="left"
+        className="w-64 p-0 bg-sidebar border-r border-border"
+        // Close the sheet when any link inside it is followed (nav items, the
+        // logo): the layout persists across navigations, so it would stay open.
+        onClickCapture={(e) => {
+          if ((e.target as HTMLElement).closest('a[href]')) setOpen(false)
+        }}
+      >
         <SidebarContent pathname={pathname} />
       </SheetContent>
     </Sheet>

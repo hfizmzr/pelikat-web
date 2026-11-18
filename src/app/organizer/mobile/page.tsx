@@ -7,6 +7,7 @@ import { StatusTag } from '@/components/ui/status-tag'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { MobileLogoutButton } from '@/components/organizer/mobile-logout-button'
+import { BrandLink } from '@/components/brand-mark'
 
 async function getOrganizerDashboardData() {
   const cookieStore = await cookies()
@@ -106,8 +107,11 @@ export default async function OrganizerMobileHome() {
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md px-5 pt-safe">
         <div className="h-16 flex items-center justify-between">
           <div className="min-w-0">
-            <p className="text-[16px] font-medium text-foreground">Pelikat</p>
-            <p className="truncate text-[12px] text-muted-foreground">{data.orgName}</p>
+            {/* The mobile console's own home is the Home tab; the mark leads out
+            to the full organizer dashboard (which a home-screen install sends
+            straight back here). */}
+            <BrandLink href="/organizer" label="Organizer dashboard" />
+            <p className="mt-0.5 truncate text-[12px] text-muted-foreground">{data.orgName}</p>
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle className="w-10 h-10 flex items-center justify-center rounded-full" />
