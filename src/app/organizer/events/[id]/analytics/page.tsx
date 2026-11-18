@@ -1,3 +1,4 @@
+import { statusLabel } from '@/components/ui/status-tag'
 import { createClient } from '@/lib/supabase/server'
 import { isConfirmedStatus } from '@/lib/registration-status'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,7 +11,7 @@ import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Event Analytics - Pelikat',
+  title: 'Event analytics - Pelikat',
   description: 'Per-event registration analytics',
 }
 
@@ -120,56 +121,56 @@ export default async function OrganizerEventAnalyticsPage({
           <ArrowLeft className="h-5 w-5 text-muted-foreground hover:text-foreground" />
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold tracking-tight">Analytics — {event.name}</h1>
+          <h1 className="text-[28px] leading-none font-medium tabular-nums">Analytics — {event.name}</h1>
           <p className="text-sm text-muted-foreground">
             {new Date(event.event_date).toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
         <Badge variant={event.status === 'published' ? 'default' : 'secondary'}>
-          {event.status}
+          {statusLabel(event.status)}
         </Badge>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Registrations</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Total registrations</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{total}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{total}</div>
             <p className="text-xs text-muted-foreground mt-1">{paid} confirmed</p>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Checked In</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Checked in</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{checkedIn}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{checkedIn}</div>
             <p className="text-xs text-muted-foreground mt-1">{checkInRate}% check-in rate</p>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Categories</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Categories</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{raceCategories.length}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{raceCategories.length}</div>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">RM {revenue.toLocaleString('en-MY', { maximumFractionDigits: 0 })}</div>
+            <div className="text-2xl font-medium text-success">RM {revenue.toLocaleString('en-MY', { maximumFractionDigits: 0 })}</div>
           </CardContent>
         </Card>
       </div>
 
       <Card className="border-border">
         <CardHeader>
-          <CardTitle>Registrations by Race Category</CardTitle>
+          <CardTitle>Registrations by race category</CardTitle>
           <CardDescription>
             Broken down by gender and check-in status (FR-33)
           </CardDescription>

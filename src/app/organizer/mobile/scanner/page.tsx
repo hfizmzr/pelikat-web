@@ -206,7 +206,7 @@ export default function OrganizerMobileScannerPage() {
       ? 'border-success/40 bg-success/5'
       : scanResult.alreadyCheckedIn
       ? 'border-primary/40 bg-primary/5'
-      : 'border-red-500 dark:border-red-300/40 bg-red-500/10 dark:bg-red-300/5'
+      : 'border-destructive dark:border-destructive/40 bg-destructive/10 dark:bg-destructive/5'
     : 'border-border/40 bg-card'
 
   return (
@@ -216,14 +216,11 @@ export default function OrganizerMobileScannerPage() {
         <div className="h-14 flex items-center justify-between">
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="text-[16px] font-bold text-foreground">BIB Pass</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] font-bold tracking-wider uppercase">
-                Scanner
-              </span>
+              <span className="text-[16px] font-medium text-foreground">Scanner</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-[10px] text-muted-foreground truncate max-w-[180px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              <span className="text-[11px] text-muted-foreground truncate max-w-[180px]">
                 {eventName || 'No active event'}
               </span>
             </div>
@@ -232,7 +229,7 @@ export default function OrganizerMobileScannerPage() {
             {/* Scan count badge */}
             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-success/10">
               <CircleCheck className="size-[14px] text-success" />
-              <span className="text-[11px] font-bold text-success">{scanCount}</span>
+              <span className="text-[11px] font-medium text-success">{scanCount}</span>
             </div>
             {scanning && (
               <button
@@ -254,7 +251,7 @@ export default function OrganizerMobileScannerPage() {
 
       <div className="flex flex-col px-4 py-4 space-y-4">
         {/* Scanner viewport */}
-        <div className="relative w-full rounded-xl bg-background overflow-hidden shadow-xl border border-border/40">
+        <div className="relative w-full rounded-xl bg-background overflow-hidden shadow-lg border border-border/40">
           <div
             id={scannerContainerId}
             className="w-full"
@@ -263,11 +260,9 @@ export default function OrganizerMobileScannerPage() {
 
           {!scanning && (
             <div className="flex flex-col items-center justify-center py-10 gap-3">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <QrCode className="size-[32px] text-primary" />
-              </div>
-              <p className="text-[12px] text-muted-foreground text-center">
-                Tap the button below to activate camera scanner
+              <QrCode className="size-8 text-muted-foreground" strokeWidth={1.5} />
+              <p className="text-[13px] text-muted-foreground text-center">
+                Start the camera to scan a runner&apos;s QR pass
               </p>
             </div>
           )}
@@ -276,7 +271,7 @@ export default function OrganizerMobileScannerPage() {
           {scanning && (
             <div className="absolute inset-0 pointer-events-none">
               {/* Scan line */}
-              <div className="absolute left-[15%] right-[15%] top-1/2 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_12px_var(--primary)] animate-pulse" />
+              <div className="absolute left-[15%] right-[15%] top-1/2 h-0.5 bg-primary/80" />
               {/* Corner markers */}
               {['top-4 left-4', 'top-4 right-4', 'bottom-4 left-4', 'bottom-4 right-4'].map((pos, i) => (
                 <div
@@ -291,8 +286,8 @@ export default function OrganizerMobileScannerPage() {
               ))}
               <div className="absolute bottom-2 inset-x-0 flex justify-center">
                 <div className="bg-card/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2 shadow-sm">
-                  <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
-                  <span className="text-[10px] font-semibold text-foreground">SCANNING</span>
+                  <span className="w-2 h-2 rounded-full bg-primary" />
+                  <span className="text-[11px] font-medium text-foreground">SCANNING</span>
                 </div>
               </div>
             </div>
@@ -302,9 +297,9 @@ export default function OrganizerMobileScannerPage() {
         {/* Scanner toggle button */}
         <button
           onClick={scanning ? stopScanning : startScanning}
-          className={`w-full py-3.5 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md ${
+          className={`w-full py-3.5 rounded-xl font-medium text-[14px] flex items-center justify-center gap-2 transition-[color,background-color,border-color,opacity,transform] active:scale-[0.98] shadow-md ${
             scanning
-              ? 'bg-red-800/80 text-red-500 dark:text-red-300 border border-red-500/30 dark:border-red-300/30'
+              ? 'bg-destructive/80 text-destructive border border-destructive/30'
               : 'bg-primary text-primary-foreground'
           }`}
         >
@@ -313,7 +308,7 @@ export default function OrganizerMobileScannerPage() {
           ) : (
             <QrCode className="size-[18px]" />
           )}
-          {scanning ? 'Stop Scanner' : 'Start Camera Scanner'}
+          {scanning ? 'Stop scanner' : 'Start camera scanner'}
         </button>
 
         {/* Manual input */}
@@ -322,7 +317,7 @@ export default function OrganizerMobileScannerPage() {
             <Search className="size-[16px] text-muted-foreground" />
             <input
               className="w-full bg-transparent text-foreground text-[13px] outline-none placeholder:text-muted-foreground"
-              placeholder="NRIC, BIB or Order # …"
+              placeholder="NRIC, BIB or order # …"
               value={manualInput}
               onChange={(e) => setManualInput(e.target.value)}
               onKeyDown={(e) => {
@@ -339,15 +334,15 @@ export default function OrganizerMobileScannerPage() {
               setManualInput('')
             }}
             disabled={!manualInput.trim() || !!processingBib}
-            className="bg-primary text-primary-foreground text-[12px] font-bold px-4 py-2.5 rounded-lg active:scale-95 transition-all disabled:opacity-40"
+            className="bg-primary text-primary-foreground text-[12px] font-medium px-4 py-2.5 rounded-lg active:scale-[0.98] transition-[color,background-color,border-color,opacity,transform] disabled:opacity-40"
           >
-            {processingBib ? '...' : 'Check In'}
+            {processingBib ? '...' : 'Check in'}
           </button>
         </div>
 
         {/* Result card */}
         {scanResult && (
-          <div className={`rounded-xl border p-4 transition-all ${resultBg}`}>
+          <div className={`rounded-xl border p-4 transition-[color,background-color,border-color,opacity] ${resultBg}`}>
             <div className="flex items-center gap-3 mb-3">
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
@@ -355,7 +350,7 @@ export default function OrganizerMobileScannerPage() {
                     ? 'bg-success/20 text-success'
                     : scanResult.alreadyCheckedIn
                     ? 'bg-primary/20 text-primary'
-                    : 'bg-red-500/10 dark:bg-red-300/20 text-red-500 dark:text-red-300'
+                    : 'bg-destructive/10 dark:bg-destructive/20 text-destructive'
                 }`}
               >
                 {scanResult.success && !scanResult.alreadyCheckedIn ? (
@@ -368,18 +363,18 @@ export default function OrganizerMobileScannerPage() {
               </div>
               <div className="flex-1">
                 <p
-                  className={`text-[13px] font-bold ${
+                  className={`text-[13px] font-medium ${
                     scanResult.success && !scanResult.alreadyCheckedIn
                       ? 'text-success'
                       : scanResult.alreadyCheckedIn
                       ? 'text-primary'
-                      : 'text-red-500 dark:text-red-300'
+                      : 'text-destructive'
                   }`}
                 >
                   {scanResult.success && !scanResult.alreadyCheckedIn
-                    ? '✓ Checked In!'
+                    ? 'Checked in'
                     : scanResult.alreadyCheckedIn
-                    ? 'Already Checked In'
+                    ? 'Already checked in'
                     : '✗ Not Found'}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">{scanResult.message}</p>
@@ -388,11 +383,11 @@ export default function OrganizerMobileScannerPage() {
 
             {scanResult.runner && (
               <div className="bg-background/60 rounded-lg p-3 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[14px] font-bold shrink-0">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[14px] font-medium shrink-0">
                   {scanResult.runner.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-foreground truncate">{scanResult.runner.name}</p>
+                  <p className="text-[13px] font-medium text-foreground truncate">{scanResult.runner.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[11px] font-mono bg-accent px-1.5 py-0.5 rounded text-muted-foreground">
                       {scanResult.runner.bib}
@@ -415,9 +410,9 @@ export default function OrganizerMobileScannerPage() {
             <div className="bg-success/10 text-success px-4 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <History className="size-[16px]" />
-                <span className="text-[11px] font-bold tracking-wider uppercase">Recent Scans</span>
+                <span className="text-[11px] font-medium">Recent scans</span>
               </div>
-              <span className="text-[10px] text-success/70">{recentScans.length} scanned</span>
+              <span className="text-[11px] text-success/70">{recentScans.length} scanned</span>
             </div>
             <div className="divide-y divide-accent/40">
               {recentScans.map((scan, i) => (
@@ -428,14 +423,14 @@ export default function OrganizerMobileScannerPage() {
                         ? 'bg-success'
                         : scan.alreadyCheckedIn
                         ? 'bg-primary'
-                        : 'bg-red-500 dark:bg-red-300'
+                        : 'bg-destructive'
                     }`}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-[12px] font-medium text-foreground truncate">{scan.name}</p>
-                    <p className="text-[10px] text-muted-foreground font-mono">{scan.bib}</p>
+                    <p className="text-[11px] text-muted-foreground font-mono">{scan.bib}</p>
                   </div>
-                  <span className="text-[10px] text-muted-foreground shrink-0">
+                  <span className="text-[11px] text-muted-foreground shrink-0">
                     {scan.time.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 </div>

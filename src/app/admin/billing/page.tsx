@@ -1,7 +1,8 @@
 'use client'
 
+import { statusLabel } from '@/components/ui/status-tag'
 import { useState, useEffect, useCallback } from 'react'
-import { Banknote, ClipboardList, CreditCard, Download, Loader2, PiggyBank, ReceiptText, RefreshCw, Wallet } from "lucide-react"
+import { Banknote, ClipboardList, CreditCard, Download, Loader2, ReceiptText, RefreshCw } from "lucide-react"
 import { toast } from 'sonner'
 
 interface BillingSummary {
@@ -79,7 +80,7 @@ export default function AdminBillingPage() {
 
   const metricCards = [
     {
-      label: 'Gross Platform Volume',
+      label: 'Gross platform volume',
       value: summary?.grossVolume || 'RM 0.00',
       unit: '',
       icon: Banknote,
@@ -88,31 +89,22 @@ export default function AdminBillingPage() {
       sub: 'All-time race registration volume',
     },
     {
-      label: 'Monthly Recurring (MRR)',
+      label: 'Monthly recurring revenue',
       value: summary?.mrr || 'RM 0',
       unit: '',
       icon: CreditCard,
       color: 'text-primary',
       bg: 'bg-primary/20',
-      sub: `${summary?.activeSubscriptions ?? 0} active tenant accounts`,
+      sub: `${summary?.activeSubscriptions ?? 0} active subscriptions`,
     },
     {
-      label: 'Escrow Reserve Held',
-      value: summary?.escrowHeld || 'RM 0.00',
-      unit: '',
-      icon: PiggyBank,
-      color: 'text-success',
-      bg: 'bg-success/20',
-      sub: 'Pending race payout releases',
-    },
-    {
-      label: 'Pending Invoiced',
+      label: 'Pending payments',
       value: String(summary?.pendingCount ?? 0),
       unit: 'Orders',
       icon: ClipboardList,
-      color: 'text-red-500 dark:text-red-300',
-      bg: 'bg-red-500/10 dark:bg-red-300/20',
-      sub: `${summary?.overdueCount ?? 0} tenant accounts inactive`,
+      color: 'text-destructive',
+      bg: 'bg-destructive/10 dark:bg-destructive/20',
+      sub: `${summary?.overdueCount ?? 0} inactive organizer accounts`,
     },
   ]
 
@@ -121,19 +113,15 @@ export default function AdminBillingPage() {
       {/* ── Page Header ──────────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Wallet className="size-[16px] text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Finance & Escrow</span>
-          </div>
-          <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Billing & Platform Revenue</h1>
-          <p className="text-[13px] text-muted-foreground">Organizer subscriptions, escrow balances, and participant checkout transaction reconciliation</p>
+          <h1 className="text-[28px] leading-9 font-medium text-foreground">Billing</h1>
+          <p className="mt-1 text-[14px] text-muted-foreground">Organizer subscriptions and runner payments</p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => fetchBilling(true)}
             disabled={refreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-[color,background-color,border-color,opacity] border border-border/30"
           >
             <RefreshCw className={`size-[16px] ${refreshing ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
@@ -144,36 +132,33 @@ export default function AdminBillingPage() {
               toast.success('Billing ledger exported')
             }}
             disabled={invoices.length === 0}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary transition-all "
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-90 transition-[color,background-color,border-color,opacity] "
           >
             <Download className="size-[18px]" />
-            <span>Export Ledger</span>
+            <span>Export ledger</span>
           </button>
         </div>
       </div>
 
       {/* ── Metric Cards ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
         {metricCards.map((m, i) => (
-          <div key={i} className="rounded-xl bg-card border border-border/30 p-5 flex flex-col gap-3">
+          <div key={i} className="rounded-xl bg-card border border-border p-5 flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{m.label}</span>
-              <div className={`p-1.5 rounded-lg ${m.bg} ${m.color}`}>
-                <m.icon className="size-[18px]" />
-              </div>
+              <span className="text-[13px] text-muted-foreground">{m.label}</span>
             </div>
-            <span className="text-[32px] font-bold leading-none text-foreground font-tabular">{m.value}</span>
-            <p className="text-[11px] text-muted-foreground">{m.sub}</p>
+            <span className="text-[28px] font-medium leading-none text-foreground tabular-nums">{m.value}</span>
+            <p className="text-[13px] text-muted-foreground">{m.sub}</p>
           </div>
         ))}
       </div>
 
       {/* ── Transaction Ledger Table ─────────────────────────────────────── */}
-      <div className="rounded-xl bg-card border border-border/30 overflow-hidden shadow-lg">
+      <div className="rounded-xl bg-card border border-border/30 overflow-hidden">
         <div className="p-5 border-b border-border/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ReceiptText className="text-primary size-[20px]" />
-            <h2 className="font-jakarta font-semibold text-[18px] text-foreground">Revenue & Settlement Ledger</h2>
+            <h2 className="font-jakarta font-medium text-[18px] text-foreground">Revenue & settlement ledger</h2>
           </div>
           <span className="text-[11px] text-muted-foreground font-mono">
             {invoices.length} transactions recorded
@@ -184,8 +169,8 @@ export default function AdminBillingPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border/30">
-                {['Tenant / Account', 'Description', 'Type', 'Settlement Amount', 'Date', 'Status'].map((h) => (
-                  <th key={h} className="py-3 px-5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{h}</th>
+                {['Account', 'Description', 'Type', 'Amount', 'Date', 'Status'].map((h) => (
+                  <th key={h} className="py-3 px-5 text-[11px] font-medium text-muted-foreground">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -207,7 +192,7 @@ export default function AdminBillingPage() {
                 invoices.map((inv) => (
                   <tr key={inv.id} className="hover:bg-card/50 transition-colors">
                     {/* Tenant */}
-                    <td className="py-3.5 px-5 font-semibold text-foreground font-jakarta">
+                    <td className="py-3.5 px-5 font-medium text-foreground font-jakarta">
                       {inv.tenant}
                     </td>
 
@@ -221,13 +206,13 @@ export default function AdminBillingPage() {
                     bounded truncate keeps one clean line with an ellipsis
                     affordance (max-w-40 = 10rem, no arbitrary px). */}
                     <td className="py-3.5 px-5">
-                      <span className="inline-block max-w-40 truncate px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                      <span className="inline-block max-w-40 truncate px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-primary/10 text-primary border border-primary/20">
                         {inv.plan}
                       </span>
                     </td>
 
                     {/* Amount */}
-                    <td className="py-3.5 px-5 font-mono font-bold text-foreground">
+                    <td className="py-3.5 px-5 font-mono font-medium text-foreground">
                       {inv.amount}
                     </td>
 
@@ -238,14 +223,14 @@ export default function AdminBillingPage() {
 
                     {/* Status */}
                     <td className="py-3.5 px-5">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${
                         inv.status === 'paid'
                           ? 'text-success bg-success/10 border-success/20'
                           : inv.status === 'overdue'
-                            ? 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20'
-                            : 'text-amber-500 bg-amber-500/10 border-amber-500/20'
+                            ? 'text-destructive bg-destructive/10 border-destructive/30 dark:border-destructive/20'
+                            : 'text-warning bg-warning/10 border-warning/20'
                       }`}>
-                        {inv.status.toUpperCase()}
+                        {statusLabel(inv.status)}
                       </span>
                     </td>
                   </tr>

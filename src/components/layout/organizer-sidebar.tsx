@@ -1,10 +1,11 @@
 'use client'
 
 import type { LucideIcon } from "lucide-react"
-import { Badge, Building2, ChevronsUpDown, CirclePlus, Flag, Landmark, LayoutDashboard, LogOut, Menu, QrCode, Settings2, Shirt, Smartphone, TrendingUp } from "lucide-react"
+import { Flag, Landmark, LayoutDashboard, LogOut, Menu, QrCode, Settings2, Shirt, Smartphone, TrendingUp, Users } from "lucide-react"
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { BrandMark } from '@/components/brand-mark'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -17,22 +18,22 @@ import { Button } from '@/components/ui/button'
 
 const navSections = [
   {
-    label: 'Event Console',
+    label: 'Race',
     items: [
       { title: 'Overview', href: '/organizer', icon: LayoutDashboard, exact: true },
-      { title: 'Race Events & Waves', href: '/organizer/events', icon: Flag },
-      { title: 'Runner Directory & BIBs', href: '/organizer/runners', icon: Badge },
-      { title: 'REPC Station', href: '/organizer/repc', icon: QrCode, badge: 'Live' },
-      { title: 'Merch Hub', href: '/organizer/merch', icon: Shirt },
+      { title: 'Events', href: '/organizer/events', icon: Flag },
+      { title: 'Runners', href: '/organizer/runners', icon: Users },
+      { title: 'Kit collection', href: '/organizer/repc', icon: QrCode },
+      { title: 'Merch', href: '/organizer/merch', icon: Shirt },
+      { title: 'Mobile console', href: '/organizer/mobile', icon: Smartphone },
     ],
   },
   {
-    label: 'Operations & Config',
+    label: 'Organization',
     items: [
-      { title: 'Mobile Console', href: '/organizer/mobile', icon: Smartphone },
-      { title: 'Telemetry & Analytics', href: '/organizer/analytics', icon: TrendingUp },
-      { title: 'Financial Rails', href: '/organizer/financial', icon: Landmark },
-      { title: 'Settings & Webhooks', href: '/organizer/settings', icon: Settings2 },
+      { title: 'Analytics', href: '/organizer/analytics', icon: TrendingUp },
+      { title: 'Finance', href: '/organizer/financial', icon: Landmark },
+      { title: 'Settings', href: '/organizer/settings', icon: Settings2 },
     ],
   },
 ]
@@ -41,7 +42,7 @@ function NavItem({
   item,
   pathname,
 }: {
-  item: { title: string; href: string; icon: LucideIcon; badge?: string; exact?: boolean }
+  item: { title: string; href: string; icon: LucideIcon; exact?: boolean }
   pathname: string
 }) {
   const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
@@ -49,33 +50,16 @@ function NavItem({
   return (
     <Link
       href={item.href}
+      aria-current={isActive ? 'page' : undefined}
       className={cn(
-        'flex items-center justify-between px-3 py-2 rounded-lg transition-all text-[12px] leading-[16px] tracking-[0.02em] font-medium',
+        'flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[14px] transition-colors',
         isActive
-          ? 'bg-primary text-primary-foreground font-semibold '
-          : 'text-muted-foreground hover:text-foreground hover:bg-card'
+          ? 'bg-accent text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+          : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
       )}
     >
-      <div className="flex items-center gap-2">
-        <span
-          className={cn(
-            'flex shrink-0',
-            isActive ? 'text-primary-foreground' : 'text-muted-foreground'
-          )}
-        >
-          <item.icon className="size-[20px]" />
-        </span>
-        <span>{item.title}</span>
-      </div>
-      {item.badge && (
-        <span className="px-1.5 py-0.5 rounded-full bg-success/15 text-success text-[10px] font-semibold flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-          {item.badge}
-        </span>
-      )}
-      {isActive && !item.badge && (
-        <span className="w-2 h-2 rounded-full bg-primary-foreground" />
-      )}
+      <item.icon className={cn('size-[18px] shrink-0', isActive && 'text-primary')} strokeWidth={1.75} />
+      <span className="truncate">{item.title}</span>
     </Link>
   )
 }
@@ -83,7 +67,7 @@ function NavItem({
 function SidebarContent({ pathname }: { pathname: string }) {
   const supabase = createClient()
   const router = useRouter()
-  const [orgName, setOrgName] = useState<string>('My Organization')
+  const [orgName, setOrgName] = useState<string>('My organization')
   const [userName, setUserName] = useState<string>('Organizer')
 
   useEffect(() => {
@@ -117,94 +101,44 @@ function SidebarContent({ pathname }: { pathname: string }) {
   }
 
   return (
-    <div className="flex flex-col h-full w-64 bg-background border-r border-muted">
-      {/* Logo header */}
-      <div className="h-16 px-4 flex items-center justify-between border-b border-muted bg-border shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Flag className="text-primary size-[16px]" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-foreground">
-              Pelikat
-            </span>
-            <span className="text-[10px] text-muted-foreground font-semibold tracking-wider uppercase mt-0.5">
-              Organizer Hub
-            </span>
-          </div>
-        </div>
-        <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-semibold border border-primary/20">
-          B2B
-        </span>
+    <div className="flex h-full w-64 flex-col border-r border-border bg-sidebar">
+      <div className="flex h-16 shrink-0 items-center gap-2.5 px-5">
+        <BrandMark />
       </div>
 
-      {/* Org switcher */}
-      <div className="p-2 border-b border-muted shrink-0">
-        <button className="w-full flex items-center justify-between p-2 rounded-lg bg-card hover:bg-card transition-colors text-left group">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-primary shrink-0">
-              <Building2 className="size-[18px]" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[12px] leading-[16px] font-semibold text-foreground truncate">{orgName}</span>
-              <span className="text-[11px] text-primary font-medium">Organizer Portal</span>
-            </div>
-          </div>
-          <ChevronsUpDown className="text-muted-foreground group-hover:text-foreground transition-colors size-[18px]" />
-        </button>
+      <div className="mx-3 mb-2 shrink-0 rounded-lg border border-border px-3 py-2.5">
+        <p className="truncate text-[14px] font-medium text-foreground">{orgName}</p>
+        <p className="text-[12px] text-muted-foreground">Organizer</p>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto p-2 flex flex-col gap-1">
+      <nav className="flex flex-1 flex-col overflow-y-auto px-3 pb-4" aria-label="Organizer">
         {navSections.map((section) => (
-          <div key={section.label}>
-            <div className="px-2 py-1 text-[10px] uppercase font-bold text-muted-foreground tracking-wider mt-2 first:mt-0">
-              {section.label}
+          <div key={section.label} className="mt-5 first:mt-2">
+            <p className="mb-2 px-2.5 text-[12px] text-muted-foreground">{section.label}</p>
+            <div className="flex flex-col gap-0.5">
+              {section.items.map((item) => (
+                <NavItem key={item.href} item={item} pathname={pathname} />
+              ))}
             </div>
-            {section.items.map((item) => (
-              <NavItem key={item.href} item={item} pathname={pathname} />
-            ))}
           </div>
         ))}
       </nav>
 
-      {/* Bottom user section */}
-      <div className="p-2 border-t border-muted flex flex-col gap-2 bg-border/80 shrink-0">
-        <button
-          onClick={() => router.push('/organizer/events/new')}
-          className="w-full py-2 px-3 bg-success/20 text-success hover:bg-success/30 text-[12px] leading-[16px] font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-success/20 shadow-sm"
-        >
-          <CirclePlus className="size-[18px]" />
-          <span>Create Event</span>
-        </button>
-        <div className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-card text-[11px]">
-          <span className="flex items-center gap-1.5 text-success font-medium">
-            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            Platform Online
-          </span>
-          <span className="text-muted-foreground font-mono text-[10px]">Hub</span>
-        </div>
-        <div className="flex items-center justify-between pt-1">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="relative shrink-0">
-              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[14px] font-bold ring-2 ring-primary/40">
-                {userName.charAt(0).toUpperCase()}
-              </div>
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-success ring-2 ring-background" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold text-foreground truncate">{userName}</span>
-              <span className="text-[10px] text-primary truncate font-medium">Race Director</span>
-            </div>
+      <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-3 py-3">
+        <div className="flex min-w-0 items-center gap-2.5 px-1">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-[13px] font-medium text-foreground">
+            {userName.charAt(0).toUpperCase()}
           </div>
-          <button
-            onClick={handleLogout}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
-            title="Sign out"
-          >
-            <LogOut className="size-[18px]" />
-          </button>
+          <span className="truncate text-[13px] text-foreground">{userName}</span>
         </div>
+        <button
+          onClick={handleLogout}
+          className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          title="Sign out"
+          aria-label="Sign out"
+        >
+          <LogOut className="size-[18px]" strokeWidth={1.75} />
+        </button>
       </div>
     </div>
   )
@@ -222,10 +156,10 @@ export function OrganizerMobileNav() {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="lg:hidden text-foreground">
-          <Menu className="size-[20px]" />
+          <Menu className="size-5" strokeWidth={1.75} />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0 bg-background border-r border-muted">
+      <SheetContent side="left" className="w-64 p-0 bg-sidebar border-r border-border">
         <SidebarContent pathname={pathname} />
       </SheetContent>
     </Sheet>

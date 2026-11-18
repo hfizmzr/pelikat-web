@@ -13,8 +13,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Pelikat Running Platform',
-  description: 'Pelikat Running Platform - Race management & runner experience',
+  title: 'Pelikat',
+  description: 'Race management for Malaysian running events and their runners',
   icons: {
     icon: [
       {

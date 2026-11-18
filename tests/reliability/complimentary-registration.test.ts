@@ -91,7 +91,7 @@ describe('Reliability: confirmed predicate (paid OR waived)', () => {
     expect(isConfirmedStatus(null)).toBe(false)
   })
 
-  it('runner event-detail never shows "Complete Payment" for a waived registration', () => {
+  it('runner event-detail never shows "Complete payment" for a waived registration', () => {
     // Gate must use the shared confirmed predicate, not a bare 'paid' check.
     expect(runnerDetail).toContain('!isConfirmedStatus(registration.payment_status)')
     expect(runnerDetail).not.toContain("registration.payment_status !== 'paid'")
@@ -138,7 +138,7 @@ describe('Reliability: organizer status filter', () => {
     // Runner directory table + console list moved to client components
     // (audit #5/#6 refactor); the waived badge styling lives there now.
     const runnerTable = read('src', 'components', 'organizer', 'runner-directory-table.tsx')
-    expect(runnerTable).toContain("waived: 'text-success bg-success/15'")
+    expect(runnerTable).toContain("waived: 'success'")
     const consoleView = read('src', 'components', 'organizer', 'console-view.tsx')
     expect(consoleView).toContain("reg.paymentStatus === 'paid' || reg.paymentStatus === 'waived'")
   })

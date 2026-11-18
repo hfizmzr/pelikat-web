@@ -43,7 +43,7 @@ export function CopyPublicEventLink({ url }: { url: string }) {
     // the change instead (CodeRabbit uncommitted review).
     <Button variant="outline" onClick={handleCopy} aria-live="polite">
       <Link2 className="mr-2 h-4 w-4" />
-      {copied ? 'Link Copied' : 'Copy Public Event Link'}
+      {copied ? 'Link copied' : 'Copy public event link'}
     </Button>
   )
 }

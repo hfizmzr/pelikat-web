@@ -63,7 +63,7 @@ export function BibActionButtons({
     const url = window.location.href
     try {
       await navigator.clipboard.writeText(url)
-      toast.success('Link copied to clipboard!')
+      toast.success('Link copied')
       return
     } catch {
       // fall through to the legacy path
@@ -80,7 +80,7 @@ export function BibActionButtons({
       const copied = document.execCommand('copy')
       textarea.remove()
       if (copied) {
-        toast.success('Link copied to clipboard!')
+        toast.success('Link copied')
       } else {
         toast.error('Could not copy the link — share it from the address bar instead.')
       }
@@ -94,7 +94,7 @@ export function BibActionButtons({
       try {
         await navigator.share({
           title: `${bibLabel ?? 'BIB'} ${bibNumber} - ${eventName}`,
-          text: `Check out my digital ${bibLabel ?? 'BIB'} ${bibNumber} for ${eventName}!`,
+          text: `My ${bibLabel ?? 'BIB'} ${bibNumber} for ${eventName}`,
           url: window.location.href,
         })
         return
@@ -111,14 +111,14 @@ export function BibActionButtons({
     <div className="flex w-full gap-2 mt-4">
       <button 
         onClick={handleSave}
-        className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+        className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
       >
         <Download className="size-[18px]" />
-        Save Image
+        Save image
       </button>
       <button 
         onClick={handleShare}
-        className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+        className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
       >
         <Share2 className="size-[18px]" />
         Share

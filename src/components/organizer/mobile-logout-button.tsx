@@ -70,7 +70,7 @@ export function MobileLogoutButton() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && (
-          <p className="text-[12px] text-red-500 dark:text-red-300">{error}</p>
+          <p className="text-[12px] text-destructive">{error}</p>
         )}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loggingOut}>Cancel</AlertDialogCancel>

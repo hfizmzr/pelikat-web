@@ -1,4 +1,3 @@
-import { Badge, CircleCheck, Clock, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import { isConfirmedStatus } from '@/lib/registration-status'
 import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
@@ -7,7 +6,7 @@ import { RunnerDirectoryTable, type RunnerDirectoryRow } from '@/components/orga
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Runner Directory & BIBs - Organizer Hub | Pelikat',
+  title: 'Runners - Pelikat',
   description: 'View and manage runner registrations and BIB assignments across all your events',
 }
 
@@ -104,44 +103,28 @@ export default async function OrganizerRunnersPage() {
   })
 
   return (
-    <div className="relative w-full min-h-full px-6 py-8 bg-background">
-      <div className="absolute -top-32 -right-20 w-96 h-96 bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="relative z-10 flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary uppercase w-fit">
-              Runner Directory
-            </span>
-            <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-foreground">Runner Directory & BIBs</h1>
-            <p className="text-[14px] leading-[20px] text-muted-foreground">All registrations and BIB assignments across your events.</p>
+    <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-8">
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div>
+            <h1 className="text-[28px] leading-9 font-medium text-foreground">Runners</h1>
+            <p className="mt-1 text-[14px] text-muted-foreground">Registrations and bib numbers across your events</p>
           </div>
-          <div className="flex gap-2">
-            <ExportCsvButton filename={`runners-${new Date().toISOString().slice(0, 10)}.csv`} headers={EXPORT_HEADERS} rows={exportRows}>
-              Export CSV
-            </ExportCsvButton>
-            <button className="px-4 py-2.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all ">
-              <Badge className="size-[18px]" />
-              Assign BIBs
-            </button>
-          </div>
+          <ExportCsvButton filename={`runners-${new Date().toISOString().slice(0, 10)}.csv`} headers={EXPORT_HEADERS} rows={exportRows}>
+            Export CSV
+          </ExportCsvButton>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {[
-            { label: 'Total Runners', value: total, icon: Users, color: 'text-primary' },
-            { label: 'Confirmed', value: paid, icon: CircleCheck, color: 'text-success' },
-            { label: 'Pending Payment', value: pending, icon: Clock, color: 'text-primary' },
-            { label: 'BIBs Assigned', value: withBib, icon: Badge, color: 'text-primary' },
+            { label: 'Runners', value: total },
+            { label: 'Confirmed', value: paid },
+            { label: 'Pending payment', value: pending },
+            { label: 'Bibs assigned', value: withBib },
           ].map(s => (
-            <div key={s.label} className="bg-card rounded-xl p-4 border border-muted flex items-center gap-3">
-              <span className={`size-[24px] ${s.color}`}><s.icon className="size-[24px]" /></span>
-              <div>
-                <div className="text-[24px] leading-[28px] tracking-[-0.01em] font-semibold text-foreground">{s.value.toLocaleString()}</div>
-                <div className="text-[11px] text-muted-foreground">{s.label}</div>
-              </div>
+            <div key={s.label} className="rounded-xl border border-border bg-card p-5">
+              <p className="text-[13px] text-muted-foreground">{s.label}</p>
+              <p className="mt-2 text-[28px] leading-none font-medium tabular-nums text-foreground">{s.value.toLocaleString()}</p>
             </div>
           ))}
         </div>

@@ -33,14 +33,14 @@ export function Storefront({ data }: { data: StoreData & { event: NonNullable<St
       ) : !registrationPaid ? (
         <Notice tone="info" icon={Info}>
           You can browse now. To check out,{' '}
-          <Link href={`/runner/events/${event.id}/payment`} className="font-bold underline underline-offset-2">
+          <Link href={`/runner/events/${event.id}/payment`} className="font-medium underline underline-offset-2">
             complete your race registration payment
           </Link>{' '}
           first.
         </Notice>
       ) : (
         <Notice tone="info" icon={Store}>
-          Pay online, then collect your order at REPC (race kit collection) with your Digital BIB.
+          Pay online, then collect your order at REPC (race kit collection) with your digital BIB.
         </Notice>
       )}
 
@@ -49,7 +49,7 @@ export function Storefront({ data }: { data: StoreData & { event: NonNullable<St
           <div className="w-14 h-14 bg-muted rounded-full flex items-center justify-center mb-3">
             <Shirt className="size-[28px] text-muted-foreground" />
           </div>
-          <p className="text-[15px] font-bold text-foreground mb-1">No merch yet</p>
+          <p className="text-[15px] font-medium text-foreground mb-1">No merch yet</p>
           <p className="text-[12px] text-muted-foreground">The organizer hasn&apos;t listed any merchandise for this event.</p>
         </div>
       ) : (
@@ -67,19 +67,19 @@ export function Storefront({ data }: { data: StoreData & { event: NonNullable<St
                 <div className="relative">
                   <ProductThumb imagePath={product.image_path} name={product.name} className="aspect-square w-full" />
                   {level === 'out' && (
-                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-background/85 text-[10px] font-bold uppercase tracking-wider text-red-500 dark:text-red-300">
+                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-background/85 text-[11px] font-medium text-destructive">
                       Sold out
                     </span>
                   )}
                   {level === 'low' && (
-                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-background/85 text-[10px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400">
+                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-background/85 text-[11px] font-medium text-warning">
                       Few left
                     </span>
                   )}
                 </div>
                 <div className="p-3 flex flex-col gap-0.5">
-                  <span className="text-[13px] font-bold text-foreground leading-tight line-clamp-2">{product.name}</span>
-                  <span className="text-[13px] font-mono font-bold text-primary">{formatRM(product.price)}</span>
+                  <span className="text-[13px] font-medium text-foreground leading-tight line-clamp-2">{product.name}</span>
+                  <span className="text-[13px] font-mono font-medium tabular-nums text-foreground">{formatRM(product.price)}</span>
                 </div>
               </button>
             )
@@ -93,11 +93,11 @@ export function Storefront({ data }: { data: StoreData & { event: NonNullable<St
             href={`/runner/events/${event.id}/merch/checkout`}
             className="flex items-center justify-between gap-3 w-full px-4 py-3.5 rounded-2xl bg-primary text-primary-foreground shadow-[0_12px_32px_rgba(0,0,0,0.55)] active:scale-[0.98] transition-transform"
           >
-            <span className="flex items-center gap-2 text-[13px] font-bold">
+            <span className="flex items-center gap-2 text-[13px] font-medium">
               <ShoppingCart className="size-[20px]" />
               {cart.count} {cart.count === 1 ? 'item' : 'items'}
             </span>
-            <span className="flex items-center gap-1 text-[14px] font-extrabold">
+            <span className="flex items-center gap-1 text-[14px] font-medium">
               {formatRM(cart.subtotal)}
               <ChevronRight className="size-[18px]" />
             </span>
@@ -206,8 +206,8 @@ function ProductSheetBody({
 
       <div className="p-5 flex flex-col gap-5">
         <div>
-          <Dialog.Title className="text-[18px] font-bold text-foreground leading-tight">{product.name}</Dialog.Title>
-          <p className="text-[16px] font-mono font-bold text-primary mt-1">{formatRM(product.price)}</p>
+          <Dialog.Title className="text-[18px] font-medium text-foreground leading-tight">{product.name}</Dialog.Title>
+          <p className="text-[16px] font-mono font-medium tabular-nums text-foreground mt-1">{formatRM(product.price)}</p>
           {product.description && (
             <p className="text-[13px] text-muted-foreground mt-3 leading-[20px] whitespace-pre-line">{product.description}</p>
           )}
@@ -215,7 +215,7 @@ function ProductSheetBody({
 
         {!singleSku && (
           <div className="flex flex-col gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Choose size / variant</span>
+            <span className="text-[11px] font-medium text-muted-foreground">Choose size / variant</span>
             <div className="flex flex-wrap gap-2">
               {variants.map((v) => {
                 const out = v.stock <= 0
@@ -229,7 +229,7 @@ function ProductSheetBody({
                       setVariantId(v.id)
                       setQuantity(1)
                     }}
-                    className={`min-w-[52px] px-3 py-2 rounded-xl border text-[13px] font-bold transition-colors ${
+                    className={`min-w-[52px] px-3 py-2 rounded-xl border text-[13px] font-medium transition-colors ${
                       active
                         ? 'bg-primary border-primary text-primary-foreground'
                         : out
@@ -243,13 +243,13 @@ function ProductSheetBody({
               })}
             </div>
             {variant && variant.stock > 0 && variant.stock <= product.low_stock_threshold && (
-              <span className="text-[12px] text-amber-500 dark:text-amber-400">Only {variant.stock} left</span>
+              <span className="text-[12px] text-warning">Only {variant.stock} left</span>
             )}
           </div>
         )}
 
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Quantity</span>
+          <span className="text-[11px] font-medium text-muted-foreground">Quantity</span>
           <QuantityStepper value={qty} max={maxQty} onChange={setQuantity} disabled={!canAdd} />
         </div>
 
@@ -263,12 +263,12 @@ function ProductSheetBody({
           type="button"
           disabled={!canAdd}
           onClick={() => variant && onAdd(variant, qty)}
-          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-40 disabled:active:scale-100"
+          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-40 disabled:active:scale-100"
         >
           <ShoppingCart className="size-[18px]" />
           {addLabel()}
         </button>
-        <button type="button" onClick={onClose} className="text-[13px] font-semibold text-muted-foreground -mt-2 py-2">
+        <button type="button" onClick={onClose} className="text-[13px] font-medium text-muted-foreground -mt-2 py-2">
           Keep browsing
         </button>
       </div>
@@ -300,7 +300,7 @@ export function QuantityStepper({
       >
         <Minus className="size-[18px]" />
       </button>
-      <span className="w-9 text-center text-[14px] font-bold font-mono text-foreground tabular-nums">{value}</span>
+      <span className="w-9 text-center text-[14px] font-medium font-mono text-foreground tabular-nums">{value}</span>
       <button
         type="button"
         aria-label="Increase quantity"

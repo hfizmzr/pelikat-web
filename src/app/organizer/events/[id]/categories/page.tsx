@@ -10,7 +10,7 @@ import { CategoryCardActions } from '@/components/events/category-card-actions'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Race Categories - Pelikat',
+  title: 'Race categories - Pelikat',
   description: 'Manage race categories for this event',
 }
 
@@ -54,7 +54,7 @@ export default async function OrganizerEventCategoriesPage({
           </Button>
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="text-3xl font-bold tracking-tight">Race Categories</h1>
+          <h1 className="text-3xl font-medium tracking-tight">Race categories</h1>
           <p className="text-muted-foreground">Manage categories for {event.name}</p>
         </div>
         <div className="shrink-0">
@@ -72,7 +72,7 @@ export default async function OrganizerEventCategoriesPage({
                   <div>
                     <CardTitle className="text-lg">{category.name}</CardTitle>
                     <CardDescription className="mt-1">
-                      {category.gender || 'Open'} | Ages {category.min_age ?? 'Open'}–{category.max_age ?? 'Open'}
+                      {category.gender || 'Open'} · {category.min_age == null && category.max_age == null ? 'All ages' : category.max_age == null ? `Ages ${category.min_age} and over` : `Ages ${category.min_age ?? 0} to ${category.max_age}`}
                     </CardDescription>
                   </div>
                   <Badge variant="outline">
@@ -88,11 +88,11 @@ export default async function OrganizerEventCategoriesPage({
                     <span className="font-medium">RM {Number(category.price ?? 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Max Slots</span>
+                    <span className="text-muted-foreground">Max slots</span>
                     <span className="font-medium">{category.max_slots ?? 'Unlimited'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">BIB Start</span>
+                    <span className="text-muted-foreground">BIB start</span>
                     <span className="font-medium">{category.bib_start ?? 1}</span>
                   </div>
                 </div>

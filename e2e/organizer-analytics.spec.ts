@@ -27,12 +27,12 @@ test('per-event analytics renders KPI cards + category/gender chart (FR-33)', as
   await expect(page.getByRole('heading', { name: /Analytics — KL City Night Run 2026/ })).toBeVisible()
 
   // KPI cards (Total Registrations, Checked In with check-in rate)
-  await expect(page.getByText('Total Registrations')).toBeVisible()
+  await expect(page.getByText('Total registrations')).toBeVisible()
   await expect(page.getByText(/check-in rate/)).toBeVisible()
-  await expect(page.getByText('Checked In').first()).toBeVisible()
+  await expect(page.getByText('Checked in').first()).toBeVisible()
 
   // FR-33: Registrations by Race Category chart (gender + check-in breakdown)
-  await expect(page.getByText('Registrations by Race Category')).toBeVisible()
+  await expect(page.getByText('Registrations by race category')).toBeVisible()
   await expect(page.getByText(/Broken down by gender and check-in status/)).toBeVisible()
   // Recharts legend text for the stacked series
   await expect(page.getByText('Male').first()).toBeVisible()
@@ -47,14 +47,14 @@ test('organizer aggregate analytics demographics: shirt-size + age views (FR-34/
   await login(page, 'klcityrunners@pelikat.test')
   await goto(page, '/organizer/analytics')
 
-  await expect(page.getByRole('heading', { name: 'Telemetry & Analytics' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Analytics', exact: true })).toBeVisible()
   // Check-in rate KPI (FR-36) on the aggregate page
-  await expect(page.getByText('Check-in Rate')).toBeVisible()
+  await expect(page.getByText('Check-in rate')).toBeVisible()
 
-  await page.getByRole('button', { name: 'demographics' }).click()
-  await expect(page.getByText('Gender Distribution')).toBeVisible()
-  await expect(page.getByText('Age Groups')).toBeVisible()
-  await expect(page.getByText('T-Shirt Sizes')).toBeVisible()
+  await page.getByRole('button', { name: 'Demographics' }).click()
+  await expect(page.getByText('Gender distribution')).toBeVisible()
+  await expect(page.getByText('Age groups')).toBeVisible()
+  await expect(page.getByText('T-shirt sizes')).toBeVisible()
 })
 
 // FR-34/35 author caveat: the shirt-size + age-distribution views are NOT
@@ -70,7 +70,7 @@ test('per-event analytics reaches the aggregate demographics views (FR-34/35 aut
 
   // Hub nav: sidebar link exists server-side on ≥lg viewports; on mobile
   // viewports it mounts inside the hamburger Sheet.
-  const analyticsLink = page.getByRole('link', { name: 'Telemetry & Analytics' })
+  const analyticsLink = page.getByRole('link', { name: 'Analytics', exact: true })
   if ((await analyticsLink.count()) === 0) {
     await page.locator('header button').first().click()
   }
@@ -83,8 +83,8 @@ test('per-event analytics reaches the aggregate demographics views (FR-34/35 aut
   await page.waitForURL((url) => url.pathname === '/organizer/analytics', { timeout: 15000 })
   await page.keyboard.press('Escape')
 
-  await expect(page.getByRole('heading', { name: 'Telemetry & Analytics' })).toBeVisible({ timeout: 15000 })
-  await page.getByRole('button', { name: 'demographics' }).click()
-  await expect(page.getByText('T-Shirt Sizes')).toBeVisible()
-  await expect(page.getByText('Age Groups')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Analytics', exact: true })).toBeVisible({ timeout: 15000 })
+  await page.getByRole('button', { name: 'Demographics' }).click()
+  await expect(page.getByText('T-shirt sizes')).toBeVisible()
+  await expect(page.getByText('Age groups')).toBeVisible()
 })

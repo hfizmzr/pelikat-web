@@ -6,18 +6,18 @@ import { goto, login } from './helpers'
 test('admin settings expose the subscription pricing control', async ({ page }) => {
   await login(page, 'admin1@pelikat.test')
   await goto(page, '/admin/settings')
-  await expect(page.getByRole('heading', { name: 'Subscription Pricing' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Subscription pricing' })).toBeVisible()
   await expect(page.getByText('Amount (RM)')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Update Pricing' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Update pricing' })).toBeVisible()
 })
 
 test('admin overview shows the recent audit log', async ({ page }) => {
   await login(page, 'admin1@pelikat.test')
   await goto(page, '/admin')
-  await expect(page.getByRole('heading', { name: 'Recent Audit Log' })).toBeVisible()
-  // 'View Ledger' lives inside the Recent Audit Log card on the overview
+  await expect(page.getByRole('heading', { name: 'Recent audit log' })).toBeVisible()
+  // 'View ledger' lives inside the Recent Audit Log card on the overview
   // (the sidebar nav collapses behind a drawer on mobile viewports).
-  await expect(page.getByRole('link', { name: 'View Ledger' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'View ledger' })).toBeVisible()
 })
 
 // FR-06/07: cross-tenant aggregate KPI cards on the admin overview
@@ -26,9 +26,9 @@ test('admin overview renders aggregate KPI cards with counts (FR-06/07)', async 
   await login(page, 'admin1@pelikat.test')
   await goto(page, '/admin')
 
-  await expect(page.getByText('Active Platform Tenants').first()).toBeVisible()
-  await expect(page.getByText('Aggregate Registrations').first()).toBeVisible()
-  await expect(page.getByText('Platform Events').first()).toBeVisible()
+  await expect(page.getByText('Active organizers').first()).toBeVisible()
+  await expect(page.getByText('Registrations', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('Events', { exact: true }).first()).toBeVisible()
 })
 // FR-03: /admin/organizers is the tenant directory with server-side
 // search/filter/sort over the organizers table
@@ -43,11 +43,11 @@ test.describe('admin tenant directory (FR-03)', () => {
     await login(page, 'admin1@pelikat.test')
     await goto(page, ORGANIZERS)
 
-    await expect(page.getByRole('heading', { name: 'Active Organizers' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Active organizers' })).toBeVisible()
     // Seeded tenants render (seed.sql organizers …011 KL City Runners, …012 Penang Pacers)
     await expect(page.getByRole('cell', { name: KL_CITY })).toBeVisible()
     await expect(page.getByRole('cell', { name: PENANG })).toBeVisible()
-    // Status chips (Active/Inactive/Expiring Soon/Expired) render — the seed
+    // Status chips (Active/Inactive/Expiring soon/Expired) render — the seed
     // has active approved tenants, so the exact-text 'Active' badge exists.
     await expect(page.getByText('Active', { exact: true }).first()).toBeVisible()
   })

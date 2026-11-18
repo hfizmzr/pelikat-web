@@ -48,7 +48,7 @@ export function Header() {
             <a
               key={link.href}
               href={link.href}
-              className={cn(styles.link, "py-2 text-[14px] font-medium text-[var(--muted)]")}
+              className={cn(styles.link, "py-2 text-[14px] text-[var(--ink-2)]")}
             >
               {link.label}
             </a>
@@ -57,7 +57,7 @@ export function Header() {
 
         <div className="hidden items-center gap-2 lg:flex">
           <ThemeSwitch />
-          <Link href="/login" className={cn(styles.btn, styles.btnGhost, styles.btnSm)}>
+          <Link href="/login" className={cn(styles.link, "px-3 py-2 text-[14px] text-[var(--ink-2)]")}>
             Log in
           </Link>
           <Link href="/organizer/apply" className={cn(styles.btn, styles.btnPrimary, styles.btnSm)}>
@@ -67,7 +67,7 @@ export function Header() {
 
         <div className="flex items-center gap-1 lg:hidden">
           <ThemeSwitch />
-          <Link href="/login" className={cn(styles.btn, styles.btnGhost, styles.btnSm)} style={{ paddingInline: 14 }}>
+          <Link href="/login" className={cn(styles.link, "inline-flex min-h-11 items-center px-3 text-[14px] text-[var(--ink-2)]")}>
             Log in
           </Link>
           <Sheet>
@@ -87,20 +87,20 @@ export function Header() {
               <nav className="flex flex-col gap-4 px-6 pt-16" aria-label="Mobile navigation">
                 {navLinks.map((link) => (
                   <SheetClose asChild key={link.href}>
-                    <a href={link.href} className="rounded-lg py-3 text-[17px] font-medium">
+                    <a href={link.href} className="rounded-lg py-3 text-[17px]">
                       {link.label}
                     </a>
                   </SheetClose>
                 ))}
                 <SheetClose asChild>
-                  <Link href="/register" className="rounded-lg py-3 text-[17px] font-medium">
+                  <Link href="/register" className="rounded-lg py-3 text-[17px]">
                     Create runner account
                   </Link>
                 </SheetClose>
                 <SheetClose asChild>
                   <Link
                     href="/organizer/apply"
-                    className="mt-4 inline-flex min-h-12 items-center justify-center rounded-xl bg-primary px-5 font-semibold text-primary-foreground"
+                    className="mt-4 inline-flex min-h-12 items-center justify-center rounded-[10px] bg-primary px-5 font-medium text-primary-foreground"
                   >
                     Apply as organizer
                   </Link>

@@ -50,7 +50,7 @@ describe('BadgeCertificateButton share affordance (FR-65)', () => {
     await waitFor(() =>
       expect(share).toHaveBeenCalledWith({
         title: 'Early Bird - Pelikat',
-        text: 'Check out my Early Bird badge from Pelikat!',
+        text: 'I earned the Early Bird badge on Pelikat',
         url: SHARE_URL,
       }),
     )

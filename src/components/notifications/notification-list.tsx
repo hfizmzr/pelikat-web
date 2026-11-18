@@ -62,7 +62,7 @@ export function NotificationList({ items: initial }: { items: InboxItem[] }) {
     return (
       <div className="flex flex-col items-center text-center py-12 gap-2">
         <BellRing className="size-[32px] text-muted-foreground" />
-        <p className="text-[14px] font-bold text-foreground">No notifications yet</p>
+        <p className="text-[14px] font-medium text-foreground">No notifications yet</p>
         <p className="text-[12px] text-muted-foreground max-w-[260px]">
           Registration confirmations, results and messages from organizers will show up here.
         </p>
@@ -73,14 +73,14 @@ export function NotificationList({ items: initial }: { items: InboxItem[] }) {
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider">
+        <h2 className="text-[12px] font-medium text-muted-foreground">
           {unread > 0 ? `${unread} unread` : 'All caught up'}
         </h2>
         {unread > 0 && (
           <button
             onClick={() => startTransition(() => markRead(items.filter((i) => !i.read_at).map((i) => i.id)))}
             disabled={isPending}
-            className="flex items-center gap-1 text-[12px] font-bold text-primary disabled:opacity-50"
+            className="flex items-center gap-1 text-[12px] font-medium text-primary disabled:opacity-50"
           >
             <CheckCheck className="size-[14px]" />
             Mark all read
@@ -107,13 +107,13 @@ export function NotificationList({ items: initial }: { items: InboxItem[] }) {
                 </span>
                 <span className="flex-1 min-w-0">
                   <span className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+                    <span className="text-[11px] font-medium text-muted-foreground truncate">
                       {meta.label}
                       {item.event_name ? ` · ${item.event_name}` : ''}
                     </span>
-                    <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(item.created_at)}</span>
+                    <span className="text-[11px] text-muted-foreground shrink-0">{timeAgo(item.created_at)}</span>
                   </span>
-                  <span className="block text-[14px] font-bold text-foreground mt-0.5">{item.title}</span>
+                  <span className="block text-[14px] font-medium text-foreground mt-0.5">{item.title}</span>
                   <span
                     className={`block text-[12px] text-muted-foreground mt-0.5 whitespace-pre-line ${isOpen ? '' : 'line-clamp-2'}`}
                   >
@@ -123,7 +123,7 @@ export function NotificationList({ items: initial }: { items: InboxItem[] }) {
                 {!item.read_at && <span className="w-2 h-2 mt-1.5 rounded-full bg-primary shrink-0" aria-label="Unread" />}
               </button>
               {isOpen && item.url && (
-                <Link href={item.url} className="inline-block mt-1.5 ml-[60px] text-[12px] font-bold text-primary">
+                <Link href={item.url} className="inline-block mt-1.5 ml-[60px] text-[12px] font-medium text-primary">
                   Open event →
                 </Link>
               )}

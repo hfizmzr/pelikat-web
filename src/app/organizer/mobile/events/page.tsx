@@ -1,3 +1,4 @@
+import { StatusTag, statusLabel, type StatusTone } from '@/components/ui/status-tag'
 import { Calendar, CalendarDays, CalendarX, MapPin, Plus, QrCode } from "lucide-react"
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
@@ -54,19 +55,9 @@ async function getOrganizerEvents() {
 }
 
 function statusChip(status: string) {
-  const map: Record<string, { label: string; cls: string }> = {
-    active: { label: 'Live', cls: 'bg-success/15 text-success' },
-    published: { label: 'Open', cls: 'bg-primary/15 text-primary' },
-    draft: { label: 'Draft', cls: 'bg-primary/15 text-primary' },
-    completed: { label: 'Done', cls: 'bg-muted-foreground/15 text-muted-foreground' },
-    cancelled: { label: 'Cancelled', cls: 'bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300' },
-  }
-  const s = map[status] || { label: status, cls: 'bg-accent text-muted-foreground' }
-  return (
-    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold leading-[14px] tracking-wider uppercase ${s.cls}`}>
-      {s.label}
-    </span>
-  )
+  const labels: Record<string, string> = { active: 'Live', published: 'Open', completed: 'Done' }
+  const tones: Record<string, StatusTone> = { active: 'success', published: 'success', draft: 'neutral', completed: 'neutral', closed: 'neutral', cancelled: 'destructive' }
+  return <StatusTag tone={tones[status] ?? 'neutral'}>{labels[status] ?? statusLabel(status)}</StatusTag>
 }
 
 export default async function OrganizerMobileEventsPage() {
@@ -81,12 +72,12 @@ export default async function OrganizerMobileEventsPage() {
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/40 px-5 pt-safe">
         <div className="h-14 flex items-center justify-between">
           <div>
-            <span className="text-[16px] font-bold text-foreground">My Events</span>
-            <p className="text-[10px] text-muted-foreground">{events.length} total • {upcoming.length} upcoming</p>
+            <span className="text-[16px] font-medium text-foreground">My events</span>
+            <p className="text-[11px] text-muted-foreground">{events.length} total • {upcoming.length} upcoming</p>
           </div>
           <Link
             href="/organizer/mobile/events/new"
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold active:scale-95 transition-transform"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-medium active:scale-[0.98] transition-transform"
           >
             <Plus className="size-[14px]" />
             New
@@ -99,15 +90,15 @@ export default async function OrganizerMobileEventsPage() {
         {/* Upcoming Events */}
         {upcoming.length > 0 && (
           <section>
-            <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
-              Upcoming & Active
+            <h2 className="text-[12px] font-medium text-muted-foreground mb-3">
+              Upcoming & active
             </h2>
             <div className="flex flex-col gap-3">
               {upcoming.map((event) => (
                 <div key={event.id} className="rounded-xl bg-card border border-border/40 overflow-hidden">
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="text-[15px] font-bold text-foreground flex-1 leading-snug">
+                      <h3 className="text-[15px] font-medium text-foreground flex-1 leading-snug">
                         {event.name}
                       </h3>
                       {statusChip(event.status)}
@@ -127,9 +118,9 @@ export default async function OrganizerMobileEventsPage() {
 
                     {/* Check-in progress */}
                     <div className="mb-3">
-                      <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                      <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
                         <span>{event.checkedIn} / {event.registered} checked in</span>
-                        <span className="text-primary font-bold">{event.checkInPct}%</span>
+                        <span className="text-primary font-medium">{event.checkInPct}%</span>
                       </div>
                       <div className="w-full bg-accent rounded-full h-1.5 overflow-hidden">
                         <div
@@ -143,7 +134,7 @@ export default async function OrganizerMobileEventsPage() {
                     <div className="flex gap-2">
                       <Link
                         href={`/organizer/mobile/scanner`}
-                        className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold active:scale-95 transition-transform"
+                        className="flex-1 flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-background text-foreground text-[13px] font-medium active:scale-[0.98] transition-transform"
                       >
                         <QrCode className="size-[14px]" />
                         Check-in
@@ -159,8 +150,8 @@ export default async function OrganizerMobileEventsPage() {
         {/* Past Events */}
         {past.length > 0 && (
           <section>
-            <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
-              Past Events
+            <h2 className="text-[12px] font-medium text-muted-foreground mb-3">
+              Past events
             </h2>
             <div className="flex flex-col gap-2">
               {past.map((event) => (
@@ -173,7 +164,7 @@ export default async function OrganizerMobileEventsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-medium text-muted-foreground truncate">{event.name}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[11px] text-muted-foreground">
                       {new Date(event.date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })} • {event.registered} runners
                     </p>
                   </div>
@@ -191,9 +182,9 @@ export default async function OrganizerMobileEventsPage() {
             <p className="text-[12px] mt-1">Create your first running event</p>
             <Link
               href="/organizer/mobile/events/new"
-              className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold"
+              className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium"
             >
-              Create Event
+              Create event
             </Link>
           </div>
         )}

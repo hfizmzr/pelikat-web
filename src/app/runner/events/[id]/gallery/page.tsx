@@ -7,7 +7,7 @@ import { RunnerPhotoActions } from '@/components/events/runner-photo-actions'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'My Photos - Pelikat',
+  title: 'My photos - Pelikat',
   description: 'Race photos from your events',
 }
 
@@ -79,14 +79,14 @@ export default async function RunnerGalleryPage({
   return (
     <div className="flex flex-col w-full min-h-full bg-background">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
             <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
-            <h1 className="text-[16px] font-bold text-foreground leading-tight">
-              My Photos
+            <h1 className="text-[16px] font-medium text-foreground leading-tight">
+              My photos
             </h1>
             <p className="text-[11px] text-muted-foreground truncate max-w-full">
               {event.name}
@@ -101,9 +101,9 @@ export default async function RunnerGalleryPage({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Images className="size-[18px] text-success" />
-                <span className="text-[14px] font-bold text-foreground">{photosWithUrls.length} photos</span>
+                <span className="text-[14px] font-medium text-foreground">{photosWithUrls.length} photos</span>
               </div>
-              <span className="px-2 py-0.5 bg-success/10 text-success text-[10px] font-bold uppercase tracking-wider rounded border border-success/20">
+              <span className="px-2 py-0.5 bg-success/10 text-success text-[11px] font-medium rounded border border-success/20">
                 BIB {registration.bib_number}
               </span>
             </div>
@@ -140,7 +140,7 @@ export default async function RunnerGalleryPage({
 
                     {photo.confidence && (
                       <div className="absolute left-2 top-2 z-10">
-                        <span className="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md text-success text-[9px] font-bold flex items-center gap-1">
+                        <span className="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md text-success text-[11px] font-medium flex items-center gap-1">
                           <Bot className="size-[10px]" />
                           {(photo.confidence * 100).toFixed(0)}%
                         </span>
@@ -148,7 +148,7 @@ export default async function RunnerGalleryPage({
                     )}
                     {!photo.url && photo.urlError && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-3 text-center">
-                        <span className="text-[10px] text-red-500 dark:text-red-300">{photo.urlError}</span>
+                        <span className="text-[11px] text-destructive">{photo.urlError}</span>
                       </div>
                     )}
                   </div>
@@ -161,9 +161,9 @@ export default async function RunnerGalleryPage({
             <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4">
               <Camera className="size-[32px] text-muted-foreground" />
             </div>
-            <p className="text-[16px] font-bold text-foreground mb-2">No photos found yet</p>
+            <p className="text-[16px] font-medium text-foreground mb-2">No photos found yet</p>
             <p className="text-[13px] text-muted-foreground">
-              Our AI is still processing the event photos. Once we find you, they will appear here!
+              Photos are still being matched to bib numbers. Yours appear here once they are found.
             </p>
           </div>
         )}

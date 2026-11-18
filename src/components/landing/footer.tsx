@@ -36,7 +36,7 @@ export function Footer() {
           </div>
           {columns.map((col) => (
             <nav key={col.title} aria-label={col.title}>
-              <p className="text-[13px] font-semibold">{col.title}</p>
+              <p className="text-[13px] font-medium">{col.title}</p>
               <ul className="mt-3 grid gap-2.5 text-[14px] text-[var(--muted)]">
                 {col.links.map((l) => (
                   <li key={l.href}>

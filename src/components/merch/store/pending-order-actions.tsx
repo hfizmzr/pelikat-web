@@ -71,7 +71,7 @@ export function PendingOrderActions({
     return (
       <Notice tone="error" icon={TimerOff}>
         The reservation expired and the items were released.{' '}
-        <Link href={`/runner/events/${eventId}/merch`} className="font-bold underline underline-offset-2">
+        <Link href={`/runner/events/${eventId}/merch`} className="font-medium underline underline-offset-2">
           Check out again
         </Link>
         .
@@ -108,7 +108,7 @@ export function PendingOrderActions({
         type="button"
         onClick={resume}
         disabled={isPending}
-        className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-40"
+        className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 disabled:opacity-40"
       >
         <Lock className="size-[18px]" />
         Continue to payment
@@ -117,7 +117,7 @@ export function PendingOrderActions({
         type="button"
         onClick={cancel}
         disabled={isPending}
-        className="text-[13px] font-semibold text-muted-foreground py-2 disabled:opacity-50"
+        className="text-[13px] font-medium text-muted-foreground py-2 disabled:opacity-50"
       >
         {isPending ? 'Cancelling…' : 'Cancel order'}
       </button>

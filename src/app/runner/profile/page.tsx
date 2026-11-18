@@ -269,13 +269,13 @@ export default function RunnerProfilePage() {
   return (
     <div className="flex flex-col w-full min-h-full bg-background">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
             <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
-            <h1 className="text-[16px] font-bold text-foreground leading-tight">
+            <h1 className="text-[16px] font-medium text-foreground leading-tight">
               Profile
             </h1>
           </div>
@@ -285,10 +285,10 @@ export default function RunnerProfilePage() {
       <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto pb-24">
 
         {gateMissing.length > 0 && (
-          <div role="status" className="flex items-start gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-[13px] text-amber-600 dark:text-amber-400">
+          <div role="status" className="flex items-start gap-2 rounded-xl bg-warning/10 border border-warning/30 px-4 py-3 text-[13px] text-warning">
             <CircleAlert className="size-[18px] shrink-0 mt-0.5" />
             <span>
-              <span className="font-bold">Finish your profile to unlock Pelikat.</span>{" "}
+              <span className="font-medium">Finish your profile to unlock Pelikat.</span>{" "}
               Still needed: {gateMissing.join(", ")}. Save your details first, then add your IC/passport below.
             </span>
           </div>
@@ -296,12 +296,12 @@ export default function RunnerProfilePage() {
         {/* Personal Info */}
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
           <div className="p-5 border-b border-border/60">
-            <h2 className="text-[16px] font-bold text-foreground">Personal Information</h2>
+            <h2 className="text-[16px] font-medium text-foreground">Personal information</h2>
             <p className="text-[12px] text-muted-foreground">Your basic details</p>
           </div>
           <div className="p-5 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="full_name" className="text-[12px] font-bold text-muted-foreground ml-1">Full Name</label>
+              <label htmlFor="full_name" className="text-[12px] font-medium text-muted-foreground ml-1">Full name</label>
               <input
                 id="full_name"
                 type="text"
@@ -310,11 +310,11 @@ export default function RunnerProfilePage() {
                 className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-[14px] text-foreground focus:outline-none focus:border-primary/50"
               />
               {fieldErrors.full_name && (
-                <p className="text-[12px] text-red-500 dark:text-red-300 ml-1">{fieldErrors.full_name}</p>
+                <p className="text-[12px] text-destructive ml-1">{fieldErrors.full_name}</p>
               )}
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="phone" className="text-[12px] font-bold text-muted-foreground ml-1">Phone Number</label>
+              <label htmlFor="phone" className="text-[12px] font-medium text-muted-foreground ml-1">Phone number</label>
               <input
                 id="phone"
                 type="tel"
@@ -324,7 +324,7 @@ export default function RunnerProfilePage() {
               />
             </div>
             <div className="flex flex-col gap-1.5 opacity-60">
-              <label htmlFor="email" className="text-[12px] font-bold text-muted-foreground ml-1">Email</label>
+              <label htmlFor="email" className="text-[12px] font-medium text-muted-foreground ml-1">Email</label>
               <input
                 id="email"
                 type="email"
@@ -339,12 +339,12 @@ export default function RunnerProfilePage() {
         {/* Runner Details */}
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
           <div className="p-5 border-b border-border/60">
-            <h2 className="text-[16px] font-bold text-foreground">Runner Details</h2>
+            <h2 className="text-[16px] font-medium text-foreground">Runner details</h2>
             <p className="text-[12px] text-muted-foreground">Information for event registration</p>
           </div>
           <div className="p-5 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="dob" className="text-[12px] font-bold text-muted-foreground ml-1">Date of Birth</label>
+              <label htmlFor="dob" className="text-[12px] font-medium text-muted-foreground ml-1">Date of birth</label>
               <input
                 id="dob"
                 type="date"
@@ -354,7 +354,7 @@ export default function RunnerProfilePage() {
               />
             </div>
             <div className="flex flex-col gap-1.5 relative">
-              <label htmlFor="gender" className="text-[12px] font-bold text-muted-foreground ml-1">Gender</label>
+              <label htmlFor="gender" className="text-[12px] font-medium text-muted-foreground ml-1">Gender</label>
               <select
                 id="gender"
                 value={formData.gender}
@@ -368,7 +368,7 @@ export default function RunnerProfilePage() {
               <ChevronDown className="absolute right-4 top-9 text-muted-foreground pointer-events-none" />
             </div>
             <div className="flex flex-col gap-1.5 relative">
-              <label htmlFor="t_shirt_size" className="text-[12px] font-bold text-muted-foreground ml-1">T-Shirt Size</label>
+              <label htmlFor="t_shirt_size" className="text-[12px] font-medium text-muted-foreground ml-1">T-shirt size</label>
               <select
                 id="t_shirt_size"
                 value={formData.t_shirt_size}
@@ -391,12 +391,12 @@ export default function RunnerProfilePage() {
         {/* Emergency Contact */}
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
           <div className="p-5 border-b border-border/60">
-            <h2 className="text-[16px] font-bold text-foreground">Emergency Contact</h2>
+            <h2 className="text-[16px] font-medium text-foreground">Emergency contact</h2>
             <p className="text-[12px] text-muted-foreground">Contacted in case of an emergency on race day</p>
           </div>
           <div className="p-5 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="emergency_contact_name" className="text-[12px] font-bold text-muted-foreground ml-1">Contact Name</label>
+              <label htmlFor="emergency_contact_name" className="text-[12px] font-medium text-muted-foreground ml-1">Contact name</label>
               <input
                 id="emergency_contact_name"
                 type="text"
@@ -406,7 +406,7 @@ export default function RunnerProfilePage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="emergency_contact_phone" className="text-[12px] font-bold text-muted-foreground ml-1">Contact Phone</label>
+              <label htmlFor="emergency_contact_phone" className="text-[12px] font-medium text-muted-foreground ml-1">Contact phone</label>
               <input
                 id="emergency_contact_phone"
                 type="tel"
@@ -420,7 +420,7 @@ export default function RunnerProfilePage() {
 
         {/* PDPA */}
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden p-5">
-          <h2 className="text-[16px] font-bold text-foreground mb-1">PDPA Consent</h2>
+          <h2 className="text-[16px] font-medium text-foreground mb-1">PDPA consent</h2>
           <div className="flex items-start gap-3 mt-4">
             <div className="pt-1">
               <input
@@ -440,7 +440,7 @@ export default function RunnerProfilePage() {
             </label>
           </div>
           {fieldErrors.pdpa && (
-            <p className="text-[12px] text-red-500 dark:text-red-300 mt-2">{fieldErrors.pdpa}</p>
+            <p className="text-[12px] text-destructive mt-2">{fieldErrors.pdpa}</p>
           )}
         </section>
 
@@ -456,9 +456,9 @@ export default function RunnerProfilePage() {
         {/* Manual IC/Passport fallback */}
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
           <div className="p-5 border-b border-border/60">
-            <h3 className="text-[16px] font-bold text-foreground flex items-center gap-2">
+            <h3 className="text-[16px] font-medium text-foreground flex items-center gap-2">
               <Keyboard className="size-[20px] text-primary" />
-              Enter IC/Passport Manually
+              Enter IC/passport manually
             </h3>
             <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">
               No photo handy? Type your IC or passport number instead. It is encrypted before storage and never shown again.
@@ -469,7 +469,7 @@ export default function RunnerProfilePage() {
             {profile?.ic_encrypted ? (
               <div className="flex items-center gap-2 rounded-xl bg-success/10 border border-success/20 px-4 py-3 text-[13px] text-success font-medium">
                 <ShieldCheck className="size-[18px]" />
-                IC/Passport number securely stored
+                IC/passport number securely stored
               </div>
             ) : (
               <>
@@ -478,7 +478,7 @@ export default function RunnerProfilePage() {
                 ) : null}
 
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="ic_number" className="text-[12px] font-bold text-muted-foreground ml-1">IC / Passport Number</label>
+                  <label htmlFor="ic_number" className="text-[12px] font-medium text-muted-foreground ml-1">IC / passport number</label>
                   <input
                     id="ic_number"
                     type="text"
@@ -496,7 +496,7 @@ export default function RunnerProfilePage() {
                 <button
                   onClick={handleSaveIc}
                   disabled={icSaving || !icInput.trim() || !!icBlockReason}
-                  className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                  className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
                 >
                   {icSaving ? (
                     <>
@@ -506,7 +506,7 @@ export default function RunnerProfilePage() {
                   ) : (
                     <>
                       <Lock className="size-[18px]" />
-                      Save Encrypted
+                      Save encrypted
                     </>
                   )}
                 </button>
@@ -518,7 +518,7 @@ export default function RunnerProfilePage() {
                       IC number saved securely
                     </div>
                     {icNeedsReview && (
-                      <div className="flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-[13px] text-amber-500 dark:text-amber-400 font-medium">
+                      <div className="flex items-center gap-2 rounded-xl bg-warning/10 border border-warning/30 px-4 py-3 text-[13px] text-warning font-medium">
                         <TriangleAlert className="size-[18px] shrink-0" />
                         IC number needs review
                       </div>
@@ -526,7 +526,7 @@ export default function RunnerProfilePage() {
                     {icWarnings.map((w) => (
                       <div
                         key={w}
-                        className="flex items-start gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-[13px] text-amber-500 dark:text-amber-400"
+                        className="flex items-start gap-2 rounded-xl bg-warning/10 border border-warning/30 px-4 py-3 text-[13px] text-warning"
                       >
                         <TriangleAlert className="size-[18px] shrink-0" />
                         <span>{w}</span>
@@ -536,7 +536,7 @@ export default function RunnerProfilePage() {
                 )}
 
                 {icError && (
-                  <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 dark:border-destructive/20 text-destructive text-[12px] flex items-center gap-2">
                     <CircleAlert className="size-[16px]" />
                     {icError}
                   </div>
@@ -549,7 +549,7 @@ export default function RunnerProfilePage() {
         <button
           onClick={handleSave} 
           disabled={saving}
-          className="w-full py-4 mt-2 rounded-xl bg-primary text-primary-foreground text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 shadow-lg shadow-primary/10"
+          className="w-full py-4 mt-2 rounded-xl bg-primary text-primary-foreground text-[15px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50 shadow-lg shadow-primary/10"
         >
           {saving ? (
             <>
@@ -557,21 +557,21 @@ export default function RunnerProfilePage() {
               Saving...
             </>
           ) : (
-            'Save Profile'
+            'Save profile'
           )}
         </button>
 
         {saveError && (
-          <p className="text-[12px] text-red-500 dark:text-red-300 mt-2 text-center">{saveError}</p>
+          <p className="text-[12px] text-destructive mt-2 text-center">{saveError}</p>
         )}
         {saveNotice && !saveError && (
-          <p className="text-[12px] text-amber-600 dark:text-amber-400 mt-2 text-center">{saveNotice}</p>
+          <p className="text-[12px] text-warning mt-2 text-center">{saveNotice}</p>
         )}
 
         {/* Appearance */}
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
           <div className="p-5 border-b border-border/60">
-            <h2 className="text-[16px] font-bold text-foreground">Appearance</h2>
+            <h2 className="text-[16px] font-medium text-foreground">Appearance</h2>
             <p className="text-[12px] text-muted-foreground">Saved on this device</p>
           </div>
           <div className="p-5">
@@ -582,22 +582,22 @@ export default function RunnerProfilePage() {
         <button
           onClick={handleLogout}
           disabled={loggingOut}
-          className="w-full py-3.5 mt-4 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+          className="w-full py-3.5 mt-4 rounded-xl bg-accent text-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           {loggingOut ? <LoaderCircle className="size-[18px] animate-spin" /> : <LogOut className="size-[18px]" />}
           Log out
         </button>
 
         {logoutError && (
-          <p className="text-[12px] text-red-500 dark:text-red-300 mt-2 text-center">{logoutError}</p>
+          <p className="text-[12px] text-destructive mt-2 text-center">{logoutError}</p>
         )}
 
         {/* Danger Zone */}
-        <section className="bg-card rounded-2xl border border-red-500/30 dark:border-red-300/30 overflow-hidden mt-8">
-          <div className="p-5 border-b border-red-500/30 dark:border-red-300/20 bg-red-500/10 dark:bg-red-300/5">
-            <h2 className="text-[16px] font-bold text-red-500 dark:text-red-300 flex items-center gap-2">
+        <section className="bg-card rounded-2xl border border-destructive/30 overflow-hidden mt-8">
+          <div className="p-5 border-b border-destructive/30 dark:border-destructive/20 bg-destructive/10 dark:bg-destructive/5">
+            <h2 className="text-[16px] font-medium text-destructive flex items-center gap-2">
               <TriangleAlert className="size-[20px]" />
-              Danger Zone
+              Danger zone
             </h2>
           </div>
           <div className="p-5 flex flex-col gap-4">
@@ -608,17 +608,17 @@ export default function RunnerProfilePage() {
             {deleteStep === 'idle' && (
               <button 
                 onClick={() => setDeleteStep('confirm')}
-                className="py-3 px-4 rounded-xl bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[13px] font-bold border border-red-500/30 dark:border-red-300/20 active:bg-red-500/10 dark:bg-red-300/20 transition-colors"
+                className="py-3 px-4 rounded-xl bg-destructive/10 text-destructive text-[13px] font-medium border border-destructive/30 dark:border-destructive/20 active:bg-destructive/10 dark:bg-destructive/20 transition-colors"
               >
-                Delete My Account
+                Delete my account
               </button>
             )}
 
             {deleteStep === 'confirm' && (
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="delete-confirm" className="text-[12px] font-bold text-red-500 dark:text-red-300 ml-1">
-                    Type <span className="font-extrabold">DELETE</span> to confirm
+                  <label htmlFor="delete-confirm" className="text-[12px] font-medium text-destructive ml-1">
+                    Type <span className="font-medium">DELETE</span> to confirm
                   </label>
                   <input
                     id="delete-confirm"
@@ -626,7 +626,7 @@ export default function RunnerProfilePage() {
                     value={deleteConfirm}
                     onChange={(e) => setDeleteConfirm(e.target.value)}
                     placeholder="DELETE"
-                    className="w-full h-12 px-4 rounded-xl bg-muted border border-red-500/30 dark:border-red-300/30 text-[14px] text-foreground focus:outline-none focus:border-red-500 dark:border-red-300"
+                    className="w-full h-12 px-4 rounded-xl bg-muted border border-destructive/30 text-[14px] text-foreground focus:outline-none focus:border-destructive dark:border-destructive"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -642,16 +642,16 @@ export default function RunnerProfilePage() {
                         setDeleteStep('idle')
                       }
                     }}
-                    className="flex-[2] py-3 rounded-xl bg-red-500 dark:bg-red-300 text-red-900 text-[13px] font-bold active:scale-95 transition-transform disabled:opacity-50"
+                    className="flex-[2] py-3 rounded-xl bg-destructive text-white dark:text-background text-[13px] font-medium active:scale-[0.98] transition-transform disabled:opacity-50"
                   >
-                    Confirm Delete
+                    Confirm delete
                   </button>
                   <button
                     onClick={() => {
                       setDeleteStep('idle')
                       setDeleteConfirm('')
                     }}
-                    className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold active:scale-95 transition-transform"
+                    className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-medium active:scale-[0.98] transition-transform"
                   >
                     Cancel
                   </button>
@@ -660,14 +660,14 @@ export default function RunnerProfilePage() {
             )}
 
             {deleteStep === 'deleting' && (
-              <div className="flex items-center justify-center gap-2 text-[13px] text-red-500 dark:text-red-300 font-bold py-3 bg-red-500/10 dark:bg-red-300/10 rounded-xl">
+              <div className="flex items-center justify-center gap-2 text-[13px] text-destructive font-medium py-3 bg-destructive/10 rounded-xl">
                 <LoaderCircle className="size-[18px] animate-spin" />
                 Deleting...
               </div>
             )}
 
             {deleteError && (
-              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 dark:border-destructive/20 text-destructive text-[12px] flex items-center gap-2">
                 <CircleAlert className="size-[16px]" />
                 {deleteError}
               </div>

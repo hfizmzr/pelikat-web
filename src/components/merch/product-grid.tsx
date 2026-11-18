@@ -1,5 +1,6 @@
 'use client'
 
+import { StatusTag } from '@/components/ui/status-tag'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2, Pencil, Shirt, Trash2 } from "lucide-react"
@@ -26,8 +27,8 @@ import {
 } from '@/lib/merch'
 
 const LEVEL_CHIP: Record<StockLevel, string> = {
-  out: 'border-red-500/40 dark:border-red-300/40 text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10',
-  low: 'border-amber-500/40 dark:border-amber-400/40 text-amber-500 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-400/10',
+  out: 'border-destructive/40 text-destructive bg-destructive/10',
+  low: 'border-warning/40 text-warning bg-warning/10',
   ok: 'border-border text-muted-foreground',
 }
 
@@ -91,28 +92,22 @@ function ProductCard({
   }
 
   return (
-    <div className="bg-card rounded-xl border border-muted overflow-hidden flex flex-col hover:border-primary/30 transition-all">
-      <div className="relative aspect-[16/9] bg-card flex items-center justify-center">
+    <div className="bg-card rounded-xl border border-border overflow-hidden flex flex-col">
+      <div className="relative aspect-[16/9] bg-muted flex items-center justify-center">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={imageUrl} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
         ) : (
-          <Shirt className="size-[40px] text-border" />
+          <Shirt className="size-8 text-muted-foreground" strokeWidth={1.5} />
         )}
-        <span
-          className={`absolute top-3 right-3 text-[10px] leading-[14px] px-2 py-0.5 rounded-full font-semibold border backdrop-blur ${
-            product.is_active
-              ? 'text-success bg-background/70 border-success/30'
-              : 'text-muted-foreground bg-background/70 border-border'
-          }`}
-        >
-          {product.is_active ? 'Active' : 'Hidden'}
-        </span>
+        <StatusTag tone={product.is_active ? 'success' : 'neutral'} className="absolute top-3 right-3 bg-background/90">
+          {product.is_active ? 'In store' : 'Hidden'}
+        </StatusTag>
       </div>
 
       <div className="p-5 flex flex-col gap-4 flex-1">
         <div className="flex flex-col gap-1 min-w-0">
-          <h3 className="text-[15px] leading-[20px] font-semibold text-foreground truncate">{product.name}</h3>
+          <h3 className="text-[15px] leading-[20px] font-medium text-foreground truncate">{product.name}</h3>
           {product.description && (
             <p className="text-[12px] leading-[16px] text-muted-foreground line-clamp-2">{product.description}</p>
           )}
@@ -120,7 +115,7 @@ function ProductCard({
 
         <div className="flex items-end justify-between">
           <div className="flex flex-col">
-            <span className="text-[22px] leading-[28px] tracking-[-0.015em] font-semibold text-foreground">
+            <span className="text-[20px] leading-7 font-medium tabular-nums text-foreground">
               {formatRM(product.price)}
             </span>
             <span className="text-[11px] text-muted-foreground">
@@ -128,8 +123,8 @@ function ProductCard({
             </span>
           </div>
           <div className="text-right">
-            <span className="text-[22px] leading-[28px] font-semibold text-foreground">{totalStock}</span>
-            <div className={`text-[11px] ${alertCount > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground'}`}>
+            <span className="text-[20px] leading-7 font-medium tabular-nums text-foreground">{totalStock}</span>
+            <div className={`text-[11px] ${alertCount > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
               {alertCount > 0 ? `${alertCount} low / sold out` : 'in stock'}
             </div>
           </div>
@@ -146,7 +141,7 @@ function ProductCard({
           ))}
         </div>
 
-        <div className="mt-auto flex items-center gap-2 pt-3 border-t border-muted">
+        <div className="mt-auto flex items-center gap-2 pt-3 border-t border-border">
           <ProductFormDialog
             eventId={eventId}
             organizerId={organizerId}
@@ -177,7 +172,7 @@ function ProductCard({
             disabled={isPending}
             title="Delete product"
             aria-label="Delete product"
-            className="h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-red-500 dark:hover:text-red-300 hover:bg-red-500/10 dark:hover:bg-red-300/10 rounded-lg transition-colors disabled:opacity-50"
+            className="h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors disabled:opacity-50"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -201,7 +196,7 @@ function ProductCard({
                 handleDelete()
               }}
               disabled={isPending}
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="bg-destructive text-white dark:text-background hover:bg-destructive/90"
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete

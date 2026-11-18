@@ -5,13 +5,9 @@ import type { ReactNode } from 'react'
 
 export { getInitials } from '@/lib/utils'
 
-// Shared initials palette (superset of the admin tables' variants).
+// Initials avatars are neutral; colour is kept for status, not identity.
 export const INITIALS_COLORS = [
-  { bg: 'bg-primary/20', text: 'text-primary' },
-  { bg: 'bg-primary/20', text: 'text-primary' },
-  { bg: 'bg-success/20', text: 'text-success' },
-  { bg: 'bg-red-500/10 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
-  { bg: 'bg-primary/20', text: 'text-primary' },
+  { bg: 'bg-accent', text: 'text-foreground' },
 ]
 
 export const ITEMS_PER_PAGE = 25
@@ -29,7 +25,7 @@ export function TableSortHeader({
   return (
     <th className={`py-3 px-4 ${className ?? ''}`}>
       <button
-        className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-muted-foreground transition-colors font-inter"
+        className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-muted-foreground transition-colors font-inter"
         onClick={onSort}
       >
         {label}
@@ -69,12 +65,12 @@ export function TablePagination({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
       <p className="text-[12px] text-muted-foreground font-inter">
         Showing{' '}
-        <span className="text-foreground font-semibold">
+        <span className="text-foreground font-medium">
           {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
           {Math.min(currentPage * ITEMS_PER_PAGE, rankedTotal)}
         </span>{' '}
         of{' '}
-        <span className="text-foreground font-semibold">{total}</span>{' '}
+        <span className="text-foreground font-medium">{total}</span>{' '}
         {noun}
       </p>
       <div className="flex items-center gap-1">

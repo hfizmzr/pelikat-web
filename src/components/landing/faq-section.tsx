@@ -37,28 +37,24 @@ export function FaqSection({ priceLabel }: { priceLabel: string }) {
   return (
     <section id="faq" className={styles.section} aria-labelledby="faq-title">
       <div className={cn(styles.container, "grid gap-10 lg:grid-cols-[1fr_1.6fr] lg:gap-16")}>
-        <div data-reveal="">
-          <span className={styles.eyebrow}>
-            <span className={styles.eyebrowDot} />
-            FAQ
-          </span>
-          <h2 id="faq-title" className={cn(styles.h2, "mt-5")}>
+        <div>
+          <h2 id="faq-title" className={styles.h2}>
             Questions organizers ask
           </h2>
           <p className={cn(styles.body, "mt-4 max-w-[36ch]")}>
             Something else? Email{" "}
-            <a href="mailto:admin@pelikat.com" className="font-medium text-[var(--accent)] underline-offset-4 hover:underline">
+            <a href="mailto:admin@pelikat.com" className="text-[var(--ink)] underline decoration-[var(--line-strong)] underline-offset-4 hover:decoration-current">
               admin@pelikat.com
             </a>
             .
           </p>
         </div>
-        <div className={cn(styles.card, "px-6 py-2 sm:px-8")} data-reveal="">
+        <div className={cn(styles.card, "px-6 py-2 sm:px-8")}>
           {faqs.map((item, i) => (
             <details key={item.q} className={cn(styles.faqItem, i === faqs.length - 1 && "border-b-0")} open={i === 0}>
               <summary>
                 {item.q}
-                <Plus className={cn(styles.faqIcon, "size-5")} aria-hidden="true" />
+                <Plus className={cn(styles.faqIcon, "size-[18px]")} strokeWidth={1.75} aria-hidden="true" />
               </summary>
               <p className={cn(styles.body, "pb-5 pr-8")}>{item.a}</p>
             </details>

@@ -30,7 +30,7 @@ export interface AuditLogFilters {
 }
 
 const ACTION_TYPES = [
-  { value: 'all', label: 'All Actions' },
+  { value: 'all', label: 'All actions' },
   { value: 'create', label: 'Create' },
   { value: 'update', label: 'Update' },
   { value: 'delete', label: 'Delete' },
@@ -113,7 +113,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
             )}
           >
             <CalendarIcon className="size-[16px]" />
-            {startDate ? startDate.toLocaleDateString() : 'From'}
+            {startDate ? startDate.toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : 'From'}
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 bg-card border border-border/40 rounded-xl">
@@ -138,7 +138,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
             )}
           >
             <CalendarDays className="size-[16px]" />
-            {endDate ? endDate.toLocaleDateString() : 'To'}
+            {endDate ? endDate.toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : 'To'}
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 bg-card border border-border/40 rounded-xl">
@@ -155,7 +155,7 @@ export function AuditLogFilters({ onFilterChange }: AuditLogFiltersProps) {
       {hasFilters && (
         <button
           onClick={handleReset}
-          className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] text-red-500 dark:text-red-300 bg-red-800/10 border border-red-500/30 dark:border-red-300/20 hover:bg-red-800/20 transition-colors font-inter"
+          className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] text-destructive bg-destructive/10 border border-destructive/30 dark:border-destructive/20 hover:bg-destructive/15 transition-colors font-inter"
         >
           <X className="size-[16px]" />
           Clear

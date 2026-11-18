@@ -98,7 +98,6 @@ describe('RunnerBibPage (P3 Task 4: bib pass theming)', () => {
     expect(html).toContain('--et-primary:oklch(')
     // header title + canvas-adjacent h2 use the themed label
     expect(html).toContain('Nombor Larian')
-    expect(html).toContain('NOMBOR LARIAN')
     // zero hardcoded bib-copy residue
     expect(html).not.toContain('Digital BIB')
   })
@@ -116,7 +115,6 @@ describe('RunnerBibPage (P3 Task 4: bib pass theming)', () => {
     expect(html).not.toContain('event-theme')
     expect(html).not.toContain('--et-primary')
     expect(html).toContain('Bib Number') // labels.bib_label fallback
-    expect(html).toContain('BIB NUMBER') // fallback uppercased
   })
 
   it('credentials mismatch (hidden event) → notFound before any render', async () => {

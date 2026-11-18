@@ -199,17 +199,11 @@ export default function AdminOrganizersPage() {
       {/* ── Page Header ─────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Building2 className="size-[16px] text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary font-inter">
-              Tenant Directory
-            </span>
-          </div>
-          <h1 className="font-jakarta font-bold text-[28px] leading-tight tracking-tight text-foreground">
+          <h1 className="text-[28px] leading-9 font-medium text-foreground">
             Organizers
           </h1>
           <p className="text-[13px] text-muted-foreground font-inter">
-            Manage event organizers, tenant accounts, and applications on the platform
+            Organizer accounts and new applications
           </p>
         </div>
       </div>
@@ -220,10 +214,10 @@ export default function AdminOrganizersPage() {
         onSuccess={handleCreate}
         trigger={
           <button
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all font-inter"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:opacity-90 text-primary-foreground hover:text-white text-[13px] font-medium transition-[color,background-color,border-color,opacity] font-inter"
           >
             <Store className="size-[18px]" />
-            Add Organizer
+            Add organizer
           </button>
         }
       />
@@ -237,11 +231,11 @@ export default function AdminOrganizersPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl shadow-2xl">
+        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl">
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
-              <Trash2 className="size-[20px] text-red-500 dark:text-red-300" />
-              Delete Organizer
+              <Trash2 className="size-[20px] text-destructive" />
+              Delete organizer
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-inter text-[13px]">
               Are you sure you want to delete{' '}
@@ -257,13 +251,13 @@ export default function AdminOrganizersPage() {
               Cancel
             </button>
             <button
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-300/20 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-destructive/15 hover:bg-destructive/35 text-destructive text-[13px] font-medium font-inter transition-colors border border-destructive/30 dark:border-destructive/20 disabled:opacity-50"
               disabled={deleting}
               onClick={handleConfirmDelete}
             >
               {deleting && <Loader2 className="h-4 w-4 animate-spin" />}
               <Trash2 className="size-[18px]" />
-              Delete Organizer
+              Delete organizer
             </button>
           </div>
         </DialogContent>
@@ -273,10 +267,10 @@ export default function AdminOrganizersPage() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <Building2 className="size-[20px] text-primary" />
-          <h2 className="font-jakarta font-semibold text-[18px] text-foreground tracking-tight">
-            Active Organizers
+          <h2 className="font-jakarta font-medium text-[18px] text-foreground">
+            Active organizers
           </h2>
-          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold border border-primary/20 font-inter">
+          <span className="font-mono text-[13px] tabular-nums text-muted-foreground">
             {organizers.length}
           </span>
         </div>
@@ -299,7 +293,7 @@ export default function AdminOrganizersPage() {
 
         {!loading && organizers.length === 0 && (
           <div className="rounded-xl bg-card border border-border/30 flex flex-col items-center justify-center py-12 gap-3">
-            <Building2 className="size-[40px] text-border" />
+            <Building2 className="size-[40px] text-muted-foreground" />
             <p className="text-muted-foreground font-inter text-[13px]">No organizers yet</p>
             <button
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-card hover:bg-accent text-primary text-[13px] font-medium font-inter border border-border/30 transition-colors"
@@ -316,10 +310,10 @@ export default function AdminOrganizersPage() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <UserPlus className="size-[20px] text-primary" />
-          <h2 className="font-jakarta font-semibold text-[18px] text-foreground tracking-tight">
-            Pending Applications
+          <h2 className="font-jakarta font-medium text-[18px] text-foreground">
+            Pending applications
           </h2>
-          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold border border-primary/20 font-inter">
+          <span className="font-mono text-[13px] tabular-nums text-muted-foreground">
             {applicants.length}
           </span>
         </div>

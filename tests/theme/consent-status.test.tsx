@@ -124,7 +124,7 @@ describe('BibConsentPage: getConsentStatus classification (FR-41)', () => {
   it('no code yet → generation screen (status none)', async () => {
     useConsentTable(null)
     await renderPage()
-    expect(await screen.findByRole('button', { name: 'Generate Code' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Generate code' })).toBeInTheDocument()
     expect(screen.getByText('BIB')).toBeInTheDocument()
   })
 })
@@ -163,7 +163,7 @@ describe('BibConsentPage: copy / share / generate actions (FR-52/FR-53)', () => 
     h.generateConsentCode.mockResolvedValue({ code: 'NEW999', expires_at: '2099-01-02T00:00:00Z' })
     await renderPage()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Generate New Code' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Generate new code' }))
     expect(h.generateConsentCode).toHaveBeenCalledWith('reg-1')
     expect(await screen.findByText('NEW999')).toBeInTheDocument()
   })
@@ -172,7 +172,7 @@ describe('BibConsentPage: copy / share / generate actions (FR-52/FR-53)', () => 
     h.generateConsentCode.mockRejectedValue(new Error('Code quota reached'))
     await renderPage()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Generate New Code' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Generate new code' }))
     expect(await screen.findByText('Code quota reached')).toBeInTheDocument()
   })
 })

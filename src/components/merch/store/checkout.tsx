@@ -109,10 +109,10 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
         <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center border border-border/60">
           <ShoppingCart className="size-[32px] text-muted-foreground" />
         </div>
-        <p className="text-[15px] font-bold text-foreground">Your cart is empty</p>
+        <p className="text-[15px] font-medium text-foreground">Your cart is empty</p>
         <Link
           href={`/runner/events/${event.id}/merch`}
-          className="mt-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold"
+          className="mt-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium"
         >
           Browse merch
         </Link>
@@ -125,8 +125,8 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
       {/* Cart */}
       <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
         <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
-          <span className="text-[14px] font-bold text-foreground">Your cart</span>
-          <Link href={`/runner/events/${event.id}/merch`} className="text-[12px] font-semibold text-primary">
+          <span className="text-[14px] font-medium text-foreground">Your cart</span>
+          <Link href={`/runner/events/${event.id}/merch`} className="text-[12px] font-medium text-primary">
             Add more
           </Link>
         </div>
@@ -137,10 +137,10 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
               <div className="flex-1 min-w-0 flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-[13px] font-bold text-foreground leading-tight truncate">{line.name}</p>
+                    <p className="text-[13px] font-medium text-foreground leading-tight truncate">{line.name}</p>
                     <p className="text-[11px] text-muted-foreground">{line.variantLabel}</p>
                   </div>
-                  <span className="text-[13px] font-mono font-bold text-foreground whitespace-nowrap">
+                  <span className="text-[13px] font-mono font-medium text-foreground whitespace-nowrap">
                     {formatRM(line.price * line.quantity)}
                   </span>
                 </div>
@@ -159,14 +159,14 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
                     type="button"
                     onClick={() => cart.remove(line.variantId)}
                     disabled={isPending}
-                    className="text-[12px] font-semibold text-muted-foreground flex items-center gap-1 py-1"
+                    className="text-[12px] font-medium text-muted-foreground flex items-center gap-1 py-1"
                   >
                     <Trash2 className="size-[16px]" />
                     Remove
                   </button>
                 </div>
                 {line.problem && (
-                  <p className="text-[12px] font-semibold text-red-500 dark:text-red-300">
+                  <p className="text-[12px] font-medium text-destructive">
                     {line.problem}
                     {line.stock > 0 && line.quantity > line.stock && (
                       <button
@@ -189,7 +189,7 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
       <section className="bg-card rounded-2xl border border-border/60 p-4 flex gap-3">
         <Store className="size-[22px] text-success" />
         <div className="flex flex-col gap-0.5">
-          <span className="text-[13px] font-bold text-foreground">Collect at REPC</span>
+          <span className="text-[13px] font-medium text-foreground">Collect at REPC</span>
           <span className="text-[12px] text-muted-foreground leading-[18px]">
             Pick up your order with your race kit{event.location ? ` (${event.location})` : ''}. Show your Digital
             BIB QR at the counter.
@@ -199,7 +199,7 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
 
       {/* Payment method */}
       <section className="flex flex-col gap-2">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1">Pay with</span>
+        <span className="text-[11px] font-medium text-muted-foreground px-1">Pay with</span>
         <div role="radiogroup" aria-label="Payment method" className="flex flex-col gap-2">
           {PAYMENT_OPTIONS.map((option) => {
             const active = method === option.method
@@ -216,7 +216,7 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
               >
                 <option.icon className={`size-[22px] ${active ? 'text-primary' : 'text-muted-foreground'}`} />
                 <span className="flex-1 flex flex-col">
-                  <span className="text-[14px] font-bold text-foreground">{MERCH_PAYMENT_METHOD_LABEL[option.method]}</span>
+                  <span className="text-[14px] font-medium text-foreground">{MERCH_PAYMENT_METHOD_LABEL[option.method]}</span>
                   <span className="text-[11px] text-muted-foreground">{option.hint}</span>
                 </span>
                 <span
@@ -235,8 +235,8 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
       {/* Total + pay */}
       <section className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <span className="text-[14px] font-bold text-foreground">Total</span>
-          <span className="text-[20px] font-mono font-extrabold text-primary">{formatRM(total)}</span>
+          <span className="text-[14px] font-medium text-foreground">Total</span>
+          <span className="text-[20px] font-mono font-medium text-primary">{formatRM(total)}</span>
         </div>
 
         {salesClosed ? (
@@ -245,7 +245,7 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
           </Notice>
         ) : !registrationPaid ? (
           <Notice tone="warn" icon={Lock}>
-            <Link href={`/runner/events/${event.id}/payment`} className="font-bold underline underline-offset-2">
+            <Link href={`/runner/events/${event.id}/payment`} className="font-medium underline underline-offset-2">
               Complete your race registration payment
             </Link>{' '}
             before buying merch.
@@ -266,7 +266,7 @@ export function Checkout({ data }: { data: StoreData & { event: NonNullable<Stor
           type="button"
           onClick={placeOrder}
           disabled={!canPay}
-          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-40 disabled:active:scale-100"
+          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-40 disabled:active:scale-100"
         >
           {isPending ? (
             <>

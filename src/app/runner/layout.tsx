@@ -24,14 +24,15 @@ function BottomNavLink({
   return (
     <Link
       href={href}
-      className={`flex flex-col items-center justify-center min-w-[54px] min-h-[44px] gap-0.5 transition-all active:scale-95 ${
+      aria-current={active ? 'page' : undefined}
+      className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] gap-1 transition-[color,transform] active:scale-[0.97] ${
         active
-          ? 'text-primary font-semibold'
+          ? 'text-foreground'
           : 'text-muted-foreground hover:text-foreground'
       }`}
     >
-      <Icon className="size-[20px]" />
-      <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold">
+      <Icon className={`size-5 ${active ? 'text-primary' : ''}`} strokeWidth={1.75} />
+      <span className="text-[11px] leading-4 font-medium">
         {label}
       </span>
     </Link>
@@ -92,13 +93,13 @@ export default function RunnerLayout({
 
   return (
     <div className="min-h-dvh bg-background flex justify-center overflow-hidden font-sans">
-      <div className="flex flex-col w-full max-w-md h-[100dvh] bg-background overscroll-none select-none relative shadow-2xl border-x border-muted/30">
+      <div className="flex flex-col w-full max-w-md h-[100dvh] bg-background overscroll-none select-none relative sm:border-x sm:border-border/60">
         {/* Main scrollable content area - padded for bottom nav */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-28 pt-0">{children}</main>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-24 pt-0">{children}</main>
 
-        {/* Floating pill bottom nav */}
-        <nav className="absolute bottom-0 inset-x-0 z-50 pb-safe pointer-events-none flex justify-center pb-3 px-4">
-          <div className="pointer-events-auto w-full bg-card/90 backdrop-blur-2xl rounded-full px-2 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-around border border-border/60">
+        {/* Docked bottom nav */}
+        <nav className="absolute bottom-0 inset-x-0 z-50 border-t border-border/60 bg-background/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
+          <div className="flex h-16 items-center justify-around px-2">
             {NAV_ITEMS.map((item) => {
               const active =
                 pathname === item.href ||

@@ -6,83 +6,85 @@
 @custom-variant dark (&:where(.dark *));
 @custom-variant light (&:where(.light *));
 
-/* Light Theme (default) */
+/* Light Theme (default)
+   Neutral ramp tinted a hair toward ink; the brand teal is the one accent.
+   Semantic colours (success / warning / destructive) carry meaning only. */
 :root, .light {
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(0.985 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(0.985 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --background: oklch(0.982 0.002 240);
+  --foreground: oklch(0.2 0.012 240);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.012 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.012 240);
   --primary: oklch(0.51 0.16 190);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.92 0 0);
-  --secondary-foreground: oklch(0.145 0 0);
-  --muted: oklch(0.92 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.92 0 0);
-  --accent-foreground: oklch(0.145 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.868 0 0);
-  --input: oklch(0.868 0 0);
+  --secondary: oklch(0.95 0.003 240);
+  --secondary-foreground: oklch(0.2 0.012 240);
+  --muted: oklch(0.955 0.003 240);
+  --muted-foreground: oklch(0.5 0.012 240);
+  --accent: oklch(0.95 0.003 240);
+  --accent-foreground: oklch(0.2 0.012 240);
+  --destructive: oklch(0.55 0.19 27);
+  --destructive-foreground: oklch(0.55 0.19 27);
+  --border: oklch(0.91 0.004 240);
+  --input: oklch(0.88 0.004 240);
   --ring: oklch(0.51 0.16 190);
-  --chart-1: oklch(0.58 0.14 190);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.58 0.13 250);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: oklch(0.51 0.12 190);
+  --chart-2: oklch(0.6 0.012 240);
+  --chart-3: oklch(0.74 0.008 240);
+  --chart-4: oklch(0.42 0.012 240);
+  --chart-5: oklch(0.85 0.006 240);
   --radius: 0.75rem;
-  --sidebar: oklch(0.968 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar: oklch(0.97 0.003 240);
+  --sidebar-foreground: oklch(0.2 0.012 240);
   --sidebar-primary: oklch(0.51 0.16 190);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.92 0 0);
-  --sidebar-accent-foreground: oklch(0.145 0 0);
-  --sidebar-border: oklch(0.868 0 0);
+  --sidebar-accent: oklch(0.93 0.004 240);
+  --sidebar-accent-foreground: oklch(0.2 0.012 240);
+  --sidebar-border: oklch(0.91 0.004 240);
   --sidebar-ring: oklch(0.51 0.16 190);
-  --success: oklch(0.7 0.2 145);
+  --success: oklch(0.52 0.13 155);
+  --warning: oklch(0.56 0.13 60);
 }
 
-/* Dark Theme */
+/* Dark Theme: graphite surfaces stepped by lightness, hairline borders, no
+   glow. The same ramp the landing page uses. */
 .dark {
-  --background: oklch(0.07 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.12 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  --background: oklch(0.155 0.004 240);
+  --foreground: oklch(0.95 0.003 240);
+  --card: oklch(0.185 0.005 240);
+  --card-foreground: oklch(0.95 0.003 240);
+  --popover: oklch(0.2 0.005 240);
+  --popover-foreground: oklch(0.95 0.003 240);
   --primary: oklch(0.75 0.13 190);
   --primary-foreground: oklch(0.15 0.04 190);
-  --secondary: oklch(0.16 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.16 0 0);
-  --muted-foreground: oklch(0.63 0 0);
-  --accent: oklch(0.28 0.03 190);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.22 0 0);
-  --input: oklch(0.22 0 0);
+  --secondary: oklch(0.235 0.006 240);
+  --secondary-foreground: oklch(0.95 0.003 240);
+  --muted: oklch(0.225 0.006 240);
+  --muted-foreground: oklch(0.68 0.008 240);
+  --accent: oklch(0.245 0.006 240);
+  --accent-foreground: oklch(0.95 0.003 240);
+  --destructive: oklch(0.66 0.17 24);
+  --destructive-foreground: oklch(0.66 0.17 24);
+  --border: oklch(0.255 0.006 240);
+  --input: oklch(0.29 0.006 240);
   --ring: oklch(0.75 0.13 190);
-  --chart-1: oklch(0.75 0.13 190);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.65 0.12 250);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: oklch(0.75 0.12 190);
+  --chart-2: oklch(0.6 0.008 240);
+  --chart-3: oklch(0.45 0.008 240);
+  --chart-4: oklch(0.75 0.006 240);
+  --chart-5: oklch(0.35 0.006 240);
   --radius: 0.75rem;
-  --sidebar: oklch(0.1 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar: oklch(0.135 0.004 240);
+  --sidebar-foreground: oklch(0.95 0.003 240);
   --sidebar-primary: oklch(0.75 0.13 190);
   --sidebar-primary-foreground: oklch(0.15 0.04 190);
-  --sidebar-accent: oklch(0.16 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.22 0 0);
+  --sidebar-accent: oklch(0.21 0.006 240);
+  --sidebar-accent-foreground: oklch(0.95 0.003 240);
+  --sidebar-border: oklch(0.235 0.006 240);
   --sidebar-ring: oklch(0.75 0.13 190);
-
-  /* Custom Obsidian tokens */
-  --success: oklch(0.7 0.2 145);
-
+  --success: oklch(0.76 0.13 158);
+  --warning: oklch(0.8 0.12 75);
 }
 
 @theme inline {
@@ -132,6 +134,7 @@
 
 @theme inline {
   --color-success: var(--success);
+  --color-warning: var(--warning);
 }
 
 @layer base {
@@ -149,8 +152,6 @@
      ponytail: rename call sites to font-sans if these drift further. */
   .font-inter, .font-jakarta { font-family: var(--font-sans); }
   .font-tabular { font-variant-numeric: tabular-nums; }
-
-  /* Glow utilities */
 
   /* Admin scrollbar hide */
   .scrollbar-none { scrollbar-width: none; }

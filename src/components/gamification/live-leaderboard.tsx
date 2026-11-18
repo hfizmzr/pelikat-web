@@ -1,6 +1,6 @@
 "use client"
 
-import { Crown, RefreshCw } from "lucide-react"
+import { Pause, Play } from "lucide-react"
 import { useEffect, useState, useRef, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 
@@ -19,19 +19,6 @@ export interface LeaderboardFilters {
   event_id?: string
   gender?: string
   category_id?: string
-}
-
-function getRankIcon(rank: number) {
-  switch (rank) {
-    case 1:
-      return <Crown className="text-amber-500 dark:text-amber-400 size-[28px] drop-shadow-[0_0_8px_rgba(227,196,91,0.5)]" />
-    case 2:
-      return <Crown className="text-muted-foreground size-[24px]" />
-    case 3:
-      return <Crown className="text-amber-700 size-[24px]" />
-    default:
-      return <span className="text-muted-foreground font-bold text-[14px]">#{rank}</span>
-  }
 }
 
 export function LiveLeaderboard({
@@ -137,96 +124,78 @@ export function LiveLeaderboard({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-card border border-border">
+        <div className="flex items-center gap-1.5">
           {isLive && (
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
             </span>
           )}
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <span className="text-[12px] text-muted-foreground">
             {isLive ? "Live updates" : "Paused"}
           </span>
         </div>
         <button
           onClick={() => setIsLive(!isLive)}
-          className="flex items-center gap-1.5 text-[12px] font-bold text-muted-foreground bg-muted px-2.5 py-1 rounded-full border border-border active:scale-95 transition-transform"
+          className="flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
         >
-          <RefreshCw className={`size-[14px] ${isLive ? 'animate-spin' : ''}`} />
+          {isLive ? <Pause className="size-3.5" strokeWidth={1.75} /> : <Play className="size-3.5" strokeWidth={1.75} />}
           {isLive ? "Pause" : "Resume"}
         </button>
       </div>
 
       {myStats && (
-        <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 flex items-center justify-between relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-xl rounded-full -mt-6 -mr-6 pointer-events-none" />
-          
-          <div className="flex items-center gap-4 relative z-10">
-            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-              {getRankIcon(myStats.rank)}
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[11px] font-bold text-primary uppercase tracking-widest mb-0.5">Your Rank</span>
-              <p className="text-[20px] font-bold text-foreground leading-none">#{myStats.rank}</p>
-            </div>
+        <div className="flex items-center justify-between rounded-xl border border-border/60 bg-card p-4">
+          <div>
+            <p className="text-[13px] text-muted-foreground">Your rank</p>
+            <p className="mt-1 text-[28px] leading-none font-medium tabular-nums text-foreground">#{myStats.rank}</p>
           </div>
-          <div className="flex flex-col items-end relative z-10">
-            <p className="font-mono text-[24px] font-extrabold text-primary leading-none">{myStats.total_km}</p>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">KM Total</p>
+          <div className="text-right">
+            <p className="text-[13px] text-muted-foreground">Distance</p>
+            <p className="mt-1 text-[28px] leading-none font-medium tabular-nums text-foreground">
+              {myStats.total_km}<span className="ml-1 text-[14px] font-normal text-muted-foreground">km</span>
+            </p>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col gap-2 mt-2">
-        {entries.map((entry) => {
-          const isMe = entry.runner_id === currentRunnerId;
-          const isTop3 = entry.rank <= 3;
-          
-          return (
-            <div
-              key={`${entry.runner_id}-${entry.event_id}`}
-              className={`flex items-center justify-between p-3.5 rounded-xl border ${
-                isMe
-                  ? "bg-primary/10 border-primary/30"
-                  : isTop3
-                    ? "bg-card border-border/80 shadow-lg"
-                    : "bg-card/60 border-border/30"
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <div className={`h-10 w-10 flex items-center justify-center rounded-full ${
-                  isTop3 ? 'bg-muted' : ''
-                }`}>
-                  {getRankIcon(entry.rank)}
-                </div>
-                <div className="flex flex-col">
-                  <p className="text-[14px] font-bold text-foreground flex items-center gap-2">
+      {entries.length > 0 && (
+        <ol className="divide-y divide-border/60 overflow-hidden rounded-xl border border-border/60 bg-card">
+          {entries.map((entry) => {
+            const isMe = entry.runner_id === currentRunnerId
+            return (
+              <li
+                key={`${entry.runner_id}-${entry.event_id}`}
+                className={`relative flex min-h-14 items-center gap-3 px-4 py-2.5 ${isMe ? 'bg-accent' : ''}`}
+              >
+                {isMe && <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-primary" aria-hidden="true" />}
+                <span className={`w-7 shrink-0 font-mono text-[13px] tabular-nums ${entry.rank <= 3 ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  {String(entry.rank).padStart(2, '0')}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[14px] text-foreground">
                     {entry.full_name}
-                    {isMe && (
-                      <span className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-extrabold">You</span>
-                    )}
+                    {isMe && <span className="ml-2 text-[12px] text-muted-foreground">You</span>}
                   </p>
                   {entry.gender && (
-                    <span className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">
+                    <p className="text-[12px] text-muted-foreground">
                       {entry.gender === 'M' ? 'Male' : entry.gender === 'F' ? 'Female' : entry.gender}
-                    </span>
+                    </p>
                   )}
                 </div>
-              </div>
-              <div className="flex flex-col items-end">
-                <p className="font-mono text-[18px] font-bold text-foreground leading-none">{entry.total_km}</p>
-                <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mt-1">KM</span>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+                <p className="shrink-0 text-[15px] tabular-nums text-foreground">
+                  {entry.total_km}<span className="ml-1 text-[12px] text-muted-foreground">km</span>
+                </p>
+              </li>
+            )
+          })}
+        </ol>
+      )}
 
       {entries.length === 0 && (
-        <div className="bg-card rounded-2xl border border-border/60 p-8 flex flex-col items-center text-center mt-4">
-          <Crown className="size-[48px] text-muted-foreground/50 mb-3" />
-          <p className="text-[14px] font-bold text-foreground mb-1">No runners yet</p>
-          <p className="text-[12px] text-muted-foreground">The leaderboard is currently empty</p>
+        <div className="rounded-xl border border-border/60 bg-card px-6 py-12 text-center">
+          <p className="text-[15px] text-foreground">No runners yet</p>
+          <p className="mt-1 text-[13px] text-muted-foreground">Rankings appear once runners log distance</p>
         </div>
       )}
     </div>

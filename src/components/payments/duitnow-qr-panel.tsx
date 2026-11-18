@@ -59,7 +59,7 @@ export default function DuitNowQrPanel({ payload, amount, eventName, fallbackUrl
           fallbackUrl ? (
             <a
               href={fallbackUrl}
-              className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold"
+              className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium"
             >
               Open secure checkout
             </a>
@@ -72,12 +72,12 @@ export default function DuitNowQrPanel({ payload, amount, eventName, fallbackUrl
       </div>
 
       <div className="flex flex-col">
-        <p className="text-[24px] font-bold text-primary leading-none">RM {amount}</p>
+        <p className="text-[24px] font-medium text-primary leading-none">RM {amount}</p>
         <p className="text-[13px] text-muted-foreground mt-1.5 max-w-full truncate">{eventName}</p>
       </div>
 
       <div className="flex flex-col">
-        <h3 className="text-[14px] font-bold text-foreground">Scan with your banking app</h3>
+        <h3 className="text-[14px] font-medium text-foreground">Scan with your banking app</h3>
         <p className="text-[12px] text-muted-foreground mt-1">
           Open Touch &apos;n Go eWallet, MAE, Boost or any DuitNow-enabled app and scan this code. Payment is
           confirmed here automatically.
@@ -87,7 +87,7 @@ export default function DuitNowQrPanel({ payload, amount, eventName, fallbackUrl
       <button
         type="button"
         onClick={onPaid}
-        className="w-full inline-flex items-center justify-center min-h-[44px] py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold active:scale-95 transition-transform"
+        className="w-full inline-flex items-center justify-center min-h-[44px] py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium active:scale-[0.98] transition-transform"
       >
         I&apos;ve paid — check status
       </button>

@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, Camera, QrCode, BarChart3, LayoutDashboard, Loader2 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { BadgeCheck, BarChart3, Camera, Check, CreditCard, Loader2, QrCode, Route } from "lucide-react"
 import ApplyForm from "@/components/organizer/apply-form"
 
 const features = [
-  { icon: Camera, title: "AI Photo Engine", description: "Facial and bib recognition for instant runner photo search." },
-  { icon: QrCode, title: "Secure REPC", description: "QR-based race kit collection with encrypted runner identification." },
-  { icon: BarChart3, title: "Real-time Analytics", description: "Live event heatmaps, registration velocity, and timing data." },
-  { icon: LayoutDashboard, title: "Unified Dashboard", description: "Manage registrations, volunteers, and vendors from one place." },
+  { icon: CreditCard, title: "Registration and payments", description: "Categories and prices per event. Runners pay by DuitNow QR, FPX or card through HitPay." },
+  { icon: QrCode, title: "QR kit collection", description: "Every entry gets a QR key. Scan it at the counter from any phone; duplicates are flagged." },
+  { icon: Camera, title: "Race photos by bib", description: "Upload the photographers' sets and photos are matched to runners by bib number." },
+  { icon: BadgeCheck, title: "Badges and e-certificates", description: "Finishers earn badges, and each badge issues a certificate with their name and bib." },
+  { icon: Route, title: "Virtual runs", description: "Set a target distance. Runners log runs by GPS on their phone and the badge follows." },
+  { icon: BarChart3, title: "Analytics and merch", description: "Registrations, revenue and demographics per event, plus a merch store collected at kit pickup." },
 ]
 
 export default function OrganizerApplyPage() {
@@ -41,88 +42,64 @@ export default function OrganizerApplyPage() {
 
   return (
     <div className="min-h-dvh">
-      {/* Hero */}
-      <section className="w-full py-20 sm:py-24 lg:py-32">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            Become a{" "}
-            <span className="text-primary">Pelikat Batik</span>{" "}
-            Organizer
+      <section className="mx-auto grid w-full max-w-6xl gap-12 px-4 py-16 sm:px-8 lg:grid-cols-[1.4fr_1fr] lg:items-start lg:py-24">
+        <div>
+          <h1 className="max-w-[18ch] text-[36px] leading-[1.08] font-medium tracking-[-0.02em] text-foreground sm:text-[48px]">
+            Run your races on Pelikat
           </h1>
-          <p className="mt-6 mx-auto max-w-2xl text-lg text-muted-foreground">
-            Run your events on Malaysia&apos;s premier race management platform.
-            From registration to finisher photos, we handle the infrastructure
-            so you can focus on the experience.
+          <p className="mt-5 max-w-[52ch] text-[17px] leading-relaxed text-muted-foreground">
+            Apply with your organizer details and first event. Once you are approved and subscribed,
+            publish the event and entries open.
           </p>
-        </div>
-      </section>
 
-      {/* Pricing */}
-      <section className="w-full pb-20 sm:pb-24 lg:pb-32">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md mx-auto">
-            <Card className="border-primary/30 bg-card">
-              <CardHeader className="text-center pb-2">
-                <CardTitle className="text-2xl font-bold">Organizer Subscription</CardTitle>
-                <CardDescription>One tier. Everything included.</CardDescription>
-              </CardHeader>
-              <CardContent className="text-center space-y-6">
-                <div>
-                  <span className="text-5xl font-bold text-foreground">
-                    RM {price ? price.amount.toFixed(2) : <Loader2 className="mx-auto size-9 animate-spin text-muted-foreground" />}
-                  </span>
-                  <span className="text-muted-foreground">/{price?.period ?? 'year'}</span>
-                </div>
-                <ul className="space-y-3 text-left">
-                  {[
-                    "Unlimited events per year",
-                    "AI photo engine for all runners",
-                    "Secure REPC race kit collection",
-                    "Real-time analytics dashboard",
-                    "Runner PWA with live tracking",
-                    "Dedicated support",
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <CheckCircle className="mt-0.5 size-5 flex-shrink-0 text-success" />
-                      <span className="text-sm text-muted-foreground">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button size="lg" className="w-full bg-primary text-primary-foreground hover:brightness-95" onClick={() => setShowForm(true)}>
-                  Apply Now
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  Runner accounts are always free — runners pay only per event registration or merch order.
-                  The single subscription tier applies to organizers only.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="w-full pb-20 sm:pb-24 lg:pb-32">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl text-center mb-12">
-            Everything you need
-          </h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <ul className="mt-12 grid gap-x-10 gap-y-8 sm:grid-cols-2">
             {features.map((feature) => {
               const Icon = feature.icon
               return (
-                <Card key={feature.title} className="border-border">
-                  <CardHeader>
-                    <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-2">
-                      <Icon className="size-5" />
-                    </div>
-                    <CardTitle className="text-lg">{feature.title}</CardTitle>
-                    <CardDescription>{feature.description}</CardDescription>
-                  </CardHeader>
-                </Card>
+                <li key={feature.title}>
+                  <h2 className="flex items-center gap-2.5 text-[15px] font-medium text-foreground">
+                    <Icon className="size-[18px] text-muted-foreground" strokeWidth={1.75} />
+                    {feature.title}
+                  </h2>
+                  <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">{feature.description}</p>
+                </li>
               )
             })}
-          </div>
+          </ul>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 lg:sticky lg:top-8">
+          <h2 className="text-[16px] font-medium text-foreground">Organizer subscription</h2>
+          <p className="mt-1 text-[14px] text-muted-foreground">One plan with every feature</p>
+          <p className="mt-6 flex items-baseline gap-1.5">
+            {price ? (
+              <>
+                <span className="text-[40px] leading-none font-medium tabular-nums text-foreground">RM {price.amount.toFixed(2)}</span>
+                <span className="text-[15px] text-muted-foreground">a {price.period}</span>
+              </>
+            ) : (
+              <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            )}
+          </p>
+          <ul className="mt-6 space-y-2.5">
+            {[
+              "Unlimited events during your subscription",
+              "Payments, kit collection and photos",
+              "Badges, e-certificates and virtual runs",
+              "Analytics, merch and complimentary entries",
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-2.5 text-[14px] text-foreground">
+                <Check className="mt-0.5 size-4 shrink-0 text-muted-foreground" strokeWidth={2} />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <Button size="lg" className="mt-8 w-full" onClick={() => setShowForm(true)}>
+            Apply as organizer
+          </Button>
+          <p className="mt-4 text-[13px] text-muted-foreground">
+            Runner accounts are free. Runners pay only the entry fee you set and any merch they order.
+          </p>
         </div>
       </section>
     </div>

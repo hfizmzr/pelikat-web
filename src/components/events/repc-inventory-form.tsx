@@ -83,15 +83,15 @@ export function RepcInventoryForm({ eventId, rows }: RepcInventoryFormProps) {
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-md border bg-muted/20 p-3">
           <p className="text-sm text-muted-foreground">Prepared</p>
-          <p className="text-2xl font-semibold">{totals.initial}</p>
+          <p className="text-2xl font-medium">{totals.initial}</p>
         </div>
         <div className="rounded-md border bg-muted/20 p-3">
           <p className="text-sm text-muted-foreground">Claimed</p>
-          <p className="text-2xl font-semibold">{totals.claimed}</p>
+          <p className="text-2xl font-medium">{totals.claimed}</p>
         </div>
         <div className="rounded-md border bg-muted/20 p-3">
           <p className="text-sm text-muted-foreground">Remaining</p>
-          <p className="text-2xl font-semibold">{totals.remaining}</p>
+          <p className="text-2xl font-medium">{totals.remaining}</p>
         </div>
       </div>
 
@@ -110,7 +110,7 @@ export function RepcInventoryForm({ eventId, rows }: RepcInventoryFormProps) {
             <TableHead className="text-center">Requested</TableHead>
             <TableHead className="text-center">Claimed</TableHead>
             <TableHead className="text-center">Remaining</TableHead>
-            <TableHead className="w-40 text-right">Prepared Qty</TableHead>
+            <TableHead className="w-40 text-right">Prepared qty</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -153,7 +153,7 @@ export function RepcInventoryForm({ eventId, rows }: RepcInventoryFormProps) {
       <div className="flex justify-end">
         <Button type="submit" disabled={isPending}>
           <Save className="mr-2 h-4 w-4" />
-          {isPending ? 'Saving...' : 'Save Inventory'}
+          {isPending ? 'Saving...' : 'Save inventory'}
         </Button>
       </div>
     </form>

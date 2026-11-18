@@ -5,7 +5,7 @@ import { OrganizerConsole } from '@/components/organizer/console-view'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Operations Console - Organizer Hub | Pelikat',
+  title: 'Overview - Pelikat',
   description: 'Real-time event operations command center for race directors',
 }
 

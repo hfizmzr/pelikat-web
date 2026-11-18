@@ -155,9 +155,9 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null,
   return (
     <div className="bg-card rounded-2xl border border-border/60 overflow-hidden">
       <div className="p-5 border-b border-border/60">
-        <h3 className="text-[16px] font-bold text-foreground flex items-center gap-2">
+        <h3 className="text-[16px] font-medium text-foreground flex items-center gap-2">
           <Badge className="size-[20px] text-primary" />
-          Identification Document
+          Identification document
         </h3>
         <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">
           Document Pre-Check (for Race Insurance &amp; REPC). Upload a photo of
@@ -175,7 +175,7 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null,
             </div>
             
             {needsReview && (
-              <div className="flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-[13px] text-amber-500 dark:text-amber-400 font-medium">
+              <div className="flex items-center gap-2 rounded-xl bg-warning/10 border border-warning/30 px-4 py-3 text-[13px] text-warning font-medium">
                 <TriangleAlert className="size-[18px] shrink-0" />
                 Document needs review
               </div>
@@ -184,7 +184,7 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null,
             {warnings.map((w) => (
               <div
                 key={w}
-                className="flex items-start gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-[13px] text-amber-500 dark:text-amber-400"
+                className="flex items-start gap-2 rounded-xl bg-warning/10 border border-warning/30 px-4 py-3 text-[13px] text-warning"
               >
                 <TriangleAlert className="size-[18px] shrink-0" />
                 <span>{w}</span>
@@ -194,7 +194,7 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null,
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="py-3 px-4 w-full rounded-xl border border-red-500/30 dark:border-red-300/30 text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/5 text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+              className="py-3 px-4 w-full rounded-xl border border-destructive/30 text-destructive bg-destructive/10 dark:bg-destructive/5 text-[13px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
             >
               {deleting ? (
                 <>
@@ -204,7 +204,7 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null,
               ) : (
                 <>
                   <Trash2 className="size-[16px]" />
-                  Remove Document
+                  Remove document
                 </>
               )}
             </button>
@@ -225,7 +225,7 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null,
               <button 
                 onClick={handleUpload} 
                 disabled={encrypting || !!uploadBlocked}
-                className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 {encrypting ? (
                   <>
@@ -235,7 +235,7 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null,
                 ) : (
                   <>
                     <CloudUpload className="size-[16px]" />
-                    Save Document
+                    Save document
                   </>
                 )}
               </button>
@@ -246,7 +246,7 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null,
                   setPreviewUrl(null)
                 }}
                 disabled={encrypting}
-                className="py-3 px-6 rounded-xl bg-accent text-foreground text-[13px] font-bold active:scale-95 transition-transform disabled:opacity-50"
+                className="py-3 px-6 rounded-xl bg-accent text-foreground text-[13px] font-medium active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -258,19 +258,19 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null,
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={!!uploadBlocked}
-                className="py-3.5 px-2 rounded-xl border border-border text-muted-foreground bg-muted text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform disabled:opacity-50"
+                className="py-3.5 px-2 rounded-xl border border-border text-muted-foreground bg-muted text-[13px] font-medium flex flex-col items-center justify-center gap-1 active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 <FolderOpen className="size-[24px]" />
-                Upload File
+                Upload file
               </button>
               
               <button
                 onClick={() => cameraInputRef.current?.click()}
                 disabled={!!uploadBlocked}
-                className="py-3.5 px-2 rounded-xl border border-border text-muted-foreground bg-muted text-[13px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform disabled:opacity-50"
+                className="py-3.5 px-2 rounded-xl border border-border text-muted-foreground bg-muted text-[13px] font-medium flex flex-col items-center justify-center gap-1 active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 <Camera className="size-[24px]" />
-                Take Photo
+                Take photo
               </button>
             </div>
 
@@ -313,7 +313,7 @@ export default function DocumentCapture({ currentDocument, uploadBlocked = null,
         )}
 
         {error && (
-          <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 dark:border-destructive/20 text-destructive text-[12px] flex items-center gap-2">
             <CircleAlert className="size-[16px]" />
             {error}
           </div>

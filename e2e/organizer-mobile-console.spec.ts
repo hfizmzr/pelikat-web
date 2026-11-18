@@ -22,13 +22,13 @@ test.describe('organizer mobile console (FR-69)', () => {
     // Strict-mode guard: under full-parallel load duplicated DOM subtrees
     // can resolve multi-match locators (same flake hardened in commit
     // 781eab9), so select the first match explicitly.
-    await expect(page.getByText('Race Console').first()).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Critical Ops Status' }).first()).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Category Breakdown' }).first()).toBeVisible()
+    await expect(page.getByText('Race console').first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Race-day status' }).first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Categories', exact: true }).first()).toBeVisible()
 
     // Bottom-nav tabs render (the console IS a tab in the mobile shell)
     const nav = page.locator('nav')
-    for (const tab of ['Home', 'Events', 'BIB Pass', 'Console', 'Merch']) {
+    for (const tab of ['Home', 'Events', 'Scan', 'Console', 'Merch']) {
       await expect(nav.getByRole('link', { name: tab })).toBeVisible()
     }
   })
@@ -40,13 +40,13 @@ test.describe('organizer mobile console (FR-69)', () => {
     // Strict-mode guard: under full-parallel load the headings can be
     // duplicated in the DOM (same flake hardened in auth.spec.ts with
     // .first()), so select the first heading match explicitly.
-    await expect(page.getByRole('heading', { name: 'Upcoming & Active' }).first()).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Past Events' }).first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Upcoming & active' }).first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Past events' }).first()).toBeVisible()
 
     // Scan entry point out of the events list
     await expect(page.getByRole('link', { name: /Check-in/ }).first()).toBeVisible()
 
     await goto(page, '/organizer/mobile/merch')
-    await expect(page.getByText('Merch Hub').first()).toBeVisible()
+    await expect(page.getByText('Merch', { exact: true }).first()).toBeVisible()
   })
 })

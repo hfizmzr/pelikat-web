@@ -1,3 +1,4 @@
+import { StatusTag, statusLabel } from '@/components/ui/status-tag'
 import { ArrowLeft, CircleCheck, CreditCard, Footprints, Images, MapPin, QrCode, ShoppingBag, Trophy } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import { isConfirmedStatus } from '@/lib/registration-status'
@@ -14,7 +15,7 @@ import { fetchOrganizerName } from '@/lib/supabase/safe-name'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Event Details - Pelikat',
+  title: 'Event details - Pelikat',
   description: 'View event details and register for races',
 }
 
@@ -66,7 +67,7 @@ export default async function RunnerEventDetailPage({
   const organizerName =
     (event.organizers?.name as string | undefined) ||
     (await fetchOrganizerName(event.organizer_id)) ||
-    'Unknown Organizer'
+    'Unknown organizer'
 
   const { data: registration } = await supabase
     .from('registrations')
@@ -101,53 +102,39 @@ export default async function RunnerEventDetailPage({
     <EventThemeScope event={event} showAssets>
       <div className="flex flex-col w-full min-h-full bg-background">
         {/* Sticky Header */}
-        <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
+        <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border">
           <div className="flex items-center h-14 px-4 pt-safe">
             <Link href="/runner/events" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
               <ArrowLeft className="size-[24px]" />
             </Link>
-            <h1 className="flex-1 text-[16px] font-bold text-foreground text-center mr-8 truncate">
+            <h1 className="flex-1 text-[16px] font-medium text-foreground text-center mr-8 truncate">
               {event.name}
             </h1>
           </div>
         </header>
 
-        {/* Hero Banner Placeholder */}
-        <div className="w-full h-48 bg-muted relative">
-          <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-90" />
-          <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2 py-1 w-max rounded text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-                  {event.status}
-                </span>
-                {isVirtual && (
-                  <span className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success border border-success/20">
-                    Virtual Run
-                  </span>
-                )}
-              </div>
-              <h2 className="text-[24px] font-bold text-foreground leading-tight drop-shadow-md">
-                {event.name}
-              </h2>
-            </div>
+        <div className="flex flex-col gap-3 px-5 pt-6">
+          <div className="flex items-center gap-2">
+            <StatusTag status={event.status}>{statusLabel(event.status)}</StatusTag>
+            {isVirtual && <StatusTag tone="primary">Virtual run</StatusTag>}
           </div>
+          <h2 className="text-[26px] leading-8 font-medium text-foreground">
+            {event.name}
+          </h2>
         </div>
 
         <div className="flex flex-col px-5 py-6 gap-6">
         
           {/* Date & Location */}
           <section className="flex flex-col gap-4">
-            <div className="flex items-center gap-4 bg-card p-4 rounded-2xl border border-border/60">
-              <div className="w-12 h-12 bg-accent/50 rounded-xl flex flex-col items-center justify-center">
-                <span className="text-[10px] font-bold text-red-500 dark:text-red-300 uppercase">{eventDate.toLocaleDateString('en-MY', { month: 'short' })}</span>
-                <span className="text-[16px] font-extrabold text-foreground leading-none">{eventDate.getDate()}</span>
+            <div className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4">
+              <div className="flex w-12 shrink-0 flex-col items-center rounded-lg border border-border/60 py-1.5">
+                <span className="text-[11px] text-muted-foreground">{eventDate.toLocaleDateString('en-MY', { month: 'short' })}</span>
+                <span className="text-[18px] leading-6 font-medium tabular-nums text-foreground">{eventDate.getDate()}</span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-[14px] font-bold text-foreground">
-                  {eventDate.toLocaleDateString('en-MY', { weekday: 'long', year: 'numeric' })}
-                </span>
-              </div>
+              <span className="text-[15px] text-foreground">
+                {eventDate.toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </span>
             </div>
 
             <RaceDayScheduleCard
@@ -157,13 +144,13 @@ export default async function RunnerEventDetailPage({
             />
           
             {event.location && (
-              <div className="flex items-center gap-4 bg-card p-4 rounded-2xl border border-border/60">
-                <div className="w-12 h-12 bg-accent/50 rounded-xl flex items-center justify-center">
-                  <MapPin className="size-[20px] text-primary" />
+              <div className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-border/60">
+                  <MapPin className="size-5 text-muted-foreground" strokeWidth={1.75} />
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[14px] font-bold text-foreground">Event Location</span>
-                  <span className="text-[12px] text-muted-foreground">{event.location}</span>
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-[13px] text-muted-foreground">Location</span>
+                  <span className="text-[15px] text-foreground">{event.location}</span>
                 </div>
               </div>
             )}
@@ -171,48 +158,47 @@ export default async function RunnerEventDetailPage({
 
           {/* About */}
           <section className="flex flex-col gap-2">
-            <h3 className="text-[16px] font-bold text-foreground">About the Race</h3>
+            <h3 className="text-[16px] font-medium text-foreground">About the race</h3>
             <p className="text-[13px] text-muted-foreground leading-relaxed">
               {event.description || 'No description available for this event.'}
             </p>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-[12px] text-muted-foreground">Organized by:</span>
-              <span className="text-[12px] font-bold text-foreground">{organizerName}</span>
+              <span className="text-[12px] text-muted-foreground">Organized by</span>
+              <span className="text-[12px] font-medium text-foreground">{organizerName}</span>
             </div>
           </section>
 
           {/* Registration Section */}
           <section className="mt-4 pt-6 border-t border-border/60 flex flex-col gap-4">
-            <h3 className="text-[16px] font-bold text-foreground">My Registration</h3>
+            <h3 className="text-[16px] font-medium text-foreground">My registration</h3>
           
             {isRegistered ? (
               <div className="flex flex-col gap-4">
                 <div className="p-5 rounded-2xl bg-success/10 border border-success/20 flex flex-col gap-4 relative overflow-hidden">
-                  <div className="absolute right-0 top-0 w-32 h-32 bg-success/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
                   <div className="flex items-center gap-3">
                     <CircleCheck className="size-[24px] text-success" />
                     <div className="flex flex-col">
-                      <span className="text-[14px] font-bold text-success">You&apos;re Registered!</span>
-                      <span className="text-[11px] text-success/80">See you at the start line.</span>
+                      <span className="text-[14px] font-medium text-success">You&apos;re registered</span>
+                      <span className="text-[12px] text-muted-foreground">See you at the start line</span>
                     </div>
                   </div>
                 
                   <div className="grid grid-cols-2 gap-4 mt-2">
                     {!isVirtual && (
                       <div className="flex flex-col">
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">{labels.bib_label}</span>
-                        <span className="text-[16px] font-mono font-bold text-foreground">{registration.bib_number || 'TBA'}</span>
+                        <span className="text-[11px] text-muted-foreground font-medium mb-1">{labels.bib_label}</span>
+                        <span className="text-[16px] font-mono font-medium text-foreground">{registration.bib_number || 'TBA'}</span>
                       </div>
                     )}
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Category</span>
-                      <span className="text-[14px] font-bold text-foreground truncate">{registration.race_categories?.name}</span>
+                      <span className="text-[11px] text-muted-foreground font-medium mb-1">Category</span>
+                      <span className="text-[14px] font-medium text-foreground truncate">{registration.race_categories?.name}</span>
                     </div>
                     {isVirtual && targetKm > 0 && (
                       <div className="flex flex-col col-span-2 pt-3 border-t border-success/20">
                         <div className="flex justify-between items-center mb-1.5">
-                          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Progress</span>
-                          <span className="text-[11px] font-bold text-success">
+                          <span className="text-[11px] text-muted-foreground font-medium">Progress</span>
+                          <span className="text-[11px] font-medium text-success">
                             {loggedKm.toFixed(1)} / {targetKm} km
                           </span>
                         </div>
@@ -225,9 +211,9 @@ export default async function RunnerEventDetailPage({
                       </div>
                     )}
                     <div className="flex justify-between items-center pt-3 border-t border-success/20 col-span-2">
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Payment Status</span>
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-muted text-foreground">
-                        {registration.payment_status?.toUpperCase()}
+                      <span className="text-[11px] text-muted-foreground font-medium">Payment status</span>
+                      <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-muted text-foreground">
+                        {statusLabel(registration.payment_status)}
                       </span>
                     </div>
                   </div>
@@ -237,7 +223,7 @@ export default async function RunnerEventDetailPage({
                   {!isVirtual && (
                     <Link
                       href={`/runner/events/${event.id}/bib`}
-                      className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                      className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                     >
                       <QrCode className="size-[18px]" />
                       View {labels.bib_label}
@@ -247,18 +233,18 @@ export default async function RunnerEventDetailPage({
                   {!isConfirmedStatus(registration.payment_status) && (
                     <Link
                       href={`/runner/events/${event.id}/payment`}
-                      className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                      className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                     >
                       <CreditCard className="size-[18px]" />
-                      Complete Payment
+                      Complete payment
                     </Link>
                   )}
                   <Link
                     href={`/runner/events/${event.id}/merch`}
-                    className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                    className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                   >
                     <ShoppingBag className="size-[18px]" />
-                    Event Merch
+                    Event merch
                   </Link>
 
                   {isVirtual && targetKm > 0 && loggedKm >= targetKm && (
@@ -268,7 +254,7 @@ export default async function RunnerEventDetailPage({
                   {isVirtual && (
                     <Link
                       href={`/runner/run-log?event=${event.id}`}
-                      className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                      className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                     >
                       <Footprints className="size-[18px]" />
                       {labels.run_label}
@@ -278,19 +264,19 @@ export default async function RunnerEventDetailPage({
                   {!isVirtual && (
                     <Link
                       href={`/runner/events/${event.id}/gallery`}
-                      className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                      className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                     >
                       <Images className="size-[18px]" />
-                      Event Photos
+                      Event photos
                     </Link>
                   )}
 
                   <Link
                     href={`/runner/leaderboard?event_id=${event.id}`}
-                    className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                    className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                   >
                     <Trophy className="size-[18px]" />
-                    Event Leaderboard
+                    Event leaderboard
                   </Link>
 
                   {!registration.checked_in && (

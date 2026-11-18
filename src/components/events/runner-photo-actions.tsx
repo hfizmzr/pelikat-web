@@ -27,14 +27,14 @@ function ReviewSubmitButton({ onCancel }: { onCancel: () => void }) {
         type="button"
         onClick={onCancel}
         disabled={pending}
-        className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold active:scale-95 transition-transform"
+        className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-medium active:scale-[0.98] transition-transform"
       >
         Cancel
       </button>
       <button 
         type="submit" 
         disabled={pending}
-        className="flex-1 py-3 rounded-xl bg-red-500 dark:bg-red-300 text-red-900 text-[13px] font-bold active:scale-95 transition-transform flex justify-center items-center gap-2"
+        className="flex-1 py-3 rounded-xl bg-destructive text-white dark:text-background text-[13px] font-medium active:scale-[0.98] transition-transform flex justify-center items-center gap-2"
       >
         {pending ? (
           <>
@@ -44,7 +44,7 @@ function ReviewSubmitButton({ onCancel }: { onCancel: () => void }) {
         ) : (
           <>
             <Flag className="size-[16px]" />
-            Send to Review
+            Send to review
           </>
         )}
       </button>
@@ -145,7 +145,7 @@ export function RunnerPhotoActions({
           disabled={!imageUrl || isDownloading}
           onClick={handleDownload}
           title="Download photo"
-          className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform disabled:opacity-50"
+          className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           {isDownloading ? (
             <LoaderCircle className="size-[16px] animate-spin" />
@@ -158,14 +158,14 @@ export function RunnerPhotoActions({
           disabled={!imageUrl || isSharing}
           onClick={handleShare}
           title="Share photo"
-          className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform disabled:opacity-50"
+          className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           {isSharing ? (
             <LoaderCircle className="size-[16px] animate-spin" />
           ) : feedback === 'success' ? (
             <Check className="size-[16px] text-success" />
           ) : feedback === 'error' ? (
-            <X className="size-[16px] text-red-500 dark:text-red-300" />
+            <X className="size-[16px] text-destructive" />
           ) : (
             <Share2 className="size-[16px]" />
           )}
@@ -175,7 +175,7 @@ export function RunnerPhotoActions({
             type="button"
             onClick={() => setShowReviewModal(true)}
             title="Not me? Send back to organizer review"
-            className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-red-500 dark:text-red-300 active:scale-95 transition-transform"
+            className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-destructive active:scale-[0.98] transition-transform"
           >
             <Flag className="size-[16px]" />
           </button>
@@ -186,7 +186,7 @@ export function RunnerPhotoActions({
       {showReviewModal && eventId && photoTagId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col">
-            <h3 className="text-[18px] font-bold text-foreground mb-2">Send this photo back to review?</h3>
+            <h3 className="text-[18px] font-medium text-foreground mb-2">Send this photo back to review?</h3>
             <p className="text-[13px] text-muted-foreground mb-4">
               Use this if the photo is not you or the BIB was mislabeled. It will disappear from your gallery and return to the organizer review queue.
             </p>
@@ -196,7 +196,7 @@ export function RunnerPhotoActions({
               <input type="hidden" name="photoTagId" value={photoTagId} />
               
               {reviewState.status === 'error' && reviewState.message && (
-                <div className="p-3 mb-2 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+                <div className="p-3 mb-2 rounded-lg bg-destructive/10 border border-destructive/30 dark:border-destructive/20 text-destructive text-[12px] flex items-center gap-2">
                   <CircleAlert className="size-[16px]" />
                   {reviewState.message}
                 </div>

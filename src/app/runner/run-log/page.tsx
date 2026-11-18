@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, CircleAlert, Clock, Download, Footprints, History, LoaderCircle, Map, Plus, Satellite, Trash2, Trophy } from "lucide-react"
+import { ArrowLeft, CircleAlert, Download, Footprints, History, LoaderCircle, Plus, Satellite, Trash2, Trophy } from "lucide-react"
 
 import { useAuth } from '@/hooks/use-auth'
 import { createClient } from '@/lib/supabase/client'
@@ -210,14 +210,14 @@ export default function RunnerRunLogPage() {
 
   return (
     <div className="flex flex-col w-full min-h-full bg-background">
-      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href="/runner" className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
             <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
-            <h1 className="text-[16px] font-bold text-foreground leading-tight">
-              Run Log
+            <h1 className="text-[16px] font-medium text-foreground leading-tight">
+              Run log
             </h1>
           </div>
         </div>
@@ -225,32 +225,26 @@ export default function RunnerRunLogPage() {
 
       <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto pb-24">
         
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
-            <Map className="size-[20px] text-primary mb-1" />
-            <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider">Total Distance</span>
-            <span className="text-[20px] font-extrabold text-foreground font-mono leading-none">{totalDistance.toFixed(1)} <span className="text-[14px]">KM</span></span>
-          </div>
-          <div className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-1 active:scale-[0.98] transition-transform">
-            <Clock className="size-[20px] text-primary mb-1" />
-            <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider">Total Time</span>
-            <span className="text-[16px] font-bold text-foreground mt-1 leading-none">{formatTime(totalTime)}</span>
-          </div>
-          <div className="bg-card rounded-2xl border border-border/60 p-4 flex flex-col gap-1 col-span-2 active:scale-[0.98] transition-transform">
-            <div className="flex justify-between items-center">
-              <Footprints className="size-[20px] text-success" />
-              <span className="text-[20px] font-extrabold text-foreground font-mono leading-none">{runLogs.length}</span>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Distance', value: totalDistance.toFixed(1), unit: 'km' },
+            { label: 'Time', value: formatTime(totalTime), unit: '' },
+            { label: 'Runs', value: runLogs.length.toLocaleString(), unit: '' },
+          ].map((s) => (
+            <div key={s.label} className="rounded-xl border border-border/60 bg-card p-3.5">
+              <p className="text-[12px] text-muted-foreground">{s.label}</p>
+              <p className="mt-1.5 truncate text-[17px] leading-6 font-medium tabular-nums text-foreground">
+                {s.value}{s.unit && <span className="ml-0.5 text-[13px] font-normal text-muted-foreground">{s.unit}</span>}
+              </p>
             </div>
-            <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wider mt-2">Total Runs Logged</span>
-          </div>
+          ))}
         </div>
 
         {gpsRoutePoints.length >= 2 && (
           <section className="bg-card rounded-2xl border border-border/60 overflow-hidden flex flex-col">
             <div className="p-4 border-b border-border/60 flex items-center justify-between">
-              <h2 className="text-[14px] font-bold text-foreground">Your Last Route</h2>
-              <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded uppercase tracking-wider">{gpsRoutePoints.length} Points</span>
+              <h2 className="text-[14px] font-medium text-foreground">Your last route</h2>
+              <span className="font-mono text-[12px] tabular-nums text-muted-foreground">{gpsRoutePoints.length} points</span>
             </div>
             <div className="p-2 aspect-video bg-background">
               <RouteMap points={gpsRoutePoints} />
@@ -261,9 +255,9 @@ export default function RunnerRunLogPage() {
         {/* Log a Run */}
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden flex flex-col">
           <div className="p-4 border-b border-border/60">
-            <h2 className="text-[14px] font-bold text-foreground">Log a Run</h2>
+            <h2 className="text-[14px] font-medium text-foreground">Log a run</h2>
             {linkedEventId ? (
-              <p className="text-[12px] text-success">This run counts toward your linked event progress</p>
+              <p className="text-[12px] text-muted-foreground">This run counts toward your linked event progress</p>
             ) : (
               <p className="text-[12px] text-muted-foreground">Add your virtual run activity</p>
             )}
@@ -272,19 +266,19 @@ export default function RunnerRunLogPage() {
           <div className="p-5 flex flex-col gap-4">
             <Link
               href={linkedEventId ? `/runner/run-log/track?event=${linkedEventId}` : "/runner/run-log/track"}
-              className="w-full py-3.5 rounded-xl border border-success/40 bg-success/5 text-success text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+              className="w-full min-h-11 rounded-[10px] border border-border/60 text-foreground text-[14px] font-medium flex items-center justify-center gap-2 transition-[background-color,transform] hover:bg-accent active:scale-[0.98]"
             >
-              <Satellite className="size-[18px]" />
-              Start GPS Tracking
+              <Satellite className="size-4 text-muted-foreground" strokeWidth={1.75} />
+              Start GPS tracking
             </Link>
 
             <div className="w-full h-px bg-accent/40 my-1 relative flex items-center justify-center">
-              <span className="bg-card px-2 text-muted-foreground text-[10px] font-bold uppercase tracking-widest absolute">or manual</span>
+              <span className="bg-card px-2 text-muted-foreground text-[11px] font-medium absolute">or manual</span>
             </div>
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-bold text-muted-foreground ml-1 uppercase tracking-wider">Distance (KM)</label>
+                <label className="text-[11px] font-medium text-muted-foreground ml-1">Distance (km)</label>
                 <input
                   type="number"
                   step="0.001"
@@ -297,7 +291,7 @@ export default function RunnerRunLogPage() {
 
               <div className="grid grid-cols-3 gap-2">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-bold text-muted-foreground ml-1 uppercase tracking-wider">Hrs</label>
+                  <label className="text-[11px] font-medium text-muted-foreground ml-1">Hrs</label>
                   <input
                     type="number"
                     min="0"
@@ -307,7 +301,7 @@ export default function RunnerRunLogPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-bold text-muted-foreground ml-1 uppercase tracking-wider">Min</label>
+                  <label className="text-[11px] font-medium text-muted-foreground ml-1">Min</label>
                   <input
                     type="number"
                     min="0"
@@ -318,7 +312,7 @@ export default function RunnerRunLogPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-bold text-muted-foreground ml-1 uppercase tracking-wider">Sec</label>
+                  <label className="text-[11px] font-medium text-muted-foreground ml-1">Sec</label>
                   <input
                     type="number"
                     min="0"
@@ -332,7 +326,7 @@ export default function RunnerRunLogPage() {
             </div>
 
             {logError && (
-              <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 dark:border-destructive/20 text-destructive text-[12px] flex items-center gap-2">
                 <CircleAlert className="size-[16px]" />
                 {logError}
               </div>
@@ -341,7 +335,7 @@ export default function RunnerRunLogPage() {
             <button
               onClick={handleAddRun}
               disabled={submitting}
-              className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+              className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
             >
               {submitting ? (
                 <>
@@ -351,7 +345,7 @@ export default function RunnerRunLogPage() {
               ) : (
                 <>
                   <Plus className="size-[18px]" />
-                  Log Run
+                  Log run
                 </>
               )}
             </button>
@@ -360,25 +354,24 @@ export default function RunnerRunLogPage() {
 
         {newBadges.length > 0 && (
           <section className="bg-success/10 border border-success/30 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-success/20 blur-2xl rounded-full -mt-10 -mr-10 pointer-events-none" />
             <div className="flex items-center gap-2 text-success">
               <Trophy className="size-[24px]" />
-              <h2 className="text-[16px] font-bold">Badges Earned!</h2>
+              <h2 className="text-[16px] font-medium">Badges earned</h2>
             </div>
             <div className="grid grid-cols-2 gap-3 relative z-10">
               {newBadges.map((badge) => (
                 <div key={badge.badge_key} className="bg-background/80 p-3 rounded-xl border border-success/20 flex flex-col items-center text-center">
                   <span className="text-[24px] mb-2">{badge.icon}</span>
-                  <p className="text-[12px] font-bold text-foreground leading-tight">{badge.name}</p>
+                  <p className="text-[12px] font-medium text-foreground leading-tight">{badge.name}</p>
                   {badge.cert_url && (
                     <a
                       href={badge.cert_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-2 w-full py-1.5 rounded-md bg-success text-emerald-900 text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform"
+                      className="mt-2 w-full py-1.5 rounded-md bg-primary text-primary-foreground text-[11px] font-medium flex items-center justify-center gap-1 active:scale-[0.98] transition-transform"
                     >
                       <Download className="size-[12px]" />
-                      Download Certificate
+                      Download certificate
                     </a>
                   )}
                 </div>
@@ -386,7 +379,7 @@ export default function RunnerRunLogPage() {
             </div>
             <button 
               onClick={() => setNewBadges([])}
-              className="w-full py-2.5 rounded-lg bg-success/20 text-success text-[12px] font-bold active:scale-95 transition-transform"
+              className="w-full py-2.5 rounded-lg bg-success/20 text-success text-[12px] font-medium active:scale-[0.98] transition-transform"
             >
               Dismiss
             </button>
@@ -394,14 +387,14 @@ export default function RunnerRunLogPage() {
         )}
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-[16px] font-bold text-foreground ml-1">Run History</h2>
+          <h2 className="text-[16px] font-medium text-foreground ml-1">Run history</h2>
           
           {runLogs.length > 0 ? (
             <div className="flex flex-col gap-3">
               {runLogs.map((log) => (
-                <div key={log.id} className="bg-card rounded-2xl border border-border/60 p-4 flex items-center justify-between">
+                <div key={log.id} className="bg-card rounded-xl border border-border/60 p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 text-primary">
+                    <div className="size-10 rounded-lg flex items-center justify-center border border-border/60 text-muted-foreground">
                       {log.gps_data ? (
                         <Satellite className="size-[20px]" />
                       ) : (
@@ -409,7 +402,7 @@ export default function RunnerRunLogPage() {
                       )}
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[15px] font-bold text-foreground">{log.distance_km} KM</span>
+                      <span className="text-[15px] font-medium text-foreground">{log.distance_km} km</span>
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         <span>{formatTime(log.duration_sec)}</span>
                         <span>•</span>
@@ -419,12 +412,12 @@ export default function RunnerRunLogPage() {
                   </div>
                   
                   <div className="flex flex-col items-end gap-2">
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[11px] text-muted-foreground">
                       {new Date(log.logged_at).toLocaleDateString('en-MY', { month: 'short', day: 'numeric' })}
                     </span>
                     <button 
                       onClick={() => handleDelete(log.id)}
-                      className="w-8 h-8 rounded-full bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 flex items-center justify-center active:scale-95 transition-transform"
+                      className="w-8 h-8 rounded-full bg-destructive/10 text-destructive flex items-center justify-center active:scale-[0.98] transition-transform"
                     >
                       <Trash2 className="size-[16px]" />
                     </button>

@@ -134,14 +134,14 @@ export default function BibConsentPage({
   return (
     <div className="flex flex-col w-full min-h-full bg-background">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href={`/runner/events/${id}/bib`} className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
             <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
-            <h1 className="text-[16px] font-bold text-foreground leading-tight">
-              Proxy Collection
+            <h1 className="text-[16px] font-medium text-foreground leading-tight">
+              Proxy collection
             </h1>
           </div>
         </div>
@@ -149,14 +149,14 @@ export default function BibConsentPage({
 
       <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto">
         <div className="flex flex-col text-center">
-          <h2 className="text-[20px] font-bold text-foreground mb-1">Generate Code</h2>
+          <h2 className="text-[20px] font-medium text-foreground mb-1">Generate code</h2>
           <p className="text-[13px] text-muted-foreground leading-relaxed">
             Share this code with the person collecting your race pack on your behalf. Valid for 24 hours.
           </p>
         </div>
 
         {error && (
-          <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 dark:border-destructive/20 text-destructive text-[12px] flex items-center gap-2">
             <CircleAlert className="size-[16px]" />
             {error}
           </div>
@@ -173,16 +173,13 @@ export default function BibConsentPage({
                     : 'bg-muted border-border/60'
                 }`}
               >
-                {canUseCurrentCode && (
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-success/10 blur-2xl rounded-full -mt-4 -mr-4 pointer-events-none" />
-                )}
                 
-                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase mb-4 ${
+                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium mb-4 ${
                   canUseCurrentCode 
                     ? 'bg-success/10 text-success border border-success/20'
                     : consentStatus === 'used'
                       ? 'bg-primary/10 text-primary border border-primary/20'
-                      : 'bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 border border-red-500/30 dark:border-red-300/20'
+                      : 'bg-destructive/10 text-destructive border border-destructive/30 dark:border-destructive/20'
                 }`}>
                   {canUseCurrentCode ? (
                     <CircleCheck className="size-[14px]" />
@@ -194,8 +191,8 @@ export default function BibConsentPage({
                   {consentStatus === 'active' ? 'Active' : consentStatus === 'used' ? 'Used' : 'Expired'}
                 </div>
                 
-                <p className="text-[12px] text-muted-foreground tracking-widest uppercase mb-1">Your Consent Code</p>
-                <p className={`text-[42px] font-mono font-bold tracking-widest leading-none mb-3 ${canUseCurrentCode ? 'text-foreground' : 'text-muted-foreground'}`}>
+                <p className="text-[12px] text-muted-foreground mb-1">Your consent code</p>
+                <p className={`text-[42px] font-mono font-medium leading-none mb-3 ${canUseCurrentCode ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {consentCode.code}
                 </p>
                 
@@ -214,7 +211,7 @@ export default function BibConsentPage({
                   <button 
                     onClick={handleCopy} 
                     disabled={!canUseCurrentCode}
-                    className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                    className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
                   >
                     {copied ? (
                       <Check className="size-[18px]" />
@@ -226,7 +223,7 @@ export default function BibConsentPage({
                   <button 
                     onClick={handleShare} 
                     disabled={!canUseCurrentCode}
-                    className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                    className="flex-1 py-3 rounded-xl bg-accent text-foreground text-[13px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
                   >
                     <Share2 className="size-[18px]" />
                     Share
@@ -235,7 +232,7 @@ export default function BibConsentPage({
                 <button 
                   onClick={handleGenerate} 
                   disabled={generating}
-                  className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                  className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
                 >
                   {generating ? (
                     <>
@@ -243,7 +240,7 @@ export default function BibConsentPage({
                       Generating...
                     </>
                   ) : (
-                    'Generate New Code'
+                    'Generate new code'
                   )}
                 </button>
               </div>
@@ -277,7 +274,7 @@ export default function BibConsentPage({
               <button 
                 onClick={handleGenerate} 
                 disabled={generating}
-                className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 {generating ? (
                   <>
@@ -285,7 +282,7 @@ export default function BibConsentPage({
                     Generating...
                   </>
                 ) : (
-                  'Generate Code'
+                  'Generate code'
                 )}
               </button>
             </div>

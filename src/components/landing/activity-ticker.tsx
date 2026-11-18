@@ -1,62 +1,39 @@
 import type { LucideIcon } from "lucide-react"
-import { BadgeCheck, Camera, CircleCheck, Gift, Package, Route, ShoppingBag, TriangleAlert, UserCheck } from "lucide-react"
+import { BadgeCheck, Package, TriangleAlert, UserCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
 import styles from "./landing.module.css"
 
-type Tone = "accent" | "ok" | "warn"
-type Item = { icon: LucideIcon; tone: Tone; text: string; detail: string }
+type Item = { time: string; icon: LucideIcon; warn?: boolean; text: string; detail: string }
 
-// Illustrative race-morning activity for the demo event.
-const ROW_A: Item[] = [
-  { icon: Package, tone: "accent", text: "21K-0457 kit collected", detail: "Counter 3" },
-  { icon: CircleCheck, tone: "ok", text: "RM60.00 received", detail: "FPX · 10K" },
-  { icon: Camera, tone: "accent", text: "Bib 79 · 3 photos matched", detail: "km 14" },
-  { icon: TriangleAlert, tone: "warn", text: "Duplicate flagged", detail: "5K-0342" },
-  { icon: BadgeCheck, tone: "accent", text: "Certificate issued", detail: "Half Marathon Finisher" },
-  { icon: CircleCheck, tone: "ok", text: "RM90.00 received", detail: "DuitNow QR · 21K" },
+// Illustrative race-morning activity for the demo event, in time order.
+const LOG: Item[] = [
+  { time: "06:58", icon: UserCheck, text: "Checked in", detail: "21K-0611 at the start pen" },
+  { time: "07:15", icon: TriangleAlert, warn: true, text: "Duplicate flagged", detail: "5K-0342 at Counter 2" },
+  { time: "07:42", icon: Package, text: "Kit collected", detail: "21K-0457 at Counter 3" },
+  { time: "10:05", icon: BadgeCheck, text: "Certificate issued", detail: "Half Marathon Finisher" },
 ]
-const ROW_B: Item[] = [
-  { icon: Route, tone: "accent", text: "Virtual 10K logged", detail: "10.0 km by GPS" },
-  { icon: Gift, tone: "ok", text: "Complimentary entry added", detail: "Pacer team" },
-  { icon: ShoppingBag, tone: "accent", text: "Merch order", detail: "Finisher tee · M" },
-  { icon: UserCheck, tone: "ok", text: "Checked in", detail: "21K-0611" },
-  { icon: Package, tone: "accent", text: "10K-1188 kit collected", detail: "Counter 1" },
-  { icon: CircleCheck, tone: "ok", text: "RM45.00 received", detail: "Card · 5K" },
-]
-
-const toneStyle: Record<Tone, React.CSSProperties> = {
-  accent: { background: "var(--accent-soft)", color: "var(--accent)" },
-  ok: { background: "color-mix(in oklch, var(--ok) 16%, transparent)", color: "var(--ok)" },
-  warn: { background: "color-mix(in oklch, var(--warn) 18%, transparent)", color: "var(--warn)" },
-}
-
-function Row({ items, reverse }: { items: Item[]; reverse?: boolean }) {
-  // Rendered twice so the -50% translate loops without a seam.
-  const loop = [...items, ...items]
-  return (
-    <div className={styles.ticker}>
-      <ul className={cn(styles.tickerTrack, reverse && styles.tickerReverse)}>
-        {loop.map(({ icon: Icon, tone, text, detail }, i) => (
-          <li key={i} className={styles.tickerItem} aria-hidden={i >= items.length}>
-            <span className={styles.tickerIcon} style={toneStyle[tone]}>
-              <Icon className="size-3.5" />
-            </span>
-            <span className="font-medium">{text}</span>
-            <span className="text-[var(--muted)]">{detail}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
 
 export function ActivityTicker() {
   return (
-    <section aria-label="Example race-morning activity" className="py-6 sm:py-10">
-      <p className="mb-5 text-center text-[13px] text-[var(--muted)]">What race morning looks like on Pelikat</p>
-      <div className="grid gap-3">
-        <Row items={ROW_A} />
-        <Row items={ROW_B} reverse />
+    <section aria-labelledby="race-morning-title" className="py-8 sm:py-12">
+      <div className={styles.container}>
+        <h2 id="race-morning-title" className="text-[14px] text-[var(--muted)]">
+          Race day on Pelikat, as it happens
+        </h2>
+        <ol className={cn(styles.card, "mt-4 grid gap-px overflow-hidden bg-[var(--line)] sm:grid-cols-2 lg:grid-cols-4")}>
+          {LOG.map(({ time, icon: Icon, warn, text, detail }) => (
+            <li key={time} className="flex gap-3 bg-[var(--surface)] p-4">
+              <span className={cn(styles.bibNo, "pt-px text-[12px] text-[var(--muted)]")}>{time}</span>
+              <div className="min-w-0 text-[14px]">
+                <p className="flex items-center gap-2 font-medium">
+                  <Icon className={cn("size-4 shrink-0", warn ? "text-[var(--warn)]" : "text-[var(--muted)]")} strokeWidth={1.75} aria-hidden="true" />
+                  {text}
+                </p>
+                <p className="mt-0.5 truncate text-[13px] text-[var(--muted)]">{detail}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   )

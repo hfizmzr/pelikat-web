@@ -33,17 +33,17 @@ const MERDEKA_ID = 'd0e5e000-0000-4000-8000-000000000022'
 test('runner sees the public event page', async ({ page }) => {
   await goto(page, `/events/${JB_ULTRA_SLUG}`)
   await expect(page.getByRole('heading', { name: 'JB Ultra Marathon 2027' })).toBeVisible()
-  await expect(page.getByText('About the Race')).toBeVisible()
+  await expect(page.getByText('About the race')).toBeVisible()
   // published + inside the reg window → registration CTA
-  await expect(page.getByRole('link', { name: 'Register for this Event' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Register for this event' })).toBeVisible()
 })
 
 test.describe('runner1 authenticated journey', () => {
   test('registered event shows registration + leaderboard entry points', async ({ page }) => {
     await login(page, 'runner1@pelikat.test')
     await goto(page, `/runner/events/${VIRTUAL_60K_ID}`)
-    await expect(page.getByRole('heading', { name: 'My Registration' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Event Leaderboard' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'My registration' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Event leaderboard' })).toBeVisible()
   })
 
   test('leaderboard shows virtual rankings with the runner listed', async ({ page }) => {
@@ -51,7 +51,7 @@ test.describe('runner1 authenticated journey', () => {
     await goto(page, `/runner/leaderboard?event_id=${MERDEKA_ID}`)
     await expect(page.getByRole('heading', { name: 'Leaderboard' })).toBeVisible()
     // runner1 is Adam Faizal bin Harun (seed) — ranked #1 on this event
-    await expect(page.getByText('Global Rankings')).toBeVisible()
+    await expect(page.getByText('Global rankings')).toBeVisible()
     await expect(page.getByText('Adam Faizal bin Harun')).toBeVisible()
   })
 })

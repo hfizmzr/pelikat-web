@@ -142,7 +142,7 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
         </div>
       )}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl shadow-2xl">
+        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl">
         <DialogHeader>
           <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
             {isEdit ? (
@@ -150,7 +150,7 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
             ) : (
               <Store className="size-[20px] text-primary" />
             )}
-            {isEdit ? 'Edit Organizer' : 'Add New Organizer'}
+            {isEdit ? 'Edit organizer' : 'Add new organizer'}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground font-inter text-[13px]">
             {isEdit
@@ -160,7 +160,7 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-1">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor={isEdit ? 'edit-name' : 'name'}>Organizer Name</label>
+            <label className="text-[12px] font-medium text-muted-foreground font-inter" htmlFor={isEdit ? 'edit-name' : 'name'}>Organizer name</label>
             <Input
               id={isEdit ? 'edit-name' : 'name'}
               placeholder="e.g., Jakarta Marathon"
@@ -168,36 +168,36 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
               onChange={(e) => setName(e.target.value)}
               onBlur={(e) => !isEdit && !slug && setSlug(generateSlug(e.target.value))}
               required
-              className="bg-background border-border/40 text-foreground placeholder:text-border focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
+              className="bg-background border-border/40 text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor={isEdit ? 'edit-slug' : 'slug'}>URL Slug</label>
+            <label className="text-[12px] font-medium text-muted-foreground font-inter" htmlFor={isEdit ? 'edit-slug' : 'slug'}>URL slug</label>
             <Input
               id={isEdit ? 'edit-slug' : 'slug'}
               placeholder="jakarta-marathon"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               required
-              className="bg-background border-border/40 text-foreground placeholder:text-border focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
+              className="bg-background border-border/40 text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
             />
             <p className="text-[11px] text-muted-foreground font-inter">Used as: pelikat.com/o/{slug}</p>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor={isEdit ? 'edit-contactEmail' : 'contactEmail'}>Contact Email</label>
+            <label className="text-[12px] font-medium text-muted-foreground font-inter" htmlFor={isEdit ? 'edit-contactEmail' : 'contactEmail'}>Contact email</label>
             <Input
               id={isEdit ? 'edit-contactEmail' : 'contactEmail'}
               type="email"
               placeholder="organizer@example.com"
               value={contactEmail}
               onChange={(e) => setContactEmail(e.target.value)}
-              className="bg-background border-border/40 text-foreground placeholder:text-border focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
+              className="bg-background border-border/40 text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary focus:border-primary rounded-lg text-[13px]"
             />
             <p className="text-[11px] text-muted-foreground font-inter">Used for login and notifications</p>
           </div>
           {isEdit && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor="edit-expires">Subscription Expires</label>
+              <label className="text-[12px] font-medium text-muted-foreground font-inter" htmlFor="edit-expires">Subscription expires</label>
               <Input
                 id="edit-expires"
                 type="date"
@@ -218,10 +218,10 @@ export function OrganizerFormDialog({ organizer, open, onOpenChange, onSuccess, 
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all font-inter disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:opacity-90 text-primary-foreground hover:text-white text-[13px] font-medium transition-[color,background-color,border-color,opacity] font-inter disabled:opacity-50"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isEdit ? 'Save Changes' : 'Create Organizer'}
+              {isEdit ? 'Save changes' : 'Create organizer'}
             </button>
           </div>
         </form>

@@ -32,8 +32,8 @@ test.describe('Organizer: merch hub', () => {
     await login(page, ORGANIZER)
     await goto(page, `/organizer/merch?event=${E1_ID}`)
 
-    await expect(page.getByRole('heading', { name: 'Merch Hub Manager' })).toBeVisible({ timeout: 15000 })
-    for (const stat of ['Products', 'Stock alerts', 'Orders to fulfil', 'Revenue']) {
+    await expect(page.getByRole('heading', { name: 'Merch', exact: true })).toBeVisible({ timeout: 15000 })
+    for (const stat of ['Products', 'Low stock', 'Orders to fulfil', 'Revenue']) {
       // "Products" also matches the tab trigger — take the stat card hit.
       await expect(page.getByText(stat, { exact: true }).first()).toBeVisible()
     }
@@ -60,10 +60,10 @@ test.describe('Organizer: REPC check-in', () => {
     await login(page, ORGANIZER)
     await goto(page, `/organizer/events/${E3_ID}/checkin`)
 
-    await expect(page.getByRole('heading', { name: 'Check-in Dashboard' })).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole('heading', { name: 'Check-in dashboard' })).toBeVisible({ timeout: 15000 })
     // Headless has no camera: the dashboard must still offer manual search.
-    await expect(page.getByText('Manual Search')).toBeVisible()
-    await expect(page.getByText('Proxy Collection')).toBeVisible()
+    await expect(page.getByText('Manual search')).toBeVisible()
+    await expect(page.getByText('Proxy collection')).toBeVisible()
 
     // runner1's PH21-001 is already checked in (seed §E3): a manual lookup is
     // idempotent — success result, no state change, no navigation.
@@ -78,11 +78,11 @@ test.describe('Organizer: photo management', () => {
     await login(page, ORGANIZER)
     await goto(page, `/organizer/events/${E1_ID}/photos`)
 
-    await expect(page.getByText('Upload Photos')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('Upload photos')).toBeVisible({ timeout: 15000 })
     await expect(
       page.getByText('Upload race photos. They are queued for AI tagging as soon as the upload finishes.')
     ).toBeVisible()
-    for (const tab of ['Review Queue', 'Gallery', 'Rejected']) {
+    for (const tab of ['Review queue', 'Gallery', 'Rejected']) {
       await expect(page.getByRole('tab', { name: tab })).toBeVisible()
     }
   })
@@ -93,7 +93,7 @@ test.describe('Runner: race photo gallery', () => {
     await login(page, RUNNER)
     await goto(page, `/runner/events/${E1_ID}/gallery`)
 
-    await expect(page.getByRole('heading', { name: 'My Photos' })).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole('heading', { name: 'My photos' })).toBeVisible({ timeout: 15000 })
     // Seeded photo for N10-001; count rendered server-side (do not assume
     // relative-date copy — seed dates drift ~8 days on the cloud stack).
     await expect(page.getByText(/\d+ photos/).first()).toBeVisible()
@@ -110,7 +110,7 @@ test.describe('Runner: race photo gallery', () => {
     await expect(report).toBeEnabled()
     await report.click()
     await expect(page.getByText('Send this photo back to review?')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Send to Review' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Send to review' })).toBeVisible()
     // Reload instead of closing via the modal's Cancel: the modal lives inside
     // an overflow-hidden, transform-animating photo card, so its buttons sit
     // under the page root for hit-testing. A reload proves the report was NOT
@@ -126,16 +126,16 @@ test.describe('Runner: digital BIB + proxy consent', () => {
     await login(page, RUNNER)
     await goto(page, `/runner/events/${E3_ID}/bib`)
 
-    await expect(page.getByText('Checked In').first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('Checked in').first()).toBeVisible({ timeout: 15000 })
     // The BIB number renders in two layouts (mobile card + desktop ticket).
     await expect(page.getByText('PH21-001').first()).toBeVisible()
 
     // Navigate to the consent page but DO NOT generate/consume a code.
-    await page.getByRole('link', { name: 'Generate Proxy Collection Code' }).click()
+    await page.getByRole('link', { name: 'Generate proxy collection code' }).click()
     await page.waitForURL((url) => url.pathname.endsWith('/bib/consent'), { timeout: 15000 })
-    await expect(page.getByRole('heading', { name: 'Proxy Collection' })).toBeVisible({ timeout: 15000 })
-    // Either state is valid: no code yet → "Generate Code"; active code → "Generate New Code".
-    await expect(page.getByRole('button', { name: /Generate (New )?Code/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Proxy collection' })).toBeVisible({ timeout: 15000 })
+    // Either state is valid: no code yet → "Generate code"; active code → "Generate new code".
+    await expect(page.getByRole('button', { name: /Generate (new )?code/ })).toBeVisible()
   })
 })
 
@@ -153,7 +153,7 @@ test.describe('Runner: dashboard → digital BIB navigation (FR-38)', () => {
     await page.getByRole('link', { name: 'All', exact: true }).click()
     await page.waitForURL((url) => url.searchParams.get('period') === 'all', { timeout: 15000 })
 
-    // E3 (physical, checked-in PH21-001) card under "Your Registered Events".
+    // E3 (physical, checked-in PH21-001) card under "Your registered events".
     await page.getByRole('link', { name: /Putrajaya Heritage Half Marathon/ }).first().click()
     await page.waitForURL((url) => url.pathname === `/runner/events/${E3_ID}`, { timeout: 15000 })
 
@@ -177,7 +177,7 @@ test.describe('Runner: race-day schedule card (FR-54)', () => {
     // render the same card, and route-transition overlap can briefly keep
     // both copies in the DOM (same strict-mode pattern as 66da594).
     await goto(page, `/runner/events/${E3_ID}`)
-    await expect(page.getByRole('heading', { name: 'Race-Day Schedule' }).first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole('heading', { name: 'Race-day schedule' }).first()).toBeVisible({ timeout: 15000 })
     await expect(page.getByText('5:30 AM').first()).toBeVisible()
     await expect(page.getByText('6:00 AM').first()).toBeVisible()
     await expect(page.getByText('10:30 AM').first()).toBeVisible()
@@ -186,12 +186,12 @@ test.describe('Runner: race-day schedule card (FR-54)', () => {
 
     // Same data source on the BIB pass (offline companion).
     await goto(page, `/runner/events/${E3_ID}/bib`)
-    await expect(page.getByRole('heading', { name: 'Race-Day Schedule' }).first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole('heading', { name: 'Race-day schedule' }).first()).toBeVisible({ timeout: 15000 })
     await expect(page.getByText('5:30 AM').first()).toBeVisible()
 
     // E9 (100K New Year Virtual): all three columns NULL → single TBA line.
     await goto(page, `/runner/events/${E9_ID}`)
-    await expect(page.getByRole('heading', { name: 'Race-Day Schedule' }).first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole('heading', { name: 'Race-day schedule' }).first()).toBeVisible({ timeout: 15000 })
     await expect(page.getByText('Schedule to be announced').first()).toBeVisible()
   })
 })
@@ -207,12 +207,12 @@ test.describe('Runner: storefront order journey (E9)', () => {
     await login(page, ORGANIZER)
     await goto(page, `/organizer/merch?event=${E9_ID}`)
     // Header + tab-panel both render an Add Product dialog trigger.
-    await page.getByRole('button', { name: 'Add Product' }).first().click()
-    await expect(page.getByRole('heading', { name: 'Create Product' })).toBeVisible({ timeout: 15000 })
+    await page.getByRole('button', { name: 'Add product' }).first().click()
+    await expect(page.getByRole('heading', { name: 'Create product' })).toBeVisible({ timeout: 15000 })
     await page.locator('#merch-name').fill(productName)
     await page.locator('#merch-price').fill('25')
     await page.getByRole('spinbutton', { name: 'Stock', exact: true }).fill('10')
-    await page.getByRole('button', { name: 'Create Product' }).click()
+    await page.getByRole('button', { name: 'Create product' }).click()
     await expect(page.getByText('Product created')).toBeVisible({ timeout: 15000 })
     await expect(page.getByText(productName).first()).toBeVisible({ timeout: 15000 })
 
@@ -306,7 +306,7 @@ test.describe('Offline BIB access (FR-39/NFR03)', () => {
     await context.setOffline(true)
     await page.reload()
     await expect(page.getByText('PH21-001').first()).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText('Checked In').first()).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Race-Day Schedule' })).toBeVisible()
+    await expect(page.getByText('Checked in').first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Race-day schedule' })).toBeVisible()
   })
 })

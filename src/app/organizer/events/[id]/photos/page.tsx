@@ -1,7 +1,8 @@
+import { statusLabel } from '@/components/ui/status-tag'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ImageIcon, CheckCircle, Clock, AlertCircle, ArrowLeft } from 'lucide-react'
+import { ImageIcon, CheckCircle, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -17,8 +18,8 @@ import type { Metadata } from 'next'
 import { PHOTO_BATCH_COLUMNS, RECENT_PHOTO_BATCH_LIMIT, type PhotoBatch } from '@/lib/photo-batches'
 
 export const metadata: Metadata = {
-  title: 'Photo Management - Pelikat',
-  description: 'AI-powered photo tagging for your event',
+  title: 'Photo management - Pelikat',
+  description: 'Upload race photos and match them to runners by bib number',
 }
 
 const REVIEW_PAGE_SIZE = 24
@@ -165,7 +166,7 @@ function getBibBadgeClass(photo: { status?: string | null; registration_id?: str
   }
 
   if (photo.status === 'auto' || photo.status === 'confirmed' || photo.registration_id) {
-    return 'border-green-500/60 bg-green-500/10 text-green-500'
+    return 'border-success/60 bg-success/10 text-success'
   }
 
   return ''
@@ -530,7 +531,7 @@ export default async function OrganizerEventPhotosPage({
     <div className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-medium uppercase text-muted-foreground">
+          <p className="text-xs font-medium text-muted-foreground">
             Detected BIBs
           </p>
           {photo.tags.some((tag) => tag.bib_number) ? (
@@ -541,14 +542,14 @@ export default async function OrganizerEventPhotosPage({
                   <Badge
                     key={tag.id}
                     variant="outline"
-                    className={`text-base font-semibold ${getBibBadgeClass(tag)}`}
+                    className={`text-base font-medium ${getBibBadgeClass(tag)}`}
                   >
                     {tag.bib_number}
                   </Badge>
                 ))}
             </div>
           ) : (
-            <p className="text-2xl font-semibold leading-none">Unknown</p>
+            <p className="text-2xl font-medium leading-none">Unknown</p>
           )}
         </div>
         <Badge variant="secondary">
@@ -565,7 +566,7 @@ export default async function OrganizerEventPhotosPage({
               <div className="flex items-center gap-2">
                 <Badge
                   variant="outline"
-                  className={`text-sm font-semibold ${getBibBadgeClass(tag)}`}
+                  className={`text-sm font-medium ${getBibBadgeClass(tag)}`}
                 >
                   {tag.bib_number || 'Unknown'}
                 </Badge>
@@ -585,7 +586,7 @@ export default async function OrganizerEventPhotosPage({
                   variant={tag.status === 'discarded' ? 'outline' : 'default'}
                   className={getBibBadgeClass(tag)}
                 >
-                  {tag.status}
+                  {statusLabel(tag.status)}
                 </Badge>
               )}
             </div>
@@ -619,58 +620,24 @@ export default async function OrganizerEventPhotosPage({
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">Photo Management</h1>
-          <p className="text-muted-foreground">AI-powered photo tagging for {event.name}</p>
+          <h1 className="text-3xl font-medium tracking-tight">Photo management</h1>
+          <p className="text-muted-foreground">Photos for {event.name}, matched to runners by bib number</p>
         </div>
-        <Badge variant="outline" className="hidden sm:flex">AI Processing Enabled</Badge>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Photos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              <ImageIcon className="h-5 w-5 text-muted-foreground" />
-              {stats.total}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Auto-Tagged</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              {stats.auto}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Need Review</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              <Clock className="h-5 w-5 text-yellow-500" />
-              {stats.review}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-blue-500" />
-              {stats.confirmed}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {[
+          { label: 'Photos', value: stats.total, warn: false },
+          { label: 'Auto-tagged', value: stats.auto, warn: false },
+          { label: 'Need review', value: stats.review, warn: stats.review > 0 },
+          { label: 'Confirmed', value: stats.confirmed, warn: false },
+        ].map(stat => (
+          <div key={stat.label} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-[13px] text-muted-foreground">{stat.label}</p>
+            <p className={`mt-2 text-[28px] leading-none font-medium tabular-nums ${stat.warn ? 'text-warning' : 'text-foreground'}`}>{stat.value.toLocaleString()}</p>
+          </div>
+        ))}
       </div>
 
       {photosError && (
@@ -687,7 +654,7 @@ export default async function OrganizerEventPhotosPage({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Upload Photos</CardTitle>
+              <CardTitle>Upload photos</CardTitle>
               <CardDescription>
                 Upload race photos. They are queued for AI tagging as soon as the upload finishes.
               </CardDescription>
@@ -701,7 +668,7 @@ export default async function OrganizerEventPhotosPage({
 
       <Card className="border-border">
         <CardHeader>
-          <CardTitle>Processing Batches</CardTitle>
+          <CardTitle>Processing batches</CardTitle>
           <CardDescription>
             Photos are tagged in the background, so you can leave this page. Each batch shows how many
             photos were auto-tagged, flagged for review, had no BIB, or failed.
@@ -718,13 +685,13 @@ export default async function OrganizerEventPhotosPage({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <TabsList>
             <TabsTrigger value="review">
-              Review Queue
+              Review queue
               <Badge variant="secondary" className="ml-1">
                 {stats.review}
               </Badge>
             </TabsTrigger>
             <TabsTrigger value="gallery">
-              Photo Gallery
+              Photo gallery
               <Badge variant="outline" className="ml-1">
                 {galleryCount}
               </Badge>
@@ -743,7 +710,7 @@ export default async function OrganizerEventPhotosPage({
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <CardTitle>Review Queue</CardTitle>
+                  <CardTitle>Review queue</CardTitle>
                   <CardDescription>Photos that need organizer confirmation before runners see them</CardDescription>
                 </div>
                 <Badge variant={reviewPhotos.length > 0 ? 'secondary' : 'outline'}>
@@ -825,7 +792,7 @@ export default async function OrganizerEventPhotosPage({
                 </div>
               ) : (
                 <div className="rounded-lg border border-dashed border-border py-10 text-center">
-                  <CheckCircle className="mx-auto mb-3 h-10 w-10 text-green-500" />
+                  <CheckCircle className="mx-auto mb-3 h-10 w-10 text-success" />
                   <p className="text-sm font-medium">No photos need review</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Review items will appear here after auto tagging.
@@ -852,7 +819,7 @@ export default async function OrganizerEventPhotosPage({
         <TabsContent value="gallery">
           <Card className="border-border">
             <CardHeader>
-              <CardTitle>Photo Gallery</CardTitle>
+              <CardTitle>Photo gallery</CardTitle>
               <CardDescription>Auto-tagged and confirmed photos from this event</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -901,7 +868,7 @@ export default async function OrganizerEventPhotosPage({
                             }
                             className="text-xs"
                           >
-                            {photo.status}
+                            {statusLabel(photo.status)}
                           </Badge>
                           {photo.registration_id && (
                             <Badge variant="outline" className="bg-background/80 text-xs">
@@ -999,7 +966,7 @@ export default async function OrganizerEventPhotosPage({
                       <div className="space-y-3 p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-xs font-medium uppercase text-muted-foreground">
+                            <p className="text-xs font-medium text-muted-foreground">
                               Rejected BIBs
                             </p>
                             {photo.tags.some((tag) => tag.bib_number) ? (
@@ -1010,14 +977,14 @@ export default async function OrganizerEventPhotosPage({
                                   <Badge
                                     key={tag.id}
                                     variant="outline"
-                                    className={`text-base font-semibold ${getBibBadgeClass(tag)}`}
+                                    className={`text-base font-medium ${getBibBadgeClass(tag)}`}
                                   >
                                     {tag.bib_number}
                                   </Badge>
                                 ))}
                               </div>
                             ) : (
-                              <p className="text-2xl font-semibold leading-none">Unknown</p>
+                              <p className="text-2xl font-medium leading-none">Unknown</p>
                             )}
                           </div>
                           <Badge variant="outline">
@@ -1046,7 +1013,7 @@ export default async function OrganizerEventPhotosPage({
                 </div>
               ) : (
                 <div className="rounded-lg border border-dashed border-border py-10 text-center">
-                  <CheckCircle className="mx-auto mb-3 h-10 w-10 text-green-500" />
+                  <CheckCircle className="mx-auto mb-3 h-10 w-10 text-success" />
                   <p className="text-sm font-medium">No rejected tags</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Rejected tags will appear here for recovery.

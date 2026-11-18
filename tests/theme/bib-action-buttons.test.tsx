@@ -81,7 +81,7 @@ describe('BibActionButtons bibLabel prop contract (P3 Task 4)', () => {
       await waitFor(() =>
         expect(share).toHaveBeenCalledWith({
           title: 'Nombor R-042 - Batik Run',
-          text: 'Check out my digital Nombor R-042 for Batik Run!',
+          text: 'My Nombor R-042 for Batik Run',
           url: window.location.href,
         }),
       )

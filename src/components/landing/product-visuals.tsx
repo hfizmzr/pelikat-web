@@ -58,10 +58,10 @@ export function DashboardWindow({ className }: { className?: string }) {
                 key={label}
                 className={cn(
                   "flex items-center gap-2.5 rounded-lg px-2.5 py-2",
-                  active ? "bg-[var(--surface)] font-medium shadow-[var(--shadow-sm)]" : "text-[var(--muted)]",
+                  active ? "bg-[var(--surface)] font-medium shadow-[var(--shadow-sm)]" : "text-[var(--ink-2)]",
                 )}
               >
-                <Icon className={cn("size-4", active && "text-[var(--accent)]")} />
+                <Icon className="size-4 text-[var(--muted)]" strokeWidth={1.75} />
                 {label}
               </li>
             ))}
@@ -70,31 +70,27 @@ export function DashboardWindow({ className }: { className?: string }) {
         <div className="min-w-0 p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-[17px] font-semibold tracking-tight">Larian Pelikat 2026</p>
+              <p className="text-[17px] font-medium">Larian Pelikat 2026</p>
               <p className="text-[12px] text-[var(--muted)]">Sun 14 Feb 2027 · Dataran Merdeka, Kuala Lumpur</p>
             </div>
-            <span className={cn(styles.pill, styles.pillOk)}>
-              <span className="size-1.5 rounded-full bg-current" /> Published
-            </span>
+            <span className={cn(styles.pill, styles.pillOk)}>Published</span>
           </div>
 
           <div className="mt-4 grid grid-cols-3 gap-3">
             <div className={cn(styles.inset, "p-3")}>
               <p className="text-[12px] text-[var(--muted)]">Registrations</p>
-              <p className="mt-1 text-[22px] font-semibold tracking-tight tabular-nums">2,400</p>
-              <p className="text-[11px] text-[var(--ok)]">+280 this week</p>
+              <p className="mt-1 text-[22px] font-medium tabular-nums">2,400</p>
+              <p className="text-[11px] text-[var(--muted)]">+280 this week</p>
             </div>
             <div className={cn(styles.inset, "p-3")}>
               <p className="text-[12px] text-[var(--muted)]">Revenue</p>
-              <p className="mt-1 text-[22px] font-semibold tracking-tight tabular-nums">RM151,800</p>
+              <p className="mt-1 text-[22px] font-medium tabular-nums">RM151,800</p>
               <p className="text-[11px] text-[var(--muted)]">via HitPay</p>
             </div>
             <div className={cn(styles.inset, "p-3")}>
               <p className="text-[12px] text-[var(--muted)]">Kits collected</p>
-              <p className="mt-1 text-[22px] font-semibold tracking-tight tabular-nums">1,284</p>
-              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--surface-3)]">
-                <div className="h-full w-[53.5%] rounded-full bg-[var(--accent)]" />
-              </div>
+              <p className="mt-1 text-[22px] font-medium tabular-nums">1,284</p>
+              <p className="text-[11px] text-[var(--muted)]">53% of entries</p>
             </div>
           </div>
 
@@ -102,14 +98,14 @@ export function DashboardWindow({ className }: { className?: string }) {
             <div className={cn(styles.inset, "p-3")}>
               <div className="flex items-baseline justify-between">
                 <p className="font-medium">Registrations per week</p>
-                <p className="text-[11px] text-[var(--muted)]">8 weeks</p>
+                <p className="text-[11px] text-[var(--muted)]">Last 8 weeks</p>
               </div>
               <div className={cn(styles.bars, "mt-3 h-[92px]")}>
                 {WEEKS.map((w, i) => (
                   <div
                     key={i}
-                    className={styles.bar}
-                    style={{ height: `${(w / max) * 100}%`, "--i": i } as CSSProperties}
+                    className={cn(styles.bar, i === WEEKS.length - 1 && styles.barCurrent)}
+                    style={{ height: `${(w / max) * 100}%` }}
                   />
                 ))}
               </div>
@@ -121,10 +117,10 @@ export function DashboardWindow({ className }: { className?: string }) {
                   <li key={c.name}>
                     <div className="flex justify-between text-[12px]">
                       <span>{c.name}</span>
-                      <span className="tabular-nums text-[var(--muted)]">{c.count}</span>
+                      <span className="tabular-nums text-[var(--muted)]">{c.count.toLocaleString("en-MY")}</span>
                     </div>
-                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[var(--surface-3)]">
-                      <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${(c.count / 910) * 100}%` }} />
+                    <div className="mt-1 h-1 overflow-hidden rounded-full bg-[var(--surface-3)]">
+                      <div className="h-full rounded-full bg-[var(--muted)]" style={{ width: `${(c.count / 910) * 100}%` }} />
                     </div>
                   </li>
                 ))}
@@ -169,10 +165,10 @@ export function ScannerScreen() {
     <div className="px-4 pb-5 pt-12 text-[13px]">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[15px] font-semibold tracking-tight">Kit collection</p>
+          <p className="text-[15px] font-medium">Kit collection</p>
           <p className="text-[11px] text-[var(--muted)]">Larian Pelikat 2026</p>
         </div>
-        <span className={cn(styles.pill, styles.pillAccent)}>Counter 3</span>
+        <span className={cn(styles.pill, styles.pillPlain)}>Counter 3</span>
       </div>
 
       <div className={cn(styles.scanFrame, "mt-4 grid aspect-square place-items-center")}>
@@ -181,16 +177,16 @@ export function ScannerScreen() {
         </div>
         <span className={styles.scanLine} />
         {(["left-3 top-3 border-l-2 border-t-2", "right-3 top-3 border-r-2 border-t-2", "bottom-3 left-3 border-b-2 border-l-2", "bottom-3 right-3 border-b-2 border-r-2"] as const).map((pos) => (
-          <span key={pos} className={cn("absolute size-6 rounded-[4px] border-[oklch(0.8_0.13_190)]", pos)} />
+          <span key={pos} className={cn("absolute size-6 rounded-[4px] border-[oklch(0.8_0.11_192)]", pos)} />
         ))}
       </div>
 
       <div className={cn(styles.panel, "mt-3 p-3")}>
         <div className="flex items-center justify-between">
-          <p className="text-[18px] font-bold tracking-tight tabular-nums">21K-0457</p>
+          <p className={cn(styles.bibNo, "text-[18px] font-medium")}>21K-0457</p>
           <span className={cn(styles.pill, styles.pillOk)}>Paid</span>
         </div>
-        <p className="mt-0.5 font-medium">Nurul Aina binti Hassan</p>
+        <p className="mt-1 font-medium">Nurul Aina binti Hassan</p>
         <p className="text-[11px] text-[var(--muted)]">21K Half Marathon · Shirt M</p>
       </div>
       <div className={cn(styles.btn, styles.btnPrimary, "mt-3 w-full")} style={{ minHeight: 44, fontSize: 14 }}>
@@ -200,31 +196,39 @@ export function ScannerScreen() {
   )
 }
 
-export function PaymentChip({ className, style }: { className?: string; style?: CSSProperties }) {
+function Chip({ icon, title, detail, className, style }: { icon: React.ReactNode; title: string; detail: React.ReactNode; className?: string; style?: CSSProperties }) {
   return (
-    <div className={cn(styles.chip, "flex items-center gap-3 p-3 pr-4", className)} style={style} aria-hidden="true">
-      <span className={cn(styles.iconTile, "size-9")} style={{ background: "color-mix(in oklch, var(--ok) 16%, transparent)", color: "var(--ok)", boxShadow: "none", borderRadius: 10 }}>
-        <CircleCheck className="size-[18px]" />
-      </span>
+    <div className={cn(styles.chip, "flex items-center gap-3 px-4 py-3", className)} style={style} aria-hidden="true">
+      {icon}
       <div className="text-[13px] leading-tight">
-        <p className="font-semibold">Payment received</p>
-        <p className="text-[var(--muted)]">RM90.00 · DuitNow QR · Bib 21K-0457</p>
+        <p className="font-medium">{title}</p>
+        <p className="mt-0.5 text-[var(--muted)]">{detail}</p>
       </div>
     </div>
   )
 }
 
+export function PaymentChip({ className, style }: { className?: string; style?: CSSProperties }) {
+  return (
+    <Chip
+      className={className}
+      style={style}
+      icon={<CircleCheck className="size-[18px] shrink-0 text-[var(--ok)]" strokeWidth={1.75} />}
+      title="Payment received"
+      detail={<>RM90.00 · DuitNow QR · <span className={styles.bibNo}>21K-0457</span></>}
+    />
+  )
+}
+
 export function DuplicateChip({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
-    <div className={cn(styles.chip, "flex items-center gap-3 p-3 pr-4", className)} style={style} aria-hidden="true">
-      <span className={cn(styles.iconTile, "size-9")} style={{ background: "color-mix(in oklch, var(--warn) 16%, transparent)", color: "var(--warn)", boxShadow: "none", borderRadius: 10 }}>
-        <TriangleAlert className="size-[18px]" />
-      </span>
-      <div className="text-[13px] leading-tight">
-        <p className="font-semibold">Duplicate flagged</p>
-        <p className="text-[var(--muted)]">5K-0342 already collected at 07:15</p>
-      </div>
-    </div>
+    <Chip
+      className={className}
+      style={style}
+      icon={<TriangleAlert className="size-[18px] shrink-0 text-[var(--warn)]" strokeWidth={1.75} />}
+      title="Duplicate flagged"
+      detail={<><span className={styles.bibNo}>5K-0342</span> already collected at 07:15</>}
+    />
   )
 }
 
@@ -232,18 +236,17 @@ export function CertificateCard({ className, style }: { className?: string; styl
   return (
     <div className={cn(styles.chip, "w-[270px] p-4", className)} style={style} aria-hidden="true">
       <div className="flex items-center justify-between text-[11px] text-[var(--muted)]">
-        <span className="font-semibold text-[var(--ink)]">Pelikat Batik</span>
+        <span className="font-medium text-[var(--ink)]">Pelikat Batik</span>
         <span>E-certificate</span>
       </div>
-      <div className="mt-3 h-1 w-10 rounded-full bg-[var(--accent)]" />
-      <p className="mt-3 text-[11px] text-[var(--muted)]">This certifies that</p>
-      <p className="text-[17px] font-semibold leading-tight tracking-tight">Nurul Aina binti Hassan</p>
+      <p className="mt-4 text-[11px] text-[var(--muted)]">This certifies that</p>
+      <p className="text-[17px] font-medium leading-tight">Nurul Aina binti Hassan</p>
       <p className="mt-1 text-[12px] text-[var(--muted)]">completed Larian Pelikat 2026</p>
       <div className="mt-3 flex items-center justify-between">
-        <span className={cn(styles.pill, styles.pillAccent)}>
-          <BadgeCheck className="size-3.5" /> Half Marathon Finisher
+        <span className="flex items-center gap-1.5 text-[12px] font-medium">
+          <BadgeCheck className="size-4 text-[var(--accent)]" strokeWidth={1.75} /> Half Marathon Finisher
         </span>
-        <span className="whitespace-nowrap text-[11px] tabular-nums text-[var(--muted)]">21K-0457</span>
+        <span className={cn(styles.bibNo, "whitespace-nowrap text-[11px] text-[var(--muted)]")}>21K-0457</span>
       </div>
     </div>
   )

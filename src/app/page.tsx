@@ -10,9 +10,7 @@ import { FaqSection } from "@/components/landing/faq-section"
 import { CTASection } from "@/components/landing/cta-section"
 import { Footer } from "@/components/landing/footer"
 import { MobileActionBar } from "@/components/landing/mobile-action-bar"
-import { RevealObserver } from "@/components/landing/reveal-observer"
 import { ActivityTicker } from "@/components/landing/activity-ticker"
-import { AmbientBackground, SpotlightTracker } from "@/components/landing/ambient"
 import styles from "@/components/landing/landing.module.css"
 import { getUserRole } from "@/lib/auth/requireRole"
 import { createClient } from "@/lib/supabase/server"
@@ -44,9 +42,8 @@ export default async function Home() {
 
   return (
     <div className={styles.root}>
-      <AmbientBackground />
-      {/* Gate the entrance animations on JS before first paint, so content
-          is never hidden for visitors without scripts. */}
+      {/* Gate the hero entrance on JS before first paint, so content is
+          never hidden for visitors without scripts. */}
       <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
       <a
         href="#main-content"
@@ -67,8 +64,6 @@ export default async function Home() {
       </main>
       <Footer />
       <MobileActionBar />
-      <RevealObserver />
-      <SpotlightTracker />
     </div>
   )
 }

@@ -1,11 +1,13 @@
 'use client'
 
+import { BrandMark } from '@/components/brand-mark'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense, useState } from 'react'
 import { redirectAfterLogin } from '@/lib/auth/redirectAfterLogin'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 
 function LoginForm() {
   const supabase = createClient()
@@ -62,15 +64,8 @@ function LoginForm() {
     <div className="w-full flex flex-col gap-6">
       {/* Logo */}
       <div className="text-center mb-2">
-        <div className="inline-flex items-center gap-2 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-primary-foreground" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <span className="text-xl font-black tracking-tighter text-foreground">Pelikat</span>
-        </div>
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">Welcome back</h1>
+        <BrandMark className="mb-6" />
+        <h1 className="text-2xl font-medium text-foreground">Sign in</h1>
         <p className="text-sm text-muted-foreground mt-1">
           {isSwitchingAccount
             ? 'Choose a different Google account to continue'
@@ -105,9 +100,9 @@ function LoginForm() {
           <label htmlFor="login-password" className="text-sm font-medium text-foreground">
             Password
           </label>
-          <Input
+          <PasswordInput
             id="login-password"
-            type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
@@ -118,12 +113,12 @@ function LoginForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-[color,background-color,border-color,opacity,transform] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground" />
           ) : (
-            'Sign In'
+            'Sign in'
           )}
         </button>
       </form>
@@ -133,7 +128,7 @@ function LoginForm() {
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-border" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
+        <div className="relative flex justify-center text-xs">
           <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
         </div>
       </div>
@@ -143,7 +138,7 @@ function LoginForm() {
         type="button"
         id="btn-google-login"
         onClick={handleGoogleLogin}
-        className="flex items-center justify-center gap-3 w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground font-semibold hover:bg-muted hover:border-primary/50 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+        className="flex items-center justify-center gap-3 w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground font-medium hover:bg-muted hover:border-primary/50 transition-[color,background-color,border-color,opacity,transform] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
       >
         {/* Google SVG icon */}
         <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
@@ -170,7 +165,7 @@ function LoginForm() {
         By signing in, you agree to our{' '}
         <span className="text-primary underline underline-offset-2 cursor-pointer whitespace-nowrap">Terms</span>
         {' '}and{' '}
-        <span className="text-primary underline underline-offset-2 cursor-pointer whitespace-nowrap">Privacy Policy</span>.
+        <span className="text-primary underline underline-offset-2 cursor-pointer whitespace-nowrap">Privacy policy</span>.
       </p>
     </div>
   )
@@ -179,26 +174,10 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <>
-      <div className="bg-card border border-border rounded-2xl p-8 shadow-2xl">
+      <div className="bg-card border border-border rounded-2xl p-8 ">
         <Suspense fallback={null}>
           <LoginForm />
         </Suspense>
-      </div>
-
-      {/* Role indicators */}
-      <div className="mt-6 flex justify-center gap-6 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-primary" />
-          Runners
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-emerald-400" />
-          Organizers
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-destructive" />
-          Admins
-        </div>
       </div>
     </>
   )

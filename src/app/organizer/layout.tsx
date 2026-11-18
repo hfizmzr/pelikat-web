@@ -1,6 +1,6 @@
 'use client'
 
-import { CirclePlus } from "lucide-react"
+import { Plus } from "lucide-react"
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
@@ -96,24 +96,12 @@ export default function OrganizerLayout({
       {/* Main content */}
       <div className="flex flex-1 flex-col min-w-0">
         {showSidebar && (
-          <header className="sticky top-0 z-40 bg-border/90 backdrop-blur-xl border-b border-muted px-6 h-16 flex items-center justify-between gap-4">
-            {/* Mobile nav trigger */}
+          <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b border-border bg-background/95 px-4 backdrop-blur-md sm:px-6">
             <div className="lg:hidden">
               <OrganizerMobileNav />
             </div>
-
-            {/* Left breadcrumb area */}
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-[10px] leading-[14px] tracking-[0.05em] text-primary font-semibold">
-                  Organizer Hub
-                </span>
-              </div>
-            </div>
-
-            {/* Right actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex-1" />
+            <div className="flex items-center gap-1">
               <ThemeToggle />
               {/* Notifications inbox: same data source as the runner bell
               (notifications table, user-scoped RLS); links to the organizer
@@ -121,10 +109,10 @@ export default function OrganizerLayout({
               <NotificationBell href="/organizer/notifications" />
               <Link
                 href="/organizer/events/new"
-                className="px-4 py-1.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-primary transition-all "
+                className="ml-2 flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-[14px] font-medium text-primary-foreground transition-[opacity,transform] hover:opacity-90 active:scale-[0.98]"
               >
-                <CirclePlus className="size-[16px]" />
-                <span>Create Event</span>
+                <Plus className="size-4" strokeWidth={2} />
+                <span>Create event</span>
               </Link>
             </div>
           </header>

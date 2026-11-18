@@ -1,7 +1,7 @@
 'use client'
 
-import { Store } from "lucide-react"
-import { useEffect, useState } from 'react'
+import { Plus } from "lucide-react"
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getUserRole } from '@/lib/auth/requireRole'
@@ -17,7 +17,6 @@ export default function AdminLayout({
 }) {
   const router = useRouter()
   const supabase = createClient()
-  const [clock, setClock] = useState('')
 
   // Auth guard
   useEffect(() => {
@@ -31,22 +30,6 @@ export default function AdminLayout({
     checkRole()
   }, [router, supabase])
 
-  // Live UTC clock
-  useEffect(() => {
-    const tick = () => {
-      const now = new Date()
-      setClock(
-        now.toISOString().slice(0, 10) +
-          ' ' +
-          now.toISOString().slice(11, 19) +
-          ' UTC'
-      )
-    }
-    tick()
-    const id = setInterval(tick, 1000)
-    return () => clearInterval(id)
-  }, [])
-
   return (
     <div className="flex min-h-dvh bg-background">
       {/* ── Sticky Desktop Sidebar ─────────────────────────────── */}
@@ -58,43 +41,23 @@ export default function AdminLayout({
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
 
         {/* ── Control Plane Header Strip ──────────────────────── */}
-        <header className="sticky top-0 z-40 h-16 bg-card/80 backdrop-blur-md border-b border-muted flex items-center justify-between px-6 gap-4 shrink-0">
-          {/* Left: Mobile toggle + breadcrumbs */}
-          <div className="flex items-center gap-3">
-            <AdminMobileNav />
-
-            {/* Platform indicator */}
-            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-[10px] font-bold tracking-widest uppercase font-inter text-primary">
-                Platform Admin
-              </span>
-            </div>
-
-          </div>
-
-          {/* Right: Clock + theme + CTA */}
-          <div className="flex items-center gap-3">
-            {/* Live clock */}
-            <span className="hidden lg:inline-block text-[11px] text-border font-mono font-inter">
-              {clock}
-            </span>
-
+        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/95 px-4 backdrop-blur-md sm:px-6">
+          <AdminMobileNav />
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
             <ThemeToggle />
-
-            {/* Add Tenant Organizer CTA */}
             <Link
               href="/admin/organizers"
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold font-inter transition-all shadow-md"
+              className="flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-[14px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
             >
-              <Store className="size-[18px]" />
-              <span className="hidden sm:inline">+ Add Tenant Organizer</span>
+              <Plus className="size-4" strokeWidth={2} />
+              <span className="hidden sm:inline">Add organizer</span>
             </Link>
           </div>
         </header>
 
         {/* ── Page Content ────────────────────────────────────── */}
-        <main className="flex-1 overflow-y-auto bg-background p-6 scrollbar-none">
+        <main className="flex-1 overflow-y-auto bg-background px-4 py-8 sm:px-8">
           {children}
         </main>
       </div>

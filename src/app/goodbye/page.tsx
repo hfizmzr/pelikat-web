@@ -9,7 +9,7 @@ export default function GoodbyePage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">Account Deleted</h1>
+        <h1 className="text-3xl font-medium tracking-tight">Account deleted</h1>
         <p className="text-muted-foreground">
           Your account and all associated personal data have been permanently
           removed. Your anonymized event participation records have been
@@ -22,7 +22,7 @@ export default function GoodbyePage() {
           href="/"
           className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
-          Return Home
+          Return home
         </Link>
       </div>
     </div>

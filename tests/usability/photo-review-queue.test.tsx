@@ -11,7 +11,7 @@ import type { PhotoBatch } from '@/lib/photo-batches'
  *  - PhotoBatchList: per-batch status/stats display + live polling with
  *    refresh on completion (FR-20).
  *  - PhotoReviewActions / PhotoGalleryTagActions: confirm-with-BIB-correction
- *    and "Correct Tag" back-to-review actions (FR-21).
+ *    and "Correct tag" back-to-review actions (FR-21).
  */
 
 const h = vi.hoisted(() => ({

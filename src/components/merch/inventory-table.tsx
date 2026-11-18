@@ -20,8 +20,8 @@ import { updateMerchVariantStock } from '@/components/merch/actions'
 import { stockLevel, variantLabel, type MerchProduct, type StockLevel } from '@/lib/merch'
 
 const LEVEL_BADGE: Record<StockLevel, { label: string; className: string }> = {
-  out: { label: 'Sold out', className: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/30' },
-  low: { label: 'Low stock', className: 'text-amber-500 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-400/10 border-amber-500/30 dark:border-amber-400/30' },
+  out: { label: 'Sold out', className: 'text-destructive bg-destructive/10 border-destructive/30' },
+  low: { label: 'Low stock', className: 'text-warning bg-warning/10 border-warning/30' },
   ok: { label: 'In stock', className: 'text-success bg-success/10 border-success/20' },
 }
 
@@ -81,7 +81,7 @@ export function InventoryTable({ products }: { products: MerchProduct[] }) {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {alertCount > 0 ? (
-          <div className="flex items-center gap-2 text-[13px] text-amber-500 dark:text-amber-400">
+          <div className="flex items-center gap-2 text-[13px] text-warning">
             <AlertTriangle className="h-4 w-4" />
             {alertCount} variant{alertCount !== 1 ? 's' : ''} low or sold out
           </div>
@@ -94,7 +94,7 @@ export function InventoryTable({ products }: { products: MerchProduct[] }) {
         </div>
       </div>
 
-      <div className="rounded-xl border border-muted overflow-x-auto">
+      <div className="rounded-xl border border-border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -118,7 +118,7 @@ export function InventoryTable({ products }: { products: MerchProduct[] }) {
                   <TableCell>{row.variant}</TableCell>
                   <TableCell className="text-center text-muted-foreground">≤ {row.threshold}</TableCell>
                   <TableCell>
-                    <span className={`text-[11px] px-2 py-0.5 rounded-full border font-semibold ${level.className}`}>
+                    <span className={`text-[11px] px-2 py-0.5 rounded-full border font-medium ${level.className}`}>
                       {level.label}
                     </span>
                   </TableCell>

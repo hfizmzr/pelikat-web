@@ -1,5 +1,6 @@
 'use client'
 
+import { statusLabel } from '@/components/ui/status-tag'
 import { ArrowLeft, CircleAlert, CreditCard, LoaderCircle, ReceiptText, TriangleAlert } from "lucide-react"
 import { useState, useTransition, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
@@ -299,12 +300,12 @@ export default function PaymentPage() {
         <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4 border border-border/60">
           <TriangleAlert className="size-[32px] text-muted-foreground" />
         </div>
-        <p className="text-[14px] text-foreground font-bold mb-4">Registration not found</p>
+        <p className="text-[14px] text-foreground font-medium mb-4">Registration not found</p>
         <Link
           href={`/runner/events/${id}`}
-          className="px-6 py-3 rounded-xl bg-accent text-accent-foreground text-[13px] font-bold"
+          className="px-6 py-3 rounded-xl bg-accent text-accent-foreground text-[13px] font-medium"
         >
-          Back to Event
+          Back to event
         </Link>
       </div>
     )
@@ -316,12 +317,12 @@ export default function PaymentPage() {
   return (
     <div className="flex flex-col w-full min-h-full bg-background">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link href={`/runner/events/${id}`} className="w-11 h-11 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
             <ArrowLeft className="size-[24px]" />
           </Link>
-          <h1 className="flex-1 text-[16px] font-bold text-foreground text-center mr-8 truncate">
+          <h1 className="flex-1 text-[16px] font-medium text-foreground text-center mr-8 truncate">
             Payment
           </h1>
         </div>
@@ -329,14 +330,14 @@ export default function PaymentPage() {
 
       <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto">
         <div className="flex flex-col text-center">
-          <h2 className="text-[20px] font-bold text-foreground mb-1">Complete Registration</h2>
+          <h2 className="text-[20px] font-medium text-foreground mb-1">Complete registration</h2>
           <p className="text-[13px] text-muted-foreground">{registration.events?.name}</p>
         </div>
 
         <section className="bg-card rounded-2xl border border-border/60 overflow-hidden">
           <div className="bg-muted p-4 flex items-center gap-2 border-b border-border/60">
             <ReceiptText className="size-[18px] text-muted-foreground" />
-            <span className="text-[14px] font-bold text-foreground">Order Summary</span>
+            <span className="text-[14px] font-medium text-foreground">Order summary</span>
           </div>
           <div className="p-4 flex flex-col gap-3">
             <div className="flex justify-between items-center text-[13px]">
@@ -349,13 +350,13 @@ export default function PaymentPage() {
             </div>
             <div className="flex justify-between items-center text-[13px]">
               <span className="text-muted-foreground">Status</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-accent text-muted-foreground">
-                {registration.payment_status}
+              <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-accent text-muted-foreground">
+                {statusLabel(registration.payment_status)}
               </span>
             </div>
             <div className="border-t border-border/40 pt-3 mt-1 flex justify-between items-center">
-              <span className="text-[14px] font-bold text-foreground">Total to Pay</span>
-              <span className="text-[16px] font-bold text-primary">RM {amount}</span>
+              <span className="text-[14px] font-medium text-foreground">Total to pay</span>
+              <span className="text-[16px] font-medium text-primary">RM {amount}</span>
             </div>
           </div>
         </section>
@@ -397,7 +398,7 @@ export default function PaymentPage() {
                 <div className="flex items-start gap-3">
                   <CreditCard className="size-[20px] text-primary" />
                   <div className="flex flex-col">
-                    <span className="text-[14px] font-bold text-foreground">Mock Gateway</span>
+                    <span className="text-[14px] font-medium text-foreground">Mock gateway</span>
                     <span className="text-[12px] text-muted-foreground">This simulates a successful payment (PAYMENT_PROVIDER=mock). No real transaction occurs.</span>
                   </div>
                 </div>
@@ -412,7 +413,7 @@ export default function PaymentPage() {
                 <button
                   onClick={handleMockPayment}
                   disabled={isPending}
-                  className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+                  className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
                 >
                   {isPending ? (
                     <>
@@ -420,7 +421,7 @@ export default function PaymentPage() {
                       Processing...
                     </>
                   ) : (
-                    'Confirm Payment'
+                    'Confirm payment'
                   )}
                 </button>
               </section>

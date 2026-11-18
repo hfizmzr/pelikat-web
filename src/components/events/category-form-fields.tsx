@@ -44,7 +44,7 @@ export function CategoryFormFields({
     <>
       {/* Name */}
       <div className="grid gap-1.5">
-        <Label htmlFor={d('name')}>Category Name *</Label>
+        <Label htmlFor={d('name')}>Category name *</Label>
         <Input
           id={d('name')}
           name="name"
@@ -64,14 +64,14 @@ export function CategoryFormFields({
               <SelectValue placeholder="Open" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Mixed">Mixed / Open</SelectItem>
+              <SelectItem value="Mixed">Mixed / open</SelectItem>
               <SelectItem value="M">Male</SelectItem>
               <SelectItem value="F">Female</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor={d('bib-prefix')}>BIB Prefix</Label>
+          <Label htmlFor={d('bib-prefix')}>BIB prefix</Label>
           <Input
             id={d('bib-prefix')}
             name="bib_prefix"
@@ -86,7 +86,7 @@ export function CategoryFormFields({
       {/* Age range */}
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-1.5">
-          <Label htmlFor={d('min-age')}>Min Age</Label>
+          <Label htmlFor={d('min-age')}>Min age</Label>
           <Input
             id={d('min-age')}
             name="min_age"
@@ -99,7 +99,7 @@ export function CategoryFormFields({
           />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor={d('max-age')}>Max Age</Label>
+          <Label htmlFor={d('max-age')}>Max age</Label>
           <Input
             id={d('max-age')}
             name="max_age"
@@ -129,7 +129,7 @@ export function CategoryFormFields({
           />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor={d('max-slots')}>Max Slots</Label>
+          <Label htmlFor={d('max-slots')}>Max slots</Label>
           <Input
             id={d('max-slots')}
             name="max_slots"
@@ -141,7 +141,7 @@ export function CategoryFormFields({
           />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor={d('bib-start')}>BIB Start</Label>
+          <Label htmlFor={d('bib-start')}>BIB start</Label>
           <Input
             id={d('bib-start')}
             name="bib_start"

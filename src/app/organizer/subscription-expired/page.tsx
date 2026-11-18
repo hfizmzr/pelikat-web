@@ -78,7 +78,7 @@ export default function SubscriptionExpiredPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
             <AlertCircle className="h-8 w-8 text-destructive" />
           </div>
-          <CardTitle className="text-2xl">Subscription Expired</CardTitle>
+          <CardTitle className="text-2xl">Subscription expired</CardTitle>
           <CardDescription>
             Your workspace access has been suspended
           </CardDescription>
@@ -112,18 +112,18 @@ export default function SubscriptionExpiredPage() {
             <Button asChild size="lg">
               <Link href="/organizer/payment">
                 <CreditCard className="mr-2 h-4 w-4" />
-                Renew Subscription
+                Renew subscription
               </Link>
             </Button>
             <Button asChild variant="outline">
               <a href={mailtoLink}>
                 <Mail className="mr-2 h-4 w-4" />
-                Email Admin Instead
+                Email admin instead
               </a>
             </Button>
             <Button variant="outline" onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
+              Sign out
             </Button>
           </div>
         </CardContent>

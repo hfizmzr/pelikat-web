@@ -25,7 +25,7 @@ export function BadgeCertificateButton({ badge }: { badge: BadgeCertificate }) {
       try {
         await navigator.share({
           title: `${badge.badgeName} - Pelikat`,
-          text: `Check out my ${badge.badgeName} badge from Pelikat!`,
+          text: `I earned the ${badge.badgeName} badge on Pelikat`,
           url,
         })
         shared = true
@@ -36,7 +36,7 @@ export function BadgeCertificateButton({ badge }: { badge: BadgeCertificate }) {
     if (!shared && navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(url)
-        setShareLabel('Link copied!')
+        setShareLabel('Link copied')
         setTimeout(() => setShareLabel(null), 2000)
       } catch {
         // clipboard denied → stay silent, no crash
@@ -45,22 +45,22 @@ export function BadgeCertificateButton({ badge }: { badge: BadgeCertificate }) {
   }
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       <CertDownloadButton
         action={generateBadgeCertificate}
         input={badge}
-        label="Download Certificate"
-        icon={<Download className="size-[12px]" />}
-        iconClassName="size-[12px]"
-        buttonClassName="py-1.5 rounded-md bg-primary/15 text-primary text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform disabled:opacity-50"
-        linkClassName="text-[10px] text-primary mt-1 text-center underline"
-        errorClassName="text-[9px] text-red-500 dark:text-red-300 mt-1 text-center"
+        label="Download certificate"
+        icon={<Download className="size-3.5" strokeWidth={1.75} />}
+        iconClassName="size-3.5"
+        buttonClassName="w-full min-h-9 rounded-lg border border-border/60 text-foreground text-[12px] flex items-center justify-center gap-1.5 transition-[background-color,transform] hover:bg-accent active:scale-[0.98] disabled:opacity-50"
+        linkClassName="text-[12px] text-foreground mt-1 text-center underline underline-offset-4"
+        errorClassName="text-[12px] text-destructive mt-1 text-center"
       />
       <button
         onClick={handleShare}
-        className="py-1.5 rounded-md bg-primary/15 text-primary text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition-transform"
+        className="min-h-9 rounded-lg text-muted-foreground text-[12px] flex items-center justify-center gap-1.5 transition-[color,transform] hover:text-foreground active:scale-[0.98]"
       >
-        <Share2 className="size-[12px]" />
+        <Share2 className="size-3.5" strokeWidth={1.75} />
         {shareLabel ?? 'Share'}
       </button>
     </div>

@@ -204,7 +204,7 @@ export function ProductFormDialog({ eventId, organizerId, product, trigger }: Pr
 
       <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit Product' : 'Create Product'}</DialogTitle>
+          <DialogTitle>{isEdit ? 'Edit product' : 'Create product'}</DialogTitle>
           <DialogDescription>
             Runners see active products in the event merch store. Fields marked * are required.
           </DialogDescription>
@@ -393,7 +393,7 @@ export function ProductFormDialog({ eventId, organizerId, product, trigger }: Pr
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isEdit ? 'Save Changes' : 'Create Product'}
+              {isEdit ? 'Save changes' : 'Create product'}
             </Button>
           </DialogFooter>
         </form>

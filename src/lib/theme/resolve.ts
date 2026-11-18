@@ -46,16 +46,16 @@ const PLATFORM_SLOTS: Record<'primary' | 'secondary' | 'accent' | 'ring', BrandS
     fgDark: 'oklch(0.15 0.04 190)',
   },
   secondary: {
-    light: 'oklch(0.92 0 0)',
-    dark: 'oklch(0.16 0 0)',
-    fgLight: 'oklch(0.145 0 0)',
-    fgDark: 'oklch(0.985 0 0)',
+    light: 'oklch(0.95 0.003 240)',
+    dark: 'oklch(0.235 0.006 240)',
+    fgLight: 'oklch(0.2 0.012 240)',
+    fgDark: 'oklch(0.95 0.003 240)',
   },
   accent: {
-    light: 'oklch(0.92 0 0)',
-    dark: 'oklch(0.28 0.03 190)',
-    fgLight: 'oklch(0.145 0 0)',
-    fgDark: 'oklch(0.985 0 0)',
+    light: 'oklch(0.95 0.003 240)',
+    dark: 'oklch(0.245 0.006 240)',
+    fgLight: 'oklch(0.2 0.012 240)',
+    fgDark: 'oklch(0.95 0.003 240)',
   },
   ring: {
     light: 'oklch(0.51 0.16 190)',
@@ -276,7 +276,7 @@ export function deriveTheme(
     // PLATFORM_BG_HEX is color.ts's shared constant — the SAME decision the
     // validate.ts save-gate applies (Task 7 carried requirement). Dark
     // variants (L ∈ [0.68, 0.82]) trivially clear 3:1 against the dark
-    // background (oklch(0.07 0 0)), so light-mode is the only side gated.
+    // background (oklch(0.155 0.004 240)), so light-mode is the only side gated.
     const ratio = contrastRatio(raw, PLATFORM_BG_HEX)
     if (ratio < 3 && role !== 'ring') {
       warnings.push(`colors.${role}: contrast ${ratio.toFixed(2)}:1 vs platform background < 3:1 — using platform color`)

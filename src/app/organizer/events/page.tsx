@@ -1,12 +1,28 @@
-import { ArrowRight, Badge, Banknote, Calendar, CalendarClock, CircleCheck, CirclePlus, ClipboardCheck, Flag, MapPin, QrCode, Users } from "lucide-react"
+import { ArrowRight, Calendar, Flag, MapPin, Plus, QrCode } from "lucide-react"
+import { StatusTag } from '@/components/ui/status-tag'
 import { createClient } from '@/lib/supabase/server'
 import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Race Events & Waves - Organizer Hub | Pelikat',
-  description: 'Manage your running events, race waves, and category configurations',
+  title: 'Events - Pelikat',
+  description: 'Your running events and their categories',
+}
+
+
+function EventListHeader() {
+  return (
+    <div className="hidden px-5 pb-2 text-[12px] text-muted-foreground md:grid md:grid-cols-[minmax(0,2.2fr)_110px_repeat(3,84px)_minmax(0,1.2fr)_auto] md:gap-6">
+      <span>Event</span>
+      <span>Status</span>
+      <span className="text-right">Registered</span>
+      <span className="text-right">Confirmed</span>
+      <span className="text-right">Checked in</span>
+      <span>Capacity</span>
+      <span className="w-[196px]" />
+    </div>
+  )
 }
 
 export default async function OrganizerEventsPage() {
@@ -17,8 +33,8 @@ export default async function OrganizerEventsPage() {
   if (!organizerId) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-muted-foreground">
-        <Flag className="size-[64px] mb-4" />
-        <h2 className="text-[18px] leading-[24px] font-semibold text-foreground mb-2">No organizer profile</h2>
+        <Flag className="size-10 mb-4" strokeWidth={1.5} />
+        <h2 className="text-[18px] leading-[24px] font-medium text-foreground mb-2">No organizer profile</h2>
         <p className="text-[14px]">No organizer account is linked to this user.</p>
       </div>
     )
@@ -40,14 +56,10 @@ export default async function OrganizerEventsPage() {
   const upcoming = events?.filter(e => new Date(e.event_date) >= now) || []
   const past = events?.filter(e => new Date(e.event_date) < now) || []
 
-  const statusStyles: Record<string, string> = {
-    published: 'text-success bg-success/15 border-success/20',
-    draft: 'text-muted-foreground bg-accent border-border',
-    closed: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/15 border-red-500/30 dark:border-red-300/20',
-    cancelled: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/15 border-red-500/30 dark:border-red-300/20',
-  }
+  const fmtDate = (d: string) =>
+    new Date(d).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
 
-  const EventCard = ({ event }: { event: NonNullable<typeof events>[0] }) => {
+  const EventRow = ({ event }: { event: NonNullable<typeof events>[0] }) => {
     const regs = event.registrations || []
     const paid = regs.filter((r: { payment_status: string }) => isConfirmedStatus(r.payment_status)).length
     const checkedIn = regs.filter((r: { checked_in: boolean }) => r.checked_in).length
@@ -57,195 +69,125 @@ export default async function OrganizerEventsPage() {
     const daysLeft = Math.ceil((new Date(event.event_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
     return (
-      <div className="bg-card rounded-xl border border-muted overflow-hidden group hover:border-primary/30 transition-all ">
-        <div className="h-1.5 bg-gradient-to-r from-primary via-primary to-primary" />
-        <div className="p-6">
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="flex flex-col gap-1 min-w-0">
-              <h3 className="text-[16px] leading-[24px] font-semibold text-foreground group-hover:text-primary transition-colors">{event.name}</h3>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[12px] leading-[16px] text-muted-foreground flex items-center gap-1">
-                  <Calendar className="size-[14px]" />
-                  {new Date(event.event_date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
-                </span>
-                {daysLeft > 0 && daysLeft < 60 && (
-                  <span className="text-[10px] leading-[14px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
-                    {daysLeft}d left
-                  </span>
-                )}
-              </div>
-            </div>
-            <span className={`shrink-0 text-[10px] leading-[14px] px-2.5 py-1 rounded-full font-semibold border ${statusStyles[event.status] || statusStyles.draft}`}>
-              {event.status}
+      <li className="grid grid-cols-1 gap-3 px-5 py-4 md:grid-cols-[minmax(0,2.2fr)_110px_repeat(3,84px)_minmax(0,1.2fr)_auto] md:items-center md:gap-6">
+        <div className="min-w-0">
+          <Link href={`/organizer/events/${event.id}`} className="block truncate text-[15px] font-medium text-foreground hover:underline underline-offset-4">
+            {event.name}
+          </Link>
+          <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[13px] text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="size-3.5 shrink-0" strokeWidth={1.75} />
+              {fmtDate(event.event_date)}
+              {daysLeft > 0 && daysLeft < 60 && <span>· in {daysLeft} days</span>}
             </span>
+            {event.location && (
+              <span className="flex min-w-0 items-center gap-1.5">
+                <MapPin className="size-3.5 shrink-0" strokeWidth={1.75} />
+                <span className="truncate">{event.location}</span>
+              </span>
+            )}
+          </p>
+        </div>
+        <div><StatusTag status={event.status} /></div>
+        {[
+          { label: 'Registered', value: regs.length },
+          { label: 'Confirmed', value: paid },
+          { label: 'Checked in', value: checkedIn },
+        ].map(stat => (
+          <div key={stat.label} className="flex items-baseline justify-between gap-2 md:block md:text-right">
+            <span className="text-[12px] text-muted-foreground md:hidden">{stat.label}</span>
+            <span className="text-[15px] tabular-nums text-foreground">{stat.value.toLocaleString()}</span>
           </div>
-
-          {event.location && (
-            <p className="text-[12px] leading-[16px] text-muted-foreground flex items-center gap-1 mb-4">
-              <MapPin className="size-[14px]" />
-              {event.location}
-            </p>
-          )}
-
-          {/* Stats row */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {[
-              { icon: Badge, label: 'Registered', value: regs.length },
-              { icon: Banknote, label: 'Confirmed', value: paid },
-              { icon: ClipboardCheck, label: 'Checked In', value: checkedIn },
-            ].map(stat => (
-              <div key={stat.label} className="bg-card rounded-lg p-2.5 flex flex-col gap-0.5">
-                <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-foreground">{stat.value}</span>
-                <span className="text-[10px] leading-[14px] text-muted-foreground">{stat.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Fill bar */}
-          {totalCap > 0 && (
-            <div className="mb-4">
-              <div className="flex justify-between text-[11px] text-muted-foreground mb-1.5">
-                <span>{regs.length} of {totalCap} slots</span>
-                <span className={fillPct >= 90 ? 'text-red-500 dark:text-red-300 font-semibold' : 'text-muted-foreground'}>{fillPct}%</span>
-              </div>
-              <div className="w-full bg-accent rounded-full h-1.5 overflow-hidden">
+        ))}
+        <div className="min-w-0">
+          {totalCap > 0 ? (
+            <>
+              <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                 <div
-                  className={`h-full rounded-full transition-all ${fillPct >= 90 ? 'bg-red-500 dark:bg-red-300' : fillPct >= 70 ? 'bg-primary' : 'bg-primary'}`}
+                  className={`h-full rounded-full ${fillPct >= 90 ? 'bg-warning' : 'bg-primary'}`}
                   style={{ width: `${Math.max(fillPct, 1)}%` }}
                 />
               </div>
-            </div>
+              <p className="mt-1.5 text-[12px] tabular-nums text-muted-foreground">
+                {regs.length.toLocaleString()} of {totalCap.toLocaleString()} places · {cats.length} {cats.length === 1 ? 'category' : 'categories'}
+              </p>
+            </>
+          ) : (
+            <p className="text-[12px] text-muted-foreground">{cats.length} {cats.length === 1 ? 'category' : 'categories'} · no limit</p>
           )}
-
-          {/* Categories tags */}
-          {cats.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {cats.slice(0, 3).map((cat: { id: string; name: string }) => (
-                <span key={cat.id} className="text-[10px] leading-[14px] px-2 py-0.5 rounded border border-border text-muted-foreground">
-                  {cat.name}
-                </span>
-              ))}
-              {cats.length > 3 && (
-                <span className="text-[10px] leading-[14px] px-2 py-0.5 rounded border border-border text-muted-foreground">
-                  +{cats.length - 3} more
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-muted">
-            <div className="flex gap-1.5">
-              <Link href={`/organizer/events/${event.id}/registrations`}>
-                <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" title="Registrations">
-                  <Badge className="size-[18px]" />
-                </button>
-              </Link>
-              <Link href={`/organizer/events/${event.id}/checkin`}>
-                <button className="p-2 rounded-lg text-muted-foreground hover:text-success hover:bg-accent transition-colors" title="Check-in">
-                  <QrCode className="size-[18px]" />
-                </button>
-              </Link>
-            </div>
-            <Link href={`/organizer/events/${event.id}`}>
-              <button className="px-4 py-2 bg-card hover:bg-accent text-foreground text-[12px] leading-[16px] tracking-[0.02em] font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-border">
-                Manage
-                <ArrowRight className="size-[16px]" />
-              </button>
-            </Link>
-          </div>
         </div>
-      </div>
+        <div className="flex items-center gap-1 md:justify-end">
+          <Link
+            href={`/organizer/events/${event.id}/checkin`}
+            className="flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-[13px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <QrCode className="size-4" strokeWidth={1.75} />
+            Check-in
+          </Link>
+          <Link
+            href={`/organizer/events/${event.id}`}
+            className="flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-[13px] font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Manage
+            <ArrowRight className="size-3.5" strokeWidth={1.75} />
+          </Link>
+        </div>
+      </li>
     )
   }
 
-  return (
-    <div className="relative w-full min-h-full px-6 py-8 bg-background">
-      {/* Ambient */}
-      <div className="absolute -top-32 -left-20 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary uppercase">
-                Event Console
-              </span>
-            </div>
-            <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-foreground">Race Events & Waves</h1>
-            <p className="text-[14px] leading-[20px] text-muted-foreground">Create, configure, and manage your running events and race categories.</p>
-          </div>
-          <Link href="/organizer/events/new">
-            <button className="px-5 py-2.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all whitespace-nowrap">
-              <CirclePlus className="size-[18px]" />
-              Create Event
-            </button>
-          </Link>
+  const totalRunners = events?.reduce((a, e) => a + (e.registrations?.length || 0), 0) ?? 0
+  const publishedCount = events?.filter(e => e.status === 'published').length ?? 0
+
+  return (
+    <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-8">
+      <div className="flex flex-col gap-8">
+        <div>
+          <h1 className="text-[28px] leading-9 font-medium text-foreground">Events</h1>
+          {events && events.length > 0 && (
+            <p className="mt-1 text-[14px] text-muted-foreground">
+              {events.length} events · {publishedCount} published · {upcoming.length} upcoming · {totalRunners.toLocaleString()} runners
+            </p>
+          )}
         </div>
 
-        {/* Summary bar */}
-        {events && events.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { label: 'Total Events', value: events.length, icon: Flag, color: 'text-primary' },
-              { label: 'Published', value: events.filter(e => e.status === 'published').length, icon: CircleCheck, color: 'text-success' },
-              { label: 'Upcoming', value: upcoming.length, icon: CalendarClock, color: 'text-primary' },
-              { label: 'Total Runners', value: events.reduce((a, e) => a + (e.registrations?.length || 0), 0), icon: Users, color: 'text-primary' },
-            ].map(s => (
-              <div key={s.label} className="bg-card rounded-xl p-4 border border-muted flex items-center gap-3">
-                <span className={`size-[24px] ${s.color}`}><s.icon className="size-[24px]" /></span>
-                <div>
-                  <div className="text-[24px] leading-[28px] tracking-[-0.01em] font-semibold text-foreground">{s.value.toLocaleString()}</div>
-                  <div className="text-[11px] text-muted-foreground">{s.label}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Upcoming Events */}
         {upcoming.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              <h2 className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-foreground">Upcoming Events</h2>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-semibold">{upcoming.length}</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {upcoming.map(event => <EventCard key={event.id} event={event} />)}
-            </div>
+          <section aria-labelledby="upcoming-title">
+            <h2 id="upcoming-title" className="mb-3 text-[16px] font-medium text-foreground">
+              Upcoming <span className="ml-1 font-normal text-muted-foreground tabular-nums">{upcoming.length}</span>
+            </h2>
+            <EventListHeader />
+            <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+              {upcoming.map(event => <EventRow key={event.id} event={event} />)}
+            </ul>
           </section>
         )}
 
-        {/* Past Events */}
         {past.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-muted-foreground">Past Events</h2>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground font-semibold">{past.length}</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-70">
-              {past.map(event => <EventCard key={event.id} event={event} />)}
-            </div>
+          <section aria-labelledby="past-title">
+            <h2 id="past-title" className="mb-3 text-[16px] font-medium text-foreground">
+              Past <span className="ml-1 font-normal text-muted-foreground tabular-nums">{past.length}</span>
+            </h2>
+            <EventListHeader />
+            <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+              {past.map(event => <EventRow key={event.id} event={event} />)}
+            </ul>
           </section>
         )}
 
-        {/* Empty state */}
         {(!events || events.length === 0) && (
-          <div className="bg-card rounded-xl border border-muted p-16 flex flex-col items-center justify-center text-center">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <Flag className="size-[48px] text-primary" />
-            </div>
-            <h3 className="text-[22px] leading-[28px] font-semibold text-foreground mb-2">No events yet</h3>
-            <p className="text-[14px] leading-[20px] text-muted-foreground mb-8 max-w-sm">
-              Create your first race event to start building waves, accepting registrations, and managing participants.
+          <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-16 text-center">
+            <h3 className="text-[18px] font-medium text-foreground">No events yet</h3>
+            <p className="mt-2 max-w-sm text-[14px] text-muted-foreground">
+              Create your first event to add categories and start taking registrations
             </p>
-            <Link href="/organizer/events/new">
-              <button className="px-6 py-3 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all ">
-                <CirclePlus className="size-[18px]" />
-                Create your first event
-              </button>
+            <Link
+              href="/organizer/events/new"
+              className="mt-6 flex h-10 items-center gap-1.5 rounded-lg bg-primary px-4 text-[14px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              <Plus className="size-4" strokeWidth={2} />
+              Create event
             </Link>
           </div>
         )}
