@@ -38,7 +38,8 @@ async function getOrganizerDashboardData() {
         registrations(id, payment_status, checked_in)
       `)
       .eq('organizer_id', organizerId)
-      .order('event_date', { ascending: true }),
+      .order('event_date', { ascending: true })
+      .order('id', { ascending: true }), // tie-breaker shared with console and scanner
   ])
 
   // Same rule as the race console, so both screens show the same event. The

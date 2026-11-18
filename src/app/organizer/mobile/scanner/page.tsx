@@ -6,7 +6,8 @@ import { Html5Qrcode } from 'html5-qrcode'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { checkInRegistrationByBib } from '@/components/events/actions'
-import type { RepcCheckInResult } from '@/lib/repc'
+import type { MerchHandover, RepcCheckInResult } from '@/lib/repc'
+import { MerchHandoverNote } from '@/components/repc/merch-handover-note'
 import { RACE_CONSOLE_STATUSES, malaysiaToday } from '@/lib/event-dates'
 
 type ScanResult = {
@@ -19,6 +20,8 @@ type ScanResult = {
     shirtSize?: string | null
   }
   message: string
+  // Orders to hand over now: the check-in already marked them collected.
+  merch?: MerchHandover | null
 }
 
 type RecentScan = {
@@ -36,6 +39,7 @@ type CheckInApiResponse = {
   message?: string
   already_checked_in?: boolean
   runner?: { name?: string; bib?: string; shirt_size?: string | null } | null
+  merch?: MerchHandover | null
 }
 
 function resultFromApi(data: CheckInApiResponse): ScanResult {
@@ -46,6 +50,7 @@ function resultFromApi(data: CheckInApiResponse): ScanResult {
     runner: data.success && data.runner?.bib
       ? { name: data.runner.name || 'Unknown', bib: data.runner.bib, shirtSize: data.runner.shirt_size ?? null }
       : undefined,
+    merch: data.merch ?? null,
   }
 }
 
@@ -57,6 +62,7 @@ function resultFromRpc(result: RepcCheckInResult): ScanResult {
     runner: result.success && result.bibNumber
       ? { name: result.runnerName || 'Unknown', bib: result.bibNumber, shirtSize: result.shirtSize }
       : undefined,
+    merch: result.merch ?? null,
   }
 }
 
@@ -84,8 +90,19 @@ export default function OrganizerMobileScannerPage({
   const [recentScans, setRecentScans] = useState<RecentScan[]>([])
   const [torchOn, setTorchOn] = useState(false)
   const [processingBib, setProcessingBib] = useState<string | null>(null)
-  const [eventId, setEventId] = useState<string | null>(null)
-  const [eventName, setEventName] = useState<string>('')
+  // The event is stored with the request it was loaded for. Until the lookup
+  // for the *current* ?event= resolves, there is no event to check in to, so
+  // a scan can never land in the race the scanner showed a moment ago.
+  const [loadedEvent, setLoadedEvent] = useState<{
+    request: string | null
+    status: 'ok' | 'none' | 'error'
+    id: string | null
+    name: string
+  } | null>(null)
+  const currentEvent = loadedEvent && loadedEvent.request === requestedEventId ? loadedEvent : null
+  const eventId = currentEvent?.status === 'ok' ? currentEvent.id : null
+  const eventName = currentEvent?.name ?? ''
+  const eventStatus = currentEvent?.status ?? 'loading'
   const [scanCount, setScanCount] = useState(0)
 
   const qrRef = useRef<Html5Qrcode | null>(null)
@@ -101,35 +118,40 @@ export default function OrganizerMobileScannerPage({
   useEffect(() => {
     let cancelled = false
     async function loadEvent() {
+      const settle = (status: 'ok' | 'none' | 'error', event?: { id: string; name: string } | null) => {
+        if (cancelled) return
+        setLoadedEvent({ request: requestedEventId, status, id: event?.id ?? null, name: event?.name ?? '' })
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       const orgId = user?.app_metadata?.organizer_id
-      if (!orgId) return
+      if (!orgId) return settle('none')
 
-      let event: { id: string; name: string } | null = null
       if (requestedEventId) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('events')
           .select('id, name')
           .eq('organizer_id', orgId)
           .eq('id', requestedEventId)
           .maybeSingle()
-        event = data
+        // A failed lookup must not quietly switch to another race: stop and
+        // say so. Only "no such event for this organizer" falls back below.
+        if (error) return settle('error')
+        if (data) return settle('ok', data)
       }
-      if (!event) {
-        const { data } = await supabase
-          .from('events')
-          .select('id, name')
-          .eq('organizer_id', orgId)
-          .in('status', [...RACE_CONSOLE_STATUSES])
-          .gte('event_date', malaysiaToday())
-          .order('event_date', { ascending: true })
-          .limit(1)
-          .maybeSingle()
-        event = data
-      }
-      if (cancelled) return
-      setEventId(event?.id ?? null)
-      setEventName(event?.name ?? '')
+
+      const { data, error } = await supabase
+        .from('events')
+        .select('id, name')
+        .eq('organizer_id', orgId)
+        .in('status', [...RACE_CONSOLE_STATUSES])
+        .gte('event_date', malaysiaToday())
+        .order('event_date', { ascending: true })
+        .order('id', { ascending: true }) // same tie-breaker as console and home
+        .limit(1)
+        .maybeSingle()
+      if (error) return settle('error')
+      settle(data ? 'ok' : 'none', data)
     }
     loadEvent()
     return () => {
@@ -147,7 +169,13 @@ export default function OrganizerMobileScannerPage({
       // state check would read a stale value, letting duplicates through.
       if (!cleaned || busyRef.current) return
       if (!eventId) {
-        toast.error('No upcoming event to check in to')
+        toast.error(
+          eventStatus === 'loading'
+            ? 'Still loading the event. Try again in a moment.'
+            : eventStatus === 'error'
+            ? "Couldn't load the event. Check the connection and reopen the scanner."
+            : 'No upcoming event to check in to'
+        )
         return
       }
 
@@ -199,7 +227,7 @@ export default function OrganizerMobileScannerPage({
         setProcessingBib(null)
       }
     },
-    [eventId]
+    [eventId, eventStatus]
   )
 
   // The camera callback is registered once, when the camera starts: route it
@@ -300,7 +328,11 @@ export default function OrganizerMobileScannerPage({
             <div className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               <span className="text-[11px] text-muted-foreground truncate max-w-[180px]">
-                {eventName || 'No upcoming event'}
+                {eventStatus === 'loading'
+                  ? 'Loading event…'
+                  : eventStatus === 'error'
+                  ? "Couldn't load the event"
+                  : eventName || 'No upcoming event'}
               </span>
             </div>
           </div>
@@ -480,6 +512,15 @@ export default function OrganizerMobileScannerPage({
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* The check-in already marked these orders collected: staff must
+                see them to actually hand them over. */}
+            {scanResult.merch && (
+              <MerchHandoverNote
+                merch={scanResult.merch}
+                className="mt-3 flex items-start gap-2 rounded-lg border border-border/60 bg-background/60 p-3 text-[13px] text-foreground"
+              />
             )}
           </div>
         )}

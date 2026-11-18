@@ -37,6 +37,7 @@ async function getActiveEventOpsData() {
     .in('status', [...RACE_CONSOLE_STATUSES])
     .gte('event_date', today)
     .order('event_date', { ascending: true })
+    .order('id', { ascending: true }) // tie-breaker shared with home and scanner
     .limit(1)
     .maybeSingle()
 

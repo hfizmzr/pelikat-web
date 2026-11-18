@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Html5Qrcode } from 'html5-qrcode'
-import { QrCode, Search, CheckCircle, XCircle, Users, ShoppingBag } from 'lucide-react'
+import { QrCode, Search, CheckCircle, XCircle, Users } from 'lucide-react'
 import { checkInRegistrationByBib } from '@/components/events/actions'
 import type { MerchHandover, RepcCheckInResult } from '@/lib/repc'
+import { MerchHandoverNote } from '@/components/repc/merch-handover-note'
 
 type ScanResult = {
   success: boolean
@@ -48,34 +49,6 @@ function resultFromRpc(result: RepcCheckInResult): ScanResult {
       : undefined,
     merch: result.merch,
   }
-}
-
-function formatOrders(orders: MerchHandover['collected']) {
-  return orders
-    .map((order) => `${order.orderNumber} (${order.itemCount} ${order.itemCount === 1 ? 'item' : 'items'})`)
-    .join(', ')
-}
-
-function MerchHandoverNote({ merch }: { merch: MerchHandover }) {
-  if (merch.collected.length === 0 && merch.notPacked.length === 0) return null
-
-  return (
-    <div className="mt-2 flex items-start gap-2 rounded-md border border-current/20 px-2 py-1.5 text-sm">
-      <ShoppingBag className="mt-0.5 h-4 w-4 shrink-0" />
-      <div>
-        {merch.collected.length > 0 && (
-          <p>
-            <span className="font-medium">Hand over merch:</span> {formatOrders(merch.collected)}
-          </p>
-        )}
-        {merch.notPacked.length > 0 && (
-          <p className="text-warning">
-            <span className="font-medium">Paid, not packed yet:</span> {formatOrders(merch.notPacked)}
-          </p>
-        )}
-      </div>
-    </div>
-  )
 }
 
 function vibrate(pattern: number | number[]) {
