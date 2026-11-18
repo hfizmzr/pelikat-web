@@ -16,6 +16,14 @@ import type { Metadata } from 'next'
  * inaccessible (unauthenticated and/or hidden draft). */
 const FALLBACK_TITLE = 'Digital BIB - Pelikat'
 
+/** Font size that keeps the bib number on one line inside its container.
+ * Geist Mono glyphs advance 0.6em; 0.62 leaves a little air. Short bibs stay
+ * at the full 52px, long ones shrink with the card width (cqi). */
+function bibFontSize(bib: string | null | undefined): string {
+  const chars = Math.max(bib?.length ?? 0, 4)
+  return `min(52px, ${(100 / (chars * 0.62)).toFixed(2)}cqi)`
+}
+
 /** Simple inline generateMetadata (Task 4 keep-it-trivial ruling): title from
  * the fetched event name + its themed bib label. Reads the event row again
  * through the anon client (Next's standard separate-metadata fetch); a hidden
@@ -167,9 +175,17 @@ export default async function RunnerBibPage({
             </div>
             <div className="flex flex-col items-center px-6 pb-6 pt-5 text-center">
               <h2 className="text-[12px] text-[oklch(0.2_0.01_240/0.6)]">{labels.bib_label}</h2>
-              <p className="mt-1 font-mono text-[52px] leading-none font-medium tabular-nums">
-                {registration.bib_number}
-              </p>
+              {/* One line, always: the number is sized to the card's width
+                  from its length (capped at 52px), so long bibs like
+                  "JBM-000002" no longer break at the hyphen. */}
+              <div className="mt-1 w-full" style={{ containerType: 'inline-size' }}>
+                <p
+                  className="whitespace-nowrap font-mono leading-none font-medium tabular-nums"
+                  style={{ fontSize: bibFontSize(registration.bib_number) }}
+                >
+                  {registration.bib_number}
+                </p>
+              </div>
               <p className="mt-3 text-[15px] font-medium">{profile?.full_name}</p>
               <p className="text-[13px] text-[oklch(0.2_0.01_240/0.65)]">{registration.race_categories?.name}</p>
 
