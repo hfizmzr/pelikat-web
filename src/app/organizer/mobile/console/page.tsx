@@ -139,7 +139,7 @@ export default async function OrganizerMobileConsolePage() {
             <p className="truncate text-[12px] text-muted-foreground">{event.name}</p>
           </div>
           <Link
-            href="/organizer/mobile/scanner"
+            href={`/organizer/mobile/scanner?event=${event.id}`}
             className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-transform active:scale-[0.98]"
           >
             <QrCode className="size-4" strokeWidth={1.75} />

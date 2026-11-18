@@ -155,7 +155,7 @@ export default async function OrganizerMobileHome() {
                 </p>
               </div>
               <Link
-                href="/organizer/mobile/scanner"
+                href={`/organizer/mobile/scanner?event=${data.nextEvent.id}`}
                 className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-primary text-[14px] font-medium text-primary-foreground transition-transform active:scale-[0.98]"
               >
                 <QrCode className="size-4" strokeWidth={1.75} />
@@ -167,7 +167,11 @@ export default async function OrganizerMobileHome() {
 
         <nav aria-label="Shortcuts" className="overflow-hidden rounded-xl border border-border/60 bg-card">
           {[
-            { href: '/organizer/mobile/scanner', icon: QrCode, label: 'Bib scanner' },
+            {
+              href: data.nextEvent ? `/organizer/mobile/scanner?event=${data.nextEvent.id}` : '/organizer/mobile/scanner',
+              icon: QrCode,
+              label: 'Bib scanner',
+            },
             { href: '/organizer/mobile/events', icon: Calendar, label: 'My events' },
             { href: '/organizer/mobile/console', icon: Gauge, label: 'Race console' },
             { href: '/organizer/mobile/merch', icon: ShoppingBag, label: 'Kit inventory' },

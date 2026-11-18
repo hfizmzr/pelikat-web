@@ -137,7 +137,7 @@ export default async function OrganizerMobileEventsPage() {
                     {/* Action buttons */}
                     <div className="flex gap-2">
                       <Link
-                        href={`/organizer/mobile/scanner`}
+                        href={`/organizer/mobile/scanner?event=${event.id}`}
                         className="flex-1 flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-background text-foreground text-[13px] font-medium active:scale-[0.98] transition-transform"
                       >
                         <QrCode className="size-[14px]" />
