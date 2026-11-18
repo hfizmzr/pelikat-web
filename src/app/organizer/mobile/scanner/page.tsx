@@ -30,6 +30,18 @@ type RecentScan = {
   time: Date
   success: boolean
   alreadyCheckedIn?: boolean
+  // Order numbers handed over at this scan, so the record outlives the card.
+  merchOrders?: string[]
+}
+
+/** Merch the check-in already marked collected, waiting for staff to confirm
+ * they handed it over. Kept apart from the result card, which the next scan
+ * replaces. */
+type PendingHandover = {
+  key: number
+  name: string
+  bib: string
+  merch: MerchHandover
 }
 
 /** /api/repc/check-in response (snake_case), same contract the desktop
@@ -104,10 +116,13 @@ export default function OrganizerMobileScannerPage({
   const eventName = currentEvent?.name ?? ''
   const eventStatus = currentEvent?.status ?? 'loading'
   const [scanCount, setScanCount] = useState(0)
+  const [pendingHandovers, setPendingHandovers] = useState<PendingHandover[]>([])
 
   const qrRef = useRef<Html5Qrcode | null>(null)
   const busyRef = useRef(false)
   const lastQrRef = useRef<{ text: string; at: number } | null>(null)
+  // Read by the camera callback, so a ref (set together with the state).
+  const handoverPendingRef = useRef(false)
   const scannerContainerId = 'pwa-qr-reader'
   const supabase = createClient()
 
@@ -198,6 +213,24 @@ export default function OrganizerMobileScannerPage({
 
         setScanResult(scanRes)
 
+        // Orders this check-in marked collected: hold them on screen until
+        // staff confirm the hand-over. The repeat scan of a pass still in view
+        // returns no merch (already collected), so it must not wipe them.
+        const collected = scanRes.success && scanRes.merch ? scanRes.merch.collected : []
+        if (collected.length > 0 && scanRes.merch) {
+          handoverPendingRef.current = true
+          const merch = scanRes.merch
+          setPendingHandovers((prev) => [
+            {
+              key: Date.now(),
+              name: scanRes.runner?.name || 'Runner',
+              bib: scanRes.runner?.bib || '',
+              merch: { collected: merch.collected, notPacked: [] },
+            },
+            ...prev,
+          ])
+        }
+
         if (scanRes.success && !scanRes.alreadyCheckedIn) {
           vibrate([100, 50, 100])
           setScanCount((c) => c + 1)
@@ -216,6 +249,7 @@ export default function OrganizerMobileScannerPage({
             time: new Date(),
             success: scanRes.success,
             alreadyCheckedIn: scanRes.alreadyCheckedIn,
+            merchOrders: collected.map((o) => o.orderNumber),
           },
           ...prev.slice(0, 9),
         ])
@@ -242,12 +276,21 @@ export default function OrganizerMobileScannerPage({
   // ignore the same QR for a few seconds so it is not checked in repeatedly.
   const onQrDecoded = useCallback(async (decodedText: string) => {
     const last = lastQrRef.current
-    if (busyRef.current) return
+    // Camera paused while a merch hand-over awaits confirmation; typed bibs
+    // (deliberate) still go through.
+    if (busyRef.current || handoverPendingRef.current) return
     if (last && last.text === decodedText && Date.now() - last.at < QR_REPEAT_COOLDOWN_MS) return
     lastQrRef.current = { text: decodedText, at: Date.now() }
     await processRef.current(decodedText, 'qr')
     lastQrRef.current = { text: decodedText, at: Date.now() }
   }, [])
+
+  const confirmHandover = (key: number) => {
+    const next = pendingHandovers.filter((h) => h.key !== key)
+    handoverPendingRef.current = next.length > 0
+    setPendingHandovers(next)
+  }
+  const handoverPending = pendingHandovers.length > 0
 
   const startScanning = useCallback(async () => {
     if (scanning) return
@@ -398,7 +441,9 @@ export default function OrganizerMobileScannerPage({
               <div className="absolute bottom-2 inset-x-0 flex justify-center">
                 <div className="bg-card/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2 shadow-sm">
                   <span className="w-2 h-2 rounded-full bg-primary" />
-                  <span className="text-[11px] font-medium text-foreground">SCANNING</span>
+                  <span className="text-[11px] font-medium text-foreground">
+                    {handoverPending ? 'PAUSED: confirm merch below' : 'SCANNING'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -451,6 +496,34 @@ export default function OrganizerMobileScannerPage({
             {processingBib ? '...' : 'Check in'}
           </button>
         </div>
+
+        {/* Merch hand-overs waiting for confirmation (camera paused) */}
+        {pendingHandovers.map((h) => (
+          <section
+            key={h.key}
+            aria-label={`Merch to hand over to ${h.name}`}
+            className="rounded-xl border border-primary/40 bg-primary/5 p-4"
+          >
+            <p className="text-[13px] font-medium text-foreground">
+              Hand over merch to {h.name}
+              {h.bib && <span className="ml-2 inline-block whitespace-nowrap rounded bg-accent px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">{h.bib}</span>}
+            </p>
+            <MerchHandoverNote
+              merch={h.merch}
+              className="mt-2 flex items-start gap-2 text-[13px] text-foreground"
+            />
+            <button
+              type="button"
+              onClick={() => confirmHandover(h.key)}
+              className="mt-3 flex min-h-11 w-full items-center justify-center rounded-lg bg-primary text-[14px] font-medium text-primary-foreground transition-transform active:scale-[0.98]"
+            >
+              Merch handed over
+            </button>
+            <p className="mt-2 text-center text-[12px] text-muted-foreground">
+              The camera is paused until you confirm. Typed bib numbers still work.
+            </p>
+          </section>
+        ))}
 
         {/* Result card */}
         {scanResult && (
@@ -514,11 +587,11 @@ export default function OrganizerMobileScannerPage({
               </div>
             )}
 
-            {/* The check-in already marked these orders collected: staff must
-                see them to actually hand them over. */}
-            {scanResult.merch && (
+            {/* Paid orders not packed yet (nothing to hand over now). Orders
+                this check-in collected are held in the panel above. */}
+            {scanResult.merch && scanResult.merch.notPacked.length > 0 && (
               <MerchHandoverNote
-                merch={scanResult.merch}
+                merch={{ collected: [], notPacked: scanResult.merch.notPacked }}
                 className="mt-3 flex items-start gap-2 rounded-lg border border-border/60 bg-background/60 p-3 text-[13px] text-foreground"
               />
             )}
@@ -550,6 +623,9 @@ export default function OrganizerMobileScannerPage({
                   <div className="flex-1 min-w-0">
                     <p className="text-[12px] font-medium text-foreground truncate">{scan.name}</p>
                     <p className="text-[11px] text-muted-foreground font-mono">{scan.bib}</p>
+                    {scan.merchOrders && scan.merchOrders.length > 0 && (
+                      <p className="text-[11px] text-muted-foreground truncate">Merch: {scan.merchOrders.join(', ')}</p>
+                    )}
                   </div>
                   <span className="text-[11px] text-muted-foreground shrink-0">
                     {scan.time.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
