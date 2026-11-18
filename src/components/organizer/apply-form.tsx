@@ -172,7 +172,7 @@ export default function ApplyForm() {
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Submit Application
+                Submit application
               </Button>
             </form>
           </CardContent>
