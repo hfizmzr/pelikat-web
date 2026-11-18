@@ -1,4 +1,5 @@
 import { StatusTag, statusLabel, type StatusTone } from '@/components/ui/status-tag'
+import { malaysiaToday } from '@/lib/event-dates'
 import { Calendar, CalendarDays, CalendarX, MapPin, Plus, QrCode } from "lucide-react"
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
@@ -62,9 +63,12 @@ function statusChip(status: string) {
 
 export default async function OrganizerMobileEventsPage() {
   const events = await getOrganizerEvents()
-  const now = new Date()
-  const upcoming = events.filter((e) => new Date(e.date) >= now || e.status === 'active')
-  const past = events.filter((e) => new Date(e.date) < now && e.status !== 'active')
+  // Compare Malaysian calendar dates: `new Date(date) >= now` moved a race
+  // into Past at 08:00 on race morning (event_date parses as UTC midnight).
+  // Drafts stay listed here; this is the organizer's own event list.
+  const today = malaysiaToday()
+  const upcoming = events.filter((e) => e.date >= today)
+  const past = events.filter((e) => e.date < today)
 
   return (
     <div className="flex flex-col w-full bg-background min-h-dvh">
@@ -91,7 +95,7 @@ export default async function OrganizerMobileEventsPage() {
         {upcoming.length > 0 && (
           <section>
             <h2 className="text-[12px] font-medium text-muted-foreground mb-3">
-              Upcoming & active
+              Upcoming
             </h2>
             <div className="flex flex-col gap-3">
               {upcoming.map((event) => (

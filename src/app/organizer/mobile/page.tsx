@@ -8,6 +8,7 @@ import { NotificationBell } from '@/components/notifications/notification-bell'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { MobileLogoutButton } from '@/components/organizer/mobile-logout-button'
 import { BrandLink } from '@/components/brand-mark'
+import { isRaceDay, isUpcomingRace, malaysiaToday } from '@/lib/event-dates'
 
 async function getOrganizerDashboardData() {
   const cookieStore = await cookies()
@@ -37,14 +38,15 @@ async function getOrganizerDashboardData() {
         registrations(id, payment_status, checked_in)
       `)
       .eq('organizer_id', organizerId)
-      .order('event_date', { ascending: true })
-      .limit(5),
+      .order('event_date', { ascending: true }),
   ])
 
-  const now = new Date()
-  const upcomingEvents = (events || []).filter(
-    (e) => new Date(e.event_date) >= now || e.status === 'active'
-  )
+  // Same rule as the race console, so both screens show the same event. The
+  // old filter (`new Date(event_date) >= now` over the 5 *oldest* events)
+  // dropped a race at 08:00 on race morning, showed drafts, and missed every
+  // upcoming event once an organizer had more than 5.
+  const today = malaysiaToday()
+  const upcomingEvents = (events || []).filter((e) => isUpcomingRace(e, today))
 
   const allRegs = (events || []).flatMap((e) => e.registrations || [])
   const totalRunners = allRegs.length
@@ -70,6 +72,7 @@ async function getOrganizerDashboardData() {
           date: nextEvent.event_date,
           location: nextEvent.location,
           status: nextEvent.status,
+          raceDay: isRaceDay(nextEvent.event_date, today),
           totalSlots: nextEventCats.reduce((a, c) => a + (c.max_slots || 0), 0),
           registered: nextEventRegs.length,
           checkedIn: nextEventCheckedIn,
@@ -102,7 +105,7 @@ export default async function OrganizerMobileHome() {
   }
 
   const checkInPercent = data.checkInRate
-  const isLive = data.nextEvent?.status === 'active'
+  const isLive = data.nextEvent?.raceDay ?? false
 
   return (
     <div className="flex flex-col w-full min-h-dvh bg-background">
@@ -127,7 +130,7 @@ export default async function OrganizerMobileHome() {
         {data.nextEvent && (
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-[13px] text-muted-foreground">{isLive ? 'Race in progress' : 'Next event'}</h2>
+              <h2 className="text-[13px] text-muted-foreground">{isLive ? 'Race day' : 'Next event'}</h2>
               {isLive && <StatusTag tone="success">Live</StatusTag>}
             </div>
             <div className="rounded-xl border border-border/60 bg-card p-4">
