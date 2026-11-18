@@ -41,7 +41,7 @@ export default function OrganizerApplyPage() {
   }
 
   return (
-    <div className="min-h-dvh">
+    <div className="min-h-[calc(100dvh-3.5rem)]">
       <section className="mx-auto grid w-full max-w-6xl gap-12 px-4 py-16 sm:px-8 lg:grid-cols-[1.4fr_1fr] lg:items-start lg:py-24">
         <div>
           <h1 className="max-w-[18ch] text-[36px] leading-[1.08] font-medium tracking-[-0.02em] text-foreground sm:text-[48px]">

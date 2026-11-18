@@ -1,6 +1,6 @@
 'use client'
 
-import { BrandMark } from '@/components/brand-mark'
+import { BrandLink } from '@/components/brand-mark'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense, useState } from 'react'
@@ -64,7 +64,7 @@ function LoginForm() {
     <div className="w-full flex flex-col gap-6">
       {/* Logo */}
       <div className="text-center mb-2">
-        <BrandMark className="mb-6" />
+        <BrandLink className="mb-6" />
         <h1 className="text-2xl font-medium text-foreground">Sign in</h1>
         <p className="text-sm text-muted-foreground mt-1">
           {isSwitchingAccount
@@ -158,14 +158,11 @@ function LoginForm() {
         </Link>
       </p>
 
-      {/* Audit #10: 3-line ragged wrap ("Terms and" / "Privacy" / "Policy") —
-      nowrap the link pair so phrases never split mid-span; the break lands
-      after "and" instead. */}
+      {/* Plain text until real Terms / Privacy pages exist (no dead links).
+      Audit #10: nowrap "Privacy policy" so the wrap lands after "and". */}
       <p className="text-xs text-muted-foreground text-center leading-relaxed">
-        By signing in, you agree to our{' '}
-        <span className="text-primary underline underline-offset-2 cursor-pointer whitespace-nowrap">Terms</span>
-        {' '}and{' '}
-        <span className="text-primary underline underline-offset-2 cursor-pointer whitespace-nowrap">Privacy policy</span>.
+        By signing in, you agree to our Terms and{' '}
+        <span className="whitespace-nowrap">Privacy policy</span>.
       </p>
     </div>
   )

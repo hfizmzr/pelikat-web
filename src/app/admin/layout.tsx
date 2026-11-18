@@ -8,6 +8,7 @@ import { getUserRole } from '@/lib/auth/requireRole'
 import { AdminSidebar, AdminMobileNav } from '@/components/layout/admin-sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { BrandLink } from '@/components/brand-mark'
 import Link from 'next/link'
 
 export default function AdminLayout({
@@ -42,7 +43,11 @@ export default function AdminLayout({
 
         {/* ── Control Plane Header Strip ──────────────────────── */}
         <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/95 px-4 backdrop-blur-md sm:px-6">
-          <AdminMobileNav />
+          <div className="flex items-center gap-2 lg:hidden">
+            <AdminMobileNav />
+            {/* Sidebar (and its logo) is hidden below lg: keep the mark in the bar. */}
+            <BrandLink href="/admin" label="Admin dashboard" wordmark={false} />
+          </div>
           <div className="flex-1" />
           <div className="flex items-center gap-2">
             <ThemeToggle />

@@ -10,6 +10,7 @@ import { OrganizerSidebar, OrganizerMobileNav } from '@/components/layout/organi
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { BrandLink } from '@/components/brand-mark'
 
 export default function OrganizerLayout({
   children,
@@ -81,7 +82,15 @@ export default function OrganizerLayout({
   }, [router, supabase, pathname])
 
   if (pathname.startsWith('/organizer/apply')) {
-    return <>{children}</>
+    // Public page: no console chrome, but keep a way back to the homepage.
+    return (
+      <div className="min-h-dvh bg-background">
+        <header className="flex h-14 items-center px-4 sm:px-8">
+          <BrandLink />
+        </header>
+        {children}
+      </div>
+    )
   }
 
   return (
@@ -97,8 +106,10 @@ export default function OrganizerLayout({
       <div className="flex flex-1 flex-col min-w-0">
         {showSidebar && (
           <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b border-border bg-background/95 px-4 backdrop-blur-md sm:px-6">
-            <div className="lg:hidden">
+            <div className="flex items-center gap-2 lg:hidden">
               <OrganizerMobileNav />
+              {/* Sidebar (and its logo) is hidden below lg: keep the mark in the bar. */}
+              <BrandLink href="/organizer" label="Organizer dashboard" wordmark={false} />
             </div>
             <div className="flex-1" />
             <div className="flex items-center gap-1">

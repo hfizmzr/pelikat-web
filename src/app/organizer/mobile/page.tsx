@@ -7,6 +7,7 @@ import { StatusTag } from '@/components/ui/status-tag'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { MobileLogoutButton } from '@/components/organizer/mobile-logout-button'
+import { BrandLink } from '@/components/brand-mark'
 
 async function getOrganizerDashboardData() {
   const cookieStore = await cookies()
@@ -54,6 +55,7 @@ async function getOrganizerDashboardData() {
   const nextEvent = upcomingEvents[0]
   const nextEventCats = (nextEvent?.race_categories || []) as Array<{id: string, name: string, max_slots: number}>
   const nextEventRegs = (nextEvent?.registrations || []) as Array<{payment_status: string, checked_in: boolean}>
+  const nextEventCheckedIn = nextEventRegs.filter((r) => r.checked_in).length
 
   return {
     orgName: org?.name || 'My org',
@@ -70,7 +72,8 @@ async function getOrganizerDashboardData() {
           status: nextEvent.status,
           totalSlots: nextEventCats.reduce((a, c) => a + (c.max_slots || 0), 0),
           registered: nextEventRegs.length,
-          checkedIn: nextEventRegs.filter((r) => r.checked_in).length,
+          checkedIn: nextEventCheckedIn,
+          checkInRate: nextEventRegs.length > 0 ? Math.round((nextEventCheckedIn / nextEventRegs.length) * 100) : 0,
         }
       : null,
     upcomingCount: upcomingEvents.length,
@@ -106,8 +109,11 @@ export default async function OrganizerMobileHome() {
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md px-5 pt-safe">
         <div className="h-16 flex items-center justify-between">
           <div className="min-w-0">
-            <p className="text-[16px] font-medium text-foreground">Pelikat</p>
-            <p className="truncate text-[12px] text-muted-foreground">{data.orgName}</p>
+            {/* The mobile console's own home is the Home tab; the mark leads out
+            to the full organizer dashboard (which a home-screen install sends
+            straight back here). */}
+            <BrandLink href="/organizer" label="Organizer dashboard" />
+            <p className="mt-0.5 truncate text-[12px] text-muted-foreground">{data.orgName}</p>
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle className="w-10 h-10 flex items-center justify-center rounded-full" />
@@ -136,11 +142,13 @@ export default async function OrganizerMobileHome() {
                 <span className="tabular-nums">{data.nextEvent.registered} registered</span>
               </p>
               <div className="mt-4">
+                {/* This card is one event: use its own check-ins, not the
+                org-wide figures shown under Race-day status. */}
                 <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-primary" style={{ width: `${checkInPercent}%` }} />
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${data.nextEvent.checkInRate}%` }} />
                 </div>
                 <p className="mt-1.5 text-[12px] tabular-nums text-muted-foreground">
-                  {data.checkedIn} of {data.nextEvent.registered} checked in · {checkInPercent}%
+                  {data.nextEvent.checkedIn} of {data.nextEvent.registered} checked in · {data.nextEvent.checkInRate}%
                 </p>
               </div>
               <Link
