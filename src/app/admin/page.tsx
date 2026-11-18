@@ -1,6 +1,7 @@
 import { statusLabel } from '@/components/ui/status-tag'
 import { ArrowRight, BadgeCheck, Settings, SlidersHorizontal, ToggleRight, TriangleAlert } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
+import { countAllRegistrationsForAdmin } from '@/lib/supabase/admin-counts'
 import Link from 'next/link'
 import { StorageUsage } from '@/components/admin/storage-usage'
 import { HealthMonitor } from '@/components/admin/health-monitor'
@@ -15,7 +16,7 @@ export default async function AdminDashboard() {
     { count: organizersCount },
     { count: activeOrganizersCount },
     { count: eventsCount },
-    { count: registrationsCount },
+    registrationsCount,
     { count: expiringSoonCount },
     { data: recentAuditLogs },
     { data: expiringOrganizers },
@@ -28,7 +29,9 @@ export default async function AdminDashboard() {
       .select('id', { count: 'exact', head: true })
       .eq('is_active', true),
     supabase.from('events').select('id', { count: 'exact', head: true }),
-    supabase.from('registrations').select('id', { count: 'exact', head: true }),
+    // No admin RLS read on registrations (by design): counted via the
+    // service role behind a server-side admin check, like the admin API.
+    countAllRegistrationsForAdmin(supabase),
     supabase
       .from('organizers')
       .select('id', { count: 'exact', head: true })
