@@ -1,8 +1,9 @@
-import { Banknote, Calendar, ChevronRight, ClipboardList, Gauge, MapPin, QrCode, Tags, Trophy, UserPlus, Users } from "lucide-react"
+import { Calendar, ChevronRight, MapPin, QrCode, Tags, Trophy, Users } from "lucide-react"
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
+import { StatusTag } from '@/components/ui/status-tag'
 
 async function getActiveEventOpsData() {
   const cookieStore = await cookies()
@@ -99,20 +100,19 @@ export default async function OrganizerMobileConsolePage() {
   if (!data) {
     return (
       <div className="flex flex-col min-h-dvh bg-background">
-        <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/40 px-5 pt-safe">
+        <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/60 px-5 pt-safe">
           <div className="h-14 flex items-center">
-            <span className="text-[16px] font-bold text-foreground">Race Console</span>
+            <span className="text-[16px] font-medium text-foreground">Race console</span>
           </div>
         </header>
-        <div className="flex flex-col items-center justify-center flex-1 py-16 text-muted-foreground">
-          <Gauge className="size-[48px] mb-3" />
-          <p className="text-[14px] font-medium">No active event</p>
-          <p className="text-[12px] mt-1">Activate an event to see the race console</p>
+        <div className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+          <p className="text-[15px] text-foreground">No active event</p>
+          <p className="mt-1 text-[13px] text-muted-foreground">Publish an event to see it here on race day</p>
           <Link
             href="/organizer/mobile/events"
-            className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold"
+            className="mt-5 inline-flex min-h-11 items-center rounded-[10px] bg-primary px-5 text-[14px] font-medium text-primary-foreground"
           >
-            View Events
+            View events
           </Link>
         </div>
       </div>
@@ -124,180 +124,109 @@ export default async function OrganizerMobileConsolePage() {
 
   return (
     <div className="flex flex-col w-full bg-background min-h-dvh">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/40 px-5 pt-safe">
-        <div className="h-14 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[16px] font-bold text-foreground">Race Console</span>
-              {isLive && (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-ping" />
-                  <span className="text-[9px] font-bold text-success uppercase tracking-wider">Live</span>
-                </div>
-              )}
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/60 px-5 pt-safe">
+        <div className="h-14 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-[16px] font-medium text-foreground">Race console</span>
+              {isLive && <StatusTag tone="success">Live</StatusTag>}
             </div>
-            <p className="text-[10px] text-muted-foreground truncate max-w-[220px]">{event.name}</p>
+            <p className="truncate text-[12px] text-muted-foreground">{event.name}</p>
           </div>
           <Link
-            href={`/organizer/mobile/scanner`}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold"
+            href="/organizer/mobile/scanner"
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-transform active:scale-[0.98]"
           >
-            <QrCode className="size-[13px]" />
+            <QrCode className="size-4" strokeWidth={1.75} />
             Scan
           </Link>
         </div>
       </header>
 
-      <div className="flex flex-col px-4 py-4 space-y-5">
-
-        {/* Event Banner */}
-        <div className="relative overflow-hidden rounded-xl bg-card p-4 shadow-md border border-border/40">
-          <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
-          <div className="relative z-10">
-            <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">
-              {isLive ? 'Active Production Pipeline' : 'Upcoming Event'}
+      <div className="flex flex-col gap-8 px-5 py-5">
+        <div className="rounded-xl border border-border/60 bg-card p-4">
+          <p className="text-[13px] text-muted-foreground">{isLive ? 'Race in progress' : 'Upcoming event'}</p>
+          <h1 className="mt-0.5 text-[20px] leading-7 font-medium text-foreground">{event.name}</h1>
+          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="size-3.5" strokeWidth={1.75} />
+              {new Date(event.date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short' })}
             </span>
-            <h1 className="text-[20px] font-extrabold text-foreground leading-tight mt-0.5">{event.name}</h1>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground mt-1.5">
-              <span className="flex items-center gap-1">
-                <Calendar className="size-[13px] text-primary" />
-                {new Date(event.date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short' })}
+            {event.location && (
+              <span className="flex items-center gap-1.5">
+                <MapPin className="size-3.5" strokeWidth={1.75} />
+                {event.location}
               </span>
-              {event.location && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="size-[13px] text-success" />
-                  {event.location}
-                </span>
-              )}
+            )}
+          </p>
+          <div className="mt-4">
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${checkInRate}%` }} />
             </div>
+            <p className="mt-1.5 text-[12px] tabular-nums text-muted-foreground">
+              {checkedIn} of {totalRegs} checked in · {checkInRate}%
+            </p>
           </div>
         </div>
 
-        {/* KPI Grid 2x2 */}
-        <section className="space-y-2">
-          <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider">
-            Critical Ops Status <span className="text-primary ml-2">• Sync: Live</span>
-          </h2>
+        <section aria-labelledby="race-status">
+          <h2 id="race-status" className="mb-3 text-[15px] font-medium text-foreground">Race-day status</h2>
           <div className="grid grid-cols-2 gap-3">
             {[
-              {
-                icon: UserPlus,
-                label: 'Check-in Velocity',
-                value: checkedIn.toLocaleString(),
-                badge: `${checkInRate}%`,
-                color: { bg: 'bg-primary/10', text: 'text-primary', badge: 'bg-primary/10 text-primary', bar: 'bg-primary' },
-                barPct: checkInRate,
-                sub: `${totalRegs} total runner kits`,
-              },
-              {
-                icon: Banknote,
-                label: 'Confirmed',
-                value: paid.toLocaleString(),
-                badge: totalRegs > 0 ? `${Math.round((paid / totalRegs) * 100)}%` : '0%',
-                color: { bg: 'bg-primary/10', text: 'text-primary', badge: 'bg-primary/10 text-primary', bar: 'bg-primary' },
-                barPct: totalRegs > 0 ? Math.round((paid / totalRegs) * 100) : 0,
-                sub: `${pending} pending payment`,
-              },
-              {
-                icon: Users,
-                label: 'Total Registered',
-                value: totalRegs.toLocaleString(),
-                badge: 'All',
-                color: { bg: 'bg-success/10', text: 'text-success', badge: 'bg-success/10 text-success', bar: 'bg-success' },
-                barPct: 100,
-                sub: `${catBreakdown.length} categories`,
-              },
-              {
-                icon: ClipboardList,
-                label: 'Not Checked In',
-                value: (totalRegs - checkedIn).toLocaleString(),
-                badge: `${100 - checkInRate}%`,
-                color: { bg: 'bg-red-500/10 dark:bg-red-300/10', text: 'text-red-500 dark:text-red-300', badge: 'bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300', bar: 'bg-red-500 dark:bg-red-300' },
-                barPct: 100 - checkInRate,
-                sub: 'Awaiting collection',
-              },
-            ].map((kpi, i) => (
-              <div key={i} className="flex flex-col justify-between p-4 rounded-xl bg-card border border-border/40 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className={`p-1.5 rounded-lg ${kpi.color.bg} ${kpi.color.text}`}>
-                    <kpi.icon className="size-[18px]" />
-                  </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${kpi.color.badge}`}>
-                    {kpi.badge}
-                  </span>
-                </div>
-                <div className="mt-4">
-                  <span className="block text-[10px] leading-[14px] text-muted-foreground font-medium">{kpi.label}</span>
-                  <p className="text-[22px] leading-[28px] font-bold text-foreground mt-0.5">{kpi.value}</p>
-                  <div className="w-full bg-accent rounded-full h-1.5 mt-2 overflow-hidden">
-                    <div className={`${kpi.color.bar} h-full rounded-full`} style={{ width: `${kpi.barPct}%` }} />
-                  </div>
-                  <span className="block text-[10px] text-muted-foreground mt-1.5">{kpi.sub}</span>
-                </div>
+              { label: 'Checked in', value: checkedIn, sub: `${checkInRate}% of ${totalRegs} runners` },
+              { label: 'Still to check in', value: totalRegs - checkedIn, sub: 'Awaiting kit collection' },
+              { label: 'Confirmed', value: paid, sub: `${pending} pending payment` },
+              { label: 'Registered', value: totalRegs, sub: `${catBreakdown.length} ${catBreakdown.length === 1 ? 'category' : 'categories'}` },
+            ].map((kpi) => (
+              <div key={kpi.label} className="rounded-xl border border-border/60 bg-card p-4">
+                <p className="text-[13px] text-muted-foreground">{kpi.label}</p>
+                <p className="mt-2 text-[28px] leading-none font-medium tabular-nums text-foreground">{kpi.value.toLocaleString()}</p>
+                <p className="mt-2 text-[12px] text-muted-foreground">{kpi.sub}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Category breakdown */}
         {catBreakdown.length > 0 && (
-          <section>
-            <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
-              Category Breakdown
-            </h2>
-            <div className="rounded-xl bg-card border border-border/40 overflow-hidden">
-              {catBreakdown.map((cat, i) => (
-                <div
-                  key={cat.id}
-                  className={`p-4 flex items-center gap-3 ${i > 0 ? 'border-t border-border/40' : ''}`}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[13px] font-semibold text-foreground truncate">{cat.name}</span>
-                      <span className="text-[11px] text-primary font-bold shrink-0">{cat.fillPct}%</span>
-                    </div>
-                    <div className="w-full bg-accent rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="bg-primary h-full rounded-full"
-                        style={{ width: `${cat.fillPct}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-[10px] text-muted-foreground">{cat.registered} registered</span>
-                      <span className="text-[10px] text-muted-foreground">{cat.checkedIn} checked in</span>
-                    </div>
+          <section aria-labelledby="race-categories">
+            <h2 id="race-categories" className="mb-3 text-[15px] font-medium text-foreground">Categories</h2>
+            <ul className="divide-y divide-border/60 overflow-hidden rounded-xl border border-border/60 bg-card">
+              {catBreakdown.map((cat) => (
+                <li key={cat.id} className="p-4">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="truncate text-[14px] text-foreground">{cat.name}</span>
+                    <span className="shrink-0 font-mono text-[12px] tabular-nums text-muted-foreground">{cat.fillPct}%</span>
                   </div>
-                </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${cat.fillPct}%` }} />
+                  </div>
+                  <p className="mt-1.5 text-[12px] tabular-nums text-muted-foreground">
+                    {cat.registered} registered · {cat.checkedIn} checked in
+                  </p>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         )}
 
-        {/* Quick links */}
-        <section className="pb-4">
-          <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
-            Operations
-          </h2>
-          <div className="flex flex-col gap-2">
-            {[
-              { href: `/organizer/events/${event.id}/checkin`, icon: QrCode, label: 'Full Check-in Scanner', color: 'text-primary' },
-              { href: `/organizer/events/${event.id}/registrations`, icon: Users, label: 'Registrations List', color: 'text-primary' },
-              { href: `/organizer/events/${event.id}/leaderboard`, icon: Trophy, label: 'Live Leaderboard', color: 'text-success' },
-              { href: `/organizer/events/${event.id}/categories`, icon: Tags, label: 'Race Categories', color: 'text-primary' },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/40 active:scale-95 transition-transform"
-              >
-                <span className={`size-[20px] ${link.color}`}><link.icon className="size-[20px]" /></span>
-                <span className="text-[13px] font-medium text-foreground flex-1">{link.label}</span>
-                <ChevronRight className="size-[16px] text-muted-foreground" />
-              </Link>
-            ))}
-          </div>
-        </section>
+        <nav aria-label="Event tools" className="overflow-hidden rounded-xl border border-border/60 bg-card">
+          {[
+            { href: `/organizer/events/${event.id}/checkin`, icon: QrCode, label: 'Check-in' },
+            { href: `/organizer/events/${event.id}/registrations`, icon: Users, label: 'Registrations' },
+            { href: `/organizer/events/${event.id}/leaderboard`, icon: Trophy, label: 'Leaderboard' },
+            { href: `/organizer/events/${event.id}/categories`, icon: Tags, label: 'Race categories' },
+          ].map((link, i) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`flex min-h-12 items-center gap-3 px-4 text-[14px] text-foreground transition-colors hover:bg-muted/60 ${i > 0 ? 'border-t border-border/60' : ''}`}
+            >
+              <link.icon className="size-[18px] text-muted-foreground" strokeWidth={1.75} />
+              <span className="flex-1">{link.label}</span>
+              <ChevronRight className="size-4 text-muted-foreground" strokeWidth={1.75} />
+            </Link>
+          ))}
+        </nav>
       </div>
     </div>
   )

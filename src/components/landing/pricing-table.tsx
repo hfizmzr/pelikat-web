@@ -1,5 +1,4 @@
 import Link from "next/link"
-import type { CSSProperties } from "react"
 import { Check } from "lucide-react"
 import type { OrganizerSubscriptionPrice } from "@/lib/subscription"
 import { formatRM } from "@/lib/merch"
@@ -50,39 +49,26 @@ export function PricingTable({ price }: { price: OrganizerSubscriptionPrice }) {
   return (
     <section id="pricing" className={styles.section} aria-labelledby="pricing-title">
       <div className={styles.container}>
-        <div className="mx-auto max-w-2xl text-center" data-reveal="">
-          <span className={styles.eyebrow}>
-            <span className={styles.eyebrowDot} />
-            Pricing
-          </span>
-          <h2 id="pricing-title" className={cn(styles.h2, "mt-5")}>
-            One plan for organizers. Free for runners.
+        <div className="max-w-2xl">
+          <h2 id="pricing-title" className={styles.h2}>
+            One plan for organizers, free for runners
           </h2>
           <p className={cn(styles.lead, "mt-4")}>No tiers to compare. Organizers get every feature, and runners never pay to sign up.</p>
         </div>
 
-        <div className="mx-auto mt-14 grid max-w-[880px] gap-5 md:grid-cols-2">
-          {plans.map((plan, i) => (
-            <div
-              key={plan.name}
-              className={cn(styles.card, styles.spot, "flex flex-col p-7", plan.featured && styles.priceFeatured)}
-              data-reveal=""
-              data-spotlight=""
-              style={{ "--i": i } as CSSProperties}
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-[17px] font-semibold">{plan.name}</h3>
-                {plan.featured && <span className={cn(styles.pill, styles.pillAccent)}>For organizers</span>}
-              </div>
+        <div className="mt-12 grid max-w-[880px] gap-4 md:grid-cols-2">
+          {plans.map((plan) => (
+            <div key={plan.name} className={cn(styles.card, "flex flex-col p-6 sm:p-8")}>
+              <h3 className={styles.h3}>{plan.name}</h3>
               <p className="mt-4 flex items-baseline gap-2">
-                <span className="text-[48px] font-semibold leading-none tracking-[-0.04em] tabular-nums">{plan.price}</span>
+                <span className="text-[44px] font-medium leading-none tracking-[-0.02em] tabular-nums">{plan.price}</span>
                 <span className="text-[15px] text-[var(--muted)]">{plan.period}</span>
               </p>
               <p className={cn(styles.body, "mt-3")}>{plan.blurb}</p>
               <ul className="mt-6 grid gap-3 text-[15px]">
                 {plan.features.map((f) => (
                   <li key={f} className="flex gap-3">
-                    <Check className="mt-0.5 size-[18px] shrink-0 text-[var(--accent)]" />
+                    <Check className="mt-0.5 size-[18px] shrink-0 text-[var(--muted)]" strokeWidth={1.75} />
                     {f}
                   </li>
                 ))}

@@ -102,7 +102,7 @@ describe('Polish: Registration & Emails (Phase 2)', () => {
       'events',
       'runner-registration-actions.tsx'
     )
-    expect(actions).toContain('T-Shirt Size')
+    expect(actions).toContain('T-shirt size')
     expect(actions).toContain('runner.tShirtSize')
     expect(actions).toContain('"/runner/profile"')
 
@@ -205,7 +205,7 @@ describe('Polish: Analytics & Leaderboard (Phase 4)', () => {
   it('runner leaderboard is gated until results are published (FR-69)', () => {
     const page = read('src', 'app', 'runner', 'leaderboard', 'page.tsx')
     expect(page).toContain('resultsLocked')
-    expect(page).toContain('Results coming soon. Stay tuned!')
+    expect(page).toContain('Results are not published yet')
     expect(page).toContain('.in(\'event_id\', publishedIds)')
   })
 
@@ -300,7 +300,7 @@ describe('Polish: E-Certificates & Re-Registration (Phase 5)', () => {
     expect(action).toContain("badgeQuery.is('event_id', null)")
 
     const button = read('src', 'components', 'gamification', 'certificate-download.tsx')
-    expect(button).toContain('Download Certificate')
+    expect(button).toContain('Download certificate')
     // The flow lives in the shared component; check the popup behavior there.
     const flow = read('src', 'components', 'gamification', 'cert-download-button.tsx')
     // popup opens synchronously in the click handler, not after the await
@@ -311,12 +311,12 @@ describe('Polish: E-Certificates & Re-Registration (Phase 5)', () => {
   it('run-log badge toast links fresh certs after award (UC14)', () => {
     const page = read('src', 'app', 'runner', 'run-log', 'page.tsx')
     expect(page).toContain('badge.cert_url')
-    expect(page).toContain('Download Certificate')
+    expect(page).toContain('Download certificate')
   })
 
   it('registration shows saved profile + emergency contact (FR-46)', () => {
     const actions = read('src', 'components', 'events', 'runner-registration-actions.tsx')
-    expect(actions).toContain('Using Your Saved Profile')
+    expect(actions).toContain('Using your saved profile')
     expect(actions).toContain('runner.name')
     expect(actions).toContain('runner.dob')
     expect(actions).toContain('runner.gender')

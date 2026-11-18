@@ -1,5 +1,6 @@
 'use client'
 
+import { StatusTag } from '@/components/ui/status-tag'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -32,7 +33,7 @@ function formatBatchTime(value: string) {
 
 function BatchStatusBadge({ batch }: { batch: PhotoBatch }) {
   if (batch.status === 'completed') {
-    return <Badge variant="outline" className="border-green-500/40 text-green-700 dark:text-green-400">Completed</Badge>
+    return <StatusTag tone="success">Completed</StatusTag>
   }
   return (
     <Badge variant="outline" className="gap-1">
@@ -43,8 +44,8 @@ function BatchStatusBadge({ batch }: { batch: PhotoBatch }) {
 }
 
 const STATS: { key: 'auto_tagged' | 'flagged' | 'no_bib' | 'failed'; label: string; className: string }[] = [
-  { key: 'auto_tagged', label: 'Auto-tagged', className: 'text-green-600' },
-  { key: 'flagged', label: 'Flagged', className: 'text-amber-600' },
+  { key: 'auto_tagged', label: 'Auto-tagged', className: 'text-foreground' },
+  { key: 'flagged', label: 'Flagged', className: 'text-warning' },
   { key: 'no_bib', label: 'No BIB found', className: '' },
   { key: 'failed', label: 'Failed', className: 'text-destructive' },
 ]
@@ -123,7 +124,7 @@ export function PhotoBatchList({ eventId, initialBatches }: PhotoBatchListProps)
               {STATS.map((stat) => (
                 <div key={stat.key} className="rounded-md bg-muted/40 px-3 py-2">
                   <dt className="text-xs text-muted-foreground">{stat.label}</dt>
-                  <dd className={`text-base font-semibold ${stat.className}`}>{batch[stat.key]}</dd>
+                  <dd className={`text-base font-medium ${stat.className}`}>{batch[stat.key]}</dd>
                 </div>
               ))}
             </dl>

@@ -121,7 +121,7 @@ export function CategoryCardActions({ category, eventId }: CategoryCardActionsPr
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-[520px]">
           <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
+            <DialogTitle>Edit category</DialogTitle>
             <DialogDescription>Update the details for this race category.</DialogDescription>
           </DialogHeader>
 

@@ -1,4 +1,3 @@
-import { Banknote, CircleCheck, Clock, Flag, Info } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import { ExportCsvButton } from '@/components/organizer/export-csv-button'
 import type { Metadata } from 'next'
@@ -12,7 +11,7 @@ type FinancialRegistration = {
 }
 
 export const metadata: Metadata = {
-  title: 'Financial Rails - Organizer Hub | Pelikat',
+  title: 'Finance - Pelikat',
   description: 'Revenue overview, payment gateway status, and financial reporting for your events',
 }
 
@@ -59,169 +58,102 @@ export default async function OrganizerFinancialPage() {
   const eventRevMap: Record<string, { name: string; revenue: number; count: number }> = {}
   paidRegs.forEach(r => {
     const eid = r.events?.id || 'unknown'
-    const ename = r.events?.name || 'Unknown Event'
+    const ename = r.events?.name || 'Unknown event'
     if (!eventRevMap[eid]) eventRevMap[eid] = { name: ename, revenue: 0, count: 0 }
     eventRevMap[eid].revenue += Number(r.race_categories?.price || 0)
     eventRevMap[eid].count++
   })
   const eventRevList = Object.values(eventRevMap).sort((a, b) => b.revenue - a.revenue)
 
-  return (
-    <div className="relative w-full min-h-full px-6 py-8 bg-background">
-      <div className="absolute -top-20 left-1/2 w-[40rem] h-[20rem] bg-success/5 rounded-full blur-[120px] pointer-events-none" />
+  const rm = (n: number) => `RM ${n.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
-      <div className="relative z-10 flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-success/10 text-success uppercase w-fit">
-              Financial Rails
-            </span>
-            <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-foreground">Financial Rails</h1>
-            <p className="text-[14px] leading-[20px] text-muted-foreground">Revenue overview and connected payment gateway operations.</p>
+  return (
+    <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-8">
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div>
+            <h1 className="text-[28px] leading-9 font-medium text-foreground">Finance</h1>
+            <p className="mt-1 text-[14px] text-muted-foreground">Entry fee revenue across your events</p>
           </div>
           {/* Audit #8: Export Report was dead — real CSV download via the
           shared ExportCsvButton (per-event revenue + monthly trend). */}
           <ExportCsvButton
             filename={`financial-report-${new Date().toISOString().slice(0, 10)}.csv`}
-            headers={['Period', 'Type', 'Name', 'Paid Registrations', 'Revenue (RM)']}
+            headers={['Period', 'Type', 'Name', 'Paid registrations', 'Revenue (RM)']}
             rows={[
-              ...monthlyData.map(m => ['monthly', 'Monthly Revenue', m.label, null, Number(m.revenue.toFixed(2))] as const),
-              ...eventRevList.map(e => ['per-event', 'Revenue by Event', e.name, e.count, Number(e.revenue.toFixed(2))] as const),
+              ...monthlyData.map(m => ['monthly', 'Monthly revenue', m.label, null, Number(m.revenue.toFixed(2))] as const),
+              ...eventRevList.map(e => ['per-event', 'Revenue by event', e.name, e.count, Number(e.revenue.toFixed(2))] as const),
             ]}
           >
-            Export Report
+            Export report
           </ExportCsvButton>
         </div>
 
-        {/* Revenue KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-card rounded-xl p-6 border border-muted">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">Gross Revenue</span>
-              <div className="w-9 h-9 rounded-lg bg-card flex items-center justify-center text-success">
-                <Banknote className="size-[20px]" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[18px] font-semibold text-muted-foreground">RM</span>
-              <span className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-foreground">{grossRevenue.toLocaleString('en-MY', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-success text-[11px] mt-2">
-              <CircleCheck className="size-[14px]" />
-              <span>{paidRegs.length} confirmed transactions</span>
-            </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-[13px] text-muted-foreground">Received</p>
+            <p className="mt-2 text-[32px] leading-none font-medium tabular-nums text-foreground">{rm(grossRevenue)}</p>
+            <p className="mt-2 text-[13px] text-muted-foreground">{paidRegs.length} paid registrations</p>
           </div>
-
-          <div className="bg-card rounded-xl p-6 border border-muted">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">Pending Revenue</span>
-              <div className="w-9 h-9 rounded-lg bg-card flex items-center justify-center text-primary">
-                <Clock className="size-[20px]" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[18px] font-semibold text-muted-foreground">RM</span>
-              <span className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-foreground">{pendingRevenue.toLocaleString('en-MY', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-primary text-[11px] mt-2">
-              <Info className="size-[14px]" />
-              <span>Awaiting payment confirmation</span>
-            </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-[13px] text-muted-foreground">Awaiting payment</p>
+            <p className="mt-2 text-[32px] leading-none font-medium tabular-nums text-foreground">{rm(pendingRevenue)}</p>
+            <p className="mt-2 text-[13px] text-muted-foreground">Registrations not yet confirmed</p>
           </div>
-
-          {/* Payment Rails status */}
-          <div className="bg-card rounded-xl p-6 border border-muted flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-foreground">Payment Rails</span>
-              <span className="px-2 py-0.5 rounded-full bg-success/15 text-success text-[10px] font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                Operational
-              </span>
-            </div>
-            <div className="flex flex-col gap-2 flex-1">
-              {[
-                { label: 'FPX B2C/B2B', sublabel: 'Online Banking', badge: 'FPX' },
-                { label: 'Visa / Master / Apple Pay', sublabel: 'Stripe Direct', badge: 'Cards' },
-                { label: 'DuitNow QR', sublabel: 'PayNet Gateway', badge: 'QR' },
-              ].map(rail => (
-                <div key={rail.label} className="p-2.5 rounded-lg bg-card flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-7 rounded bg-accent flex items-center justify-center text-[10px] font-bold text-foreground">{rail.badge}</div>
-                    <div>
-                      <div className="text-[12px] leading-[16px] font-semibold text-foreground">{rail.label}</div>
-                      <div className="text-[10px] text-muted-foreground">{rail.sublabel}</div>
-                    </div>
-                  </div>
-                  <span className="text-success text-[11px] font-medium">Active</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 pt-3 border-t border-muted flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>Payout: Daily T+1 Auto</span>
-              <span className="text-primary cursor-pointer hover:underline">Settings →</span>
-            </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-[13px] text-muted-foreground">Payment methods</p>
+            <p className="mt-2 text-[15px] text-foreground">DuitNow QR · FPX · Card</p>
+            <p className="mt-2 text-[13px] text-muted-foreground">Processed through HitPay and confirmed automatically</p>
           </div>
         </div>
 
-        {/* Monthly revenue bar chart */}
-        <div className="bg-card rounded-xl p-6 border border-muted">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-foreground">Monthly Revenue</h2>
-              <p className="text-[12px] text-muted-foreground mt-0.5">Last 6 months revenue trend</p>
-            </div>
-          </div>
-          <div className="w-full h-44 flex items-end justify-between gap-3 px-2">
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="text-[16px] font-medium text-foreground">Monthly revenue</h2>
+          <p className="mt-0.5 text-[13px] text-muted-foreground">Last 6 months</p>
+          <div className="mt-6 flex h-48 items-end justify-between gap-3 border-b border-border">
             {monthlyData.map(({ label, revenue }) => {
               const pct = Math.round((revenue / maxMonthly) * 100)
               const isBest = revenue === maxMonthly && revenue > 0
               // Percentage heights resolve to 0 inside the auto-height flex
               // columns below (audit #13: bars never mounted), so size the
-              // bars in px against the fixed h-44 plot area (~120px usable
-              // above the label row).
-              const barHeight = Math.max(Math.round((pct / 100) * 120), 6)
+              // bars in px against the fixed plot area.
+              const barHeight = Math.max(Math.round((pct / 100) * 150), 3)
               return (
-                <div key={label} className="flex-1 flex flex-col items-center gap-2 group">
-                  <span className={`text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity ${isBest ? 'text-success' : 'text-primary'}`}>
-                    RM{(revenue / 1000).toFixed(0)}k
+                <div key={label} className="flex flex-1 flex-col items-center justify-end gap-1.5">
+                  <span className={`font-mono text-[11px] tabular-nums ${isBest ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    {revenue > 0 ? revenue.toLocaleString('en-MY', { maximumFractionDigits: 0 }) : ''}
                   </span>
                   <div
-                    className={`w-full rounded-t transition-all ${isBest ? 'bg-success group-hover:bg-success' : 'bg-primary/30 group-hover:bg-primary'}`}
+                    className={`w-full max-w-20 rounded-t-[3px] ${isBest ? 'bg-primary' : 'bg-muted-foreground/25'}`}
                     style={{ height: `${barHeight}px` }}
                   />
-                  <span className={`text-[10px] ${isBest ? 'text-success font-semibold' : 'text-muted-foreground'}`}>{label}</span>
                 </div>
               )
             })}
           </div>
-        </div>
-
-        {/* Per-event revenue table */}
-        {eventRevList.length > 0 && (
-          <div className="bg-card rounded-xl border border-muted overflow-hidden">
-            <div className="px-6 py-4 border-b border-muted bg-card">
-              <h2 className="text-[16px] leading-[24px] font-semibold text-foreground">Revenue by Event</h2>
-            </div>
-            <div className="divide-y divide-muted">
-              {eventRevList.map(({ name, revenue, count }) => (
-                <div key={name} className="flex items-center justify-between px-6 py-4 hover:bg-card transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-primary">
-                      <Flag className="size-[18px]" />
-                    </div>
-                    <div>
-                      <div className="text-[14px] leading-[20px] font-medium text-foreground">{name}</div>
-                      <div className="text-[12px] text-muted-foreground">{count} paid registrations</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[18px] leading-[24px] font-semibold text-success">RM {revenue.toLocaleString('en-MY')}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="mt-2 flex justify-between gap-3">
+            {monthlyData.map(({ label }) => (
+              <span key={label} className="flex-1 text-center font-mono text-[11px] text-muted-foreground">{label}</span>
+            ))}
           </div>
+        </section>
+
+        {eventRevList.length > 0 && (
+          <section className="overflow-hidden rounded-xl border border-border bg-card">
+            <div className="flex items-baseline justify-between border-b border-border px-5 py-3">
+              <h2 className="text-[16px] font-medium text-foreground">Revenue by event</h2>
+              <span className="text-[12px] text-muted-foreground">Paid registrations</span>
+            </div>
+            <ul className="divide-y divide-border">
+              {eventRevList.map(({ name, revenue, count }) => (
+                <li key={name} className="grid grid-cols-[1fr_auto_120px] items-center gap-6 px-5 py-3">
+                  <span className="truncate text-[14px] text-foreground">{name}</span>
+                  <span className="text-[13px] tabular-nums text-muted-foreground">{count}</span>
+                  <span className="text-right font-mono text-[14px] tabular-nums text-foreground">{rm(revenue)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
       </div>
     </div>

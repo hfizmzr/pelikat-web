@@ -6,7 +6,7 @@
  * - label swaps: bib label field, "View {bib_label}" CTA, virtual run-label;
  * - organizer name: joined name wins → NO service-role fetch; join hidden
  *   (runner RLS, 019) → fetchOrganizerName resolves the display name; null →
- *   'Unknown Organizer' fallback;
+ *   'Unknown organizer' fallback;
  * - service-access ORDER: an unfound/draft event 404s BEFORE the service-role
  *   name fetch is ever awaited (plan review focus #4 — pinned via the shared
  *   sequence log h.q, which both the query builder and the service mock append
@@ -142,7 +142,7 @@ describe('RunnerEventDetailPage labels (P3 Task 4)', () => {
     expect(html).not.toContain('View Digital BIB Pass')
     // organizer: join hidden for runners → service-role wrapper fills it
     expect(html).toContain('Klub Batik Heritage')
-    expect(html).not.toContain('Unknown Organizer')
+    expect(html).not.toContain('Unknown organizer')
   })
 
   it('event visible → service name fetch runs only AFTER the event row query', async () => {
@@ -162,19 +162,19 @@ describe('RunnerEventDetailPage labels (P3 Task 4)', () => {
     expect(fetchOrganizerName).not.toHaveBeenCalled()
   })
 
-  it('service fetch returns null → "Unknown Organizer" fallback preserved', async () => {
+  it('service fetch returns null → "Unknown organizer" fallback preserved', async () => {
     fetchOrganizerName.mockResolvedValue(null)
     useTables(baseEvent())
     const html = await renderPage()
-    expect(html).toContain('Unknown Organizer')
+    expect(html).toContain('Unknown organizer')
   })
 
-  it('virtual registered → themed run_label replaces "Log a Run"', async () => {
+  it('virtual registered → themed run_label replaces "Log a run"', async () => {
     useTables(baseEvent({ event_type: 'virtual', target_distance_km: 42 }))
     h.tables.run_logs = [{ distance_km: 5 }]
     const html = await renderPage()
     expect(html).toContain('Larian')
-    expect(html).not.toContain('Log a Run')
+    expect(html).not.toContain('Log a run')
   })
 
   it('no theme → resolveLabels(null) full fallback map (never throws, no scope DOM)', async () => {
@@ -215,7 +215,7 @@ describe('RunnerEventDetailPage registration CTA gating on event status (PR33 / 
   it('closed + registered → registered view unchanged (no closed body)', async () => {
     useTables(baseEvent({ status: 'closed' }))
     const html = await renderPage()
-    expect(html).toContain('See you at the start line.')
+    expect(html).toContain('See you at the start line')
     expect(html).not.toContain('Registration is closed for this event.')
     expect(html).not.toContain('REGISTER-COMPONENT')
   })

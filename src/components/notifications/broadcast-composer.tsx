@@ -186,7 +186,7 @@ export function BroadcastComposer({ eventId, eventName, recipientCount, accountC
                   <img src="/icons/icon-192.png" alt="" className="h-4 w-4 rounded" />
                   PELIKAT · now
                 </div>
-                <p className="mt-1.5 text-sm font-semibold text-foreground">{trimmedSubject || 'Your subject line'}</p>
+                <p className="mt-1.5 text-sm font-medium text-foreground">{trimmedSubject || 'Your subject line'}</p>
                 <p className="text-sm text-muted-foreground line-clamp-3">
                   {trimmedBody || 'Your message to runners appears here.'}
                 </p>

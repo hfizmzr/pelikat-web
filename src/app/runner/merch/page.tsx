@@ -65,7 +65,7 @@ export default async function RunnerMerchPage() {
       <div className="flex flex-col px-5 py-5 gap-7">
         {/* FR-69: shop by registered event */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-[15px] font-bold text-foreground tracking-tight">Shop event merch</h2>
+          <h2 className="text-[15px] font-medium text-foreground">Shop event merch</h2>
           {shopEvents.length > 0 ? (
             shopEvents.map((event) => (
               <Link
@@ -73,12 +73,11 @@ export default async function RunnerMerchPage() {
                 href={`/runner/events/${event.id}/merch`}
                 className="relative overflow-hidden flex items-center gap-3 p-4 rounded-2xl bg-card border border-border/60 active:scale-[0.98] transition-transform"
               >
-                <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
                 <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0">
                   <ShoppingBag className="size-[22px] text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-bold text-foreground truncate">{event.name}</p>
+                  <p className="text-[14px] font-medium text-foreground truncate">{event.name}</p>
                   <p className="text-[11px] text-muted-foreground">
                     {new Date(event.event_date).toLocaleDateString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', day: 'numeric', month: 'short', year: 'numeric' })}
                     {' · '}
@@ -90,7 +89,7 @@ export default async function RunnerMerchPage() {
             ))
           ) : (
             <div className="p-5 rounded-2xl bg-card border border-border/60 text-center">
-              <p className="text-[13px] font-bold text-foreground mb-1">No merch on sale</p>
+              <p className="text-[13px] font-medium text-foreground mb-1">No merch on sale</p>
               <p className="text-[12px] text-muted-foreground">
                 Merch appears here for upcoming events you&apos;re registered for.
               </p>
@@ -100,13 +99,13 @@ export default async function RunnerMerchPage() {
 
         {/* FR-73: order history */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-[15px] font-bold text-foreground tracking-tight">Your orders</h2>
+          <h2 className="text-[15px] font-medium text-foreground">Your orders</h2>
           {orders.length === 0 ? (
             <div className="bg-card rounded-2xl border border-border/60 p-8 flex flex-col items-center text-center">
               <div className="w-14 h-14 bg-muted rounded-full flex items-center justify-center mb-3">
                 <ReceiptText className="size-[28px] text-muted-foreground" />
               </div>
-              <p className="text-[14px] font-bold text-foreground mb-1">No orders yet</p>
+              <p className="text-[14px] font-medium text-foreground mb-1">No orders yet</p>
               <p className="text-[12px] text-muted-foreground">Orders you place will show up here with their status.</p>
             </div>
           ) : (
@@ -116,7 +115,7 @@ export default async function RunnerMerchPage() {
               ))}
               {pastOrders.length > 0 && (
                 <>
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-2">Past orders</h3>
+                  <h3 className="text-[11px] font-medium text-muted-foreground mt-2">Past orders</h3>
                   {pastOrders.map((order) => (
                     <OrderCard key={order.id} order={order} />
                   ))}
@@ -140,7 +139,7 @@ function OrderCard({ order }: { order: RunnerMerchOrder }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col min-w-0">
-          <span className="font-mono text-[14px] font-bold text-foreground">{order.order_number}</span>
+          <span className="font-mono text-[14px] font-medium text-foreground">{order.order_number}</span>
           <span className="text-[11px] text-muted-foreground truncate">
             {order.events?.name} · {formatOrderDate(order.created_at)}
           </span>
@@ -152,7 +151,7 @@ function OrderCard({ order }: { order: RunnerMerchOrder }) {
           {count} {count === 1 ? 'item' : 'items'}
           {names.length > 0 ? ` · ${names.join(', ')}` : ''}
         </span>
-        <span className="font-mono text-[15px] font-extrabold text-primary whitespace-nowrap">
+        <span className="font-mono text-[15px] font-medium tabular-nums text-foreground whitespace-nowrap">
           {formatRM(Number(order.total_amount))}
         </span>
       </div>

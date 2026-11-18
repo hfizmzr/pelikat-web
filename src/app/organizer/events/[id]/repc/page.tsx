@@ -1,3 +1,4 @@
+import { statusLabel } from '@/components/ui/status-tag'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, ClipboardCheck, QrCode, Shirt, Users } from 'lucide-react'
@@ -19,7 +20,7 @@ import {
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'REPC Inventory - Pelikat',
+  title: 'REPC inventory - Pelikat',
   description: 'Race entry pack collection inventory management',
 }
 
@@ -154,8 +155,8 @@ export default async function OrganizerEventRepcPage({
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight">REPC Inventory</h1>
-              <Badge variant="outline">{event.status}</Badge>
+              <h1 className="text-3xl font-medium tracking-tight">REPC inventory</h1>
+              <Badge variant="outline">{statusLabel(event.status)}</Badge>
             </div>
             <p className="text-muted-foreground">{event.name}</p>
           </div>
@@ -180,34 +181,34 @@ export default async function OrganizerEventRepcPage({
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Registered</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Registered</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRegistered}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{totalRegistered}</div>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Prepared Shirts</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Prepared shirts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalPrepared}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{totalPrepared}</div>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Claimed Shirts</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Claimed shirts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalClaimed}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{totalClaimed}</div>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Remaining</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Remaining</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRemaining}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{totalRemaining}</div>
           </CardContent>
         </Card>
       </div>
@@ -217,7 +218,7 @@ export default async function OrganizerEventRepcPage({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shirt className="h-5 w-5" />
-              Shirt Inventory
+              Shirt inventory
             </CardTitle>
             <CardDescription>Quantities are checked against shirts already claimed.</CardDescription>
           </CardHeader>
@@ -231,7 +232,7 @@ export default async function OrganizerEventRepcPage({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ClipboardCheck className="h-5 w-5" />
-                REPC Status
+                REPC status
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -248,7 +249,7 @@ export default async function OrganizerEventRepcPage({
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Event date</span>
                 <span className="font-medium">
-                  {new Date(event.event_date).toLocaleDateString()}
+                  {new Date(event.event_date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </span>
               </div>
             </CardContent>
@@ -256,7 +257,7 @@ export default async function OrganizerEventRepcPage({
 
           <Card className="border-border">
             <CardHeader>
-              <CardTitle>Size Demand</CardTitle>
+              <CardTitle>Size demand</CardTitle>
               <CardDescription>Runner profile shirt sizes for this event.</CardDescription>
             </CardHeader>
             <CardContent>

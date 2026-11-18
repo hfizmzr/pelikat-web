@@ -11,7 +11,7 @@ import { hexToOklch, oklchToString, deriveDarkVariant } from '@/lib/theme/color'
 const PLATFORM = {
   primaryLight: 'oklch(0.51 0.16 190)',
   primaryDark: 'oklch(0.75 0.13 190)',
-  secondaryLight: 'oklch(0.92 0 0)',
+  secondaryLight: 'oklch(0.95 0.003 240)',
   ringLight: 'oklch(0.51 0.16 190)',
 }
 
@@ -260,16 +260,16 @@ describe('getResolvedTheme', () => {
     // globals.css — companion clausing same as the platform-theme test above).
     const DEGRADED = {
       secondary: {
-        light: 'oklch(0.92 0 0)',
-        dark: 'oklch(0.16 0 0)',
-        fgLight: 'oklch(0.145 0 0)',
-        fgDark: 'oklch(0.985 0 0)',
+        light: 'oklch(0.95 0.003 240)',
+        dark: 'oklch(0.235 0.006 240)',
+        fgLight: 'oklch(0.2 0.012 240)',
+        fgDark: 'oklch(0.95 0.003 240)',
       },
       accent: {
-        light: 'oklch(0.92 0 0)',
-        dark: 'oklch(0.28 0.03 190)',
-        fgLight: 'oklch(0.145 0 0)',
-        fgDark: 'oklch(0.985 0 0)',
+        light: 'oklch(0.95 0.003 240)',
+        dark: 'oklch(0.245 0.006 240)',
+        fgLight: 'oklch(0.2 0.012 240)',
+        fgDark: 'oklch(0.95 0.003 240)',
       },
     }
 

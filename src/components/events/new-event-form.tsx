@@ -59,7 +59,7 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
     if (!formData.name.trim()) newErrors.name = 'Event name is required'
     if (!formData.event_date) newErrors.event_date = 'Event date is required'
     if (formData.event_type === 'virtual' && (!formData.target_km || Number(formData.target_km) <= 0)) {
-      newErrors.target_km = 'Target distance is required for virtual runs (KM, min 0.1)'
+      newErrors.target_km = 'Target distance is required for virtual runs (km, min 0.1)'
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -146,78 +146,76 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
   return (
     <div className="relative w-full min-h-full px-6 py-8 bg-background">
       {/* Background ambient bloom */}
-      <div className="absolute top-1/3 -right-20 w-[30rem] h-[30rem] bg-primary/5 rounded-full blur-[140px] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col gap-6 w-full">
         {/* Header */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push(backHref)}
-            className="w-10 h-10 rounded-xl bg-card border border-muted flex items-center justify-center text-muted-foreground hover:bg-card hover:text-foreground transition-colors"
+            className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted-foreground hover:bg-card hover:text-foreground transition-colors"
           >
             <ArrowLeft className="size-[20px]" />
           </button>
           <div>
-            <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary uppercase w-fit mb-1 block">New Campaign</span>
-            <h1 className="text-[28px] leading-[36px] font-bold text-foreground tracking-tight">Create Event</h1>
+            <h1 className="text-[28px] leading-[36px] font-medium text-foreground tracking-tight">Create event</h1>
           </div>
         </div>
 
         {/* Full-width container replacing the narrow card */}
-        <div className="bg-card rounded-2xl border border-muted p-6 md:p-8 w-full shadow-lg">
+        <div className="bg-card rounded-2xl border border-border p-6 md:p-8 w-full">
           <form onSubmit={handleSubmit} className="flex flex-col gap-8 w-full">
 
             {/* 2-Column Grid for main fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
               <div className="flex flex-col gap-2 col-span-1 md:col-span-2">
-                <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Event Name *</label>
+                <label className="text-[12px] font-medium text-muted-foreground">Event name *</label>
                 <input
                   type="text"
                   placeholder="e.g., KL Marathon 2024"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-border focus:outline-none focus:border-primary/50 transition-colors"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
                 />
-                {errors.name && <p className="text-[12px] text-red-500 dark:text-red-300 mt-1">{errors.name}</p>}
+                {errors.name && <p className="text-[12px] text-destructive mt-1">{errors.name}</p>}
               </div>
 
               <div className="flex flex-col gap-2 col-span-1 md:col-span-2">
-                <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Description</label>
+                <label className="text-[12px] font-medium text-muted-foreground">Description</label>
                 <textarea
                   placeholder="Describe your event..."
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   rows={4}
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-border focus:outline-none focus:border-primary/50 transition-colors resize-none"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors resize-none"
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Event Date *</label>
+                <label className="text-[12px] font-medium text-muted-foreground">Event date *</label>
                 <input
                   type="date"
                   value={formData.event_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, event_date: e.target.value }))}
                   className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground focus:outline-none focus:border-primary/50 transition-colors"
                 />
-                {errors.event_date && <p className="text-[12px] text-red-500 dark:text-red-300 mt-1">{errors.event_date}</p>}
+                {errors.event_date && <p className="text-[12px] text-destructive mt-1">{errors.event_date}</p>}
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Event Type *</label>
+                <label className="text-[12px] font-medium text-muted-foreground">Event type *</label>
                 <select
                   value={formData.event_type}
                   onChange={(e) => setFormData(prev => ({ ...prev, event_type: e.target.value as FormData['event_type'] }))}
                   className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground focus:outline-none focus:border-primary/50 transition-colors appearance-none"
                 >
-                  <option value="physical">Physical Event</option>
-                  <option value="virtual">Virtual Run</option>
+                  <option value="physical">Physical event</option>
+                  <option value="virtual">Virtual run</option>
                 </select>
               </div>
 
               {formData.event_type === 'virtual' && (
                 <div className="flex flex-col gap-2">
-                  <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Target Distance (KM)</label>
+                  <label className="text-[12px] font-medium text-muted-foreground">Target distance (km)</label>
                   <input
                     type="number"
                     min="0.1"
@@ -225,27 +223,27 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
                     placeholder="e.g., 21.1"
                     value={formData.target_km}
                     onChange={(e) => setFormData(prev => ({ ...prev, target_km: e.target.value }))}
-                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-border focus:outline-none focus:border-primary/50 transition-colors"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
                   />
-                  {errors.target_km && <p className="text-[12px] text-red-500 dark:text-red-300 mt-1">{errors.target_km}</p>}
+                  {errors.target_km && <p className="text-[12px] text-destructive mt-1">{errors.target_km}</p>}
                 </div>
               )}
 
               {formData.event_type === 'physical' && (
                 <div className="flex flex-col gap-2">
-                  <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Location</label>
+                  <label className="text-[12px] font-medium text-muted-foreground">Location</label>
                   <input
                     type="text"
                     placeholder="e.g., Kuala Lumpur, Malaysia"
                     value={formData.location}
                     onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-border focus:outline-none focus:border-primary/50 transition-colors"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
                   />
                 </div>
               )}
 
               <div className="flex flex-col gap-2">
-                <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Registration Opens</label>
+                <label className="text-[12px] font-medium text-muted-foreground">Registration opens</label>
                 <input
                   type="datetime-local"
                   value={formData.reg_open}
@@ -255,7 +253,7 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Registration Closes</label>
+                <label className="text-[12px] font-medium text-muted-foreground">Registration closes</label>
                 <input
                   type="datetime-local"
                   value={formData.reg_close}
@@ -265,7 +263,7 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-[12px] font-semibold tracking-wide uppercase text-muted-foreground">Status</label>
+                <label className="text-[12px] font-medium text-muted-foreground">Status</label>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
@@ -280,11 +278,11 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
 
             {/* Inventory Section (physical events only) */}
             {formData.event_type === 'physical' && (
-              <div className="bg-card rounded-xl border border-muted p-5 w-full">
+              <div className="bg-card rounded-xl border border-border p-5 w-full">
                 <div className="flex items-center gap-3 mb-5">
                   <Shirt className="size-[20px] text-primary" />
                   <div>
-                    <h2 className="text-[14px] font-bold text-foreground">REPC Shirt Inventory</h2>
+                    <h2 className="text-[14px] font-medium text-foreground">REPC shirt inventory</h2>
                     <p className="text-[12px] text-muted-foreground">Initial race kit stock by size</p>
                   </div>
                 </div>
@@ -292,7 +290,7 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                   {SHIRT_SIZES.map((size) => (
                     <div key={size} className="flex flex-col gap-2">
-                      <label className="text-[12px] font-semibold tracking-wide text-muted-foreground text-center">{size}</label>
+                      <label className="text-[12px] font-medium text-muted-foreground text-center">{size}</label>
                       <input
                         type="number"
                         min={0}
@@ -310,7 +308,7 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
               <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-5 text-[12px] text-muted-foreground">
                 <Footprints className="size-[18px] shrink-0 text-primary" />
                 <p>
-                  Virtual Run: no venue, race-kit collection or physical bibs.
+                  Virtual run: no venue, race-kit collection or physical bibs.
                   Participants submit their runs and sync to a live leaderboard.
                   Next: add distance categories for the run.
                 </p>
@@ -319,20 +317,20 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
 
             {/* Actions */}
             {errors.submit && (
-              <p className="text-[12px] text-red-500 dark:text-red-300" role="alert">{errors.submit}</p>
+              <p className="text-[12px] text-destructive" role="alert">{errors.submit}</p>
             )}
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => router.push(backHref)}
-                className="px-5 py-2.5 rounded-lg text-[14px] font-semibold text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                className="px-5 py-2.5 rounded-lg text-[14px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-2.5 rounded-lg text-[14px] font-semibold bg-primary text-primary-foreground hover:bg-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-6 py-2.5 rounded-lg text-[14px] font-medium bg-primary text-primary-foreground hover:opacity-90 transition-[color,background-color,border-color,opacity] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading ? (
                   <>
@@ -340,7 +338,7 @@ export function NewEventForm({ redirectVirtual = false }: { redirectVirtual?: bo
                     Creating...
                   </>
                 ) : (
-                  'Create Event'
+                  'Create event'
                 )}
               </button>
             </div>

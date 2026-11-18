@@ -1,7 +1,8 @@
 'use client'
 
+import { StatusTag, statusLabel } from '@/components/ui/status-tag'
 import { useState, useEffect, useCallback } from 'react'
-import { Activity, ChartLine, CircleCheck, Cpu, Gauge, Loader2, RefreshCw, TriangleAlert } from "lucide-react"
+import { Loader2, RefreshCw } from "lucide-react"
 import { toast } from 'sonner'
 
 interface ServiceNode {
@@ -59,117 +60,68 @@ export default function AdminNodesPage() {
     return () => clearInterval(interval)
   }, [fetchTelemetry])
 
+  const alerts = metrics ? metrics.degradedCount + metrics.unhealthyCount : 0
   const metricCards = [
-    {
-      label: 'Total Registered Nodes',
-      value: metrics ? String(metrics.totalNodes) : '6',
-      unit: 'Services',
-      icon: Activity,
-      color: 'text-primary',
-      bg: 'bg-primary/20',
-    },
-    {
-      label: 'Avg Query Latency',
-      value: metrics ? String(metrics.avgLatency) : '—',
-      unit: 'ms',
-      icon: Gauge,
-      color: 'text-primary',
-      bg: 'bg-primary/20',
-    },
-    {
-      label: 'Fleet Health Uptime',
-      value: metrics?.uptime || '—',
-      unit: '',
-      icon: ChartLine,
-      color: 'text-success',
-      bg: 'bg-success/20',
-    },
-    {
-      label: 'Active System Alerts',
-      value: metrics ? String(metrics.degradedCount + metrics.unhealthyCount) : '0',
-      unit: metrics && (metrics.degradedCount + metrics.unhealthyCount) > 0 ? 'Degraded' : 'Healthy',
-      icon: metrics && (metrics.degradedCount + metrics.unhealthyCount) > 0 ? TriangleAlert : CircleCheck,
-      color: metrics && (metrics.degradedCount + metrics.unhealthyCount) > 0 ? 'text-red-500' : 'text-success',
-      bg: metrics && (metrics.degradedCount + metrics.unhealthyCount) > 0 ? 'bg-red-500/10' : 'bg-success/20',
-    },
+    { label: 'Services checked', value: metrics ? String(metrics.totalNodes) : '—', unit: '' },
+    { label: 'Average latency', value: metrics ? String(metrics.avgLatency) : '—', unit: 'ms' },
+    { label: 'Services with problems', value: metrics ? String(alerts) : '—', unit: '' },
   ]
 
   return (
-    <div className="flex flex-col gap-8 font-inter text-foreground">
-      {/* ── Page Header ──────────────────────────────────────────────────── */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <ChartLine className="size-[16px] text-success" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-success">Fleet Telemetry</span>
-          </div>
-          <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Nodes & Telemetry</h1>
-          <p className="text-[13px] text-muted-foreground">Live distributed system metrics, PostgreSQL query ping, and infrastructure telemetry across ap-southeast-1</p>
+    <div className="flex flex-col gap-8 text-foreground">
+      <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-end">
+        <div>
+          <h1 className="text-[28px] leading-9 font-medium text-foreground">System health</h1>
+          <p className="mt-1 text-[14px] text-muted-foreground">Checked every 30 seconds</p>
         </div>
 
         <div className="flex items-center gap-3">
           {lastUpdated && (
-            <span className="text-[12px] text-muted-foreground font-mono">
-              Last probe: {lastUpdated}
-            </span>
+            <span className="font-mono text-[12px] text-muted-foreground">Last checked {lastUpdated}</span>
           )}
           <button
             onClick={() => fetchTelemetry(true)}
             disabled={refreshing}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
+            className="flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-[13px] font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
           >
-            <RefreshCw className={`size-[16px] ${refreshing ? 'animate-spin' : ''}`} />
-            <span>{refreshing ? 'Probing...' : 'Probe System Now'}</span>
+            <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} strokeWidth={1.75} />
+            <span>{refreshing ? 'Checking' : 'Check now'}</span>
           </button>
         </div>
       </div>
 
-      {/* ── Metric Cards ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
-        {metricCards.map((m, i) => (
-          <div key={i} className="rounded-xl bg-card border border-border/30 p-5 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{m.label}</span>
-              <div className={`p-1.5 rounded-lg ${m.bg} ${m.color}`}>
-                <m.icon className="size-[18px]" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[36px] font-bold leading-none text-foreground font-tabular">{m.value}</span>
-              {m.unit && <span className={`text-[12px] font-semibold ${m.color}`}>{m.unit}</span>}
-            </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {metricCards.map((m) => (
+          <div key={m.label} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-[13px] text-muted-foreground">{m.label}</p>
+            <p className={`mt-2 text-[32px] leading-none font-medium tabular-nums ${m.label === 'Services with problems' && alerts > 0 ? 'text-destructive' : 'text-foreground'}`}>
+              {m.value}{m.unit && <span className="ml-1 text-[14px] font-normal text-muted-foreground">{m.unit}</span>}
+            </p>
           </div>
         ))}
       </div>
 
       {/* ── Services Table ───────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-card border border-border/30 overflow-hidden shadow-lg">
-        <div className="p-5 border-b border-border/30 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Activity className="text-primary size-[20px]" />
-            <h2 className="font-jakarta font-semibold text-[18px] text-foreground">Service Registry & Health Check</h2>
-          </div>
-          <span className="text-[11px] text-success font-mono flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            Auto-refresh active (30s)
-          </span>
+      <div className="rounded-xl bg-card border border-border overflow-hidden">
+        <div className="px-5 py-4 border-b border-border">
+          <h2 className="font-medium text-[16px] text-foreground">Services</h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border/30">
-                {['Service', 'Region', 'Round-trip Latency', 'Availability SLA', 'Status', 'Diagnostic Details'].map((h) => (
-                  <th key={h} className="py-3 px-5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{h}</th>
+                {['Service', 'Region', 'Latency', 'Status', 'Details'].map((h) => (
+                  <th key={h} className="py-2.5 px-5 text-[12px] font-normal text-muted-foreground">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-accent/30">
+            <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-muted-foreground">
-                    <Loader2 className="h-7 w-7 animate-spin mx-auto text-primary mb-2" />
-                    <span>Executing live telemetry probes...</span>
+                  <td colSpan={5} className="py-16 text-center text-muted-foreground">
+                    <Loader2 className="size-6 animate-spin mx-auto text-muted-foreground mb-2" />
+                    <span>Checking services</span>
                   </td>
                 </tr>
               ) : (
@@ -178,51 +130,32 @@ export default function AdminNodesPage() {
                     {/* Service */}
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-2.5">
-                        <Cpu className={`size-[18px] ${ svc.status === 'operational' ? 'text-success' : 'text-red-500 dark:text-red-300' }`} />
-                        <span className="text-[13px] font-semibold text-foreground font-jakarta">{svc.name}</span>
+                        <span className="text-[14px] text-foreground">{svc.name}</span>
                       </div>
                     </td>
 
                     {/* Region */}
                     <td className="py-4 px-5">
-                      <span className="text-[12px] font-mono text-muted-foreground bg-card px-2 py-0.5 rounded border border-border/30">
+                      <span className="text-[12px] font-mono text-muted-foreground">
                         {svc.region}
                       </span>
                     </td>
 
                     {/* Latency */}
                     <td className="py-4 px-5">
-                      <span className="text-[13px] font-mono font-semibold text-primary">{svc.latency}</span>
-                    </td>
-
-                    {/* Uptime */}
-                    <td className="py-4 px-5">
-                      <span className="text-[13px] font-mono text-muted-foreground">{svc.uptime}</span>
+                      <span className="text-[13px] font-mono tabular-nums text-foreground">{svc.latency}</span>
                     </td>
 
                     {/* Status */}
                     <td className="py-4 px-5">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold inline-flex items-center gap-1.5 border ${
-                        svc.status === 'operational'
-                          ? 'text-success bg-success/10 border-success/20'
-                          : svc.status === 'degraded'
-                            ? 'text-amber-500 bg-amber-500/10 border-amber-500/20'
-                            : 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          svc.status === 'operational'
-                            ? 'bg-success'
-                            : svc.status === 'degraded'
-                              ? 'bg-amber-500 animate-pulse'
-                              : 'bg-red-500 dark:bg-red-300 animate-pulse'
-                        }`} />
-                        {svc.status.toUpperCase()}
-                      </span>
+                      <StatusTag tone={svc.status === 'operational' ? 'success' : svc.status === 'degraded' ? 'warning' : 'destructive'}>
+                        {statusLabel(svc.status)}
+                      </StatusTag>
                     </td>
 
                     {/* Diagnostics */}
                     <td className="py-4 px-5">
-                      <span className="text-[12px] text-muted-foreground font-inter">{svc.details}</span>
+                      <span className="text-[13px] text-muted-foreground">{svc.details}</span>
                     </td>
                   </tr>
                 ))

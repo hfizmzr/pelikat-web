@@ -81,7 +81,7 @@ export default function ApplyForm() {
             <div className="flex justify-center">
               <CheckCircle className="size-16 text-success" />
             </div>
-            <CardTitle className="text-2xl">Application Submitted</CardTitle>
+            <CardTitle className="text-2xl">Application submitted</CardTitle>
             <CardDescription className="text-base">
               Thank you for your interest! Our team will review your application
               and get back to you shortly. You&apos;ll be notified once your
@@ -92,7 +92,7 @@ export default function ApplyForm() {
               onClick={() => router.push("/")}
               className="mt-4"
             >
-              Back to Home
+              Back to home
             </Button>
           </CardContent>
         </Card>
@@ -104,8 +104,8 @@ export default function ApplyForm() {
     <div className="min-h-dvh py-20 sm:py-24">
       <div className="mx-auto max-w-lg px-4 sm:px-6">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Apply to Become an Organizer
+          <h1 className="text-3xl font-medium tracking-tight text-foreground">
+            Apply to become an organizer
           </h1>
           <p className="mt-2 text-muted-foreground">
             Fill in your details and we&apos;ll review your application.
@@ -116,7 +116,7 @@ export default function ApplyForm() {
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Organizer Name</Label>
+                <Label htmlFor="name">Organizer name</Label>
                 <Input
                   id="name"
                   placeholder="e.g., Jakarta Marathon"
@@ -127,7 +127,7 @@ export default function ApplyForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Contact Email</Label>
+                <Label htmlFor="email">Contact email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -142,7 +142,7 @@ export default function ApplyForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="event-name">Event Name</Label>
+                <Label htmlFor="event-name">Event name</Label>
                 <Input
                   id="event-name"
                   placeholder="e.g., Pelikat Batik Run 2026"
@@ -152,7 +152,7 @@ export default function ApplyForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="event-description">Event Description</Label>
+                <Label htmlFor="event-description">Event description</Label>
                 <Textarea
                   id="event-description"
                   placeholder="Tell us about your event..."

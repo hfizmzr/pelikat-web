@@ -29,7 +29,7 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState<PlatformSettings>({
-    platform_name: 'Pelikat Running Platform',
+    platform_name: 'Pelikat running platform',
     support_email: 'support@pelikat.com',
     feature_virtual_run: true,
     feature_photo_ai: true,
@@ -137,21 +137,17 @@ export default function AdminSettingsPage() {
       {/* ── Page Header ─────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <ToggleRight className="size-[16px] text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary font-inter">Platform Config</span>
-          </div>
-          <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Settings</h1>
-          <p className="text-[13px] text-muted-foreground">Manage platform-wide configuration, feature flags, and operational controls</p>
+          <h1 className="text-[28px] leading-9 font-medium text-foreground">Settings</h1>
+          <p className="mt-1 text-[14px] text-muted-foreground">Subscription pricing, feature flags and maintenance mode</p>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all font-inter disabled:opacity-60 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-primary hover:opacity-90 text-primary-foreground hover:text-white text-[13px] font-medium transition-[color,background-color,border-color,opacity] font-inter disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
           <Save className="size-[18px]" />
-          Save Changes
+          Save changes
         </button>
       </div>
 
@@ -160,14 +156,14 @@ export default function AdminSettingsPage() {
         <div className="p-5 border-b border-border/30 flex items-center gap-2">
           <Settings className="text-primary size-[20px]" />
           <div>
-            <h2 className="font-jakarta font-semibold text-[16px] text-foreground">General Settings</h2>
+            <h2 className="font-jakarta font-medium text-[16px] text-foreground">General settings</h2>
             <p className="text-[11px] text-muted-foreground font-inter">Basic platform identity and contact configuration</p>
           </div>
         </div>
         <div className="p-5 flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor="platform-name">
-              Platform Name
+            <label className="text-[12px] font-medium text-muted-foreground font-inter" htmlFor="platform-name">
+              Platform name
             </label>
             <Input
               id="platform-name"
@@ -177,8 +173,8 @@ export default function AdminSettingsPage() {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor="support-email">
-              Support Email
+            <label className="text-[12px] font-medium text-muted-foreground font-inter" htmlFor="support-email">
+              Support email
             </label>
             <Input
               id="support-email"
@@ -196,14 +192,14 @@ export default function AdminSettingsPage() {
         <div className="p-5 border-b border-border/30 flex items-center gap-2">
           <Wallet className="text-primary size-[20px]" />
           <div>
-            <h2 className="font-jakarta font-semibold text-[16px] text-foreground">Subscription Pricing</h2>
+            <h2 className="font-jakarta font-medium text-[16px] text-foreground">Subscription pricing</h2>
             <p className="text-[11px] text-muted-foreground font-inter">Single-tier organizer subscription shown on the apply and payment pages</p>
           </div>
         </div>
         <div className="p-5 flex flex-col gap-5">
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor="sub-amount">
+              <label className="text-[12px] font-medium text-muted-foreground font-inter" htmlFor="sub-amount">
                 Amount (RM)
               </label>
               <Input
@@ -220,14 +216,14 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <span className="text-[12px] font-semibold text-muted-foreground font-inter">Currency</span>
-              <span className="px-3 py-2.5 rounded-lg bg-accent/50 border border-border/40 text-[13px] font-semibold text-foreground font-mono w-fit">
+              <span className="text-[12px] font-medium text-muted-foreground font-inter">Currency</span>
+              <span className="px-3 py-2.5 rounded-lg bg-accent/50 border border-border/40 text-[13px] font-medium text-foreground font-mono w-fit">
                 MYR
               </span>
             </div>
             <div className="flex flex-col gap-1.5">
-              <span className="text-[12px] font-semibold text-muted-foreground font-inter">Billing Period</span>
-              <span className="px-3 py-2.5 rounded-lg bg-accent/50 border border-border/40 text-[13px] font-semibold text-foreground w-fit">
+              <span className="text-[12px] font-medium text-muted-foreground font-inter">Billing period</span>
+              <span className="px-3 py-2.5 rounded-lg bg-accent/50 border border-border/40 text-[13px] font-medium text-foreground w-fit">
                 per {subPrice?.period ?? 'year'}
               </span>
             </div>
@@ -240,14 +236,14 @@ export default function AdminSettingsPage() {
             <button
               onClick={handleSavePricingCard}
               disabled={savePricing || !amountInput || Number(amountInput) < 1}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-[13px] font-semibold transition-all font-inter disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium transition-[color,background-color,border-color,opacity] font-inter disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {savePricing && <Loader2 className="h-4 w-4 animate-spin" />}
               <Save className="size-[16px]" />
-              Update Pricing
+              Update pricing
             </button>
             {pricingDirty && (
-              <span className="ml-2 text-[11px] text-amber-500 font-inter">Unsaved changes</span>
+              <span className="ml-2 text-[11px] text-warning font-inter">Unsaved changes</span>
             )}
           </div>
         </div>
@@ -258,7 +254,7 @@ export default function AdminSettingsPage() {
         <div className="p-5 border-b border-border/30 flex items-center gap-2">
           <ToggleRight className="text-primary size-[20px]" />
           <div>
-            <h2 className="font-jakarta font-semibold text-[16px] text-foreground">Feature Flags</h2>
+            <h2 className="font-jakarta font-medium text-[16px] text-foreground">Feature flags</h2>
             <p className="text-[11px] text-muted-foreground font-inter">Enable or disable platform features globally</p>
           </div>
         </div>
@@ -266,19 +262,19 @@ export default function AdminSettingsPage() {
           {[
             {
               key: 'feature_virtual_run' as const,
-              label: 'Virtual Run Tracking',
+              label: 'Virtual run tracking',
               desc: 'Enable GPS-based virtual run tracking and verification',
               icon: Footprints,
             },
             {
               key: 'feature_photo_ai' as const,
-              label: 'AI BIB Photo Vision',
+              label: 'AI BIB photo vision',
               desc: 'Enable AI-powered race photo bib number recognition (OCR)',
               icon: Camera,
             },
             {
               key: 'feature_repc_collection' as const,
-              label: 'REPC Consent Collection',
+              label: 'REPC consent collection',
               desc: 'Enable participant consent data collection at check-in',
               icon: Shield,
             },
@@ -287,7 +283,7 @@ export default function AdminSettingsPage() {
               <div className="flex items-center gap-3">
                 <flag.icon className="size-[20px] text-primary" />
                 <div>
-                  <p className="text-[13px] font-semibold text-foreground font-inter">{flag.label}</p>
+                  <p className="text-[13px] font-medium text-foreground font-inter">{flag.label}</p>
                   <p className="text-[11px] text-muted-foreground font-inter">{flag.desc}</p>
                 </div>
               </div>
@@ -302,19 +298,19 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* ── Danger Zone ─────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-red-800/10 border border-red-500/30 dark:border-red-300/20 overflow-hidden">
-        <div className="p-5 border-b border-red-500 dark:border-red-300/10 flex items-center gap-2">
-          <TriangleAlert className="text-red-500 dark:text-red-300 size-[20px]" />
+      <div className="rounded-xl bg-destructive/10 border border-destructive/30 dark:border-destructive/20 overflow-hidden">
+        <div className="p-5 border-b border-destructive dark:border-destructive/10 flex items-center gap-2">
+          <TriangleAlert className="text-destructive size-[20px]" />
           <div>
-            <h2 className="font-jakarta font-semibold text-[16px] text-red-500 dark:text-red-300">Danger Zone</h2>
+            <h2 className="font-jakarta font-medium text-[16px] text-destructive">Danger zone</h2>
             <p className="text-[11px] text-muted-foreground font-inter">Irreversible platform-level actions</p>
           </div>
         </div>
         <div className="flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
-            <Construction className="size-[20px] text-red-500 dark:text-red-300" />
+            <Construction className="size-[20px] text-destructive" />
             <div>
-              <p className="text-[13px] font-semibold text-foreground font-inter">Maintenance Mode</p>
+              <p className="text-[13px] font-medium text-foreground font-inter">Maintenance mode</p>
               <p className="text-[11px] text-muted-foreground font-inter">
                 Blocks all non-admin access to the platform. Use during deployments.
               </p>
@@ -323,7 +319,7 @@ export default function AdminSettingsPage() {
           <Switch
             checked={settings.maintenance_mode}
             onCheckedChange={(checked) => updateSetting('maintenance_mode', checked)}
-            className="data-[state=checked]:bg-red-800"
+            className="data-[state=checked]:bg-destructive"
           />
         </div>
       </div>

@@ -18,7 +18,7 @@ export function ExportCsvButton({
   headers,
   rows,
   children,
-  className = 'px-4 py-2.5 bg-card hover:bg-card text-foreground text-[14px] leading-[20px] tracking-[0.01em] font-medium rounded-lg flex items-center gap-2 transition-colors border border-muted',
+  className = 'px-4 py-2.5 bg-card hover:bg-card text-foreground text-[14px] leading-[20px] font-medium rounded-lg flex items-center gap-2 transition-colors border border-border',
 }: {
   filename: string
   headers: readonly string[]

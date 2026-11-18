@@ -58,7 +58,7 @@ export default async function OrganizerEventMessagesPage({ params }: { params: P
         >
           <ArrowLeft className="h-4 w-4" /> Back to event
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight">Messages</h1>
+        <h1 className="text-3xl font-medium tracking-tight">Messages</h1>
         <p className="text-muted-foreground">Broadcast updates to runners registered for {event.name}</p>
       </div>
 

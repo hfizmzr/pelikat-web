@@ -98,7 +98,7 @@ export function ApplicantTable({
   if (loading) {
     return (
       <div className="rounded-xl bg-card border border-border/30 p-8 text-center text-muted-foreground font-inter text-[13px]">
-        <UserSearch className="text-primary size-[32px] animate-pulse block mb-2" />
+        <UserSearch className="text-primary size-[32px] block mb-2" />
         Loading applicants...
       </div>
     )
@@ -108,11 +108,11 @@ export function ApplicantTable({
     <div className="flex flex-col gap-4 font-inter">
       {/* ── Reject Dialog ─────────────────────────────────────────────── */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl shadow-2xl">
+        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl">
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
-              <X className="size-[20px] text-red-500 dark:text-red-300" />
-              Reject Application
+              <X className="size-[20px] text-destructive" />
+              Reject application
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-inter text-[13px]">
               Are you sure you want to reject{' '}
@@ -128,7 +128,7 @@ export function ApplicantTable({
               Cancel
             </button>
             <button
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-300/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-destructive/15 hover:bg-destructive/35 text-destructive text-[13px] font-medium font-inter transition-colors border border-destructive/30 dark:border-destructive/20"
               onClick={confirmReject}
             >
               <X className="size-[18px]" />
@@ -140,11 +140,11 @@ export function ApplicantTable({
 
       {/* ── Delete Dialog ─────────────────────────────────────────────── */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl shadow-2xl">
+        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl">
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
-              <Trash2 className="size-[20px] text-red-500 dark:text-red-300" />
-              Delete Application
+              <Trash2 className="size-[20px] text-destructive" />
+              Delete application
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-inter text-[13px]">
               Are you sure you want to permanently delete{' '}
@@ -160,7 +160,7 @@ export function ApplicantTable({
               Cancel
             </button>
             <button
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-300/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-destructive/15 hover:bg-destructive/35 text-destructive text-[13px] font-medium font-inter transition-colors border border-destructive/30 dark:border-destructive/20"
               onClick={confirmDelete}
             >
               <Trash2 className="size-[18px]" />
@@ -179,7 +179,7 @@ export function ApplicantTable({
               <TableSortHeader label="Email" onSort={() => handleSort("contact_email")} />
               <TableSortHeader label="Applied" onSort={() => handleSort("created_at")} />
               <th className="py-3 px-4 text-right">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Actions</span>
+                <span className="text-[11px] font-medium text-muted-foreground">Actions</span>
               </th>
             </tr>
           </thead>
@@ -187,7 +187,7 @@ export function ApplicantTable({
             {paginatedApplicants.length === 0 ? (
               <tr>
                 <td colSpan={4} className="py-12 text-center text-muted-foreground">
-                  <Inbox className="size-[32px] block mb-2 text-border" />
+                  <Inbox className="size-[32px] block mb-2 text-muted-foreground" />
                   No pending applications.
                 </td>
               </tr>
@@ -200,12 +200,12 @@ export function ApplicantTable({
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-9 h-9 rounded-lg ${color.bg} flex items-center justify-center ${color.text} font-bold text-[12px] shrink-0 font-jakarta`}
+                          className={`w-9 h-9 rounded-lg ${color.bg} flex items-center justify-center ${color.text} font-medium text-[12px] shrink-0 font-jakarta`}
                         >
                           {initials}
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-foreground font-semibold font-jakarta">{applicant.name}</span>
+                          <span className="text-foreground font-medium font-jakarta">{applicant.name}</span>
                           <span className="text-[11px] text-muted-foreground font-mono">@{applicant.slug}</span>
                         </div>
                       </div>
@@ -215,14 +215,14 @@ export function ApplicantTable({
                     </td>
                     <td className="py-4 px-4">
                       <span className="text-muted-foreground font-mono text-[12px]">
-                        {new Date(applicant.created_at).toLocaleDateString()}
+                        {new Date(applicant.created_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center justify-end gap-2">
                         {/* Approve */}
                         <button
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 hover:bg-success/20 text-success text-[12px] font-semibold transition-colors border border-success/20 font-inter"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 hover:bg-success/20 text-success text-[12px] font-medium transition-colors border border-success/20 font-inter"
                           onClick={() => onApprove(applicant)}
                         >
                           <CircleCheck className="size-[16px]" />
@@ -230,7 +230,7 @@ export function ApplicantTable({
                         </button>
                         {/* Reject */}
                         <button
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 dark:bg-red-300/10 hover:bg-red-500/10 dark:bg-red-300/20 text-red-500 dark:text-red-300 text-[12px] font-semibold transition-colors border border-red-500/30 dark:border-red-300/20 font-inter"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/10 hover:bg-destructive/10 dark:bg-destructive/20 text-destructive text-[12px] font-medium transition-colors border border-destructive/30 dark:border-destructive/20 font-inter"
                           onClick={() => handleRejectClick(applicant)}
                         >
                           <X className="size-[16px]" />
@@ -238,7 +238,7 @@ export function ApplicantTable({
                         </button>
                         {/* Delete */}
                         <button
-                          className="p-1.5 rounded-lg bg-card hover:bg-red-800/20 text-muted-foreground hover:text-red-500 dark:text-red-300 transition-colors border border-border/30"
+                          className="p-1.5 rounded-lg bg-card hover:bg-destructive/15 text-muted-foreground hover:text-destructive dark:text-destructive transition-colors border border-border/30"
                           onClick={() => handleDeleteClick(applicant)}
                           title="Delete application"
                         >

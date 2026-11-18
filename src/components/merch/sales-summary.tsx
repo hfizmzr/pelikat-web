@@ -22,13 +22,13 @@ function RevenueTooltip({ active, payload }: { active?: boolean; payload?: { pay
   if (!active || !payload?.length) return null
   const row = payload[0].payload
   return (
-    <div className="bg-card border border-border rounded-lg px-3 py-2 text-[12px] shadow-xl text-foreground">
-      <p className="font-semibold mb-1">{row.name}</p>
+    <div className="bg-card border border-border rounded-lg px-3 py-2 text-[12px] text-foreground">
+      <p className="font-medium mb-1">{row.name}</p>
       <p className="text-muted-foreground">
-        Revenue <span className="font-semibold text-foreground">{formatRM(row.revenue)}</span>
+        Revenue <span className="font-medium text-foreground">{formatRM(row.revenue)}</span>
       </p>
       <p className="text-muted-foreground">
-        Items sold <span className="font-semibold text-foreground">{row.items_sold}</span>
+        Items sold <span className="font-medium text-foreground">{row.items_sold}</span>
       </p>
     </div>
   )
@@ -50,9 +50,9 @@ export function SalesSummary({ sales, paidOrders, pendingOrders }: SalesSummaryP
     <div className="space-y-5">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {tiles.map((tile) => (
-          <div key={tile.label} className="bg-card rounded-xl p-4 border border-muted">
+          <div key={tile.label} className="bg-card rounded-xl p-4 border border-border">
             <div className="text-[11px] text-muted-foreground">{tile.label}</div>
-            <div className="text-[22px] leading-[28px] tracking-[-0.01em] font-semibold text-foreground mt-1 tabular-nums">
+            <div className="text-[22px] leading-[28px] font-medium text-foreground mt-1 tabular-nums">
               {tile.value}
             </div>
           </div>
@@ -66,8 +66,8 @@ export function SalesSummary({ sales, paidOrders, pendingOrders }: SalesSummaryP
         <p className="text-[13px] text-muted-foreground py-8 text-center">No products yet.</p>
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
-          <div className="bg-card rounded-xl border border-muted p-4">
-            <h3 className="text-[14px] font-semibold text-foreground">Revenue by product</h3>
+          <div className="bg-card rounded-xl border border-border p-4">
+            <h3 className="text-[14px] font-medium text-foreground">Revenue by product</h3>
             <div className="mt-3" style={{ height: Math.max(160, sorted.length * 44 + 40) }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={sorted} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 0 }}>
@@ -94,7 +94,7 @@ export function SalesSummary({ sales, paidOrders, pendingOrders }: SalesSummaryP
             </div>
           </div>
 
-          <div className="rounded-xl border border-muted overflow-x-auto">
+          <div className="rounded-xl border border-border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

@@ -69,7 +69,7 @@ function MerchHandoverNote({ merch }: { merch: MerchHandover }) {
           </p>
         )}
         {merch.notPacked.length > 0 && (
-          <p className="text-amber-500">
+          <p className="text-warning">
             <span className="font-medium">Paid, not packed yet:</span> {formatOrders(merch.notPacked)}
           </p>
         )}
@@ -140,7 +140,7 @@ export default function OrganizerCheckinPage({
       if (data.success) {
         const result: ScanResult = {
           success: true,
-          message: data.message || 'Check-in successful!',
+          message: data.message || 'Checked in',
           alreadyCheckedIn: data.already_checked_in,
           runner: data.runner
             ? {
@@ -207,7 +207,7 @@ export default function OrganizerCheckinPage({
             () => {}
           )
           .catch(() => {
-            if (!cancelled) setCameraError('Could not start camera. Check permissions or switch to Manual Search.')
+            if (!cancelled) setCameraError('Could not start camera. Check permissions or switch to manual search.')
           })
       }
     }
@@ -338,7 +338,7 @@ export default function OrganizerCheckinPage({
   return (
     <div className="space-y-6 px-4 sm:px-6 py-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Check-in Dashboard</h1>
+        <h1 className="text-3xl font-medium tracking-tight">Check-in dashboard</h1>
         <p className="text-muted-foreground">Scan QR codes to check in runners</p>
       </div>
 
@@ -347,7 +347,7 @@ export default function OrganizerCheckinPage({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <QrCode className="h-5 w-5" />
-              {scannerMode === 'collector' ? 'Collector QR Scanner' : 'QR Scanner'}
+              {scannerMode === 'collector' ? 'Collector QR scanner' : 'QR scanner'}
             </CardTitle>
             <CardDescription>
               {scannerMode === 'collector'
@@ -362,11 +362,11 @@ export default function OrganizerCheckinPage({
               variant={scannerMode === 'checkin' ? 'destructive' : 'default'}
               disabled={checkingIn}
             >
-              {scannerMode === 'checkin' ? 'Stop Runner Scanner' : 'Start Runner Scanner'}
+              {scannerMode === 'checkin' ? 'Stop runner scanner' : 'Start runner scanner'}
             </Button>
 
             {cameraError && (
-              <div className="flex items-center gap-2 rounded-lg bg-red-500/10 p-3 text-sm text-red-500">
+              <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
                 <XCircle className="h-4 w-4 shrink-0" />
                 <span>{cameraError}</span>
               </div>
@@ -382,8 +382,8 @@ export default function OrganizerCheckinPage({
               <div
                 className={`flex items-center gap-3 rounded-lg p-4 ${
                   scanResult.success
-                    ? 'bg-green-500/10 text-green-500'
-                    : 'bg-red-500/10 text-red-500'
+                    ? 'bg-success/10 text-success'
+                    : 'bg-destructive/10 text-destructive'
                 }`}
               >
                 {scanResult.success ? (
@@ -417,7 +417,7 @@ export default function OrganizerCheckinPage({
 
         <Card className="border-border">
           <CardHeader>
-            <CardTitle>Manual Search</CardTitle>
+            <CardTitle>Manual search</CardTitle>
             <CardDescription>Search by BIB number</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -439,7 +439,7 @@ export default function OrganizerCheckinPage({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Proxy Collection
+              Proxy collection
             </CardTitle>
             <CardDescription>Check in using a consent code for someone else</CardDescription>
           </CardHeader>
@@ -465,7 +465,7 @@ export default function OrganizerCheckinPage({
                 onClick={() => toggleScanning('collector')}
               >
                 <QrCode className="mr-2 h-4 w-4" />
-                {scannerMode === 'collector' ? 'Stop Collector Scanner' : 'Scan Collector QR'}
+                {scannerMode === 'collector' ? 'Stop collector scanner' : 'Scan collector QR'}
               </Button>
             </div>
             <div className="space-y-2">
@@ -479,7 +479,7 @@ export default function OrganizerCheckinPage({
                 value={proxyCode}
                 onChange={(e) => setProxyCode(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleProxyCheckIn()}
-                className="font-mono tracking-widest text-center text-lg"
+                className="font-mono text-center text-lg"
                 maxLength={6}
               />
             </div>
@@ -488,14 +488,14 @@ export default function OrganizerCheckinPage({
               onClick={handleProxyCheckIn}
               disabled={proxyChecking || !proxyBib || !proxyCode || !collectorQrPayload}
             >
-              {proxyChecking ? 'Checking...' : 'Check In (Proxy)'}
+              {proxyChecking ? 'Checking...' : 'Check in (proxy)'}
             </Button>
           </CardContent>
         </Card>
 
         <Card className="border-border lg:col-span-2">
           <CardHeader>
-            <CardTitle>Recent Check-ins</CardTitle>
+            <CardTitle>Recent check-ins</CardTitle>
             <CardDescription>Latest check-ins for this event</CardDescription>
           </CardHeader>
           <CardContent>
@@ -515,7 +515,7 @@ export default function OrganizerCheckinPage({
                     </div>
                     <div className="text-right">
                       <Badge variant={checkin.alreadyCheckedIn ? 'secondary' : 'default'}>
-                        {checkin.alreadyCheckedIn ? 'Already In' : 'Checked In'}
+                        {checkin.alreadyCheckedIn ? 'Already in' : 'Checked in'}
                       </Badge>
                       <p className="text-xs text-muted-foreground mt-1">
                         {checkin.time.toLocaleTimeString()}

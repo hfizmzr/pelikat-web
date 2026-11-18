@@ -61,7 +61,7 @@ export function MiniThemePreview({
             />
           </div>
         </div>
-        <p className="text-sm font-bold text-primary">Riverside Run 2026</p>
+        <p className="text-sm font-medium text-primary">Riverside run 2026</p>
         <div className="flex items-center gap-1.5">
           <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
             42.5K
@@ -76,7 +76,7 @@ export function MiniThemePreview({
       </div>
       {/* Themed leaderboard-row mock */}
       <div className="mt-2 flex items-center gap-2 rounded-md border bg-card px-3 py-2">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
           1
         </span>
         <span className="flex-1 truncate text-sm">Runner name</span>
@@ -99,10 +99,10 @@ export function MiniThemePreview({
               readable over any themed art, light + dark alike. */}
           <div className="absolute inset-0 flex items-center justify-center p-2">
             <div className="w-full rounded bg-background/90 px-3 py-2 text-center shadow-sm">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              <p className="text-[11px] font-medium text-muted-foreground">
                 {resolved.labels.certificate_label}
               </p>
-              <p className="mt-1 text-sm font-semibold text-foreground">
+              <p className="mt-1 text-sm font-medium text-foreground">
                 {resolved.labels.participant_label}: Runner name
               </p>
               <p className="text-xs text-muted-foreground">{resolved.labels.bib_label} #1234</p>

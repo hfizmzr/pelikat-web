@@ -1,5 +1,6 @@
 'use client'
 
+import { roleLabel } from '@/components/ui/status-tag'
 import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -213,11 +214,11 @@ export function ComplimentaryGuestsClient({
   return (
     <Card className="border-border">
       <CardHeader>
-        <CardTitle>Add Complimentary Guests</CardTitle>
+        <CardTitle>Add complimentary guests</CardTitle>
         <CardDescription>
           Register pacers, VIPs or invited guests who bypass payment.
           Payment status is set to <strong>waived</strong> and a BIB is allocated immediately.
-          Guests claim their E-Bib automatically when they sign up with the same email.
+          Guests claim their e-bib automatically when they sign up with the same email.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -231,7 +232,7 @@ export function ComplimentaryGuestsClient({
               onChange={(e) => setRole(e.target.value)}
             >
               {ROLES.map(r => (
-                <option key={r} value={r} className="capitalize">{r}</option>
+                <option key={r} value={r}>{roleLabel(r)}</option>
               ))}
             </select>
           </div>
@@ -264,7 +265,7 @@ export function ComplimentaryGuestsClient({
             <Input id="guest-phone" value={singlePhone} onChange={e => setSinglePhone(e.target.value)} placeholder="Phone (optional)" />
           </div>
           <Button type="submit" disabled={busy || !categoryId || !selectedCategory}>
-            Add Guest
+            Add guest
           </Button>
         </form>
 
@@ -280,7 +281,7 @@ export function ComplimentaryGuestsClient({
         </div>
 
         {fileParseError && (
-          <p className="text-sm text-red-500">{fileParseError}</p>
+          <p className="text-sm text-destructive">{fileParseError}</p>
         )}
 
         {importedRows && (
@@ -309,7 +310,7 @@ export function ComplimentaryGuestsClient({
         )}
 
         {error && (
-          <p className="text-sm text-red-500 dark:text-red-300">{error}</p>
+          <p className="text-sm text-destructive">{error}</p>
         )}
 
         {results && (

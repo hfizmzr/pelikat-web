@@ -13,9 +13,9 @@ export const MERCH_ORDER_STATUS_META: Record<
 > = {
   pending: { label: 'Pending', className: 'text-muted-foreground bg-accent border-border' },
   confirmed: { label: 'Confirmed', className: 'text-primary bg-primary/10 border-primary/20' },
-  ready: { label: 'Ready', className: 'text-amber-500 dark:text-amber-400 bg-amber-500/10 border-amber-500/20' },
+  ready: { label: 'Ready', className: 'text-warning bg-warning/10 border-warning/20' },
   collected: { label: 'Collected', className: 'text-success bg-success/15 border-success/20' },
-  cancelled: { label: 'Cancelled', className: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/20 dark:border-red-300/20' },
+  cancelled: { label: 'Cancelled', className: 'text-destructive bg-destructive/10 border-destructive/20' },
 }
 
 // Orders in these states count as sold (matches the merch_product_sales view)
@@ -151,7 +151,7 @@ export const MERCH_RUNNER_STATUS_META: Record<
   },
   collected: {
     label: 'Collected',
-    description: 'Picked up at REPC. Enjoy your gear!',
+    description: 'Picked up at REPC',
     icon: CircleCheck,
   },
   cancelled: {

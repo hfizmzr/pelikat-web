@@ -1,10 +1,11 @@
-import { Calendar, ListFilter, MapPin, Search, SearchX, Tag, UserPlus, X } from "lucide-react"
+import { Search, X, ChevronRight } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { StatusTag } from '@/components/ui/status-tag'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Explore Events - Pelikat',
+  title: 'Explore events - Pelikat',
   description: 'Discover and register for upcoming running events',
 }
 
@@ -62,50 +63,48 @@ export default async function RunnerEventsPage({
   const unjoinedEvents = events?.filter(e => !registeredEventIds.includes(e.id)) || []
   const joinedEvents = events?.filter(e => registeredEventIds.includes(e.id)) || []
 
+  const fmt = (d: string, opts: Intl.DateTimeFormatOptions) => new Date(d).toLocaleDateString('en-MY', opts)
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
+
   return (
     <div className="flex flex-col w-full min-h-full bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl px-5 pt-safe pb-4 border-b border-muted">
-        <div className="h-14 flex items-center justify-between">
-          <h1 className="text-[20px] font-bold text-foreground tracking-tight">Explore Events</h1>
-          <button className="w-10 h-10 flex items-center justify-center rounded-full bg-card border border-border/60 text-muted-foreground active:scale-95 transition-transform">
-            <ListFilter className="size-[20px]" />
-          </button>
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 px-5 pb-4 pt-safe backdrop-blur-md">
+        <div className="flex h-14 items-center">
+          <h1 className="text-[20px] font-medium text-foreground">Explore events</h1>
         </div>
 
-        {/* Search Bar */}
-        <form action="/runner/events" method="GET" className="mt-2 relative">
+        <form action="/runner/events" method="GET" className="relative">
           <input type="hidden" name="period" value={period} />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-[20px] text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.75} />
           <input
             type="search"
             name="search"
             defaultValue={search}
-            placeholder="Search events, locations..."
-            className="w-full h-11 pl-10 pr-10 rounded-xl bg-card border border-border/60 text-[14px] text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
+            placeholder="Search"
+            aria-label="Search events and locations"
+            className="h-11 w-full rounded-[10px] border border-border/60 bg-card pl-9 pr-10 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
           />
           {search && (
             <Link
               href={`/runner/events?period=${period}`}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-accent text-foreground"
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
             >
-              <X className="size-[14px]" />
+              <X className="size-4" />
             </Link>
           )}
         </form>
 
-        {/* Tabs */}
-        <div className="flex items-center gap-2 mt-4 overflow-x-auto hide-scrollbar">
+        <div className="mt-3 flex h-10 items-center gap-0.5 rounded-[10px] border border-border/60 bg-card p-1" aria-label="When">
           {tabs.map(tab => {
             const active = period === tab.value
             return (
               <Link
                 key={tab.value}
+                aria-current={active ? 'page' : undefined}
                 href={`/runner/events?period=${tab.value}${search ? `&search=${search}` : ''}`}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-semibold transition-colors border ${
-                  active
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-card text-muted-foreground border-border/60 hover:border-muted-foreground/30'
+                className={`flex h-8 flex-1 items-center justify-center rounded-md text-[13px] transition-colors ${
+                  active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {tab.label}
@@ -115,44 +114,34 @@ export default async function RunnerEventsPage({
         </div>
       </header>
 
-      <div className="flex flex-col px-5 py-6 gap-6">
-        {/* Your Registered Events (only if not searching strictly and there are some) */}
+      <div className="flex flex-col gap-8 px-5 py-6">
         {joinedEvents.length > 0 && !search && (
           <section className="flex flex-col gap-3">
-            <h2 className="text-[15px] font-bold text-foreground tracking-tight flex items-center gap-2">
-              <UserPlus className="size-[18px] text-success" />
-              Your Registered Events
-            </h2>
-            <div className="flex overflow-x-auto gap-3 pb-2 -mx-5 px-5 snap-x hide-scrollbar">
+            <h2 className="text-[15px] font-medium text-foreground">Your registered events</h2>
+            <div className="-mx-5 flex snap-x gap-3 overflow-x-auto px-5 pb-2 scrollbar-none">
               {joinedEvents.map(event => {
                 const reg = myRegistrations?.find(r => r.event_id === event.id)
                 return (
                   <Link
                     key={event.id}
                     href={`/runner/events/${event.id}`}
-                    className="snap-start shrink-0 w-[240px] flex flex-col p-4 bg-card rounded-2xl border border-border/60 active:scale-[0.98] transition-transform"
+                    className="flex w-[240px] shrink-0 snap-start flex-col rounded-xl border border-border/60 bg-card p-4 transition-transform active:scale-[0.98]"
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-success">
-                        {new Date(event.event_date).toLocaleDateString('en-MY', { month: 'short', day: 'numeric' })}
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <span className="text-[12px] text-muted-foreground">
+                        {fmt(event.event_date, { weekday: 'short', day: 'numeric', month: 'short' })}
                       </span>
-                      <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-success/10 text-success border border-success/20">
-                        {reg?.payment_status === 'paid' ? 'PAID' : reg?.payment_status?.toUpperCase()}
-                      </span>
+                      <StatusTag status={reg?.payment_status} />
                     </div>
-                    <h3 className="text-[14px] font-bold text-foreground leading-tight mb-3 line-clamp-2">
+                    <h3 className="mb-3 line-clamp-2 text-[15px] leading-tight font-medium text-foreground">
                       {event.name}
                     </h3>
-                    <div className="mt-auto flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <Tag className="size-[14px]" />
-                      <span className="truncate">{reg?.race_categories?.name}</span>
+                    <p className="mt-auto truncate text-[12px] text-muted-foreground">
+                      {reg?.race_categories?.name}
                       {event.event_type !== 'virtual' && reg?.bib_number && (
-                        <>
-                          <span className="mx-1">•</span>
-                          <span className="font-mono text-muted-foreground">BIB {reg.bib_number}</span>
-                        </>
+                        <> · <span className="font-mono text-foreground">{reg.bib_number}</span></>
                       )}
-                    </div>
+                    </p>
                   </Link>
                 )
               })}
@@ -160,67 +149,42 @@ export default async function RunnerEventsPage({
           </section>
         )}
 
-        {/* Discover Feed */}
-        <section className="flex flex-col gap-4">
-          <h2 className="text-[15px] font-bold text-foreground tracking-tight">
-            {search ? 'Search Results' : 'Discover Events'}
+        <section className="flex flex-col gap-3">
+          <h2 className="text-[15px] font-medium text-foreground">
+            {search ? 'Search results' : 'Discover events'}
           </h2>
 
-          <div className="flex flex-col gap-4">
-            {unjoinedEvents.length > 0 ? (
-              unjoinedEvents.map(event => (
-                <Link
-                  key={event.id}
-                  href={`/runner/events/${event.id}`}
-                  className="flex flex-col rounded-2xl overflow-hidden bg-card border border-border/60 active:scale-[0.98] transition-transform"
-                >
-                  <div className="h-24 bg-muted relative">
-                    {/* Placeholder for event banner image */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent opacity-80" />
-                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-background/80 backdrop-blur-md border border-border flex items-center gap-1.5">
-                      <Calendar className="size-[14px] text-primary" />
-                      <span className="text-[11px] font-bold text-foreground">
-                        {new Date(event.event_date).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </span>
+          {unjoinedEvents.length > 0 ? (
+            <ul className="divide-y divide-border/60 overflow-hidden rounded-xl border border-border/60 bg-card">
+              {unjoinedEvents.map(event => (
+                <li key={event.id}>
+                  <Link
+                    href={`/runner/events/${event.id}`}
+                    className="flex items-center gap-4 p-4 transition-colors hover:bg-muted/50"
+                  >
+                    <div className="flex w-12 shrink-0 flex-col items-center rounded-lg border border-border/60 py-1.5 text-center">
+                      <span className="text-[11px] text-muted-foreground">{fmt(event.event_date, { month: 'short' })}</span>
+                      <span className="text-[18px] leading-6 font-medium tabular-nums text-foreground">{fmt(event.event_date, { day: 'numeric' })}</span>
                     </div>
-                  </div>
-                  <div className="p-4 pt-2">
-                    <h3 className="text-[16px] font-bold text-foreground leading-snug mb-1.5">
-                      {event.name}
-                    </h3>
-                    {event.location && (
-                      <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground mb-3">
-                        <MapPin className="size-[14px]" />
-                        <span className="truncate">{event.location}</span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-[15px] font-medium text-foreground">{event.name}</h3>
+                      <p className="mt-0.5 truncate text-[13px] text-muted-foreground">
+                        {[event.location, plural(event.race_categories?.[0]?.count || 0, 'category', 'categories')].filter(Boolean).join(' · ')}
                       </p>
-                    )}
-                    <div className="flex items-center justify-between mt-4">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 rounded bg-muted text-[10px] font-semibold text-muted-foreground">
-                          {event.race_categories?.[0]?.count || 0} Categories
-                        </span>
-                      </div>
-                      <span className="px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[12px] font-bold">
-                        Details
-                      </span>
                     </div>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-2xl bg-card border border-border/40">
-                <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center mb-3">
-                  <SearchX className="size-[24px] text-muted-foreground" />
-                </div>
-                <p className="text-[14px] font-bold text-foreground mb-1">
-                  {search ? 'No events found' : 'No events available'}
-                </p>
-                <p className="text-[12px] text-muted-foreground">
-                  {search ? `Try adjusting your search terms or filters.` : `Check back later for new events.`}
-                </p>
-              </div>
-            )}
-          </div>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.75} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="rounded-xl border border-border/60 bg-card px-4 py-12 text-center">
+              <p className="text-[15px] text-foreground">{search ? 'No events found' : 'No events available'}</p>
+              <p className="mt-1 text-[13px] text-muted-foreground">
+                {search ? 'Try a different search or time period' : 'New races appear here when organizers publish them'}
+              </p>
+            </div>
+          )}
         </section>
       </div>
     </div>

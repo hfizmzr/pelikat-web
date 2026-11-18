@@ -57,7 +57,7 @@ export function ThemeSelect() {
             aria-checked={selected}
             onClick={() => setTheme(value)}
             className={cn(
-              "h-10 rounded-lg flex items-center justify-center gap-2 text-[13px] font-bold transition-colors",
+              "h-10 rounded-lg flex items-center justify-center gap-2 text-[13px] font-medium transition-colors",
               selected
                 ? "bg-card text-foreground shadow-sm border border-border"
                 : "text-muted-foreground hover:text-foreground"

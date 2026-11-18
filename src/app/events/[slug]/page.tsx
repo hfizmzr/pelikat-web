@@ -18,6 +18,7 @@
  * Both degrade silently: drafts/unknown slugs and any loader surprise give
  * empty/platform metadata with zero service-role reads, never a throw.
  */
+import { StatusTag, statusLabel } from '@/components/ui/status-tag'
 import { MapPin, Trophy, UserPlus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
@@ -181,46 +182,42 @@ export default async function PublicEventPage({
       <div className="flex flex-col w-full min-h-full bg-background">
         <div className="flex flex-col w-full max-w-xl mx-auto px-5 py-6 gap-5">
           {/* Status + name */}
-          <div className="flex flex-col gap-2">
-            <span className="px-2 py-1 w-max rounded text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-              {publicEvent.status}
-            </span>
-            {isVirtual && publicEvent.target_distance_km != null && (
-              <span className="px-2 py-1 w-max rounded text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success border border-success/20">
-                Virtual Run · {Number(publicEvent.target_distance_km)} km
-              </span>
-            )}
-            <h1 className="text-[24px] font-bold text-foreground leading-tight">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusTag status={publicEvent.status}>{statusLabel(publicEvent.status)}</StatusTag>
+              {isVirtual && publicEvent.target_distance_km != null && (
+                <StatusTag tone="primary">Virtual run · {Number(publicEvent.target_distance_km)} km</StatusTag>
+              )}
+            </div>
+            <h1 className="text-[26px] leading-8 font-medium text-foreground">
               {publicEvent.name}
             </h1>
           </div>
 
           {/* Date & Location */}
           <section className="flex flex-col gap-4">
-            <div className="flex items-center gap-4 bg-card p-4 rounded-2xl border border-border/60">
-              <div className="w-12 h-12 bg-accent/50 rounded-xl flex flex-col items-center justify-center">
-                <span className="text-[10px] font-bold text-red-500 dark:text-red-300 uppercase">
+            <div className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4">
+              <div className="flex w-12 shrink-0 flex-col items-center rounded-lg border border-border/60 py-1.5">
+                <span className="text-[11px] text-muted-foreground">
                   {eventDate.toLocaleDateString('en-MY', { month: 'short' })}
                 </span>
-                <span className="text-[16px] font-extrabold text-foreground leading-none">
+                <span className="text-[18px] leading-6 font-medium tabular-nums text-foreground">
                   {eventDate.getDate()}
                 </span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-[14px] font-bold text-foreground">
-                  {eventDate.toLocaleDateString('en-MY', { weekday: 'long', year: 'numeric' })}
-                </span>
-              </div>
+              <span className="text-[15px] text-foreground">
+                {eventDate.toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </span>
             </div>
 
             {publicEvent.location && (
-              <div className="flex items-center gap-4 bg-card p-4 rounded-2xl border border-border/60">
-                <div className="w-12 h-12 bg-accent/50 rounded-xl flex items-center justify-center">
-                  <MapPin className="size-[20px] text-primary" />
+              <div className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-border/60">
+                  <MapPin className="size-5 text-muted-foreground" strokeWidth={1.75} />
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[14px] font-bold text-foreground">Event Location</span>
-                  <span className="text-[12px] text-muted-foreground">{publicEvent.location}</span>
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-[13px] text-muted-foreground">Location</span>
+                  <span className="text-[15px] text-foreground">{publicEvent.location}</span>
                 </div>
               </div>
             )}
@@ -228,14 +225,14 @@ export default async function PublicEventPage({
 
           {/* About */}
           <section className="flex flex-col gap-2">
-            <h3 className="text-[16px] font-bold text-foreground">About the Race</h3>
+            <h3 className="text-[16px] font-medium text-foreground">About the race</h3>
             <p className="text-[13px] text-muted-foreground leading-relaxed">
               {publicEvent.description || 'No description available for this event.'}
             </p>
             {organizerName && (
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-[12px] text-muted-foreground">Organized by:</span>
-                <span className="text-[12px] font-bold text-foreground">{organizerName}</span>
+                <span className="text-[12px] text-muted-foreground">Organized by</span>
+                <span className="text-[12px] font-medium text-foreground">{organizerName}</span>
               </div>
             )}
           </section>
@@ -246,19 +243,19 @@ export default async function PublicEventPage({
               {publicEvent.results_published && (
                 <Link
                   href={`/runner/leaderboard?event_id=${publicEvent.id}`}
-                  className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                  className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                 >
                   <Trophy className="size-[18px]" />
-                  View Leaderboard
+                  View leaderboard
                 </Link>
               )}
               {registrationOpen && (
                 <Link
                   href={`/runner/events/${publicEvent.id}`}
-                  className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                  className="w-full py-3.5 rounded-xl bg-accent text-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                 >
                   <UserPlus className="size-[18px]" />
-                  Register for this Event
+                  Register for this event
                 </Link>
               )}
             </section>

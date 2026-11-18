@@ -8,7 +8,7 @@ import { Storefront } from '@/components/merch/store/storefront'
 import { StoreHeader } from '@/components/merch/store/store-ui'
 
 export const metadata: Metadata = {
-  title: 'Event Merch - Pelikat',
+  title: 'Event merch - Pelikat',
   description: 'Official merchandise for your event',
 }
 
@@ -22,7 +22,7 @@ export default async function RunnerEventMerchPage({ params }: { params: Promise
   return (
     <div className="flex flex-col w-full min-h-full bg-background">
       <StoreHeader
-        title="Event Merch"
+        title="Event merch"
         subtitle={event.name}
         backHref={`/runner/events/${event.id}`}
         action={
@@ -43,13 +43,13 @@ export default async function RunnerEventMerchPage({ params }: { params: Promise
           <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center border border-border/60">
             <Lock className="size-[32px] text-muted-foreground" />
           </div>
-          <p className="text-[15px] font-bold text-foreground">Register to shop</p>
+          <p className="text-[15px] font-medium text-foreground">Register to shop</p>
           <p className="text-[13px] text-muted-foreground max-w-[260px]">
             Event merch is available to runners registered for {event.name}.
           </p>
           <Link
             href={`/runner/events/${event.id}`}
-            className="mt-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-bold"
+            className="mt-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium"
           >
             View event
           </Link>

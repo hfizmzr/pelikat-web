@@ -30,8 +30,8 @@ function exportOrganizersCSV(organizers: Organizer[]) {
     o.slug,
     o.contact_email || '',
     o.is_active ? 'Yes' : 'No',
-    o.sub_expires_at ? new Date(o.sub_expires_at).toLocaleDateString() : '',
-    new Date(o.created_at).toLocaleDateString(),
+    o.sub_expires_at ? new Date(o.sub_expires_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+    new Date(o.created_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }),
   ])
 
   const csv = rowsToCsv(headers, rows)
@@ -74,10 +74,10 @@ function getSubscriptionStatus(organizer: Organizer) {
   const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
   if (expires <= now) {
-    return { label: 'Expired', color: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300' }
+    return { label: 'Expired', color: 'text-destructive bg-destructive/10 border-destructive/30 dark:border-destructive/20', dot: 'bg-destructive' }
   }
   if (expires <= sevenDaysFromNow) {
-    return { label: 'Expiring Soon', color: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300' }
+    return { label: 'Expiring soon', color: 'text-destructive bg-destructive/10 border-destructive/30 dark:border-destructive/20', dot: 'bg-destructive' }
   }
   return { label: 'Active', color: 'text-success bg-success/10 border-success/20', dot: 'bg-success' }
 }
@@ -182,7 +182,7 @@ export function OrganizerTable({
   if (loading) {
     return (
       <div className="rounded-xl bg-card border border-border/30 p-8 text-center text-muted-foreground font-inter text-[13px]">
-        <RefreshCw className="text-primary size-[32px] animate-pulse block mb-2" />
+        <RefreshCw className="text-primary size-[32px] block mb-2" />
         Loading organizers...
       </div>
     )
@@ -218,10 +218,10 @@ export function OrganizerTable({
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent className="bg-card border-border/40 text-foreground">
-            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="all">All status</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="expiring">Expiring Soon</SelectItem>
+            <SelectItem value="expiring">Expiring soon</SelectItem>
             <SelectItem value="expired">Expired</SelectItem>
           </SelectContent>
         </Select>
@@ -237,10 +237,10 @@ export function OrganizerTable({
           </button>
           <button
             onClick={onAdd}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all font-inter"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:opacity-90 text-primary-foreground hover:text-white text-[13px] font-medium transition-[color,background-color,border-color,opacity] font-inter"
           >
             <Store className="size-[18px]" />
-            Add Organizer
+            Add organizer
           </button>
         </div>
       </div>
@@ -258,10 +258,10 @@ export function OrganizerTable({
             <TableSortHeader label="Slug" onSort={() => handleSort("slug")} className="hidden md:table-cell" />
             <TableSortHeader label="Email" onSort={() => handleSort("contact_email")} />
             <TableSortHeader label="Status" onSort={() => handleSort("is_active")} />
-            <TableSortHeader label="Sub Expires" onSort={() => handleSort("sub_expires_at")} className="hidden md:table-cell" />
+            <TableSortHeader label="Sub expires" onSort={() => handleSort("sub_expires_at")} className="hidden md:table-cell" />
             <TableSortHeader label="Created" onSort={() => handleSort("created_at")} className="hidden md:table-cell" />
               <th className="py-3 px-4 text-right">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Actions</span>
+                <span className="text-[11px] font-medium text-muted-foreground">Actions</span>
               </th>
             </tr>
           </thead>
@@ -285,11 +285,11 @@ export function OrganizerTable({
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-9 h-9 rounded-lg ${color.bg} flex items-center justify-center ${color.text} font-bold text-[12px] shrink-0 font-jakarta`}
+                          className={`w-9 h-9 rounded-lg ${color.bg} flex items-center justify-center ${color.text} font-medium text-[12px] shrink-0 font-jakarta`}
                         >
                           {initials}
                         </div>
-                        <span className="text-foreground font-semibold font-jakarta">{organizer.name}</span>
+                        <span className="text-foreground font-medium font-jakarta">{organizer.name}</span>
                       </div>
                     </td>
 
@@ -316,7 +316,7 @@ export function OrganizerTable({
                           className="data-[state=checked]:bg-primary"
                         />
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold inline-flex items-center gap-1.5 border ${subStatus.color}`}
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium inline-flex items-center gap-1.5 border ${subStatus.color}`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${subStatus.dot}`} />
                           {subStatus.label}
@@ -355,7 +355,7 @@ export function OrganizerTable({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-red-500 dark:text-red-300"
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive dark:text-destructive"
                             onClick={() => setEditingExpiry(null)}
                           >
                             <X className="size-[16px]" />
@@ -373,7 +373,7 @@ export function OrganizerTable({
                           }}
                         >
                           {organizer.sub_expires_at
-                            ? new Date(organizer.sub_expires_at).toLocaleDateString()
+                            ? new Date(organizer.sub_expires_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })
                             : '—'}
                         </button>
                       )}
@@ -382,7 +382,7 @@ export function OrganizerTable({
                     {/* Created (hidden < md — audit #5) */}
                     <td className="py-4 px-4 hidden md:table-cell">
                       <span className="text-muted-foreground font-mono text-[12px]">
-                        {new Date(organizer.created_at).toLocaleDateString()}
+                        {new Date(organizer.created_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </td>
 
@@ -394,7 +394,7 @@ export function OrganizerTable({
                           href={`/organizer`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all border border-primary/20"
+                          className="p-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-[color,background-color,border-color,opacity] border border-primary/20"
                           title={`Open ${organizer.name} organizer portal`}
                         >
                           <UserCog className="size-[18px]" />
@@ -402,13 +402,13 @@ export function OrganizerTable({
 
                         <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button className="p-1.5 rounded-lg bg-card hover:bg-accent text-muted-foreground hover:text-foreground transition-all border border-border/30">
+                          <button className="p-1.5 rounded-lg bg-card hover:bg-accent text-muted-foreground hover:text-foreground transition-[color,background-color,border-color,opacity] border border-border/30">
                             <MoreHorizontal className="size-[18px]" />
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           align="end"
-                          className="bg-card border border-border/40 text-foreground rounded-lg shadow-xl"
+                          className="bg-card border border-border/40 text-foreground rounded-lg"
                         >
                           <DropdownMenuItem
                             className="hover:bg-accent cursor-pointer text-[13px] focus:bg-accent focus:text-primary"
@@ -418,7 +418,7 @@ export function OrganizerTable({
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="text-red-500 dark:text-red-300 hover:bg-red-800/20 cursor-pointer text-[13px] focus:bg-red-800/20 focus:text-red-500 dark:text-red-300"
+                            className="text-destructive hover:bg-destructive/15 cursor-pointer text-[13px] focus:bg-destructive/15 focus:text-destructive"
                             onClick={() => onDelete(organizer)}
                           >
                             <Trash2 className="size-[16px] mr-2" />
@@ -453,7 +453,7 @@ export function OrganizerTable({
                 key={page}
                 className={`px-3 py-1.5 rounded-lg text-[12px] transition-colors font-inter ${
                   currentPage === page
-                    ? 'bg-primary text-primary-foreground font-bold'
+                    ? 'bg-primary text-primary-foreground font-medium'
                     : 'bg-card hover:bg-accent text-muted-foreground border border-border/30'
                 }`}
                 onClick={() => setCurrentPage(page)}

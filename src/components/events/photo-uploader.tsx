@@ -65,7 +65,7 @@ function ReprocessConfirm({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm}>
-            Reprocess Uploads
+            Reprocess uploads
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -290,7 +290,7 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
           </p>
           <Button variant="outline" className="mt-4" type="button">
             <Upload className="mr-2 h-4 w-4" />
-            Select Photos
+            Select photos
           </Button>
           {!showExistingTools && (
             <div className="mt-4" onClick={(event) => event.stopPropagation()}>
@@ -306,7 +306,7 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
                 ) : (
                   <ImageIcon className="mr-2 h-4 w-4" />
                 )}
-                Reprocess Existing Uploads
+                Reprocess existing uploads
               </Button>
             </div>
           )}
@@ -378,7 +378,7 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
                   trigger={
                     <Button size="sm" type="button" disabled={isPending || !selectedExistingPrefix}>
                       <ImageIcon className="mr-2 h-4 w-4" />
-                      Reprocess Uploads
+                      Reprocess uploads
                     </Button>
                   }
                   title="Reprocess uploads?"
@@ -426,11 +426,11 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
       )}
 
       {state === 'queued' && (
-        <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-6 space-y-3">
+        <div className="rounded-lg border border-success/30 bg-success/5 p-6 space-y-3">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
+            <CheckCircle2 className="h-5 w-5 text-success" />
             <div>
-              <p className="text-sm font-medium text-green-700 dark:text-green-400">
+              <p className="text-sm font-medium text-success">
                 {queuedBatch?.total ?? 0} photo{queuedBatch?.total !== 1 ? 's' : ''} queued for AI tagging
               </p>
               {batchId && (
@@ -445,7 +445,7 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
           </p>
           <Button variant="outline" size="sm" onClick={handleReset}>
             <ImageIcon className="mr-2 h-4 w-4" />
-            Upload More Photos
+            Upload more photos
           </Button>
         </div>
       )}
@@ -475,7 +475,7 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
             <ReprocessConfirm
               trigger={
                 <Button variant="outline" size="sm" disabled={isPending || !selectedExistingPrefix}>
-                Reprocess Existing Uploads
+                Reprocess existing uploads
                 </Button>
               }
               title="Run auto tagging again?"
@@ -483,7 +483,7 @@ export function PhotoUploader({ eventId }: PhotoUploaderProps) {
               onConfirm={handleRunExistingAutoTagging}
             />
             <Button variant="outline" size="sm" onClick={handleReset}>
-              Upload Different Photos
+              Upload different photos
             </Button>
           </div>
         </div>

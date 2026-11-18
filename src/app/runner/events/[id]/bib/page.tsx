@@ -1,4 +1,5 @@
-import { ArrowLeft, CircleCheck, Info, QrCode, Users } from "lucide-react"
+import { StatusTag } from '@/components/ui/status-tag'
+import { ArrowLeft, Users } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import QRCode from 'qrcode'
 import Link from 'next/link'
@@ -124,84 +125,65 @@ export default async function RunnerBibPage({
     <EventThemeScope event={event}>
       <div className="flex flex-col w-full min-h-full bg-background">
         {/* Sticky Header */}
-        <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
+        <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border">
           <div className="flex items-center h-14 px-4 pt-safe">
             <Link href={`/runner/events/${id}`} className="w-10 h-10 flex items-center justify-center rounded-full text-muted-foreground active:bg-card transition-colors -ml-2">
               <ArrowLeft className="size-[24px]" />
             </Link>
-            <h1 className="flex-1 text-[16px] font-bold text-foreground text-center mr-8 truncate">
+            <h1 className="flex-1 text-[16px] font-medium text-foreground text-center mr-8 truncate">
               {labels.bib_label}
             </h1>
           </div>
         </header>
 
-        <div className="flex flex-col px-5 py-8 items-center max-w-sm mx-auto w-full gap-6">
+        <div className="flex flex-col px-5 py-6 items-center max-w-sm mx-auto w-full gap-4">
 
-          {/* Ticket Wallet Container */}
-          <div className="w-full relative">
-            {/* Main Ticket */}
-            <div className={`relative overflow-hidden rounded-[2rem] p-6 pt-8 flex flex-col items-center bg-card border shadow-2xl ${
-              isCheckedIn ? 'border-success/40' : 'border-border/60'
-            }`}>
+          <div className="flex w-full items-center justify-between">
+            {isCheckedIn ? (
+              <>
+                <StatusTag tone="success">Checked in</StatusTag>
+                {checkedInAt && <span className="text-[12px] text-muted-foreground">Scanned at {checkedInAt}</span>}
+              </>
+            ) : (
+              <StatusTag tone="primary">Ready to scan at kit collection</StatusTag>
+            )}
+          </div>
 
-              {/* Blurry glow */}
-              <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl pointer-events-none ${
-                isCheckedIn ? 'bg-success/10' : 'bg-primary/10'
-              }`} />
+          {/* The bib: Tyvek white with dark ink, the band in the event's own
+              primary colour so themed events keep their look. */}
+          <div className="relative w-full overflow-hidden rounded-xl bg-[oklch(0.985_0.004_90)] text-[oklch(0.2_0.01_240)] shadow-[0_1px_2px_rgba(0,0,0,0.12),0_16px_32px_-16px_rgba(0,0,0,0.4)]">
+            {(['left-2.5 top-2.5', 'right-2.5 top-2.5', 'bottom-2.5 left-2.5', 'bottom-2.5 right-2.5'] as const).map((pos) => (
+              <span
+                key={pos}
+                aria-hidden="true"
+                className={`absolute size-1.5 rounded-full bg-[oklch(0.2_0.01_240/0.18)] shadow-[inset_0_1px_1px_rgba(0,0,0,0.25)] ${pos}`}
+              />
+            ))}
+            <div className="bg-primary px-6 py-3 text-primary-foreground">
+              <p className="truncate text-[14px] font-medium">{event.name}</p>
+              <p className="text-[12px] opacity-80">
+                {new Date(event.event_date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            </div>
+            <div className="flex flex-col items-center px-6 pb-6 pt-5 text-center">
+              <h2 className="text-[12px] text-[oklch(0.2_0.01_240/0.6)]">{labels.bib_label}</h2>
+              <p className="mt-1 font-mono text-[52px] leading-none font-medium tabular-nums">
+                {registration.bib_number}
+              </p>
+              <p className="mt-3 text-[15px] font-medium">{profile?.full_name}</p>
+              <p className="text-[13px] text-[oklch(0.2_0.01_240/0.65)]">{registration.race_categories?.name}</p>
 
-              <div className="relative z-10 flex flex-col items-center w-full">
-                {isCheckedIn ? (
-                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success border border-success/20 mb-4">
-                    <CircleCheck className="size-[16px]" />
-                    <span className="text-[10px] font-bold tracking-wider uppercase">Checked In</span>
+              <div className="mt-5 w-full border-t border-dashed border-[oklch(0.2_0.01_240/0.18)] pt-5">
+                {qrSvg ? (
+                  <div className="mx-auto w-fit rounded-lg bg-white p-2">
+                    <div dangerouslySetInnerHTML={{ __html: qrSvg }} />
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 mb-4">
-                    <QrCode className="size-[16px]" />
-                    <span className="text-[10px] font-bold tracking-wider uppercase">Ready for Scan</span>
+                  <div className="mx-auto flex h-[220px] w-[220px] items-center justify-center rounded-lg border border-dashed border-[oklch(0.2_0.01_240/0.25)] px-4 text-center text-[13px] text-[oklch(0.2_0.01_240/0.7)]">
+                    {qrError}
                   </div>
                 )}
-
-                <h2 className="text-[12px] font-bold text-muted-foreground tracking-widest uppercase mb-1">{labels.bib_label.toUpperCase()}</h2>
-                <div className="text-[54px] font-mono font-bold text-foreground leading-none mb-6 drop-shadow-md">
-                  {registration.bib_number}
-                </div>
-
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-accent to-transparent mb-6" />
-
-                <div className="w-full flex justify-center mb-6">
-                  {qrSvg ? (
-                    <div className="p-3 rounded-2xl bg-white border border-border/40 shadow-sm">
-                      <div dangerouslySetInnerHTML={{ __html: qrSvg }} />
-                    </div>
-                  ) : (
-                    <div className="w-[220px] h-[220px] flex items-center justify-center text-center text-red-500 text-[12px] px-4 border border-dashed border-red-500/40 rounded-xl">
-                      {qrError}
-                    </div>
-                  )}
-                </div>
-
-                <div className="w-full flex flex-col gap-3 text-center mb-2">
-                  <div>
-                    <h3 className="text-[16px] font-bold text-foreground leading-tight mb-0.5">{profile?.full_name}</h3>
-                    <p className="text-[12px] text-muted-foreground">{registration.race_categories?.name}</p>
-                  </div>
-                  <div className="w-full h-px bg-accent/40 my-1" />
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[13px] font-bold text-foreground truncate">{event.name}</span>
-                    <span className="text-[11px] text-muted-foreground">
-                      {new Date(event.event_date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
-                    </span>
-                    {checkedInAt && (
-                      <span className="text-[10px] text-success mt-1">Scanned at {checkedInAt}</span>
-                    )}
-                  </div>
-                </div>
               </div>
-
-              {/* Cutouts for ticket effect */}
-              <div className="absolute top-[65%] -left-3 w-6 h-6 rounded-full bg-background border-r border-border/60" />
-              <div className="absolute top-[65%] -right-3 w-6 h-6 rounded-full bg-background border-l border-border/60" />
             </div>
           </div>
 
@@ -213,18 +195,15 @@ export default async function RunnerBibPage({
 
           <Link
             href={`/runner/events/${id}/bib/consent`}
-            className="w-full py-3.5 mt-2 rounded-xl border border-border text-muted-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:bg-card transition-colors"
+            className="w-full min-h-11 rounded-[10px] border border-border/60 text-foreground text-[14px] flex items-center justify-center gap-2 active:bg-card transition-colors"
           >
-            <Users className="size-[18px]" />
-            Generate Proxy Collection Code
+            <Users className="size-4 text-muted-foreground" strokeWidth={1.75} />
+            Generate proxy collection code
           </Link>
 
-          <div className="bg-card p-4 rounded-xl border border-border/40 w-full mt-2">
-            <div className="flex items-center gap-2 mb-2">
-              <Info className="size-[18px] text-primary" />
-              <span className="text-[13px] font-bold text-foreground">Instructions</span>
-            </div>
-            <ol className="text-[12px] text-muted-foreground space-y-2 list-decimal list-inside marker:text-muted-foreground">
+          <div className="bg-card p-4 rounded-xl border border-border/60 w-full">
+            <h3 className="text-[14px] font-medium text-foreground mb-2">On race morning</h3>
+            <ol className="text-[13px] text-muted-foreground space-y-1.5 list-decimal list-inside marker:text-muted-foreground">
               <li>Show this QR code at the check-in counter on race day.</li>
               <li>Ensure your screen brightness is turned up.</li>
               <li>Take a screenshot as a backup.</li>

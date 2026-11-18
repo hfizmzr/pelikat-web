@@ -1,5 +1,6 @@
 'use client'
 
+import { statusLabel } from '@/components/ui/status-tag'
 import { useState, useEffect, useCallback } from 'react'
 import { Input } from '@/components/ui/input'
 import {
@@ -203,10 +204,10 @@ export default function AdminRegistrationsPage() {
   const checkInRate = metrics.total > 0 ? Math.round((metrics.checkedIn / metrics.total) * 100) : 0
 
   const metricCards = [
-    { label: 'Total Registrations', value: metrics.total.toLocaleString(), icon: Users, color: 'text-primary', bg: 'bg-primary/20' },
-    { label: 'Confirmed Athletes', value: metrics.paid.toLocaleString(), icon: Banknote, color: 'text-success', bg: 'bg-success/20' },
-    { label: 'Checked In', value: `${metrics.checkedIn.toLocaleString()} (${checkInRate}%)`, icon: UserPlus, color: 'text-primary', bg: 'bg-primary/20' },
-    { label: 'Pending Payment', value: metrics.pending.toLocaleString(), icon: Clock, color: 'text-red-500 dark:text-red-300', bg: 'bg-red-500/10 dark:bg-red-300/20' },
+    { label: 'Total registrations', value: metrics.total.toLocaleString(), icon: Users, color: 'text-primary', bg: 'bg-primary/20' },
+    { label: 'Confirmed athletes', value: metrics.paid.toLocaleString(), icon: Banknote, color: 'text-success', bg: 'bg-success/20' },
+    { label: 'Checked in', value: `${metrics.checkedIn.toLocaleString()} (${checkInRate}%)`, icon: UserPlus, color: 'text-primary', bg: 'bg-primary/20' },
+    { label: 'Pending payment', value: metrics.pending.toLocaleString(), icon: Clock, color: 'text-destructive', bg: 'bg-destructive/10 dark:bg-destructive/20' },
   ]
 
   return (
@@ -214,19 +215,15 @@ export default function AdminRegistrationsPage() {
       {/* ── Page Header ──────────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Users className="size-[16px] text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Global Fleet</span>
-          </div>
-          <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Participant & BIB Management</h1>
-          <p className="text-[13px] text-muted-foreground">Cross-tenant registration ledger, race bib assignments, and real-time check-in controls</p>
+          <h1 className="text-[28px] leading-9 font-medium text-foreground">Registrations</h1>
+          <p className="mt-1 text-[14px] text-muted-foreground">Every registration across all organizers, with bib numbers and check-in</p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={fetchRegistrations}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-[color,background-color,border-color,opacity] border border-border/30"
           >
             <RefreshCw className={`size-[16px] ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
@@ -234,7 +231,7 @@ export default function AdminRegistrationsPage() {
           <button
             onClick={handleExportCSV}
             disabled={exporting || registrations.length === 0}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary transition-all "
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-90 transition-[color,background-color,border-color,opacity] "
           >
             <Download className="size-[18px]" />
             <span>Export CSV</span>
@@ -243,16 +240,13 @@ export default function AdminRegistrationsPage() {
       </div>
 
       {/* ── Metric Cards ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {metricCards.map((m, i) => (
-          <div key={i} className="rounded-xl bg-card border border-border/30 p-5 flex flex-col gap-3">
+          <div key={i} className="rounded-xl bg-card border border-border p-5 flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{m.label}</span>
-              <div className={`p-1.5 rounded-lg ${m.bg} ${m.color}`}>
-                <m.icon className="size-[18px]" />
-              </div>
+              <span className="text-[13px] text-muted-foreground">{m.label}</span>
             </div>
-            <span className="text-[32px] font-bold leading-none text-foreground font-tabular">{m.value}</span>
+            <span className="text-[28px] font-medium leading-none text-foreground tabular-nums">{m.value}</span>
           </div>
         ))}
       </div>
@@ -282,10 +276,10 @@ export default function AdminRegistrationsPage() {
           }}
         >
           <SelectTrigger className="w-[180px] bg-card border-border/30 text-foreground h-9 text-[13px]">
-            <SelectValue placeholder="All Events" />
+            <SelectValue placeholder="All events" />
           </SelectTrigger>
           <SelectContent className="bg-card border-border text-foreground">
-            <SelectItem value="all">All Events</SelectItem>
+            <SelectItem value="all">All events</SelectItem>
             {events.map((e) => (
               <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
             ))}
@@ -304,7 +298,7 @@ export default function AdminRegistrationsPage() {
             <SelectValue placeholder="Payment" />
           </SelectTrigger>
           <SelectContent className="bg-card border-border text-foreground">
-            <SelectItem value="all">All Payments</SelectItem>
+            <SelectItem value="all">All payments</SelectItem>
             <SelectItem value="paid">Paid</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="refunded">Refunded</SelectItem>
@@ -320,12 +314,12 @@ export default function AdminRegistrationsPage() {
           }}
         >
           <SelectTrigger className="w-[140px] bg-card border-border/30 text-foreground h-9 text-[13px]">
-            <SelectValue placeholder="Check-In" />
+            <SelectValue placeholder="Check-in" />
           </SelectTrigger>
           <SelectContent className="bg-card border-border text-foreground">
-            <SelectItem value="all">All Check-Ins</SelectItem>
-            <SelectItem value="true">Checked In</SelectItem>
-            <SelectItem value="false">Not Checked In</SelectItem>
+            <SelectItem value="all">All check-ins</SelectItem>
+            <SelectItem value="true">Checked in</SelectItem>
+            <SelectItem value="false">Not checked in</SelectItem>
           </SelectContent>
         </Select>
 
@@ -339,7 +333,7 @@ export default function AdminRegistrationsPage() {
               setSelectedCheckIn('all')
               setPage(1)
             }}
-            className="flex items-center gap-1 text-[12px] text-red-500 dark:text-red-300 hover:underline px-2"
+            className="flex items-center gap-1 text-[12px] text-destructive hover:underline px-2"
           >
             <X className="size-[14px]" />
             Clear
@@ -348,11 +342,11 @@ export default function AdminRegistrationsPage() {
       </div>
 
       {/* ── Registrations Table ──────────────────────────────────────────── */}
-      <div className="rounded-xl bg-card border border-border/30 overflow-hidden shadow-lg">
+      <div className="rounded-xl bg-card border border-border/30 overflow-hidden">
         <div className="p-5 border-b border-border/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ReceiptText className="text-primary size-[20px]" />
-            <h2 className="font-jakarta font-semibold text-[18px] text-foreground">Live Registrations Ledger</h2>
+            <h2 className="font-jakarta font-medium text-[18px] text-foreground">Live registrations ledger</h2>
           </div>
           <span className="text-[12px] text-muted-foreground font-mono">
             Showing {registrations.length} of {totalCount} total
@@ -363,8 +357,8 @@ export default function AdminRegistrationsPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border/30">
-                {['BIB', 'Athlete', 'Event & Category', 'Payment', 'Check-In Status', 'Date', 'Actions'].map((h) => (
-                  <th key={h} className="py-3 px-5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{h}</th>
+                {['BIB', 'Athlete', 'Event & category', 'Payment', 'Check-in status', 'Date', 'Actions'].map((h) => (
+                  <th key={h} className="py-3 px-5 text-[11px] font-medium text-muted-foreground">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -379,7 +373,7 @@ export default function AdminRegistrationsPage() {
               ) : registrations.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-16 text-center text-muted-foreground">
-                    <SearchX className="size-[36px] text-border block mb-2" />
+                    <SearchX className="size-[36px] text-muted-foreground block mb-2" />
                     No registrations matching the active criteria
                   </td>
                 </tr>
@@ -389,8 +383,8 @@ export default function AdminRegistrationsPage() {
                     {/* BIB */}
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
-                          #{reg.bib_number || 'UNASSIGNED'}
+                        <span className={`font-mono tabular-nums ${reg.bib_number ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          {reg.bib_number || 'Not assigned'}
                         </span>
                         <button
                           onClick={() => {
@@ -409,8 +403,8 @@ export default function AdminRegistrationsPage() {
                     {/* Athlete */}
                     <td className="py-3.5 px-5">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-foreground font-jakarta">
-                          {reg.runner_profiles?.full_name || 'Anonymous Runner'}
+                        <span className="font-medium text-foreground font-jakarta">
+                          {reg.runner_profiles?.full_name || 'Anonymous runner'}
                         </span>
                         {reg.runner_profiles?.phone && (
                           <span className="text-[11px] text-muted-foreground font-mono">
@@ -432,14 +426,14 @@ export default function AdminRegistrationsPage() {
 
                     {/* Payment */}
                     <td className="py-3.5 px-5">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${
                         reg.payment_status === 'paid' || reg.payment_status === 'waived'
                           ? 'text-success bg-success/10 border-success/20'
                           : reg.payment_status === 'refunded'
-                            ? 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20'
-                            : 'text-amber-500 bg-amber-500/10 border-amber-500/20'
+                            ? 'text-destructive bg-destructive/10 border-destructive/30 dark:border-destructive/20'
+                            : 'text-warning bg-warning/10 border-warning/20'
                       }`}>
-                        {reg.payment_status.toUpperCase()}
+                        {statusLabel(reg.payment_status)}
                       </span>
                     </td>
 
@@ -448,7 +442,7 @@ export default function AdminRegistrationsPage() {
                       <button
                         onClick={() => handleToggleCheckIn(reg)}
                         disabled={updatingId === reg.id}
-                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border inline-flex items-center gap-1.5 transition-all ${
+                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border inline-flex items-center gap-1.5 transition-[color,background-color,border-color,opacity] ${
                           reg.checked_in
                             ? 'text-primary bg-primary/10 border-primary/20 hover:bg-primary/20'
                             : 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20 hover:text-foreground hover:bg-accent'
@@ -458,16 +452,16 @@ export default function AdminRegistrationsPage() {
                         {updatingId === reg.id ? (
                           <Loader2 className="h-3 w-3 animate-spin text-primary" />
                         ) : reg.checked_in ? (
-                          'Checked In'
+                          'Checked in'
                         ) : (
-                          'Pending Check-In'
+                          'Pending check-in'
                         )}
                       </button>
                     </td>
 
                     {/* Date */}
                     <td className="py-3.5 px-5 text-muted-foreground font-mono text-[12px]">
-                      {new Date(reg.created_at).toLocaleDateString()}
+                      {new Date(reg.created_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
 
                     {/* Actions */}
@@ -478,7 +472,7 @@ export default function AdminRegistrationsPage() {
                           disabled={updatingId === reg.id}
                           className="px-2 py-1 rounded bg-card text-muted-foreground hover:text-white hover:bg-accent text-[11px] font-medium border border-border/30"
                         >
-                          {reg.checked_in ? 'Undo' : 'Check-In'}
+                          {reg.checked_in ? 'Undo' : 'Check-in'}
                         </button>
                       </div>
                     </td>
@@ -519,7 +513,7 @@ export default function AdminRegistrationsPage() {
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
               <Tag className="text-primary" />
-              Reassign Race BIB
+              Reassign race BIB
             </DialogTitle>
             <DialogDescription className="text-muted-foreground text-[13px]">
               Update the assigned BIB number for athlete {selectedReg?.runner_profiles?.full_name || 'Anonymous'}.
@@ -528,12 +522,12 @@ export default function AdminRegistrationsPage() {
 
           <div className="py-4 space-y-3">
             <div className="space-y-1.5">
-              <label className="text-[12px] font-semibold text-muted-foreground">New BIB Number</label>
+              <label className="text-[12px] font-medium text-muted-foreground">New BIB number</label>
               <Input
                 value={newBib}
                 onChange={(e) => setNewBib(e.target.value)}
                 placeholder="e.g. 1042"
-                className="bg-card border-border text-foreground font-mono text-[16px] tracking-wider focus-visible:ring-primary"
+                className="bg-card border-border text-foreground font-mono text-[16px] focus-visible:ring-primary"
               />
             </div>
           </div>
@@ -548,7 +542,7 @@ export default function AdminRegistrationsPage() {
             <button
               onClick={handleSaveBib}
               disabled={savingBib || !newBib.trim()}
-              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-[13px] font-bold hover:bg-primary transition-all flex items-center gap-1.5"
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-90 transition-[color,background-color,border-color,opacity] flex items-center gap-1.5"
             >
               {savingBib && <Loader2 className="h-4 w-4 animate-spin" />}
               Save BIB

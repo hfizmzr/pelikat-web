@@ -170,7 +170,7 @@ function DropdownMenuSeparator({
   return (
     <DropdownMenuPrimitive.Separator
       data-slot="dropdown-menu-separator"
-      className={cn('bg-border -mx-1 my-1 h-px', className)}
+      className={cn('bg-muted -mx-1 my-1 h-px', className)}
       {...props}
     />
   )
@@ -184,7 +184,7 @@ function DropdownMenuShortcut({
     <span
       data-slot="dropdown-menu-shortcut"
       className={cn(
-        'text-muted-foreground ml-auto text-xs tracking-widest',
+        'text-muted-foreground ml-auto font-mono text-xs',
         className,
       )}
       {...props}

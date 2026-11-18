@@ -153,23 +153,23 @@ export default function RunnerTracker() {
       <div className="flex items-center justify-between p-4 pt-safe">
         <Link
           href={runLogHref}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-card text-muted-foreground active:scale-95 transition-transform"
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-card text-muted-foreground active:scale-[0.98] transition-transform"
         >
           <X className="size-[24px]" />
         </Link>
         <div className="flex items-center gap-2">
           {gpsAccuracy !== null && (
-            <span className="rounded-full bg-card border border-border px-3 py-1 text-[11px] font-bold text-muted-foreground">
+            <span className="rounded-full bg-card border border-border px-3 py-1 text-[11px] font-medium text-muted-foreground">
               GPS ±{Math.round(gpsAccuracy)}m
             </span>
           )}
           {state === "tracking" && (
-            <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 px-3 py-1">
+            <span className="flex items-center gap-1.5 rounded-full bg-destructive/10 border border-destructive/30 dark:border-destructive/20 px-3 py-1">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 dark:bg-red-300 opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500 dark:bg-red-300" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-destructive" />
               </span>
-              <span className="text-[11px] font-bold text-red-500 dark:text-red-300">REC</span>
+              <span className="text-[11px] font-medium text-destructive">REC</span>
             </span>
           )}
         </div>
@@ -178,20 +178,19 @@ export default function RunnerTracker() {
       <div className="flex-1 flex flex-col items-center justify-center px-6">
         {state === "idle" && (
           <div className="flex flex-col items-center gap-8 w-full max-w-sm">
-            <div className="w-32 h-32 rounded-full bg-card border border-border/60 flex items-center justify-center shadow-[0_0_40px_rgba(76,215,246,0.1)] relative">
-              <div className="absolute inset-0 rounded-full border border-primary/20 animate-ping opacity-20" />
+            <div className="w-32 h-32 rounded-full bg-card border border-border/60 flex items-center justify-center relative">
               <Satellite className="size-[48px] text-primary" />
             </div>
             <div className="text-center flex flex-col gap-2">
-              <h2 className="text-[24px] font-bold text-foreground">Ready to Run</h2>
+              <h2 className="text-[24px] font-medium text-foreground">Ready to run</h2>
               <p className="text-[14px] text-muted-foreground">Your GPS route is captured while this screen stays open.</p>
             </div>
             <button
               onClick={startTracking}
-              className="mt-4 w-full py-4 rounded-xl bg-success text-emerald-900 text-[16px] font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(78,222,163,0.3)] active:scale-95 transition-transform"
+              className="mt-4 w-full py-4 rounded-xl bg-primary text-primary-foreground text-[16px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
             >
               <Play className="size-[24px]" />
-              Start Run
+              Start run
             </button>
           </div>
         )}
@@ -199,7 +198,7 @@ export default function RunnerTracker() {
         {state !== "idle" && (
           <div className="w-full max-w-md space-y-10 flex flex-col items-center">
             <div className="text-center">
-              <p className="text-[72px] font-mono font-bold text-foreground tracking-tighter tabular-nums leading-none">
+              <p className="text-[72px] font-mono font-medium text-foreground tracking-tighter tabular-nums leading-none">
                 {formatTime(elapsed)}
               </p>
             </div>
@@ -207,28 +206,28 @@ export default function RunnerTracker() {
             <div className="grid grid-cols-3 gap-4 w-full">
               <div className="rounded-2xl bg-card border border-border/60 p-4 flex flex-col items-center justify-center">
                 <Ruler className="size-[24px] text-primary mb-2" />
-                <p className="text-[28px] font-mono font-bold text-foreground leading-none">
+                <p className="text-[28px] font-mono font-medium text-foreground leading-none">
                   {gpsDistance.toFixed(2)}
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-widest font-bold">
-                  KM
+                <p className="text-[11px] text-muted-foreground mt-1 font-medium">
+                  km
                 </p>
               </div>
               <div className="rounded-2xl bg-card border border-border/60 p-4 flex flex-col items-center justify-center">
                 <Gauge className="size-[24px] text-primary mb-2" />
-                <p className="text-[28px] font-mono font-bold text-foreground leading-none">
+                <p className="text-[28px] font-mono font-medium text-foreground leading-none">
                   {pace}
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-widest font-bold">
+                <p className="text-[11px] text-muted-foreground mt-1 font-medium">
                   /km
                 </p>
               </div>
               <div className="rounded-2xl bg-card border border-border/60 p-4 flex flex-col items-center justify-center">
                 <MapPin className="size-[24px] text-success mb-2" />
-                <p className="text-[28px] font-mono font-bold text-foreground leading-none">
+                <p className="text-[28px] font-mono font-medium text-foreground leading-none">
                   {gpsPointCount}
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-widest font-bold">
+                <p className="text-[11px] text-muted-foreground mt-1 font-medium">
                   PTS
                 </p>
               </div>
@@ -244,14 +243,14 @@ export default function RunnerTracker() {
               <>
                 <button
                   onClick={pauseTracking}
-                  className="flex-1 py-4 rounded-xl bg-accent text-foreground text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                  className="flex-1 py-4 rounded-xl bg-accent text-foreground text-[15px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                 >
                   <Pause className="size-[24px]" />
                   Pause
                 </button>
                 <button
                   onClick={finishTracking}
-                  className="flex-[2] py-4 rounded-xl bg-red-500 dark:bg-red-300 text-red-900 text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_0_20px_rgba(255,180,171,0.2)]"
+                  className="flex-[2] py-4 rounded-xl bg-destructive text-white dark:text-background text-[15px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                 >
                   <Square className="size-[24px]" />
                   Finish
@@ -261,14 +260,14 @@ export default function RunnerTracker() {
               <>
                 <button
                   onClick={resumeTracking}
-                  className="flex-1 py-4 rounded-xl bg-success text-emerald-900 text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_0_20px_rgba(78,222,163,0.2)]"
+                  className="flex-1 py-4 rounded-xl bg-primary text-primary-foreground text-[15px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                 >
                   <Play className="size-[24px]" />
                   Resume
                 </button>
                 <button
                   onClick={finishTracking}
-                  className="flex-[2] py-4 rounded-xl bg-red-500 dark:bg-red-300 text-red-900 text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-[0_0_20px_rgba(255,180,171,0.2)]"
+                  className="flex-[2] py-4 rounded-xl bg-destructive text-white dark:text-background text-[15px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                 >
                   <Square className="size-[24px]" />
                   Finish

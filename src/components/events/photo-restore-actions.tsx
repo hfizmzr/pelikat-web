@@ -24,7 +24,7 @@ export function PhotoRestoreActions({
           className={
             state.status === 'error'
               ? 'text-xs text-destructive'
-              : 'text-xs text-green-500'
+              : 'text-xs text-success'
           }
         >
           {state.message}
@@ -32,10 +32,10 @@ export function PhotoRestoreActions({
       )}
       <PhotoSubmitButton
         variant="outline"
-        pendingLabel={<><Loader2 className="h-4 w-4 animate-spin" />Restore to Review</>}
+        pendingLabel={<><Loader2 className="h-4 w-4 animate-spin" />Restore to review</>}
       >
         <RotateCcw className="h-4 w-4" />
-        Restore to Review
+        Restore to review
       </PhotoSubmitButton>
     </form>
   )

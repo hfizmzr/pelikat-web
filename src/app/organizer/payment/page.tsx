@@ -238,7 +238,7 @@ export default function OrganizerPaymentPage() {
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">Organizer not found</p>
             <Button variant="outline" className="mt-4" onClick={() => router.push('/')}>
-              Go Home
+              Go home
             </Button>
           </CardContent>
         </Card>
@@ -249,12 +249,12 @@ export default function OrganizerPaymentPage() {
   if (success) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-muted/30 p-4">
-        <Card className="w-full max-w-md border-green-500/50 bg-green-500/5">
+        <Card className="w-full max-w-md border-success/50 bg-success/5">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
-              <CheckCircle className="h-8 w-8 text-green-500" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
+              <CheckCircle className="h-8 w-8 text-success" />
             </div>
-            <CardTitle className="text-2xl">Payment Successful</CardTitle>
+            <CardTitle className="text-2xl">Payment successful</CardTitle>
             <CardDescription>
               Your subscription is now active
             </CardDescription>
@@ -266,12 +266,12 @@ export default function OrganizerPaymentPage() {
                 <span className="font-medium">{organizer.name}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Amount Paid</span>
+                <span className="text-muted-foreground">Amount paid</span>
                 <span className="font-medium">RM {(price?.amount ?? 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Valid Until</span>
-                <span className="font-medium text-green-600">
+                <span className="text-muted-foreground">Valid until</span>
+                <span className="font-medium text-success">
                   {new Date().getFullYear() + 1}
                 </span>
               </div>
@@ -286,7 +286,7 @@ export default function OrganizerPaymentPage() {
               onClick={goToDashboard}
               disabled={starting}
             >
-              {starting ? 'Starting…' : 'Go to Dashboard'}
+              {starting ? 'Starting…' : 'Go to dashboard'}
             </Button>
           </CardContent>
         </Card>
@@ -302,7 +302,7 @@ export default function OrganizerPaymentPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Building2 className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Complete Your Setup</h1>
+          <h1 className="text-2xl font-medium">Complete your setup</h1>
           <p className="text-muted-foreground mt-1">
             Activate your workspace to start managing events
           </p>
@@ -313,7 +313,7 @@ export default function OrganizerPaymentPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
-              Subscription Details
+              Subscription details
             </CardTitle>
             <CardDescription>Review your workspace subscription</CardDescription>
           </CardHeader>
@@ -329,16 +329,16 @@ export default function OrganizerPaymentPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Plan</span>
-                <span className="font-medium">Organizer Subscription</span>
+                <span className="font-medium">Organizer subscription</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Status</span>
-                <Badge variant="secondary">Pending Payment</Badge>
+                <Badge variant="secondary">Pending payment</Badge>
               </div>
             </div>
 
             <div className="border-t pt-4">
-              <div className="flex justify-between font-bold text-lg">
+              <div className="flex justify-between font-medium text-lg">
                 <span>Total</span>
                 <span>
                   RM {(price?.amount ?? 0).toFixed(2)} / {price?.period ?? 'year'}
@@ -351,7 +351,7 @@ export default function OrganizerPaymentPage() {
         {/* Mock Payment Gateway */}
         <Card className="border-border">
           <CardHeader>
-            <CardTitle>Payment Gateway</CardTitle>
+            <CardTitle>Payment gateway</CardTitle>
             <CardDescription>
               This simulates a card payment. No real transaction occurs.
             </CardDescription>
@@ -366,7 +366,7 @@ export default function OrganizerPaymentPage() {
             {/* Mock card fields */}
             <div className="space-y-3">
               <div>
-                <label className="text-sm font-medium text-foreground">Card Number</label>
+                <label className="text-sm font-medium text-foreground">Card number</label>
                 <div className="mt-1 rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground font-mono">
                   **** **** **** 4242
                 </div>
@@ -386,7 +386,7 @@ export default function OrganizerPaymentPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">Cardholder Name</label>
+                <label className="text-sm font-medium text-foreground">Cardholder name</label>
                 <div className="mt-1 rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
                   {organizer.name}
                 </div>
@@ -409,7 +409,7 @@ export default function OrganizerPaymentPage() {
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
-              Clicking Pay will activate your {' '}
+              Clicking pay will activate your {' '}
               {price ? price.durationDays : ''}-day subscription for demonstration
               purposes. Runner accounts are always free — runners pay only per
               event registration or merch order.

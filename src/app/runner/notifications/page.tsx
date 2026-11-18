@@ -36,7 +36,7 @@ export default async function RunnerNotificationsPage() {
 
   return (
     <div className="flex flex-col w-full min-h-full bg-background">
-      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-muted">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border">
         <div className="flex items-center h-14 px-4 pt-safe">
           <Link
             href="/runner"
@@ -46,7 +46,7 @@ export default async function RunnerNotificationsPage() {
             <ArrowLeft className="size-[24px]" />
           </Link>
           <div className="flex-1 flex flex-col items-center mr-8 truncate">
-            <h1 className="text-[16px] font-bold text-foreground leading-tight">Notifications</h1>
+            <h1 className="text-[16px] font-medium text-foreground leading-tight">Notifications</h1>
           </div>
         </div>
       </header>

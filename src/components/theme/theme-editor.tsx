@@ -301,7 +301,7 @@ export function ThemeEditor({
 
         {/* ── Preset gallery (cards rendered through the same .event-theme engine) ── */}
         <section className="space-y-3">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="text-sm font-medium text-muted-foreground">
             Preset
           </h3>
           {/* Audit #3: the old idle grid-cols-2 blew out min-content tracks
@@ -340,7 +340,7 @@ export function ThemeEditor({
                 <MiniThemePreview resolved={deriveTheme(preset.tokens, null, preset.id)} eventId={eventId} />
                 <p className="mt-1.5 truncate text-xs font-medium">
                   {preset.name}
-                  {inactive && <span className="block text-[10px] text-muted-foreground">(deactivated)</span>}
+                  {inactive && <span className="block text-[11px] text-muted-foreground">(deactivated)</span>}
                 </p>
               </button>
               )
@@ -366,7 +366,7 @@ export function ThemeEditor({
 
         {/* ── Colors: native picker + HEX, live oklch chip, WCAG meter, per-row reset ── */}
         <section className="space-y-3">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="text-sm font-medium text-muted-foreground">
             Colors
           </h3>
           <div className="space-y-2">
@@ -387,7 +387,7 @@ export function ThemeEditor({
         {/* ── Assets (P2 Task 7): per-kind ThemedImage thumbnails, drag-drop +
              picker uploads with the §6 client gate, omit-key remove ──── */}
         <section className="space-y-3">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="text-sm font-medium text-muted-foreground">
             Assets
           </h3>
           <div className="space-y-2">
@@ -429,7 +429,7 @@ export function ThemeEditor({
 
         {/* ── Vocabulary: six inputs, live 40-char cap + sanitized on input ── */}
         <section className="space-y-3">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="text-sm font-medium text-muted-foreground">
             Vocabulary
           </h3>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -484,7 +484,7 @@ export function ThemeEditor({
       {/* ── Sticky live preview + save bar ─────────────────────────────── */}
       <div className="min-w-0 space-y-3 lg:sticky lg:top-20 lg:self-start">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="text-sm font-medium text-muted-foreground">
             Live preview
           </h3>
           <Button
@@ -518,7 +518,7 @@ export function ThemeEditor({
               </p>
             ))}
             {[...new Set([...validation.warnings, ...saveWarnings])].map((warning) => (
-              <p key={warning} className="text-xs text-amber-600 dark:text-amber-400">
+              <p key={warning} className="text-xs text-warning">
                 {warning}
               </p>
             ))}

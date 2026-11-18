@@ -133,7 +133,7 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
 
       <SheetContent className="w-[400px] sm:w-[480px] p-6">
         <SheetHeader>
-          <SheetTitle>Event Settings</SheetTitle>
+          <SheetTitle>Event settings</SheetTitle>
           <SheetDescription>
             Manage settings for <span className="font-medium text-foreground">{eventName}</span>
           </SheetDescription>
@@ -142,8 +142,8 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
         <div className="mt-8 space-y-6">
           {/* ── Status Section ─────────────────────────────── */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Event Status
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Event status
             </h3>
             <div className="space-y-2">
               {STATUS_OPTIONS.map((option) => {
@@ -185,8 +185,8 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
           <div className="space-y-3 pt-4 border-t border-border">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Registration Window
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Registration window
               </h3>
             </div>
             <div className="grid gap-3">
@@ -235,13 +235,13 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
           <div className="space-y-3 pt-4 border-t border-border">
             <div className="flex items-center gap-2">
               <Trophy className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Results Visibility
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Results visibility
               </h3>
             </div>
             <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">Publish Results</p>
+                <p className="text-sm font-medium">Publish results</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {resultsPublishedValue
                     ? 'Runners can see the leaderboard and their rank.'
@@ -282,12 +282,12 @@ export function EventSettingsPanel({ eventId, currentStatus, eventName, regOpen,
           </div>
 
           <div className="space-y-3 pt-4 border-t border-border">
-            <h3 className="text-sm font-semibold text-destructive uppercase tracking-wide">
-              Danger Zone
+            <h3 className="text-sm font-medium text-destructive">
+              Danger zone
             </h3>
             <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-3">
               <div>
-                <p className="text-sm font-medium">Delete Event</p>
+                <p className="text-sm font-medium">Delete event</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Permanently delete this event and all related data (categories, registrations, photos).
                   This action cannot be undone.

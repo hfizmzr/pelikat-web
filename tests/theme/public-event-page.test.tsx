@@ -156,14 +156,14 @@ describe('PublicEventPage visibility matrix (P3 Task 5 / 082)', () => {
     expect(html).toContain('Dataran Bandaraya')
     expect(html).toContain('Klub Batik Heritage')
     // draft-denial chip never surfaces: only published/closed statuses render
-    expect(html).toMatch(/published/)
+    expect(html).toMatch(/Published/)
   })
 
   it('closed event → renders too (§12.3 public closed reads)', async () => {
     h.tables.events = publicEvent({ status: 'closed' })
     const html = await renderPublicPage()
     expect(html).toContain('Batik Heritage Run')
-    expect(html).toMatch(/closed/)
+    expect(html).toMatch(/Closed/)
   })
 
   it('draft event → notFound EVEN with a resolvable row (public route denies drafts)', async () => {
@@ -206,7 +206,7 @@ describe('PublicEventPage service-role ORDER guard (P3 Task 4 pattern)', () => {
     h.tables.events = publicEvent()
     const html = await renderPublicPage()
     expect(html).not.toContain('Organized by')
-    expect(html).not.toContain('Unknown Organizer')
+    expect(html).not.toContain('Unknown organizer')
   })
 })
 
@@ -251,7 +251,7 @@ describe('PublicEventPage CTAs (P3 Task 5)', () => {
   it('results_published → View Leaderboard links to /runner/leaderboard?event_id=', async () => {
     h.tables.events = publicEvent({ results_published: true, status: 'closed' })
     const html = await renderPublicPage()
-    expect(html).toContain('View Leaderboard')
+    expect(html).toContain('View leaderboard')
     expect(html).toContain('/runner/leaderboard?event_id=evt-1')
   })
 
@@ -261,27 +261,27 @@ describe('PublicEventPage CTAs (P3 Task 5)', () => {
       reg_close: null,
     })
     const html = await renderPublicPage()
-    expect(html).toContain('Register for this Event')
+    expect(html).toContain('Register for this event')
     expect(html).toContain('/runner/events/evt-1')
   })
 
   it('closed event → no Register CTA even inside an otherwise-open window', async () => {
     h.tables.events = publicEvent({ status: 'closed', results_published: false })
     const html = await renderPublicPage()
-    expect(html).not.toContain('Register for this Event')
-    expect(html).not.toContain('View Leaderboard')
+    expect(html).not.toContain('Register for this event')
+    expect(html).not.toContain('View leaderboard')
   })
 
   it('published event outside the reg window → no Register CTA', async () => {
     h.tables.events = publicEvent({ reg_close: '2026-01-01T00:00:00Z' })
     const html = await renderPublicPage()
-    expect(html).not.toContain('Register for this Event')
+    expect(html).not.toContain('Register for this event')
   })
 
   it('virtual event → distance chip renders the target km', async () => {
     h.tables.events = publicEvent({ event_type: 'virtual', target_distance_km: 42 })
     const html = await renderPublicPage()
-    expect(html).toContain('Virtual Run')
+    expect(html).toContain('Virtual run')
     expect(html).toMatch(/42(?:<!-- -->)? km/)
   })
 })
@@ -297,7 +297,7 @@ describe('CopyPublicEventLink on the organizer page (P3 Task 5)', () => {
   it('event with slug → Copy Public Event Link button renders in the header', async () => {
     h.tables.events = ORGANIZER_EVENT
     const html = await renderOrganizerPage()
-    expect(html).toContain('Copy Public Event Link')
+    expect(html).toContain('Copy public event link')
     expect(html).toContain('SETTINGS-COMPONENT') // sanity: the header block rendered
     // Post-P4 audit #1/#2/#4 cheap clip-guards: mobile-stack header (stretchy
     // flex-wrap row kept Settings clipped), px gutters on the content root,
@@ -311,21 +311,21 @@ describe('CopyPublicEventLink on the organizer page (P3 Task 5)', () => {
   it('event without slug (draft — slug stays NULL per 077) → no button, page still renders', async () => {
     h.tables.events = { ...ORGANIZER_EVENT, slug: null, status: 'draft' }
     const html = await renderOrganizerPage()
-    expect(html).not.toContain('Copy Public Event Link')
+    expect(html).not.toContain('Copy public event link')
     expect(html).toContain('SETTINGS-COMPONENT')
   })
 
   it('draft event that kept its slug (077 enforce_published_slug) → stays hidden: the copied URL would 404 (082 denies drafts)', async () => {
     h.tables.events = { ...ORGANIZER_EVENT, status: 'draft' } // slug PRESENT
     const html = await renderOrganizerPage()
-    expect(html).not.toContain('Copy Public Event Link')
+    expect(html).not.toContain('Copy public event link')
     expect(html).toContain('SETTINGS-COMPONENT')
   })
 
   it('closed event with slug → button still renders (082 renders closed events)', async () => {
     h.tables.events = { ...ORGANIZER_EVENT, status: 'closed' }
     const html = await renderOrganizerPage()
-    expect(html).toContain('Copy Public Event Link')
+    expect(html).toContain('Copy public event link')
   })
 
   it('hidden event row → notFound', async () => {

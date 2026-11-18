@@ -1,9 +1,9 @@
 'use client'
 
+import { StatusTag, roleLabel } from '@/components/ui/status-tag'
 import { useState, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Search, Download } from 'lucide-react'
@@ -96,7 +96,7 @@ export function RegistrationsClient({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Registrations</h1>
+          <h1 className="text-3xl font-medium tracking-tight">Registrations</h1>
           <p className="text-muted-foreground">All registrations for {eventName}</p>
         </div>
         <Button variant="outline" onClick={handleExport}>
@@ -108,26 +108,26 @@ export function RegistrationsClient({
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Registrations</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Total registrations</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{stats.total}</div>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Checked In</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Checked in</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.checkedIn}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{stats.checkedIn}</div>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Confirmed</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.paid}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{stats.paid}</div>
           </CardContent>
         </Card>
       </div>
@@ -136,7 +136,7 @@ export function RegistrationsClient({
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle>All Registrations</CardTitle>
+              <CardTitle>All registrations</CardTitle>
               <CardDescription>Complete list of registered runners</CardDescription>
             </div>
             <div className="flex gap-2">
@@ -155,8 +155,8 @@ export function RegistrationsClient({
                 onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
               >
                 <option value="all">All</option>
-                <option value="checked_in">Checked In</option>
-                <option value="not_checked">Not Checked</option>
+                <option value="checked_in">Checked in</option>
+                <option value="not_checked">Not checked</option>
                 <option value="paid">Paid</option>
                 <option value="pending">Pending</option>
                 <option value="waived">Waived</option>
@@ -185,25 +185,19 @@ export function RegistrationsClient({
                       <span className="inline-flex items-center gap-2">
                         {reg.guest_name || reg.runner_profiles?.full_name || 'Unknown'}
                         {reg.registration_role !== 'runner' && (
-                          <Badge variant="outline" className="capitalize">{reg.registration_role}</Badge>
+                          <span className="text-[12px] text-muted-foreground">{roleLabel(reg.registration_role)}</span>
                         )}
                       </span>
                     </TableCell>
                     <TableCell>{reg.race_categories?.name || '-'}</TableCell>
                     <TableCell>{reg.guest_phone || reg.runner_profiles?.phone || '-'}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={reg.payment_status === 'paid' ? 'default' : 'secondary'}
-                      >
-                        {reg.payment_status}
-                      </Badge>
+                      <StatusTag status={reg.payment_status} />
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={reg.checked_in ? 'default' : 'outline'}
-                      >
-                        {reg.checked_in ? 'Checked In' : 'Not Yet'}
-                      </Badge>
+                      <StatusTag tone={reg.checked_in ? 'success' : 'neutral'}>
+                        {reg.checked_in ? 'Checked in' : 'Not yet'}
+                      </StatusTag>
                     </TableCell>
                   </TableRow>
                 ))}

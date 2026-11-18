@@ -15,7 +15,7 @@ export async function login(page: Page, email: string) {
   await page.waitForLoadState('networkidle')
   await page.fill('#login-email', email)
   await page.fill('#login-password', password)
-  await page.getByRole('button', { name: 'Sign In' }).click()
+  await page.getByRole('button', { name: 'Sign in' }).click()
   await page.waitForURL((url) => url.pathname !== '/login', { timeout: 15000 })
   // Let the post-login router.push land before the caller navigates on.
   await page.waitForLoadState('networkidle')

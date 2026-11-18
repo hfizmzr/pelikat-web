@@ -50,7 +50,7 @@ describe('Reliability: Virtual Events Schema (067)', () => {
     const createPage = read('src', 'components', 'events', 'new-event-form.tsx')
     // Required numeric input, shown only for virtual.
     expect(createPage).toContain("formData.event_type === 'virtual' && (")
-    expect(createPage).toContain('Target Distance (KM)')
+    expect(createPage).toContain('Target distance (km)')
     expect(createPage).toContain('min="0.1"')
     // Server-side validation + INSERT persistence.
     expect(createPage).toContain('Target distance is required for virtual runs')
@@ -159,7 +159,7 @@ describe('Reliability: Virtual runner UI', () => {
     // Virtual branch: single primary CTA back to the event page.
     expect(checkoutStates).toContain('isVirtual ? (')
     // Physical branch keeps main's View Digital BIB + Back to Event pair.
-    expect(checkoutStates).toContain('View Digital BIB')
+    expect(checkoutStates).toContain('View digital BIB')
   })
 
   it('payment page threads event_type into ConfirmedState for both checkout paths', () => {

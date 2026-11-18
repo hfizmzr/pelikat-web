@@ -22,10 +22,10 @@ export function PhotoGalleryTagActions({
       <PhotoSubmitButton
         variant="outline"
         className="h-7 bg-background/85 text-xs"
-        pendingLabel={<><Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />Correct Tag</>}
+        pendingLabel={<><Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />Correct tag</>}
       >
         <RotateCcw className="mr-1 h-3.5 w-3.5" />
-        Correct Tag
+        Correct tag
       </PhotoSubmitButton>
       {state.status === 'error' && state.message && (
         <p className="text-xs text-destructive">{state.message}</p>

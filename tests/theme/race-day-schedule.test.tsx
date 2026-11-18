@@ -18,10 +18,10 @@ describe('RaceDayScheduleCard (FR-54)', () => {
     render(
       <RaceDayScheduleCard startTime="05:30:00" flagOffTime="06:00" cutoffTime="10:30:00" />
     )
-    expect(screen.getByRole('heading', { name: 'Race-Day Schedule' })).toBeInTheDocument()
-    expect(screen.getByText('Event Start')).toBeInTheDocument()
-    expect(screen.getByText('Flag-Off')).toBeInTheDocument()
-    expect(screen.getByText('Cut-Off')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Race-day schedule' })).toBeInTheDocument()
+    expect(screen.getByText('Event start')).toBeInTheDocument()
+    expect(screen.getByText('Flag-off')).toBeInTheDocument()
+    expect(screen.getByText('Cut-off')).toBeInTheDocument()
     expect(screen.getByText('5:30 AM')).toBeInTheDocument()
     expect(screen.getByText('6:00 AM')).toBeInTheDocument()
     expect(screen.getByText('10:30 AM')).toBeInTheDocument()
@@ -37,11 +37,11 @@ describe('RaceDayScheduleCard (FR-54)', () => {
 
   it('all three NULL → single "Schedule to be announced" line, no time rows', () => {
     render(<RaceDayScheduleCard startTime={null} flagOffTime={null} cutoffTime={null} />)
-    expect(screen.getByRole('heading', { name: 'Race-Day Schedule' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Race-day schedule' })).toBeInTheDocument()
     expect(screen.getByText('Schedule to be announced')).toBeInTheDocument()
-    expect(screen.queryByText('Event Start')).not.toBeInTheDocument()
-    expect(screen.queryByText('Flag-Off')).not.toBeInTheDocument()
-    expect(screen.queryByText('Cut-Off')).not.toBeInTheDocument()
+    expect(screen.queryByText('Event start')).not.toBeInTheDocument()
+    expect(screen.queryByText('Flag-off')).not.toBeInTheDocument()
+    expect(screen.queryByText('Cut-off')).not.toBeInTheDocument()
   })
 
   it('evening event (18:00/20:30/23:30) formats correctly with PM suffix', () => {

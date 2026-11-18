@@ -7,7 +7,7 @@ test.describe('runner run log (FR-59/60, US10)', () => {
   test('manual entry logs a km/duration run and shows it in history (FR-59)', async ({ page }) => {
     await login(page, 'runner1@pelikat.test')
     await goto(page, '/runner/run-log')
-    await expect(page.getByRole('heading', { name: 'Run Log' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Run log' })).toBeVisible()
 
     const distance = page.locator('input[placeholder="5.0"]')
     await distance.fill('5')
@@ -16,20 +16,20 @@ test.describe('runner run log (FR-59/60, US10)', () => {
     const minutes = page.locator('input[min="0"]').nth(1)
     await minutes.fill('30')
 
-    await page.getByRole('button', { name: 'Log Run' }).click()
+    await page.getByRole('button', { name: 'Log run' }).click()
 
-    // Space: entry appears in Run History — "5 KM" is unique among seeded
+    // Space: entry appears in Run History — "5 km" is unique among seeded
     // logs (5.2 / 0.0 formats only), and a new log from another test here
     // or a parallel project would make the count-assert double count, so
-    // anchor on the seeded "5 KM" row + the form reset after success.
+    // anchor on the seeded "5 km" row + the form reset after success.
     await expect(distance).toHaveValue('', { timeout: 15000 })
-    await expect(page.getByText('5 KM', { exact: true }).first()).toBeVisible()
+    await expect(page.getByText('5 km', { exact: true }).first()).toBeVisible()
   })
 
   test('Pace validation (FR-60)', async ({ page }) => {
     await login(page, 'runner1@pelikat.test')
     await goto(page, '/runner/run-log')
-    await expect(page.getByRole('heading', { name: 'Run Log' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Run log' })).toBeVisible()
 
     const distance = page.locator('input[placeholder="5.0"]')
     const minutes = page.locator('input[min="0"]').nth(1)
@@ -46,7 +46,7 @@ test.describe('runner run log (FR-59/60, US10)', () => {
     // no run is created.
     await distance.fill('10')
     await minutes.fill('0')
-    await page.getByRole('button', { name: 'Log Run' }).click()
+    await page.getByRole('button', { name: 'Log run' }).click()
     await expect(page.getByText('Enter a time greater than 0.')).toBeVisible()
     // Form retains the values (difference: none was created)
     await expect(distance).toHaveValue('10')
@@ -62,7 +62,7 @@ test.describe('GPS tracker (FR-63, .068 eventParam)', () => {
     await page.context().setGeolocation({ latitude: 3.1333, longitude: 101.6869, accuracy: 5 })
 
     await goto(page, '/runner/run-log/track')
-    await page.getByRole('button', { name: 'Start Run' }).click()
+    await page.getByRole('button', { name: 'Start run' }).click()
 
     // REC indicator + first GPS fix received (watchPosition mock punch-in)
     await expect(page.getByText('REC')).toBeVisible()
@@ -84,11 +84,11 @@ test.describe('GPS tracker (FR-63, .068 eventParam)', () => {
     // (distance > 0) and the route map renders (needs >= 2 GPS points)
     const distance = page.locator('input[placeholder="5.0"]')
     await expect(distance).not.toHaveValue('')
-    await expect(page.getByText('Your Last Route')).toBeVisible()
+    await expect(page.getByText('Your last route')).toBeVisible()
     await expect(page.getByText('Points')).toBeVisible()
 
     // Final attribute: the prefilled run persists via Log Run → success = form resets
-    await page.getByRole('button', { name: 'Log Run' }).click()
+    await page.getByRole('button', { name: 'Log run' }).click()
     await expect(distance).toHaveValue('', { timeout: 15000 })
   })
 })

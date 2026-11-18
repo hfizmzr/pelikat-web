@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react"
 import { cn } from "@/lib/utils"
 import styles from "./landing.module.css"
 
@@ -19,31 +18,17 @@ export function StepsSection({ priceLabel }: { priceLabel: string }) {
   ]
 
   return (
-    <section id="how-it-works" className={cn(styles.section, "relative isolate")} aria-labelledby="how-title">
-      <div className={styles.dots} aria-hidden="true" />
+    <section id="how-it-works" className={styles.section} aria-labelledby="how-title">
       <div className={styles.container}>
-        <div className="max-w-2xl" data-reveal="">
-          <span className={styles.eyebrow}>
-            <span className={styles.eyebrowDot} />
-            How it works
-          </span>
-          <h2 id="how-title" className={cn(styles.h2, "mt-5")}>
-            From application to start line in three steps
-          </h2>
-        </div>
+        <h2 id="how-title" className={cn(styles.h2, "max-w-2xl")}>
+          From application to start line in three steps
+        </h2>
 
-        <ol className="relative mt-12 grid gap-5 md:grid-cols-3">
-          <span className={cn(styles.stepLine, "hidden md:block")} aria-hidden="true" />
+        <ol className="mt-12 grid gap-8 border-t border-[var(--line)] pt-8 md:grid-cols-3 md:gap-12">
           {steps.map((step, i) => (
-            <li
-              key={step.title}
-              className={cn(styles.card, styles.spot, "relative p-6")}
-              data-reveal=""
-              data-spotlight=""
-              style={{ "--i": i } as CSSProperties}
-            >
-              <span className={styles.stepNum}>{i + 1}</span>
-              <h3 className={cn(styles.h3, "mt-5")}>{step.title}</h3>
+            <li key={step.title}>
+              <span className={styles.stepNum}>{String(i + 1).padStart(2, "0")}</span>
+              <h3 className={cn(styles.h3, "mt-3")}>{step.title}</h3>
               <p className={cn(styles.body, "mt-2")}>{step.body}</p>
             </li>
           ))}

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { StatusTag } from '@/components/ui/status-tag'
 import { Calendar, MapPin, Users, Clock, ArrowLeft, Shirt, BarChart3, ClipboardList, Megaphone } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -14,7 +14,7 @@ import type { ThemeTokens } from '@/lib/theme/types'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Event Details - Pelikat',
+  title: 'Event details - Pelikat',
   description: 'Manage event details and registrations',
 }
 
@@ -42,12 +42,6 @@ type EventStatus = 'draft' | 'published' | 'closed'
 // Same shape the ids take in Postgres (uuid) — used to guard the `.or` filter
 // below against a hand-craftable theme_preset_id.
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
-
-const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'outline'> = {
-  published: 'default',
-  draft: 'secondary',
-  closed: 'outline',
-}
 
 type EventDetail = {
   id: string
@@ -175,8 +169,6 @@ export default async function OrganizerEventDetailPage({
       ),
   }
 
-  const statusVariant = STATUS_VARIANTS
-
   // Public app origin for the shareable /events/{slug} URL (P3 Task 5) —
   // same fallback chain as hitpayRedirectUrl (tunnel in dev, APP_URL in prod).
   const appUrl =
@@ -200,17 +192,15 @@ export default async function OrganizerEventDetailPage({
         </Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="min-w-0 flex-1 text-3xl font-bold tracking-tight">{eventDetail.name}</h1>
-            <Badge variant={statusVariant[eventDetail.status] ?? 'secondary'}>
-              {eventDetail.status}
-            </Badge>
+            <h1 className="min-w-0 flex-1 text-[28px] leading-9 font-medium">{eventDetail.name}</h1>
+            <StatusTag status={eventDetail.status} />
           </div>
-          <p className="text-muted-foreground flex items-center gap-2 mt-1 min-w-0 truncate">
-            <Calendar className="h-4 w-4 shrink-0" />
-            {new Date(eventDetail.event_date).toLocaleDateString()}
+          <p className="text-[14px] text-muted-foreground flex items-center gap-2 mt-1 min-w-0 truncate">
+            <Calendar className="size-4 shrink-0" strokeWidth={1.75} />
+            {new Date(eventDetail.event_date).toLocaleDateString('en-MY', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
             {eventDetail.location && (
               <>
-                <MapPin className="h-4 w-4 ml-2 shrink-0" />
+                <MapPin className="size-4 ml-2 shrink-0" strokeWidth={1.75} />
                 {eventDetail.location}
               </>
             )}
@@ -248,34 +238,34 @@ export default async function OrganizerEventDetailPage({
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Registrations</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Registrations</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalRegistrations}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{stats.totalRegistrations}</div>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Checked In</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Checked in</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.checkedIn}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{stats.checkedIn}</div>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Categories</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Categories</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.categories}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{stats.categories}</div>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">RM {stats.revenue.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">RM {stats.revenue.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </CardContent>
         </Card>
       </div>
@@ -285,7 +275,7 @@ export default async function OrganizerEventDetailPage({
           <>
             <Card className="border-border">
               <CardHeader>
-                <CardTitle>Event Description</CardTitle>
+                <CardTitle>Event description</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
@@ -297,31 +287,31 @@ export default async function OrganizerEventDetailPage({
             <div className="grid gap-4 md:grid-cols-2">
               <Card className="border-border">
                 <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
+                  <CardTitle>Quick actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <Button variant="outline" className="w-full justify-start" asChild>
                     <Link href={`/organizer/events/${eventDetail.id}/registrations`}>
                       <ClipboardList className="mr-2 h-4 w-4" />
-                      Registrations &amp; Guests
+                      Registrations and guests
                     </Link>
                   </Button>
                   <Link href={`/organizer/events/${eventDetail.id}/checkin`} className="block">
                     <Button variant="outline" className="w-full justify-start">
                       <Users className="mr-2 h-4 w-4" />
-                      Check-in Dashboard
+                      Check-in dashboard
                     </Button>
                   </Link>
                   <Link href={`/organizer/events/${eventDetail.id}/repc`} className="block">
                     <Button variant="outline" className="w-full justify-start">
                       <Shirt className="mr-2 h-4 w-4" />
-                      REPC Inventory
+                      REPC inventory
                     </Button>
                   </Link>
                   <Link href={`/organizer/events/${eventDetail.id}/photos`} className="block">
                     <Button variant="outline" className="w-full justify-start">
                       <Clock className="mr-2 h-4 w-4" />
-                      Photo Management
+                      Photo management
                     </Button>
                   </Link>
                   <Link href={`/organizer/events/${eventDetail.id}/leaderboard`} className="block">
@@ -333,7 +323,7 @@ export default async function OrganizerEventDetailPage({
                   <Link href={`/organizer/events/${eventDetail.id}/messages`} className="block">
                     <Button variant="outline" className="w-full justify-start">
                       <Megaphone className="mr-2 h-4 w-4" />
-                      Messages to Runners
+                      Messages to runners
                     </Button>
                   </Link>
                 </CardContent>
@@ -341,7 +331,7 @@ export default async function OrganizerEventDetailPage({
 
               <Card className="border-border">
                 <CardHeader>
-                  <CardTitle>Race Categories</CardTitle>
+                  <CardTitle>Race categories</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {raceCategories.length > 0 ? (
@@ -349,7 +339,7 @@ export default async function OrganizerEventDetailPage({
                       {raceCategories.map((cat) => (
                         <div key={cat.id} className="flex items-center justify-between">
                           <span className="text-sm">{cat.name}</span>
-                          <Badge variant="outline">{cat.gender || "Open"}</Badge>
+                          <span className="text-[12px] text-muted-foreground">{cat.gender || "Open"}</span>
                         </div>
                       ))}
                     </div>
@@ -357,7 +347,7 @@ export default async function OrganizerEventDetailPage({
                     <div className="text-center py-4">
                       <p className="text-sm text-muted-foreground mb-3">No categories yet</p>
                       <Link href={`/organizer/events/${eventDetail.id}/categories`}>
-                        <Button size="sm" variant="outline">Manage Categories</Button>
+                        <Button size="sm" variant="outline">Manage categories</Button>
                       </Link>
                     </div>
                   )}
@@ -380,16 +370,14 @@ export default async function OrganizerEventDetailPage({
                       <div>
                         <p className="font-medium">{reg.runner_profiles?.full_name || 'Unknown'}</p>
                         <p className="text-sm text-muted-foreground">
-                          BIB: {reg.bib_number} | {reg.race_categories?.name}
+                          <span className="font-mono">{reg.bib_number || 'No bib yet'}</span> · {reg.race_categories?.name}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={reg.checked_in ? 'default' : 'secondary'}>
-                          {reg.checked_in ? 'Checked In' : 'Not Checked In'}
-                        </Badge>
-                        <Badge variant={reg.payment_status === 'paid' ? 'default' : 'outline'}>
-                          {reg.payment_status}
-                        </Badge>
+                        <StatusTag tone={reg.checked_in ? 'success' : 'neutral'}>
+                          {reg.checked_in ? 'Checked in' : 'Not checked in'}
+                        </StatusTag>
+                        <StatusTag status={reg.payment_status} />
                       </div>
                     </div>
                   ))}
@@ -404,11 +392,11 @@ export default async function OrganizerEventDetailPage({
           <Card className="border-border">
             <CardHeader className="flex flex-row items-start justify-between">
               <div>
-                <CardTitle>Race Categories</CardTitle>
+                <CardTitle>Race categories</CardTitle>
                 <CardDescription>Manage race categories for this event</CardDescription>
               </div>
               <Link href={`/organizer/events/${eventDetail.id}/categories`}>
-                <Button size="sm" variant="outline">Manage All</Button>
+                <Button size="sm" variant="outline">Manage all</Button>
               </Link>
             </CardHeader>
             <CardContent>
@@ -419,12 +407,12 @@ export default async function OrganizerEventDetailPage({
                       <div>
                         <p className="font-medium">{cat.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {cat.gender ?? 'Open'} | Ages {cat.min_age}-{cat.max_age}
+                          {cat.gender ?? 'Open'} · ages {cat.min_age} to {cat.max_age}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline">${cat.price}</Badge>
-                        {cat.max_slots && <Badge variant="secondary">{cat.max_slots} slots</Badge>}
+                        <span className="font-mono text-[13px] tabular-nums text-foreground">RM {Number(cat.price).toFixed(2)}</span>
+                        {cat.max_slots && <span className="text-[13px] tabular-nums text-muted-foreground">{cat.max_slots.toLocaleString()} places</span>}
                       </div>
                     </div>
                   ))}
@@ -433,7 +421,7 @@ export default async function OrganizerEventDetailPage({
                 <div className="text-center py-8">
                   <p className="text-muted-foreground mb-4">No categories yet</p>
                   <Link href={`/organizer/events/${eventDetail.id}/categories`}>
-                    <Button>Add Category</Button>
+                    <Button>Add category</Button>
                   </Link>
                 </div>
               )}

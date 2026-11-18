@@ -49,16 +49,15 @@ export function StorageUsage() {
 
   const maxBucketSize = Math.max(...buckets.map((b) => b.size), 1)
 
-  // Bucket color mapping
-  const bucketColors = ['bg-primary', 'bg-primary', 'bg-success', 'bg-red-500 dark:bg-red-300']
+  // The largest bucket leads in the accent; the rest stay neutral.
 
   return (
-    <div className="rounded-xl bg-card p-5 shadow-md border border-border/30 flex flex-col gap-4 font-inter">
+    <div className="rounded-xl bg-card p-5 border border-border/30 flex flex-col gap-4 font-inter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <HardDrive className="text-primary size-[20px]" />
-          <h3 className="font-semibold text-foreground text-[15px] font-jakarta">Storage Usage</h3>
+          <h3 className="font-medium text-foreground text-[15px] font-jakarta">Storage usage</h3>
         </div>
         <span className="text-[11px] text-muted-foreground font-mono">
           {formatBytes(totalSize)} total
@@ -74,27 +73,27 @@ export function StorageUsage() {
         <p className="text-[13px] text-muted-foreground py-4 text-center">No storage buckets found</p>
       ) : (
         <div className="flex flex-col gap-3">
-          {buckets.map((bucket, i) => {
+          {buckets.map((bucket) => {
             const pct = Math.round((bucket.size / maxBucketSize) * 100)
-            const color = bucketColors[i % bucketColors.length]
+            const color = bucket.size > 0 && bucket.size === maxBucketSize ? 'bg-primary' : 'bg-muted-foreground/40'
             return (
               <div key={bucket.name} className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between text-[12px]">
-                  <span className="font-semibold text-foreground font-inter">{bucket.name}</span>
+                  <span className="font-medium text-foreground font-inter">{bucket.name}</span>
                   <span className="text-muted-foreground font-mono">
                     {formatBytes(bucket.size)} · {bucket.fileCount} files
                   </span>
                 </div>
                 <div className="w-full bg-accent rounded-full h-1.5 overflow-hidden">
                   <div
-                    className={`${color} h-1.5 rounded-full transition-all`}
+                    className={`${color} h-1.5 rounded-full`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
               </div>
             )
           })}
-          <p className="text-[10px] text-border font-inter pt-1">
+          <p className="text-[11px] text-muted-foreground font-inter pt-1">
             {buckets.length} storage bucket{buckets.length !== 1 ? "s" : ""}
           </p>
         </div>

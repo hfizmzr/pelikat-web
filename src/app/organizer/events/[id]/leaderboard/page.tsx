@@ -8,18 +8,18 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Event Leaderboard - Pelikat',
+  title: 'Event leaderboard - Pelikat',
   description: 'Virtual run leaderboard for this event',
 }
 
 function getRankIcon(rank: number) {
   switch (rank) {
     case 1:
-      return <Crown className="h-5 w-5 text-yellow-500" />
+      return <Crown className="h-5 w-5 text-warning" />
     case 2:
       return <Medal className="h-5 w-5 text-gray-400" />
     case 3:
-      return <Medal className="h-5 w-5 text-amber-700" />
+      return <Medal className="h-5 w-5 text-warning" />
     default:
       return <span className="text-muted-foreground font-medium">#{rank}</span>
   }
@@ -66,36 +66,36 @@ export default async function OrganizerEventLeaderboardPage({
   return (
     <div className="space-y-6 px-4 sm:px-6 py-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Leaderboard</h1>
+        <h1 className="text-3xl font-medium tracking-tight">Leaderboard</h1>
         <p className="text-muted-foreground">Virtual run leaderboard for {event.name}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Runners</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Total runners</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{leaderboard?.length || 0}</div>
+            <div className="text-[28px] leading-none font-medium tabular-nums">{leaderboard?.length || 0}</div>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Distance</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Total distance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {leaderboard?.reduce((acc, l) => acc + Number(l.total_km || 0), 0).toFixed(1) || 0} KM
+            <div className="text-[28px] leading-none font-medium tabular-nums">
+              {leaderboard?.reduce((acc, l) => acc + Number(l.total_km || 0), 0).toFixed(1) || 0} km
             </div>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Top Distance</CardTitle>
+            <CardTitle className="text-[13px] font-normal text-muted-foreground">Top distance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {leaderboard?.[0]?.total_km ? `${leaderboard[0].total_km} KM` : '0 KM'}
+            <div className="text-[28px] leading-none font-medium tabular-nums">
+              {leaderboard?.[0]?.total_km ? `${leaderboard[0].total_km} km` : '0 km'}
             </div>
           </CardContent>
         </Card>
@@ -105,7 +105,7 @@ export default async function OrganizerEventLeaderboardPage({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Trophy className="h-5 w-5" />
-            Top Runners
+            Top runners
           </CardTitle>
           <CardDescription>Ranked by total distance</CardDescription>
         </CardHeader>
@@ -116,7 +116,7 @@ export default async function OrganizerEventLeaderboardPage({
                 <TableRow>
                   <TableHead className="w-16">Rank</TableHead>
                   <TableHead>Runner</TableHead>
-                  <TableHead>Total Distance</TableHead>
+                  <TableHead>Total distance</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -128,10 +128,10 @@ export default async function OrganizerEventLeaderboardPage({
                     </TableCell>
                     <TableCell className="font-medium">{entry.full_name}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{entry.total_km} KM</Badge>
+                      <Badge variant="outline">{entry.total_km} km</Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">View Profile</Button>
+                      <Button variant="ghost" size="sm">View profile</Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -149,7 +149,7 @@ export default async function OrganizerEventLeaderboardPage({
 
       <Card className="border-border">
         <CardHeader>
-          <CardTitle>Recent Run Logs</CardTitle>
+          <CardTitle>Recent run logs</CardTitle>
           <CardDescription>Latest activity</CardDescription>
         </CardHeader>
         <CardContent>
@@ -172,7 +172,7 @@ export default async function OrganizerEventLeaderboardPage({
                     <TableCell className="font-medium">
                       {profile?.full_name || 'Unknown'}
                     </TableCell>
-                    <TableCell>{log.distance_km} KM</TableCell>
+                    <TableCell>{log.distance_km} km</TableCell>
                     <TableCell>{Math.floor(log.duration_sec / 60)}m {log.duration_sec % 60}s</TableCell>
                     <TableCell className="text-muted-foreground">
                       {new Date(log.logged_at).toLocaleString()}

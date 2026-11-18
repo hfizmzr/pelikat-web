@@ -22,14 +22,14 @@ function formatTime(time: string): string {
 
 export function RaceDayScheduleCard({ startTime, flagOffTime, cutoffTime }: RaceDayScheduleCardProps) {
   const rows = [
-    { label: 'Event Start', value: startTime },
-    { label: 'Flag-Off', value: flagOffTime },
-    { label: 'Cut-Off', value: cutoffTime },
+    { label: 'Event start', value: startTime },
+    { label: 'Flag-off', value: flagOffTime },
+    { label: 'Cut-off', value: cutoffTime },
   ]
 
   return (
     <div className="bg-card p-4 rounded-2xl border border-border/60">
-      <h3 className="text-[13px] font-bold text-foreground mb-3">Race-Day Schedule</h3>
+      <h3 className="text-[13px] font-medium text-foreground mb-3">Race-day schedule</h3>
       {rows.every((row) => !row.value) ? (
         <p className="text-[12px] text-muted-foreground">Schedule to be announced</p>
       ) : (
@@ -37,7 +37,7 @@ export function RaceDayScheduleCard({ startTime, flagOffTime, cutoffTime }: Race
           {rows.map((row) => (
             <div key={row.label} className="flex justify-between items-center">
               <dt className="text-[12px] text-muted-foreground">{row.label}</dt>
-              <dd className="text-[12px] font-bold text-foreground">
+              <dd className="text-[12px] font-medium text-foreground">
                 {row.value ? formatTime(row.value) : 'To be announced'}
               </dd>
             </div>

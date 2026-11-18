@@ -1,4 +1,5 @@
-import { ArrowRight, BadgeCheck, Building2, Download, ExternalLink, Footprints, Megaphone, Settings, SlidersHorizontal, ToggleRight, TriangleAlert, Zap } from "lucide-react"
+import { statusLabel } from '@/components/ui/status-tag'
+import { ArrowRight, BadgeCheck, Settings, SlidersHorizontal, ToggleRight, TriangleAlert } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { StorageUsage } from '@/components/admin/storage-usage'
@@ -69,143 +70,69 @@ export default async function AdminDashboard() {
   // ── KPI stat cards ───────────────────────────────────────────────────────
   const kpiCards = [
     {
-      label: 'Active Platform Tenants',
-      value: activeOrganizersCount ?? 0,
-      unit: 'Tenants',
-      icon: Building2,
-      iconColor: 'text-primary',
-      iconBg: 'bg-primary/20',
-      glowColor: 'bg-primary/5',
-      accent: 'text-success',
-      sub: `+${(organizersCount ?? 0) - (activeOrganizersCount ?? 0)} total registered`,
-      barColor: 'from-primary/40 to-primary',
+      label: 'Active organizers',
+      value: (activeOrganizersCount ?? 0).toLocaleString(),
+      sub: `${(organizersCount ?? 0).toLocaleString()} registered in total`,
     },
     {
-      label: 'Aggregate Registrations',
+      label: 'Registrations',
       value: (registrationsCount ?? 0).toLocaleString(),
-      unit: 'Athletes',
-      icon: Footprints,
-      iconColor: 'text-primary',
-      iconBg: 'bg-primary/20',
-      glowColor: 'bg-primary/5',
-      accent: 'text-primary',
-      sub: 'All-time registrations',
+      sub: 'All time, across every event',
     },
     {
-      label: 'Platform Events',
-      value: eventsCount ?? 0,
-      unit: 'Events',
-      icon: Zap,
-      iconColor: 'text-success',
-      iconBg: 'bg-success/20',
-      glowColor: 'bg-success/5',
-      accent: 'text-success',
-      sub: 'All time created',
+      label: 'Events',
+      value: (eventsCount ?? 0).toLocaleString(),
+      sub: 'All time',
     },
-  ]
-
-  // ── Organizer initials + color ────────────────────────────────────────────
-  const orgColors = [
-    { bg: 'bg-primary/20', text: 'text-primary' },
-    { bg: 'bg-primary/20', text: 'text-primary' },
-    { bg: 'bg-success/20', text: 'text-success' },
-    { bg: 'bg-red-500/10 dark:bg-red-300/20', text: 'text-red-500 dark:text-red-300' },
-    { bg: 'bg-primary/20', text: 'text-primary' },
   ]
 
   return (
     <div className="flex flex-col gap-8 font-inter text-foreground">
 
-      {/* ── Page Header ──────────────────────────────────────────────────── */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="font-jakarta font-bold text-[28px] leading-tight tracking-tight text-foreground">
-            Platform Overview
-          </h1>
-          <p className="text-[14px] text-muted-foreground max-w-2xl font-inter">
-            Cross-tenant overview across {activeOrganizersCount ?? 0} organizer accounts.
+      <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+        <div>
+          <h1 className="text-[28px] leading-9 font-medium text-foreground">Overview</h1>
+          <p className="mt-1 text-[14px] text-muted-foreground">
+            Across {activeOrganizersCount ?? 0} active organizers
           </p>
         </div>
-
-        {/* Header actions */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <a
-            href="/admin/audit-logs"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
-          >
-            <Download className="size-[16px]" />
-            <span>Audit Logs</span>
-          </a>
-          <Link
-            href="/admin/organizers"
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary transition-all "
-          >
-            <Megaphone className="size-[18px]" />
-            <span>Manage Organizers</span>
-          </Link>
-        </div>
+        <Link
+          href="/admin/audit-logs"
+          className="flex h-9 w-fit items-center gap-1.5 rounded-lg border border-border px-3 text-[13px] font-medium text-foreground transition-colors hover:bg-accent"
+        >
+          Audit log
+          <ArrowRight className="size-3.5" strokeWidth={1.75} />
+        </Link>
       </div>
 
-      {/* ── KPI Metric Cards ─────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {kpiCards.map((card, i) => (
-          <div
-            key={i}
-            className="relative overflow-hidden rounded-xl bg-card p-5 shadow-md flex flex-col justify-between border border-border/30 hover:bg-card transition-all group"
-          >
-            {/* Background glow orb */}
-            <div className={`absolute top-0 right-0 w-32 h-32 ${card.glowColor} rounded-full blur-2xl pointer-events-none`} />
-
-            {/* Top: label + icon */}
-            <div className="flex items-start justify-between">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-inter">
-                  {card.label}
-                </span>
-                <div className="flex items-baseline gap-1.5 mt-1">
-                  <span className="text-[40px] font-bold text-foreground leading-none tracking-tight font-inter font-tabular">
-                    {card.value}
-                  </span>
-                  {card.unit && (
-                    <span className={`text-[12px] font-semibold ${card.accent} font-inter`}>
-                      {card.unit}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className={`p-1.5 rounded-lg ${card.iconBg} ${card.iconColor} shrink-0`}>
-                <card.icon className="size-[22px]" />
-              </div>
-            </div>
-
-            {/* Bottom: sub-info */}
-            <div className="mt-4 pt-3">
-              <p className={`text-[11px] font-inter ${card.accent} font-medium pt-0.5`}>
-                {card.sub}
-              </p>
-            </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {kpiCards.map((card) => (
+          <div key={card.label} className="rounded-xl border border-border bg-card p-5">
+            <p className="text-[13px] text-muted-foreground">{card.label}</p>
+            <p className="mt-2 text-[32px] leading-none font-medium tabular-nums text-foreground">{card.value}</p>
+            <p className="mt-2 text-[13px] text-muted-foreground">{card.sub}</p>
           </div>
         ))}
       </div>
 
       {/* ── Expiring Subscriptions Alert ─────────────────────────────────── */}
       {(expiringSoonCount ?? 0) > 0 && (
-        <div className="w-full bg-red-800/10 rounded-xl p-5 border border-red-500/30 dark:border-red-300/20 flex flex-col gap-3">
+        <div className="w-full rounded-xl border border-warning/30 bg-warning/5 p-5 flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <TriangleAlert className="size-[20px] text-red-500 dark:text-red-300" />
-            <h3 className="font-semibold text-red-500 dark:text-red-300 text-[15px] font-jakarta">
-              {expiringSoonCount} Subscription(s) Expiring Within 7 Days
+            <TriangleAlert className="size-[18px] text-warning" strokeWidth={1.75} />
+            <h3 className="font-medium text-foreground text-[15px]">
+              {expiringSoonCount} {expiringSoonCount === 1 ? 'subscription expires' : 'subscriptions expire'} within 7 days
             </h3>
           </div>
           <div className="space-y-2">
             {expiringOrganizers?.map((org) => (
               <div key={org.slug} className="flex items-center justify-between rounded-lg bg-card border border-border/30 p-3">
                 <div>
-                  <p className="text-[13px] font-semibold text-foreground font-inter">{org.name}</p>
+                  <p className="text-[13px] font-medium text-foreground font-inter">{org.name}</p>
                   <p className="text-[11px] text-muted-foreground font-mono">@{org.slug}</p>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-bold border border-red-500/30 dark:border-red-300/20 font-inter">
-                  Expires {new Date(org.sub_expires_at).toLocaleDateString()}
+                <span className="text-[12px] tabular-nums text-warning">
+                  Expires {new Date(org.sub_expires_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </span>
               </div>
             ))}
@@ -214,23 +141,19 @@ export default async function AdminDashboard() {
       )}
 
       {/* ── Tenant Organizer Directory ───────────────────────────────────── */}
-      <div className="w-full bg-card rounded-xl shadow-lg p-5 flex flex-col gap-4 border border-border/30">
+      <div className="w-full bg-card rounded-xl p-5 flex flex-col gap-4 border border-border">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
           <div>
-            <h2 className="font-jakarta font-bold text-[20px] text-foreground tracking-tight">
-              Tenant Organizer Directory
-            </h2>
-            <p className="text-[12px] text-muted-foreground mt-0.5 font-inter">
-              Manage organizer accounts, tenant subscriptions, and event licensing
-            </p>
+            <h2 className="font-medium text-[16px] text-foreground">Organizers</h2>
+            <p className="text-[13px] text-muted-foreground mt-0.5">Most recently added accounts and their subscription status</p>
           </div>
           <div className="flex items-center gap-2 w-full lg:w-auto">
             <Link
               href="/admin/organizers"
-              className="flex-1 lg:flex-none px-4 py-2 rounded-lg bg-primary hover:bg-primary text-primary-foreground hover:text-white text-[13px] font-semibold transition-all flex items-center justify-center gap-1.5 shadow-md font-inter"
+              className="flex h-9 items-center gap-1 rounded-lg px-2.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
             >
-              <ExternalLink className="size-[18px]" />
-              Manage All Organizers
+              All organizers
+              <ArrowRight className="size-3.5" strokeWidth={1.75} />
             </Link>
           </div>
         </div>
@@ -239,7 +162,7 @@ export default async function AdminDashboard() {
         <div className="w-full overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-border/30 text-muted-foreground text-[10px] font-bold uppercase tracking-wider">
+              <tr className="border-b border-border/30 text-muted-foreground text-[11px] font-medium">
                 <th className="py-3 px-4">Organization</th>
                 <th className="py-3 px-4">Contact</th>
                 <th className="py-3 px-4 text-center">Status</th>
@@ -250,13 +173,12 @@ export default async function AdminDashboard() {
               {!recentOrganizers || recentOrganizers.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-10 text-center text-muted-foreground">
-                    No organizers found. Add your first tenant organizer.
+                    No organizers yet
                   </td>
                 </tr>
               ) : (
-                recentOrganizers.map((org, i) => {
-                  const color = orgColors[i % orgColors.length]
-                  const initials = org.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
+                recentOrganizers.map((org) => {
+                                    const initials = org.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
                   const isExpiring = org.sub_expires_at
                     ? new Date(org.sub_expires_at) <= sevenDaysFromNow
                     : false
@@ -268,11 +190,11 @@ export default async function AdminDashboard() {
                     <tr key={org.id} className="hover:bg-card/40 transition-colors">
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-lg ${color.bg} flex items-center justify-center ${color.text} font-bold text-[12px] shrink-0 font-jakarta`}>
+                          <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center text-foreground font-medium text-[12px] shrink-0">
                             {initials}
                           </div>
                           <div className="flex flex-col min-w-0">
-                            <span className="text-[13px] font-semibold text-foreground truncate font-jakarta">{org.name}</span>
+                            <span className="text-[13px] font-medium text-foreground truncate font-jakarta">{org.name}</span>
                             <span className="text-[11px] text-muted-foreground font-mono truncate">@{org.slug}</span>
                           </div>
                         </div>
@@ -286,22 +208,22 @@ export default async function AdminDashboard() {
                       </td>
                       <td className="py-4 px-4 text-center">
                         {isExpired ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-semibold inline-flex items-center gap-1.5 border border-red-500/30 dark:border-red-300/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-300" />
+                          <span className="px-2.5 py-0.5 rounded-full bg-destructive/10 text-destructive text-[11px] font-medium inline-flex items-center gap-1.5 border border-destructive/30 dark:border-destructive/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
                             Expired
                           </span>
                         ) : isExpiring ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 dark:bg-red-300/10 text-red-500 dark:text-red-300 text-[11px] font-semibold inline-flex items-center gap-1.5 border border-red-500/30 dark:border-red-300/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-300" />
+                          <span className="px-2.5 py-0.5 rounded-full bg-destructive/10 text-destructive text-[11px] font-medium inline-flex items-center gap-1.5 border border-destructive/30 dark:border-destructive/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
                             Expiring
                           </span>
                         ) : org.is_active ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-success/10 text-success text-[11px] font-semibold inline-flex items-center gap-1.5 border border-success/20">
+                          <span className="px-2.5 py-0.5 rounded-full bg-success/10 text-success text-[11px] font-medium inline-flex items-center gap-1.5 border border-success/20">
                             <span className="w-1.5 h-1.5 rounded-full bg-success" />
                             Active
                           </span>
                         ) : (
-                          <span className="px-2.5 py-0.5 rounded-full bg-muted-foreground/10 text-muted-foreground text-[11px] font-semibold inline-flex items-center gap-1.5 border border-muted-foreground/20">
+                          <span className="px-2.5 py-0.5 rounded-full bg-muted-foreground/10 text-muted-foreground text-[11px] font-medium inline-flex items-center gap-1.5 border border-muted-foreground/20">
                             <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
                             Inactive
                           </span>
@@ -311,7 +233,7 @@ export default async function AdminDashboard() {
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href={`/admin/organizers`}
-                            className="p-1.5 rounded-lg bg-card hover:bg-primary hover:text-primary-foreground text-primary transition-all border border-border/30"
+                            className="p-1.5 rounded-lg bg-card hover:opacity-90 hover:text-primary-foreground text-primary transition-[color,background-color,border-color,opacity] border border-border/30"
                             title="Manage"
                           >
                             <Settings className="size-[18px]" />
@@ -329,13 +251,13 @@ export default async function AdminDashboard() {
         {/* Footer */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1 text-[11px] font-inter">
           <span className="text-muted-foreground">
-            Showing {recentOrganizers?.length ?? 0} of {organizersCount ?? 0} registered event tenants
+            Showing {recentOrganizers?.length ?? 0} of {organizersCount ?? 0} organizers
           </span>
           <Link
             href="/admin/organizers"
             className="text-primary hover:text-foreground transition-colors flex items-center gap-1 font-medium"
           >
-            View All Organizers
+            View all organizers
             <ArrowRight className="size-[14px]" />
           </Link>
         </div>
@@ -345,17 +267,17 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
 
         {/* Recent Audit Log */}
-        <div className="xl:col-span-7 bg-card rounded-xl p-5 shadow-md border border-border/30 flex flex-col gap-4">
+        <div className="xl:col-span-7 bg-card rounded-xl p-5 border border-border flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BadgeCheck className="text-success size-[20px]" />
-              <h3 className="font-semibold text-foreground text-[16px] font-jakarta">Recent Audit Log</h3>
+              <h3 className="font-medium text-foreground text-[16px] font-jakarta">Recent audit log</h3>
             </div>
             <Link
               href="/admin/audit-logs"
               className="text-[11px] text-primary hover:text-foreground transition-colors flex items-center gap-1 font-medium font-inter"
             >
-              View Ledger
+              View ledger
               <ArrowRight className="size-[14px]" />
             </Link>
           </div>
@@ -377,9 +299,6 @@ export default async function AdminDashboard() {
                         </span>
                       </div>
                     </div>
-                    <span className="px-2 py-0.5 rounded bg-success/10 text-success font-bold text-[10px] shrink-0 border border-success/20 font-inter uppercase tracking-wide">
-                      SUCCESS
-                    </span>
                   </div>
                 )
               })
@@ -392,18 +311,17 @@ export default async function AdminDashboard() {
         {/* Right Column: Health + Storage */}
         <div className="xl:col-span-5 flex flex-col gap-5">
           {/* Feature Flags Panel */}
-          <div className="bg-card rounded-xl p-5 shadow-md border border-border/30 flex flex-col gap-4">
+          <div className="bg-card rounded-xl p-5 border border-border flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ToggleRight className="text-primary size-[20px]" />
-                <h3 className="font-semibold text-foreground text-[16px] font-jakarta">Feature Flags & Circuit</h3>
+                <h3 className="font-medium text-foreground text-[16px]">Feature flags</h3>
               </div>
-              <span className="text-[11px] text-muted-foreground font-mono">STRICT MODE</span>
             </div>
             <div className="flex flex-col gap-3">
               {[
                 {
-                  name: 'AI Race Photo Indexing',
+                  name: 'AI race photo indexing',
                   desc: 'Runner bib recognition engine',
                   status: flagPhotoAi ? 'Active' : 'Disabled',
                   color: flagPhotoAi
@@ -411,7 +329,7 @@ export default async function AdminDashboard() {
                     : 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20',
                 },
                 {
-                  name: 'Virtual Run GPS Tracking',
+                  name: 'Virtual run GPS tracking',
                   desc: 'Continuous distance & pace tracking',
                   status: flagVirtualRun ? 'Active' : 'Disabled',
                   color: flagVirtualRun
@@ -419,7 +337,7 @@ export default async function AdminDashboard() {
                     : 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20',
                 },
                 {
-                  name: 'REPC Race Pack Check-In',
+                  name: 'REPC race pack check-in',
                   desc: 'QR & barcode contactless distribution',
                   status: flagRepc ? 'Active' : 'Disabled',
                   color: flagRepc
@@ -429,20 +347,20 @@ export default async function AdminDashboard() {
               ].map((flag) => (
                 <div key={flag.name} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0">
                   <div className="flex flex-col">
-                    <span className="text-[13px] font-semibold text-foreground font-inter">{flag.name}</span>
+                    <span className="text-[13px] font-medium text-foreground font-inter">{flag.name}</span>
                     <span className="text-[11px] text-muted-foreground font-inter">{flag.desc}</span>
                   </div>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border font-inter ${flag.color}`}>
-                    {flag.status}
+                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border font-inter ${flag.color}`}>
+                    {statusLabel(flag.status)}
                   </span>
                 </div>
               ))}
             </div>
             <div className="pt-2 border-t border-border/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${flagMaintenance ? 'bg-red-500 dark:bg-red-300 animate-pulse' : 'bg-success'}`} />
+                <span className={`w-2 h-2 rounded-full ${flagMaintenance ? 'bg-destructive animate-pulse' : 'bg-success'}`} />
                 <span className="text-[12px] text-muted-foreground font-inter">
-                  Maintenance: <strong className={flagMaintenance ? 'text-red-500 dark:text-red-300' : 'text-success'}>{flagMaintenance ? 'ON' : 'OFF'}</strong>
+                  Maintenance: <strong className={flagMaintenance ? 'text-destructive' : 'text-success'}>{flagMaintenance ? 'On' : 'Off'}</strong>
                 </span>
               </div>
               <Link

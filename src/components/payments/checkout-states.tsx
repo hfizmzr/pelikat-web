@@ -25,7 +25,7 @@ export function CreatingState() {
     <StateCard className="min-h-[168px] justify-center">
       <LoaderCircle className="size-[32px] text-primary animate-spin motion-reduce:animate-none" aria-hidden="true" />
       <div>
-        <h3 className="text-[15px] font-bold text-foreground">Preparing your payment…</h3>
+        <h3 className="text-[15px] font-medium text-foreground">Preparing your payment…</h3>
         <p className="text-[12px] text-muted-foreground mt-1">Setting up a secure DuitNow session.</p>
       </div>
     </StateCard>
@@ -38,7 +38,7 @@ export function RedirectingState({ checkoutUrl }: { checkoutUrl?: string | null 
     <StateCard className="min-h-[168px] justify-center">
       <LoaderCircle className="size-[32px] text-primary animate-spin motion-reduce:animate-none" aria-hidden="true" />
       <div>
-        <h3 className="text-[15px] font-bold text-foreground">Redirecting to secure checkout…</h3>
+        <h3 className="text-[15px] font-medium text-foreground">Redirecting to secure checkout…</h3>
         <p className="text-[12px] text-muted-foreground mt-1">
           FPX online banking and e-wallets open in HitPay&apos;s secure window. You&apos;ll come back here
           automatically.
@@ -47,7 +47,7 @@ export function RedirectingState({ checkoutUrl }: { checkoutUrl?: string | null 
       {checkoutUrl && (
         <a
           href={checkoutUrl}
-          className="mt-1 inline-flex items-center justify-center min-h-[44px] px-4 rounded-xl bg-accent text-accent-foreground text-[13px] font-bold"
+          className="mt-1 inline-flex items-center justify-center min-h-[44px] px-4 rounded-xl bg-accent text-accent-foreground text-[13px] font-medium"
         >
           Not redirected? Tap here
         </a>
@@ -61,11 +61,10 @@ export function AwaitingState() {
   return (
     <StateCard className="min-h-[168px] justify-center">
       <div className="relative size-[40px] flex items-center justify-center" aria-hidden="true">
-        <div className="absolute inset-0 rounded-full bg-primary/15 animate-ping motion-reduce:animate-none" />
         <LoaderCircle className="size-[24px] text-primary animate-spin motion-reduce:animate-none" />
       </div>
       <div>
-        <h3 className="text-[15px] font-bold text-foreground">Confirming your payment…</h3>
+        <h3 className="text-[15px] font-medium text-foreground">Confirming your payment…</h3>
         <p className="text-[12px] text-muted-foreground mt-1">
           Keep this page open — we&apos;re checking with your bank. This usually takes a few seconds.
         </p>
@@ -91,35 +90,35 @@ export function ConfirmedState({
     <div className="bg-success/10 border border-success/30 p-5 rounded-2xl flex flex-col items-center text-center gap-3">
       <CircleCheck className="size-[40px] text-success" aria-hidden="true" />
       <div>
-        <h3 className="text-[16px] font-bold text-success mb-1">Payment Successful!</h3>
+        <h3 className="text-[16px] font-medium text-success mb-1">Payment successful</h3>
         <p className="text-[13px] text-success/80">Your registration is confirmed. See you at the start line.</p>
       </div>
       {bibNumber && !isVirtual && (
         <div className="w-full bg-card/60 rounded-xl border border-success/20 px-4 py-3 flex items-center justify-between">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Your BIB</span>
-          <span className="font-mono text-[18px] font-bold text-foreground">{bibNumber}</span>
+          <span className="text-[11px] font-medium text-muted-foreground">Your BIB</span>
+          <span className="font-mono text-[18px] font-medium text-foreground">{bibNumber}</span>
         </div>
       )}
       {isVirtual ? (
         <Link
           href={`/runner/events/${eventId}`}
-          className="w-full inline-flex items-center justify-center min-h-[44px] py-3 rounded-xl bg-success text-emerald-900 text-[13px] font-bold active:scale-95 transition-transform"
+          className="w-full inline-flex items-center justify-center min-h-[44px] py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium active:scale-[0.98] transition-transform"
         >
-          Back to Event
+          Back to event
         </Link>
       ) : (
         <>
           <Link
             href={`/runner/events/${eventId}/bib`}
-            className="w-full inline-flex items-center justify-center min-h-[44px] py-3 rounded-xl bg-success text-emerald-900 text-[13px] font-bold active:scale-95 transition-transform"
+            className="w-full inline-flex items-center justify-center min-h-[44px] py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium active:scale-[0.98] transition-transform"
           >
-            View Digital BIB
+            View digital BIB
           </Link>
           <Link
             href={`/runner/events/${eventId}`}
-            className="inline-flex items-center min-h-[44px] text-[12px] font-bold text-muted-foreground underline underline-offset-2"
+            className="inline-flex items-center min-h-[44px] text-[12px] font-medium text-muted-foreground underline underline-offset-2"
           >
-            Back to Event
+            Back to event
           </Link>
         </>
       )}
@@ -146,7 +145,7 @@ export function PaymentErrorState({
         <CircleAlert className="size-[40px] text-destructive" aria-hidden="true" />
       )}
       <div>
-        <h3 className="text-[15px] font-bold text-foreground">
+        <h3 className="text-[15px] font-medium text-foreground">
           {expired ? 'Payment session expired' : "Payment didn't go through"}
         </h3>
         <p className="text-[12px] text-muted-foreground mt-1">
@@ -159,9 +158,9 @@ export function PaymentErrorState({
       <button
         type="button"
         onClick={onRetry}
-        className="w-full inline-flex items-center justify-center min-h-[44px] py-3 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold active:scale-95 transition-transform"
+        className="w-full inline-flex items-center justify-center min-h-[44px] py-3 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium active:scale-[0.98] transition-transform"
       >
-        Try Again
+        Try again
       </button>
     </StateCard>
   )
@@ -176,7 +175,7 @@ export function StillConfirmingState() {
     <StateCard className="min-h-[168px] justify-center">
       <Hourglass className="size-[40px] text-muted-foreground" aria-hidden="true" />
       <div>
-        <h3 className="text-[15px] font-bold text-foreground">
+        <h3 className="text-[15px] font-medium text-foreground">
           Still confirming your payment
         </h3>
         <p className="text-[12px] text-muted-foreground mt-1">
@@ -195,7 +194,7 @@ export function PayMethodCard({ amount, onStart }: { amount: number; onStart: ()
       <div className="flex items-start gap-3">
         <ShieldCheck className="size-[20px] text-primary shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex flex-col gap-1">
-          <span className="text-[14px] font-bold text-foreground">DuitNow QR / FPX</span>
+          <span className="text-[14px] font-medium text-foreground">DuitNow QR / FPX</span>
           <span className="text-[12px] text-muted-foreground">
             Scan with your banking app, or pay by FPX online banking / e-wallet. Secured by HitPay.
           </span>
@@ -204,7 +203,7 @@ export function PayMethodCard({ amount, onStart }: { amount: number; onStart: ()
       <button
         type="button"
         onClick={onStart}
-        className="w-full inline-flex items-center justify-center min-h-[44px] py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold active:scale-95 transition-transform"
+        className="w-full inline-flex items-center justify-center min-h-[44px] py-3.5 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium active:scale-[0.98] transition-transform"
       >
         Pay RM {amount}
       </button>

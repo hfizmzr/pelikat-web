@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Fragment } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { BadgeCheck, ChevronDown, Download, Loader2, ReceiptText, SearchX } from "lucide-react"
+import { ChevronDown, Download, Loader2, ReceiptText, SearchX } from "lucide-react"
 import { AuditLogFilters, type AuditLogFilters as Filters } from '@/components/admin/audit-log-filters'
 
 const ITEMS_PER_PAGE = 20
@@ -24,7 +24,7 @@ interface AuditLog {
 function exportToCSV(logs: AuditLog[]) {
   const headers = ['Timestamp', 'Actor', 'Action', 'Target ID', 'Details']
   const rows = logs.map((log) => {
-    const actor = log.actor_email || (log.metadata?.table ? 'System (DB Trigger)' : 'System')
+    const actor = log.actor_email || (log.metadata?.table ? 'System (DB trigger)' : 'System')
     const details = log.metadata?.operation
       ? `${log.metadata.operation as string} on ${log.metadata.table as string}`
       : log.metadata
@@ -144,11 +144,7 @@ export default function AdminAuditLogsPage() {
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <BadgeCheck className="size-[16px] text-success" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-success font-inter">Compliance</span>
-          </div>
-          <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Audit Logs</h1>
+          <h1 className="text-[28px] leading-9 font-medium text-foreground">Audit log</h1>
           <p className="text-[13px] text-muted-foreground">
             Immutable activity ledger — {totalCount.toLocaleString()} records
           </p>
@@ -175,8 +171,8 @@ export default function AdminAuditLogsPage() {
       <div className="rounded-xl bg-card border border-border/30 overflow-hidden">
         <div className="p-5 border-b border-border/30 flex items-center gap-2">
           <ReceiptText className="text-success size-[20px]" />
-          <h2 className="font-jakarta font-semibold text-[18px] text-foreground">Activity Ledger</h2>
-          <span className="ml-auto text-[11px] text-border font-mono">
+          <h2 className="font-jakarta font-medium text-[18px] text-foreground">Activity ledger</h2>
+          <span className="ml-auto text-[11px] text-muted-foreground font-mono">
             Page {currentPage} of {totalPages || 1}
           </span>
         </div>
@@ -191,7 +187,7 @@ export default function AdminAuditLogsPage() {
               <thead>
                 <tr className="border-b border-border/30">
                   {['Timestamp', 'Actor', 'Action', 'Target', 'Details', ''].map((h, i) => (
-                    <th key={i} className="py-3 px-4 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{h}</th>
+                    <th key={i} className="py-3 px-4 text-[11px] font-medium text-muted-foreground">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -199,7 +195,7 @@ export default function AdminAuditLogsPage() {
                 {auditLogs.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                      <SearchX className="size-[32px] block mb-2 text-border" />
+                      <SearchX className="size-[32px] block mb-2 text-muted-foreground" />
                       No audit logs found.
                     </td>
                   </tr>
@@ -209,7 +205,7 @@ export default function AdminAuditLogsPage() {
                     const actorLabel = log.actor_email
                       ? (log.actor_name || log.actor_email)
                       : (log.metadata && (log.metadata as Record<string, unknown>).table
-                        ? 'System (DB Trigger)'
+                        ? 'System (DB trigger)'
                         : 'System')
 
                     return (
@@ -236,7 +232,7 @@ export default function AdminAuditLogsPage() {
                             </span>
                           </td>
                           <td className="py-3.5 px-4">
-                            <span className="font-semibold text-foreground capitalize">
+                            <span className="font-medium text-foreground capitalize">
                               {log.action?.replace(/_/g, ' ')}
                             </span>
                           </td>
@@ -255,7 +251,7 @@ export default function AdminAuditLogsPage() {
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-center">
-                            <ChevronDown className={`size-[18px] text-border transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`size-[18px] text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                           </td>
                         </tr>
                         {isExpanded && (
@@ -264,15 +260,15 @@ export default function AdminAuditLogsPage() {
                               <div className="flex flex-col gap-3">
                                 {log.old_data && (
                                   <div>
-                                    <p className="text-[11px] font-bold text-red-500 dark:text-red-300 mb-1.5 font-inter uppercase tracking-wide">Previous Data</p>
-                                    <pre className="text-[11px] text-muted-foreground bg-red-800/10 border border-red-500 dark:border-red-300/10 p-3 rounded-lg overflow-auto max-h-40 font-mono">
+                                    <p className="text-[11px] font-medium text-destructive mb-1.5 font-inter">Previous data</p>
+                                    <pre className="text-[11px] text-muted-foreground bg-destructive/10 border border-destructive dark:border-destructive/10 p-3 rounded-lg overflow-auto max-h-40 font-mono">
                                       {JSON.stringify(log.old_data, null, 2)}
                                     </pre>
                                   </div>
                                 )}
                                 {log.new_data && (
                                   <div>
-                                    <p className="text-[11px] font-bold text-success mb-1.5 font-inter uppercase tracking-wide">New Data</p>
+                                    <p className="text-[11px] font-medium text-success mb-1.5 font-inter">New data</p>
                                     <pre className="text-[11px] text-muted-foreground bg-success/5 border border-success/10 p-3 rounded-lg overflow-auto max-h-40 font-mono">
                                       {JSON.stringify(log.new_data, null, 2)}
                                     </pre>
@@ -280,7 +276,7 @@ export default function AdminAuditLogsPage() {
                                 )}
                                 {log.metadata && (
                                   <div>
-                                    <p className="text-[11px] font-bold text-muted-foreground mb-1.5 font-inter uppercase tracking-wide">Context</p>
+                                    <p className="text-[11px] font-medium text-muted-foreground mb-1.5 font-inter">Context</p>
                                     <pre className="text-[11px] text-muted-foreground bg-card border border-border/20 p-3 rounded-lg overflow-auto max-h-40 font-mono">
                                       {JSON.stringify(log.metadata, null, 2)}
                                     </pre>
@@ -305,10 +301,10 @@ export default function AdminAuditLogsPage() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-[12px] text-muted-foreground font-inter">
             Showing{' '}
-            <span className="text-foreground font-semibold">
+            <span className="text-foreground font-medium">
               {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)}
             </span>{' '}
-            of <span className="text-foreground font-semibold">{totalCount.toLocaleString()}</span> logs
+            of <span className="text-foreground font-medium">{totalCount.toLocaleString()}</span> logs
           </p>
           <div className="flex items-center gap-1">
             <button

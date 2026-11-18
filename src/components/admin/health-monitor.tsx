@@ -17,12 +17,12 @@ interface HealthResponse {
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { label: string; color: string; dot: string }> = {
     healthy:   { label: 'Healthy',   color: 'text-success bg-success/10 border-success/20', dot: 'bg-success' },
-    degraded:  { label: 'Degraded',  color: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/10 border-red-500/30 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300' },
-    unhealthy: { label: 'Unhealthy', color: 'text-red-500 dark:text-red-300 bg-red-800/20 border-red-500/30 dark:border-red-300/20', dot: 'bg-red-500 dark:bg-red-300 animate-pulse' },
+    degraded:  { label: 'Degraded',  color: 'text-destructive bg-destructive/10 border-destructive/30 dark:border-destructive/20', dot: 'bg-destructive' },
+    unhealthy: { label: 'Unhealthy', color: 'text-destructive bg-destructive/15 border-destructive/30 dark:border-destructive/20', dot: 'bg-destructive animate-pulse' },
   }
   const cfg = map[status] ?? { label: 'Unknown', color: 'text-muted-foreground bg-muted-foreground/10 border-muted-foreground/20', dot: 'bg-muted-foreground' }
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold inline-flex items-center gap-1.5 border ${cfg.color} font-inter`}>
+    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium inline-flex items-center gap-1.5 border ${cfg.color} font-inter`}>
       <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
       {cfg.label}
     </span>
@@ -53,12 +53,12 @@ export function HealthMonitor() {
   }, [])
 
   return (
-    <div className="rounded-xl bg-card p-5 shadow-md border border-border/30 flex flex-col gap-4 font-inter">
+    <div className="rounded-xl bg-card p-5 border border-border/30 flex flex-col gap-4 font-inter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <HeartPulse className="text-primary size-[20px]" />
-          <h3 className="font-semibold text-foreground text-[15px] font-jakarta">System Health</h3>
+          <h3 className="font-medium text-foreground text-[15px] font-jakarta">System health</h3>
         </div>
         <button
           onClick={fetchHealth}
@@ -72,7 +72,7 @@ export function HealthMonitor() {
       {/* Overall status */}
       {health && (
         <div className="flex items-center justify-between py-2 border-b border-border/30">
-          <span className="text-[12px] text-muted-foreground">Overall Status</span>
+          <span className="text-[12px] text-muted-foreground">Overall status</span>
           <StatusChip status={health.status} />
         </div>
       )}
@@ -90,13 +90,13 @@ export function HealthMonitor() {
               className="flex items-center justify-between rounded-lg bg-card border border-border/20 p-3"
             >
               <div>
-                <p className="text-[13px] font-semibold text-foreground capitalize font-inter">{service}</p>
+                <p className="text-[13px] font-medium text-foreground capitalize font-inter">{service}</p>
                 <p className="text-[11px] text-muted-foreground font-inter">{check.message}</p>
               </div>
               <StatusChip status={check.status} />
             </div>
           ))}
-          <p className="text-[10px] text-border font-mono pt-1">
+          <p className="text-[11px] text-muted-foreground font-mono pt-1">
             Last checked: {new Date(health.timestamp).toLocaleString()}
           </p>
         </div>

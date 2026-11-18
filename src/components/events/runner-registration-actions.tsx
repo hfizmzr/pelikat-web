@@ -90,24 +90,24 @@ export function RunnerRegistrationActions({
                 key={category.id}
                 onClick={() => setSelectedCategoryId(category.id)}
                 disabled={isPending}
-                className={`flex flex-col text-left p-4 rounded-xl border transition-all ${
+                className={`flex flex-col text-left p-4 rounded-xl border transition-[color,background-color,border-color,opacity] ${
                   isSelected 
                     ? 'bg-primary/10 border-primary' 
                     : 'bg-card border-border/60 hover:border-muted-foreground/30'
                 }`}
               >
                 <div className="flex justify-between items-center w-full mb-1">
-                  <span className={`text-[14px] font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                  <span className={`text-[14px] font-medium ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                     {category.name}
                   </span>
-                  <span className={`text-[14px] font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                  <span className={`text-[14px] font-medium ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                     RM {category.price ?? 0}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                   <span>{category.gender || 'Any'}</span>
                   <span>•</span>
-                  <span>Ages {category.min_age || '0'}-{category.max_age || '99'}</span>
+                  <span>{!category.min_age && !category.max_age ? 'All ages' : `Ages ${category.min_age || 0} to ${category.max_age || 99}`}</span>
                   {category.max_slots && (
                     <>
                       <span>•</span>
@@ -126,14 +126,14 @@ export function RunnerRegistrationActions({
         <div className={`p-4 rounded-xl border ${
           runner.tShirtSize
             ? 'bg-card border-border/60'
-            : 'bg-amber-500 dark:bg-amber-400/5 border-amber-500 dark:border-amber-400/30'
+            : 'bg-warning dark:bg-warning/5 border-warning dark:border-warning/30'
         } flex flex-col gap-3`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <User className="size-[18px] text-success" />
-              <span className="text-[12px] font-bold text-foreground uppercase tracking-wider">Using Your Saved Profile</span>
+              <span className="text-[12px] font-medium text-foreground">Using your saved profile</span>
             </div>
-            <a href="/runner/profile" className="text-[11px] font-bold text-primary hover:underline shrink-0">
+            <a href="/runner/profile" className="text-[11px] font-medium text-primary hover:underline shrink-0">
               Edit
             </a>
           </div>
@@ -148,7 +148,7 @@ export function RunnerRegistrationActions({
               <span className="text-foreground font-medium text-right truncate">{runner.email || 'Not set'}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-muted-foreground">Date of Birth</span>
+              <span className="text-muted-foreground">Date of birth</span>
               <span className="text-foreground font-medium text-right truncate">
                 {runner.dob ? new Date(runner.dob).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not set'}
               </span>
@@ -160,8 +160,8 @@ export function RunnerRegistrationActions({
               </span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-muted-foreground">IC / Passport</span>
-              <span className={runner.icOnFile ? 'text-success font-medium' : 'text-amber-500 dark:text-amber-400 font-medium'}>
+              <span className="text-muted-foreground">IC / passport</span>
+              <span className={runner.icOnFile ? 'text-success font-medium' : 'text-warning font-medium'}>
                 {/* IC count never leaves the database encrypted; display matches the profile page's own policy. */}
                 {runner.icOnFile ? 'Securely on file (encrypted)' : 'Not set'}
               </span>
@@ -171,14 +171,14 @@ export function RunnerRegistrationActions({
               <span className="text-foreground font-medium text-right truncate">{runner.phone || 'Not set'}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-muted-foreground">T-Shirt Size</span>
-              <span className={`font-medium text-right ${runner.tShirtSize ? 'text-foreground' : 'text-amber-500 dark:text-amber-400'}`}>
+              <span className="text-muted-foreground">T-shirt size</span>
+              <span className={`font-medium text-right ${runner.tShirtSize ? 'text-foreground' : 'text-warning'}`}>
                 {runner.tShirtSize || 'Not set'}
               </span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-muted-foreground">Emergency Contact</span>
-              <span className={`font-medium text-right truncate ${runner.emergencyContactName ? 'text-foreground' : 'text-amber-500 dark:text-amber-400'}`}>
+              <span className="text-muted-foreground">Emergency contact</span>
+              <span className={`font-medium text-right truncate ${runner.emergencyContactName ? 'text-foreground' : 'text-warning'}`}>
                 {runner.emergencyContactName
                   ? `${runner.emergencyContactName}${runner.emergencyContactPhone ? ` · ${runner.emergencyContactPhone}` : ''}`
                   : 'Not set'}
@@ -187,13 +187,13 @@ export function RunnerRegistrationActions({
           </div>
 
           {!runner.tShirtSize && (
-            <p className="text-[11px] text-amber-500 dark:text-amber-400">Set a t-shirt size in your profile so the right shirt is reserved at REPC.</p>
+            <p className="text-[11px] text-warning">Set a t-shirt size in your profile so the right shirt is reserved at REPC.</p>
           )}
         </div>
       )}
 
       {error && (
-        <div className="p-3 rounded-lg bg-red-500/10 dark:bg-red-300/10 border border-red-500/30 dark:border-red-300/20 text-red-500 dark:text-red-300 text-[12px] flex items-center gap-2">
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 dark:border-destructive/20 text-destructive text-[12px] flex items-center gap-2">
           <CircleAlert className="size-[16px]" />
           {error}
         </div>
@@ -202,7 +202,7 @@ export function RunnerRegistrationActions({
       <button
         onClick={handleRegister}
         disabled={isPending || categories.length === 0}
-        className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+        className="w-full py-3.5 mt-2 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
       >
         {isPending ? (
           <>
@@ -210,7 +210,7 @@ export function RunnerRegistrationActions({
             Processing...
           </>
         ) : (
-          'Register Now'
+          'Register now'
         )}
       </button>
     </div>

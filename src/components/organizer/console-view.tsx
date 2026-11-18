@@ -1,6 +1,7 @@
 'use client'
 
-import { ArrowRight, Badge, Calendar, CalendarClock, CircleCheck, CirclePlus, ExternalLink, Flag, MapPin, Plus, QrCode, Search, SlidersHorizontal, TrendingUp, Users } from "lucide-react"
+import { ArrowRight, Calendar, CalendarClock, MapPin, Plus, QrCode, Search } from "lucide-react"
+import { StatusTag } from '@/components/ui/status-tag'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -13,14 +14,14 @@ import { useRouter } from 'next/navigation'
 type Filter = 'all' | 'runners' | 'waves' | 'merch' | 'activity'
 
 const FILTERS: { key: Filter; label: string }[] = [
-  { key: 'all', label: 'All Records' },
+  { key: 'all', label: 'All' },
   { key: 'runners', label: 'Runners' },
-  { key: 'waves', label: 'Race Waves' },
-  { key: 'merch', label: 'Merch SKUs' },
+  { key: 'waves', label: 'Categories' },
+  { key: 'merch', label: 'Merch' },
   // CodeRabbit fix: this pill has always scoped the recent-registrations
   // list + the registration-velocity chart — no transaction/payment data
   // is loaded in the console. Label renamed to match what it filters.
-  { key: 'activity', label: 'Recent Activity' },
+  { key: 'activity', label: 'Activity' },
 ]
 
 type Section = 'waves' | 'recent' | 'velocity' | 'events' | 'merch'
@@ -79,15 +80,15 @@ export interface ConsoleMerchItem {
 }
 
 const COMMANDS = [
-  { label: 'Go to Dashboard', href: '/organizer' },
-  { label: 'Go to Events', href: '/organizer/events' },
-  { label: 'Create New Event', href: '/organizer/events/new' },
-  { label: 'Go to Runner Directory', href: '/organizer/runners' },
-  { label: 'Go to Financial Rails', href: '/organizer/financial' },
-  { label: 'Go to Analytics', href: '/organizer/analytics' },
-  { label: 'Go to Merch Hub', href: '/organizer/merch' },
-  { label: 'Go to Notifications', href: '/organizer/notifications' },
-  { label: 'Go to Settings', href: '/organizer/settings' },
+  { label: 'Go to overview', href: '/organizer' },
+  { label: 'Go to events', href: '/organizer/events' },
+  { label: 'Create new event', href: '/organizer/events/new' },
+  { label: 'Go to runners', href: '/organizer/runners' },
+  { label: 'Go to finance', href: '/organizer/financial' },
+  { label: 'Go to analytics', href: '/organizer/analytics' },
+  { label: 'Go to merch', href: '/organizer/merch' },
+  { label: 'Go to notifications', href: '/organizer/notifications' },
+  { label: 'Go to settings', href: '/organizer/settings' },
 ]
 
 function CommandPalette({ onClose }: { onClose: () => void }) {
@@ -102,14 +103,14 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-[15vh] px-4"
+      className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center pt-[15vh] px-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-card rounded-xl border border-muted shadow-2xl overflow-hidden"
+        className="w-full max-w-lg bg-popover rounded-xl border border-border shadow-[0_16px_48px_rgba(0,0,0,0.3)] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-muted">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
           <Search className="text-muted-foreground size-[18px] shrink-0" />
           <input
             autoFocus
@@ -122,14 +123,14 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
             placeholder="Type a command or search…"
             className="flex-1 bg-transparent text-foreground text-[14px] focus:outline-none placeholder:text-muted-foreground"
           />
-          <kbd className="px-2 py-0.5 rounded bg-accent border border-border/30 text-muted-foreground text-[11px] font-mono">ESC</kbd>
+          <kbd className="px-1.5 py-0.5 rounded border border-border bg-muted text-muted-foreground text-[11px] font-mono">Esc</kbd>
         </div>
         <div className="max-h-72 overflow-y-auto py-1">
           {filtered.length > 0 ? filtered.map((c) => (
             <button
               key={c.href}
               onClick={() => go(c.href)}
-              className="w-full text-left px-4 py-2.5 text-[14px] text-foreground hover:bg-accent transition-colors flex items-center justify-between"
+              className="w-full text-left px-4 h-10 text-[14px] text-foreground hover:bg-accent transition-colors flex items-center justify-between"
             >
               <span>{c.label}</span>
               <ArrowRight className="size-[14px] text-muted-foreground" />
@@ -237,115 +238,76 @@ export function OrganizerConsole({
   const shown = (s: Section) => SECTIONS_FOR[filter].includes(s) && !sectionHidden(s)
   const nothingVisible = SECTIONS_FOR[filter].every(sectionHidden)
 
-  const statusColor: Record<string, string> = {
-    published: 'text-success bg-success/15',
-    draft: 'text-muted-foreground bg-accent',
-    closed: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/15',
-    cancelled: 'text-red-500 dark:text-red-300 bg-red-500/10 dark:bg-red-300/15',
-  }
+
+  const peak = Math.max(...velocitySeries.map(([, v]) => v), 0)
+  const plural = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString()} ${n === 1 ? one : many}`
 
   return (
-    <div className="relative w-full min-h-full px-6 py-8 bg-background">
-      {/* Ambient blobs */}
-      <div className="absolute -top-32 -left-20 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/3 -right-20 w-[30rem] h-[30rem] bg-primary/5 rounded-full blur-[140px] pointer-events-none" />
-
-      <div className="relative z-10 flex flex-col gap-6">
-        {/* Page heading */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary uppercase tracking-wider">
-                Race Director Command
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-border" />
-              <span className="text-[12px] leading-[16px] text-muted-foreground flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                Live Cluster Operational
-              </span>
-            </div>
-            <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-foreground">
-              Event Operations Console
-            </h1>
+    <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-8">
+      <div className="flex flex-col gap-8">
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+          <div>
+            <h1 className="text-[28px] leading-9 font-medium text-foreground">Overview</h1>
+            <p className="mt-1 text-[14px] text-muted-foreground">
+              {plural(kpis.eventsTotal, 'event')} · {plural(kpis.totalRunners, 'registration')}
+            </p>
           </div>
 
-          {/* Active event selector */}
           {activeEvent && (
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative bg-card rounded-xl px-4 py-2.5 flex items-center gap-4 shadow-md min-w-[300px] border border-muted">
-                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center text-primary shrink-0">
-                  <Flag className="size-[24px]" />
-                </div>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[12px] leading-[16px] font-semibold text-foreground truncate">{activeEvent.name}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${statusColor[activeEvent.status] || statusColor.draft}`}>
-                      {activeEvent.status}
-                    </span>
-                  </div>
-                  <span className="text-[12px] leading-[16px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                    <CalendarClock className="size-[14px]" />
-                    {activeEvent.daysRemaining > 0 ? `${activeEvent.daysRemaining} Days Remaining` : 'Today!'} • {activeEvent.location || 'TBD'}
+            <div className="flex min-w-0 items-center gap-4 rounded-xl border border-border bg-card px-4 py-3 lg:min-w-[380px]">
+              <div className="min-w-0 flex-1">
+                <p className="text-[12px] text-muted-foreground">Next event</p>
+                <Link href={`/organizer/events/${activeEvent.id}`} className="block truncate text-[15px] font-medium text-foreground hover:underline underline-offset-4">
+                  {activeEvent.name}
+                </Link>
+                <p className="mt-0.5 flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                  <CalendarClock className="size-3.5 shrink-0" strokeWidth={1.75} />
+                  <span className="truncate">
+                    {activeEvent.daysRemaining > 0 ? `${activeEvent.daysRemaining} days to go` : 'Today'} · {activeEvent.location || 'Location to be announced'}
                   </span>
-                </div>
-                <Link href={`/organizer/events/${activeEvent.id}`}>
-                  <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
-                    <ExternalLink className="size-[20px]" />
-                  </button>
-                </Link>
+                </p>
               </div>
-
-              <div className="flex items-center gap-1.5">
-                <Link href="/organizer/runners">
-                  <button className="p-2.5 bg-card hover:bg-card text-foreground rounded-lg transition-colors flex items-center justify-center shadow-sm border border-muted" title="Runner Directory">
-                    <Badge className="size-[20px]" />
-                  </button>
-                </Link>
-                <Link href={`/organizer/events/${activeEvent.id}/repc`}>
-                  <button className="px-4 py-2.5 bg-success/20 text-success hover:bg-success/30 text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-sm">
-                    <QrCode className="size-[18px]" />
-                    <span>Scanner HUD</span>
-                  </button>
-                </Link>
-              </div>
+              <Link
+                href={`/organizer/events/${activeEvent.id}/repc`}
+                className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-[13px] font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                <QrCode className="size-4 text-muted-foreground" strokeWidth={1.75} />
+                Scan kits
+              </Link>
             </div>
           )}
         </div>
 
-        {/* Global search bar */}
-        <div className="w-full bg-card rounded-xl p-2 border border-muted flex flex-col md:flex-row items-center justify-between gap-2 shadow-md">
-          <div className="relative flex-1 w-full flex items-center gap-2">
-            <Search className="text-muted-foreground size-[20px] pl-2 shrink-0" />
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="flex h-10 flex-1 items-center gap-2 rounded-lg border border-border bg-card px-3 focus-within:ring-2 focus-within:ring-ring/40">
+            <Search className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.75} />
             <input
-              className="w-full py-1.5 bg-transparent text-foreground text-[12px] leading-[16px] focus:outline-none placeholder:text-muted-foreground"
-              placeholder="Search bibs, runners, SKUs, payment IDs..."
+              className="w-full bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+              placeholder="Search"
+              aria-label="Search bibs, runners, merch and payment references"
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-            <div className="flex items-center gap-1 pr-2">
-              {/* Audit #5: the chip was inert — clicking it now opens the same
-              palette the real Ctrl/Cmd+K shortcut opens. */}
-              <button
-                onClick={() => setPaletteOpen(true)}
-                title="Open command palette (Ctrl/Cmd+K)"
-                className="px-2 py-0.5 rounded bg-accent border border-border/30 text-muted-foreground text-[11px] font-mono font-medium shadow-sm hover:text-foreground transition-colors"
-              >
-                ⌘K
-              </button>
-            </div>
+            {/* Audit #5: the chip was inert — clicking it now opens the same
+            palette the real Ctrl/Cmd+K shortcut opens. */}
+            <button
+              onClick={() => setPaletteOpen(true)}
+              title="Open command palette (Ctrl/Cmd+K)"
+              className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              ⌘K
+            </button>
           </div>
-          <div className="h-6 w-px bg-accent hidden md:block" />
-          <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-            <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider shrink-0 px-1">Filter:</span>
+          <div className="flex h-10 items-center gap-0.5 overflow-x-auto rounded-lg border border-border bg-card p-1" role="tablist" aria-label="Filter sections">
             {FILTERS.map(f => (
               <button
                 key={f.key}
+                role="tab"
+                aria-selected={filter === f.key}
                 onClick={() => setFilter(f.key)}
-                className={`px-2.5 py-1 rounded-lg text-[10px] leading-[14px] tracking-[0.05em] font-semibold shrink-0 transition-colors ${
-                  filter === f.key
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-card text-muted-foreground hover:text-foreground hover:bg-accent'
+                className={`h-8 shrink-0 rounded-md px-3 text-[13px] transition-colors ${
+                  filter === f.key ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {f.label}
@@ -354,108 +316,137 @@ export function OrganizerConsole({
           </div>
         </div>
 
-        {/* KPI Metrics Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Confirmed Runners */}
-          <div className="bg-card rounded-xl p-6 border border-muted flex flex-col justify-between shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">Confirmed Runners</span>
-              <div className="w-9 h-9 rounded-lg bg-card flex items-center justify-center text-primary">
-                <Users className="size-[20px]" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-foreground">{kpis.confirmedRunners.toLocaleString()}</div>
-              <div className="flex items-center gap-1.5 text-success text-[10px] leading-[14px] font-semibold mt-1">
-                <TrendingUp className="size-[16px]" />
-                <span>{kpis.totalRunners > 0 ? `${Math.round((kpis.confirmedRunners / Math.max(kpis.totalRunners, 1)) * 100)}% confirmed` : 'No registrations'}</span>
-                <span className="text-muted-foreground ml-1">• {kpis.totalRunners} total</span>
-              </div>
-            </div>
-          </div>
-
-          {/* REPC Collection Rate */}
-          <div className="bg-card rounded-xl p-6 border border-muted flex flex-col justify-between shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">REPC Collection Rate</span>
-              <div className="w-9 h-9 rounded-lg bg-card flex items-center justify-center text-primary">
-                <QrCode className="size-[20px]" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-foreground">{kpis.repcRate}%</div>
-              <div className="flex items-center gap-1.5 text-muted-foreground text-[10px] leading-[14px] font-semibold mt-1">
-                <span className="text-primary font-semibold">{kpis.checkedIn.toLocaleString()}</span>
-                <span>of {kpis.totalRunners.toLocaleString()} collected</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Total Events */}
-          <div className="bg-card rounded-xl p-6 border border-muted flex flex-col justify-between shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">Total Events</span>
-              <div className="w-9 h-9 rounded-lg bg-card flex items-center justify-center text-success">
-                <Flag className="size-[20px]" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="text-[40px] leading-[44px] tracking-[-0.02em] font-bold text-foreground">{kpis.eventsTotal}</div>
-              <div className="flex items-center gap-1.5 text-success text-[10px] leading-[14px] font-semibold mt-1">
-                <CircleCheck className="size-[16px]" />
-                <span>{kpis.publishedCount} published</span>
-                <span className="text-muted-foreground ml-1">• {kpis.draftCount} drafts</span>
-              </div>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <Stat
+            label="Confirmed runners"
+            value={kpis.confirmedRunners.toLocaleString()}
+            sub={kpis.totalRunners > 0 ? `${Math.round((kpis.confirmedRunners / Math.max(kpis.totalRunners, 1)) * 100)}% of ${plural(kpis.totalRunners, 'registration')}` : 'No registrations yet'}
+          />
+          <Stat
+            label="Kits collected"
+            value={`${kpis.repcRate}%`}
+            sub={`${kpis.checkedIn.toLocaleString()} of ${kpis.totalRunners.toLocaleString()} runners`}
+          />
+          <Stat
+            label="Events"
+            value={kpis.eventsTotal.toLocaleString()}
+            sub={`${kpis.publishedCount} published · ${plural(kpis.draftCount, 'draft')}`}
+          />
         </div>
 
         {nothingVisible && (
-          <div className="bg-card rounded-xl border border-muted p-12 flex flex-col items-center justify-center text-center text-muted-foreground">
-            <Search className="size-[48px] text-border mb-3" />
+          <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-12 text-center">
             {q !== '' ? (
               <>
-                <p className="text-[14px]">No results for &ldquo;{q}&rdquo;</p>
-                <p className="text-[12px] mt-1">Try a different search term or filter</p>
+                <p className="text-[15px] text-foreground">No results for &ldquo;{q}&rdquo;</p>
+                <p className="mt-1 text-[13px] text-muted-foreground">Try a different search or filter</p>
               </>
             ) : (
-              <p className="text-[14px]">Nothing here for this filter yet</p>
+              <p className="text-[14px] text-muted-foreground">Nothing here for this filter yet</p>
             )}
           </div>
         )}
 
-        {/* Active Event Waves */}
-        {shown('waves') && (
-          <section className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
-                <h2 className="text-[22px] leading-[28px] tracking-[-0.015em] font-semibold text-foreground">Active Event Waves</h2>
-                <p className="text-[12px] leading-[16px] text-muted-foreground mt-0.5">Capacity distribution and live quota pacing across registered categories.</p>
+        {shown('velocity') && velocityDays.length > 0 && (
+          <section className="rounded-xl border border-border bg-card p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 className="text-[16px] font-medium text-foreground">Registrations per day</h2>
+                <p className="mt-0.5 text-[13px] text-muted-foreground">
+                  {plural(velocityCount, 'registration')} {velocityWindowLabel}
+                </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Link href={`/organizer/events/${activeEvent?.id}/categories`}>
-                  <button className="px-4 py-2 bg-card hover:bg-card text-foreground text-[14px] leading-[20px] tracking-[0.01em] font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-muted">
-                    <SlidersHorizontal className="size-[18px]" />
-                    Category Rules
+              <div className="flex items-center gap-0.5 rounded-lg border border-border p-0.5">
+                {([[30, '30 days'], [14, '14 days'], [1, 'Today']] as const).map(([range, label]) => (
+                  <button
+                    key={label}
+                    onClick={() => setVelocityRange(range)}
+                    aria-pressed={velocityRange === range}
+                    className={`h-7 rounded-md px-2.5 text-[12px] transition-colors ${velocityRange === range ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    {label}
                   </button>
-                </Link>
-                <Link href={`/organizer/events/${activeEvent?.id}/categories`}>
-                  <button className="px-4 py-2 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-primary transition-all">
-                    <Plus className="size-[18px]" />
-                    Add Wave
-                  </button>
-                </Link>
+                ))}
               </div>
             </div>
+            <div className="mt-6 flex h-48 items-end justify-between gap-1.5 border-b border-border">
+              {velocitySeries.length > 0 ? velocitySeries.map(([label, count]) => {
+                const isPeak = count === peak
+                // Audit #13: percentage heights resolve to 0 inside the
+                // auto-height flex columns below (bars never mounted), so
+                // size bars in px against the fixed plot area.
+                const heightPct = Math.round((count / maxVelocity(velocitySeries)) * 100)
+                const barHeight = Math.max(Math.round((heightPct / 100) * 160), 4)
+                return (
+                  <div key={label} className="group flex flex-1 flex-col items-center justify-end" title={`${label}: ${count}`}>
+                    {isPeak && <span className="mb-1 font-mono text-[11px] tabular-nums text-foreground">{count}</span>}
+                    <div
+                      className={`w-full max-w-12 rounded-t-[3px] transition-colors ${isPeak ? 'bg-primary' : 'bg-muted-foreground/25 group-hover:bg-muted-foreground/40'}`}
+                      style={{ height: `${barHeight}px` }}
+                    />
+                  </div>
+                )
+              }) : (
+                <div className="flex h-full flex-1 items-center justify-center text-[13px] text-muted-foreground">
+                  No registrations {velocityWindowLabel}
+                </div>
+              )}
+            </div>
+            {velocitySeries.length > 0 && (
+              <div className="mt-2 flex justify-between gap-1.5">
+                {velocitySeries.map(([label]) => (
+                  <span key={label} className="flex-1 text-center font-mono text-[11px] tabular-nums text-muted-foreground">{label.slice(-2)}</span>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
-            <div className="bg-card rounded-xl p-6 border border-muted shadow-sm">
-              {/* Audit #12: with only 2 wave cards the old 4-col desktop track
-              left a dead zone; sm:grid-cols-2 cap balances the cards. The
-              audit's `xl:grid-cols-3` (1280px) would re-create the same dead
-              zone at the audited 1440 viewport, so it is dropped. */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {filteredWaves.map((cat, i) => {
-                  const dotColors = ['bg-primary', 'bg-primary', 'bg-success', 'bg-muted-foreground']
+        <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.6fr_1fr]">
+          {shown('recent') && (
+            <section className="flex flex-col gap-3">
+              <SectionHead title="Recent registrations" href="/organizer/runners" linkLabel="All runners" />
+              <div className="overflow-hidden rounded-xl border border-border bg-card">
+                {filteredRecent.length > 0 ? (
+                  <ul className="divide-y divide-border">
+                    {filteredRecent.map((reg) => (
+                      <li key={reg.id} className="flex min-h-14 items-center justify-between gap-4 px-4 py-2.5">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-[12px] font-medium text-foreground">
+                            {(reg.runnerName || 'U').charAt(0).toUpperCase()}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="truncate text-[14px] text-foreground">{reg.runnerName || 'Unknown runner'}</p>
+                            <p className="truncate text-[12px] text-muted-foreground">
+                              {reg.eventName || '—'}{reg.categoryName ? ` · ${reg.categoryName}` : ''}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-3">
+                          <span className="hidden font-mono text-[12px] tabular-nums text-muted-foreground sm:inline">{reg.createdAtLabel}</span>
+                          <StatusTag
+                            status={reg.paymentStatus}
+                            tone={reg.paymentStatus === 'paid' || reg.paymentStatus === 'waived' ? 'success' : reg.paymentStatus === 'pending' ? 'warning' : 'destructive'}
+                          />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="px-6 py-12 text-center">
+                    <p className="text-[14px] text-foreground">No registrations yet</p>
+                    <p className="mt-1 text-[13px] text-muted-foreground">Publish an event to start taking entries</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {shown('waves') && (
+            <section className="flex flex-col gap-3">
+              <SectionHead title="Category capacity" href={`/organizer/events/${activeEvent?.id}/categories`} linkLabel="Manage" />
+              <div className="flex flex-col divide-y divide-border rounded-xl border border-border bg-card">
+                {filteredWaves.map((cat) => {
                   // Real fill from per-wave registration counts (server-side
                   // join on registrations.category_id).
                   const fillPercent = cat.maxSlots
@@ -465,288 +456,98 @@ export function OrganizerConsole({
                   const isAlmostFull = remaining !== null && fillPercent >= 90
 
                   return (
-                    <div key={cat.id} className="p-4 rounded-xl bg-card flex flex-col justify-between gap-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className={`w-2.5 h-2.5 rounded-full ${dotColors[i % dotColors.length]}`} />
-                            <span className="text-[12px] leading-[16px] tracking-[0.02em] text-foreground font-semibold">{cat.name}</span>
-                          </div>
-                          <span className="text-[11px] text-muted-foreground mt-0.5 block">
-                            {cat.bibPrefix || 'BIB'}-#### • {cat.maxSlots || '∞'} slots
-                          </span>
-                        </div>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${isAlmostFull ? 'bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300' : 'bg-primary/15 text-primary'}`}>
-                          {cat.maxSlots ? `${fillPercent}%` : `${cat.regCount} / ∞`}
-                        </span>
+                    <div key={cat.id} className="px-4 py-4">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className="truncate text-[14px] text-foreground">{cat.name}</p>
+                        <p className="shrink-0 font-mono text-[12px] tabular-nums text-muted-foreground">
+                          {cat.regCount.toLocaleString()} / {cat.maxSlots ? cat.maxSlots.toLocaleString() : '∞'}
+                        </p>
                       </div>
-                      <div>
-                        <div className="flex justify-between text-[10px] text-muted-foreground mb-1.5 font-medium">
-                          <span>{cat.regCount} of {cat.maxSlots || '∞'} slots</span>
-                          <span className={isAlmostFull ? 'text-red-500 dark:text-red-300' : 'text-muted-foreground'}>
-                            {remaining !== null ? `${remaining} left` : '∞ left'}
-                          </span>
-                        </div>
-                        <div className="w-full bg-accent rounded-full h-1.5 overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-primary"
-                            style={{ width: `${cat.maxSlots ? Math.max(fillPercent, 2) : 0}%` }}
-                          />
-                        </div>
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className={`h-full rounded-full ${isAlmostFull ? 'bg-warning' : 'bg-primary'}`}
+                          style={{ width: `${cat.maxSlots ? Math.max(fillPercent, 2) : 0}%` }}
+                        />
                       </div>
+                      <p className={`mt-1.5 text-[12px] ${isAlmostFull ? 'text-warning' : 'text-muted-foreground'}`}>
+                        <span className="font-mono">{cat.bibPrefix || 'BIB'}</span> · {remaining !== null ? `${remaining.toLocaleString()} places left` : 'No limit'}
+                      </p>
                     </div>
                   )
                 })}
               </div>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
+        </div>
 
-        {/* Recent Registrations */}
-        {shown('recent') && (
-          <section className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-[22px] leading-[28px] tracking-[-0.015em] font-semibold text-foreground">Recent Registrations</h2>
-                <p className="text-[12px] leading-[16px] text-muted-foreground mt-0.5">Latest runner sign-ups across all your events.</p>
-              </div>
-              <Link href="/organizer/runners">
-                <button className="px-4 py-2 bg-card hover:bg-card text-foreground text-[14px] leading-[20px] tracking-[0.01em] font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-muted">
-                  View All
-                  <ArrowRight className="size-[18px]" />
-                </button>
-              </Link>
-            </div>
-
-            <div className="bg-card rounded-xl border border-muted shadow-sm overflow-hidden">
-              {filteredRecent.length > 0 ? (
-                <div className="divide-y divide-muted">
-                  {filteredRecent.map((reg) => (
-                    <div key={reg.id} className="flex items-center justify-between px-6 py-3 hover:bg-card transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[12px] font-bold shrink-0">
-                          {(reg.runnerName || 'U').charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-[14px] leading-[20px] font-medium text-foreground">
-                            {reg.runnerName || 'Unknown Runner'}
-                          </span>
-                          <span className="text-[12px] leading-[16px] text-muted-foreground">
-                            {reg.eventName || '—'}{reg.categoryName ? ` · ${reg.categoryName}` : ''}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[11px] text-muted-foreground">
-                          {reg.createdAtLabel}
-                        </span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                          reg.paymentStatus === 'paid' || reg.paymentStatus === 'waived'
-                            ? 'bg-success/15 text-success'
-                            : reg.paymentStatus === 'pending'
-                            ? 'bg-primary/15 text-primary'
-                            : 'bg-red-500/10 dark:bg-red-300/15 text-red-500 dark:text-red-300'
-                        }`}>
-                          {reg.paymentStatus}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                  <Badge className="size-[48px] mb-2" />
-                  <p className="text-[14px]">No registrations yet</p>
-                  <p className="text-[12px] mt-1">Create and publish an event to start accepting runners</p>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* Registration Velocity Chart */}
-        {shown('velocity') && velocityDays.length > 0 && (
-          <section className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-[22px] leading-[28px] tracking-[-0.015em] font-semibold text-foreground">Registration Velocity</h2>
-                <p className="text-[12px] leading-[16px] text-muted-foreground mt-0.5">Daily sign-up trends for the selected window.</p>
-              </div>
-              <div className="flex items-center gap-1 bg-card p-1 rounded-lg border border-muted">
-                {([[30, '30 Days'], [14, '14 Days'], [1, 'Today']] as const).map(([range, label]) => (
-                  <button
-                    key={label}
-                    onClick={() => setVelocityRange(range)}
-                    className={`px-2 py-1 text-[10px] leading-[14px] rounded font-medium transition-colors ${velocityRange === range ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-card rounded-xl p-6 border border-muted shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex flex-col">
-                  <span className="text-[18px] leading-[24px] tracking-[-0.01em] font-semibold text-foreground">Daily Signups</span>
-                  <span className="text-[12px] leading-[16px] text-muted-foreground">
-                    {velocityCount} registrations {velocityWindowLabel}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-                  <span className="text-[10px] leading-[14px] text-muted-foreground">Regular</span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-success ml-2" />
-                  <span className="text-[10px] leading-[14px] text-muted-foreground">Peak</span>
-                </div>
-              </div>
-              <div className="w-full h-44 flex items-end justify-between gap-1 pt-6 px-1">
-                {velocitySeries.length > 0 ? velocitySeries.map(([label, count]) => {
-                  const isPeak = count === Math.max(...velocitySeries.map(([, v]) => v))
-                  // Audit #13: percentage heights resolve to 0 inside the
-                  // auto-height flex columns below (bars never mounted), so
-                  // size bars in px against the fixed h-44 plot area
-                  // (~120px usable above the label row).
-                  const heightPct = Math.round((count / maxVelocity(velocitySeries)) * 100)
-                  const barHeight = Math.max(Math.round((heightPct / 100) * 120), 5)
-                  return (
-                    <div key={label} className="flex-1 flex flex-col items-center gap-1 group">
-                      <div
-                        className={`w-full rounded-t transition-all ${isPeak ? 'bg-success group-hover:bg-success' : 'bg-primary/25 group-hover:bg-primary'}`}
-                        style={{ height: `${barHeight}px` }}
-                      />
-                      <span className={`text-[9px] ${isPeak ? 'text-success font-semibold' : 'text-muted-foreground'}`}>
-                        {label.slice(-2)}
-                      </span>
-                    </div>
-                  )
-                }) : (
-                  <div className="flex-1 h-full flex items-center justify-center text-[12px] text-muted-foreground">
-                    No registrations {velocityWindowLabel}
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Merch SKUs (filter pill target — audit #5) */}
+        {/* Merch (filter pill target — audit #5) */}
         {shown('merch') && merch.length > 0 && (
-          <section className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-[22px] leading-[28px] tracking-[-0.015em] font-semibold text-foreground">Merch SKUs</h2>
-                <p className="text-[12px] leading-[16px] text-muted-foreground mt-0.5">Latest merchandise SKUs across your events.</p>
-              </div>
-              <Link href="/organizer/merch">
-                <button className="px-4 py-2 bg-card hover:bg-card text-foreground text-[14px] leading-[20px] tracking-[0.01em] font-medium rounded-lg flex items-center gap-1.5 transition-colors border border-muted">
-                  Merch Hub
-                  <ArrowRight className="size-[18px]" />
-                </button>
-              </Link>
-            </div>
-
-            <div className="bg-card rounded-xl border border-muted shadow-sm overflow-hidden">
-              <div className="divide-y divide-muted">
-                {filteredMerch.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between px-6 py-3 hover:bg-card transition-colors">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary shrink-0">
-                        <Plus className="size-[16px]" />
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[14px] leading-[20px] font-medium text-foreground truncate">{item.name}</span>
-                        <span className="text-[12px] leading-[16px] text-muted-foreground">{item.eventName || '—'} · {item.stock} in stock</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {!item.isActive && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-accent text-muted-foreground">inactive</span>
-                      )}
-                      <span className="text-[13px] font-semibold text-foreground">
-                        RM {item.price.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                    </div>
+          <section className="flex flex-col gap-3">
+            <SectionHead title="Merch" href="/organizer/merch" linkLabel="Open merch" />
+            <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+              {filteredMerch.map((item) => (
+                <li key={item.id} className="flex min-h-14 items-center justify-between gap-4 px-4 py-2.5">
+                  <div className="min-w-0">
+                    <p className="truncate text-[14px] text-foreground">{item.name}</p>
+                    <p className="text-[12px] text-muted-foreground">{item.eventName || '—'} · {item.stock} in stock</p>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    {!item.isActive && <StatusTag tone="neutral">Inactive</StatusTag>}
+                    <span className="font-mono text-[13px] tabular-nums text-foreground">
+                      RM {item.price.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 
-        {/* Events list */}
         {shown('events') && (
-          <section className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-[22px] leading-[28px] tracking-[-0.015em] font-semibold text-foreground">Your Events</h2>
-                <p className="text-[12px] leading-[16px] text-muted-foreground mt-0.5">All events managed by your organization.</p>
-              </div>
-              <Link href="/organizer/events/new">
-                <button className="px-4 py-2 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-1.5 hover:bg-primary transition-all ">
-                  <CirclePlus className="size-[16px]" />
-                  Create Event
-                </button>
-              </Link>
-            </div>
-
+          <section className="flex flex-col gap-3">
+            <SectionHead title="Your events" href="/organizer/events" linkLabel="All events" />
             {filteredEvents.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {filteredEvents.map((event) => (
-                  <Link key={event.id} href={`/organizer/events/${event.id}`} className="block group">
-                    <div className="bg-card rounded-xl border border-muted overflow-hidden hover:border-primary/30 transition-all ">
-                      <div className="h-1.5 bg-gradient-to-r from-primary to-primary" />
-                      <div className="p-5">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex flex-col gap-1 min-w-0">
-                            <span className="text-[16px] leading-[24px] font-semibold text-foreground group-hover:text-primary transition-colors truncate">{event.name}</span>
-                            <span className="text-[12px] leading-[16px] text-muted-foreground flex items-center gap-1">
-                              <Calendar className="size-[14px]" />
-                              {event.eventDateLabel}
-                            </span>
-                          </div>
-                          <span className={`shrink-0 text-[10px] leading-[14px] px-2 py-0.5 rounded-full font-semibold ${statusColor[event.status] || statusColor.draft}`}>
-                            {event.status}
-                          </span>
-                        </div>
+                  <Link
+                    key={event.id}
+                    href={`/organizer/events/${event.id}`}
+                    className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-colors hover:border-foreground/20"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-[15px] font-medium text-foreground">{event.name}</p>
+                        <p className="mt-1 flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                          <Calendar className="size-3.5 shrink-0" strokeWidth={1.75} />
+                          {event.eventDateLabel}
+                        </p>
                         {event.location && (
-                          <p className="text-[12px] leading-[16px] text-muted-foreground flex items-center gap-1 mb-3">
-                            <MapPin className="size-[14px]" />
-                            {event.location}
+                          <p className="mt-0.5 flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                            <MapPin className="size-3.5 shrink-0" strokeWidth={1.75} />
+                            <span className="truncate">{event.location}</span>
                           </p>
                         )}
-                        <div className="flex items-center justify-between text-[12px] leading-[16px]">
-                          <div className="flex items-center gap-3">
-                            <span className="flex items-center gap-1 text-muted-foreground">
-                              <Badge className="size-[16px]" />
-                              {event.regCount} runners
-                            </span>
-                            <span className="flex items-center gap-1 text-muted-foreground">
-                              <Flag className="size-[16px]" />
-                              {event.catCount} categories
-                            </span>
-                          </div>
-                          <span className="text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground">
-                            {event.paidCount} confirmed
-                          </span>
-                        </div>
                       </div>
+                      <StatusTag status={event.status} />
                     </div>
+                    <p className="mt-auto border-t border-border pt-3 text-[13px] text-muted-foreground">
+                      <span className="tabular-nums text-foreground">{event.paidCount}</span> confirmed of {plural(event.regCount, 'runner')} · {plural(event.catCount, 'category', 'categories')}
+                    </p>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div className="bg-card rounded-xl border border-muted p-12 flex flex-col items-center justify-center text-center">
-                <Flag className="size-[64px] text-border mb-4" />
-                <h3 className="text-[18px] leading-[24px] font-semibold text-foreground mb-2">No events yet</h3>
-                <p className="text-[14px] leading-[20px] text-muted-foreground mb-6 max-w-sm">
-                  Create your first running event to start accepting registrations and managing participants.
+              <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-12 text-center">
+                <h3 className="text-[16px] font-medium text-foreground">No events yet</h3>
+                <p className="mt-1 max-w-sm text-[14px] text-muted-foreground">
+                  Create your first event to start taking registrations
                 </p>
-                <Link href="/organizer/events/new">
-                  <button className="px-6 py-2.5 bg-primary text-primary-foreground text-[14px] leading-[20px] tracking-[0.01em] font-semibold rounded-lg flex items-center gap-2 hover:bg-primary transition-all">
-                    <CirclePlus className="size-[18px]" />
-                    Create your first event
-                  </button>
+                <Link
+                  href="/organizer/events/new"
+                  className="mt-5 flex h-10 items-center gap-1.5 rounded-lg bg-primary px-4 text-[14px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  <Plus className="size-4" strokeWidth={2} />
+                  Create event
                 </Link>
               </div>
             )}
@@ -754,14 +555,29 @@ export function OrganizerConsole({
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="mt-12 border-t border-muted py-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-muted-foreground text-[12px] leading-[16px]">
-          <div>Pelikat Batik Running Platform © {new Date().getFullYear()}. Professional Event Operations.</div>
-        </div>
-      </footer>
-
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
+    </div>
+  )
+}
+
+function Stat({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-5">
+      <p className="text-[13px] text-muted-foreground">{label}</p>
+      <p className="mt-2 text-[32px] leading-none font-medium tabular-nums text-foreground">{value}</p>
+      <p className="mt-2 text-[13px] text-muted-foreground">{sub}</p>
+    </div>
+  )
+}
+
+function SectionHead({ title, href, linkLabel }: { title: string; href: string; linkLabel: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4">
+      <h2 className="text-[16px] font-medium text-foreground">{title}</h2>
+      <Link href={href} className="flex items-center gap-1 text-[13px] text-muted-foreground transition-colors hover:text-foreground">
+        {linkLabel}
+        <ArrowRight className="size-3.5" strokeWidth={1.75} />
+      </Link>
     </div>
   )
 }

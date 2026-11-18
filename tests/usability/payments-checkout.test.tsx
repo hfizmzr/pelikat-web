@@ -123,7 +123,7 @@ async function enterHitpayQr() {
   vi.stubEnv('NEXT_PUBLIC_PAYMENT_PROVIDER', 'hitpay')
   createHitpayCheckout.mockResolvedValue(HITPAY_RESULT)
 renderPage()
-  await screen.findByText('Complete Registration')
+  await screen.findByText('Complete registration')
   fireEvent.click(screen.getByRole('button', { name: /pay rm 65/i }))
   await screen.findByRole('img', { name: /duitnow qr/i })
 }
@@ -152,7 +152,7 @@ describe('Usability: Payments checkout (HitPay gateway)', () => {
     vi.stubEnv('NEXT_PUBLIC_PAYMENT_PROVIDER', 'hitpay')
     createHitpayCheckout.mockResolvedValue({ ...HITPAY_RESULT, qrCode: null })
     renderPage()
-    await screen.findByText('Complete Registration')
+    await screen.findByText('Complete registration')
     fireEvent.click(screen.getByRole('button', { name: /pay rm 65/i }))
 
     // Brief redirect interstitial with a manual fallback link
@@ -206,7 +206,7 @@ describe('Usability: Payments checkout (HitPay gateway)', () => {
     getPaymentStatus.mockResolvedValue({ status: 'pending', paymentRail: null })
 
     renderPage("/runner/events/evt-1/payment?reference=pr-1&status=paid")
-    await screen.findByText('Complete Registration')
+    await screen.findByText('Complete registration')
 
     // Returned from hosted checkout → awaiting, driven only by realtime/poll
     expect(await screen.findByText(/confirming your payment/i)).toBeInTheDocument()
@@ -234,7 +234,7 @@ describe('Usability: Payments checkout (HitPay gateway)', () => {
   getPaymentStatus.mockResolvedValue({ status: 'pending', paymentRail: null })
 
     renderPage()
-    await screen.findByText('Complete Registration')
+    await screen.findByText('Complete registration')
     fireEvent.click(screen.getByRole('button', { name: /pay rm 65/i }))
     await screen.findByRole('img', { name: /duitnow qr/i })
     fireEvent.click(screen.getByRole('button', { name: /i'?ve paid/i }))
@@ -267,7 +267,7 @@ describe('Usability: Payments checkout (HitPay gateway)', () => {
     getPaymentStatus.mockResolvedValue({ status: 'pending', paymentRail: null })
 
     renderPage()
-    await screen.findByText('Complete Registration')
+    await screen.findByText('Complete registration')
     fireEvent.click(screen.getByRole('button', { name: /pay rm 65/i }))
     await screen.findByRole('img', { name: /duitnow qr/i })
     fireEvent.click(screen.getByRole('button', { name: /i'?ve paid/i }))
@@ -287,7 +287,7 @@ describe('Usability: Payments checkout (HitPay gateway)', () => {
     h.registration = { ...h.registration, bib_number: '0042', payment_status: 'paid' }
     createHitpayCheckout.mockResolvedValue({ ok: true, alreadyPaid: true })
     renderPage()
-    await screen.findByText('Complete Registration')
+    await screen.findByText('Complete registration')
 
     // tapping pay again (server already reports paid via this device race)
     fireEvent.click(screen.getByRole('button', { name: /pay rm 65/i }))
@@ -314,7 +314,7 @@ describe('Usability: Payments checkout (HitPay gateway)', () => {
     confirmDummyPayment.mockResolvedValue(undefined)
 
     renderPage()
-    await screen.findByText('Complete Registration')
+    await screen.findByText('Complete registration')
 
     // Mock path keeps its explicit disclosure + Confirm button
     expect(screen.getByText(/simulates/i)).toBeInTheDocument()
@@ -335,7 +335,7 @@ describe('Usability: Payments checkout (HitPay gateway)', () => {
       error: 'Payment methods are temporarily unavailable. Please try again shortly or contact support.',
     })
     renderPage()
-    await screen.findByText('Complete Registration')
+    await screen.findByText('Complete registration')
     fireEvent.click(screen.getByRole('button', { name: /pay rm 65/i }))
 
     expect(await screen.findByText(
@@ -349,7 +349,7 @@ describe('Usability: Payments checkout (HitPay gateway)', () => {
     vi.stubEnv('NEXT_PUBLIC_PAYMENT_PROVIDER', 'hitpay')
     createHitpayCheckout.mockResolvedValue(HITPAY_RESULT)
   renderPage()
-    await screen.findByText('Complete Registration')
+    await screen.findByText('Complete registration')
 
     const live = screen.getByRole('status')
     expect(live).toHaveAttribute('aria-live', 'polite')

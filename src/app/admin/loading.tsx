@@ -4,7 +4,7 @@ export default function AdminLoading() {
       {/* Header skeleton */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-success/30 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-success/30" />
           <div className="h-3 w-40 rounded bg-accent animate-pulse" />
         </div>
         <div className="h-8 w-72 rounded-lg bg-accent animate-pulse" />

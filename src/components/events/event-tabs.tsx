@@ -115,7 +115,7 @@ export function EventPageTabs({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Stay on Theme</AlertDialogCancel>
+            <AlertDialogCancel>Stay on theme</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 const target = leaveTo

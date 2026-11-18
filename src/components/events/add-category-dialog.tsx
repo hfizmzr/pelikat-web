@@ -51,13 +51,13 @@ export function AddCategoryDialog({ eventId }: AddCategoryDialogProps) {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Add Category
+          Add category
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle>Add Race Category</DialogTitle>
+          <DialogTitle>Add race category</DialogTitle>
           <DialogDescription>
             Create a new race category for this event. Fields marked * are required.
           </DialogDescription>

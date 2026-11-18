@@ -1,4 +1,4 @@
-import { Banknote, ClipboardCheck, Flag, LoaderCircle, TrendingUp, Users } from "lucide-react"
+import { LoaderCircle, TrendingUp } from "lucide-react"
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import OrganizerAnalyticsCharts, { type AnalyticsData } from '@/components/organizer/analytics-charts'
@@ -6,7 +6,7 @@ import { getSafeRunnerProfiles } from '@/lib/runner-profiles-safe'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Telemetry & Analytics - Organizer Hub | Pelikat',
+  title: 'Analytics - Pelikat',
   description: 'Track your event performance, runner demographics, and revenue analytics',
 }
 
@@ -38,7 +38,7 @@ export default async function OrganizerAnalyticsPage() {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-muted-foreground">
         <TrendingUp className="size-[64px] mb-4" />
-        <h2 className="text-[18px] font-semibold text-foreground mb-2">No organizer profile</h2>
+        <h2 className="text-[18px] font-medium text-foreground mb-2">No organizer profile</h2>
         <p className="text-[14px]">No analytics data available without an organizer account.</p>
       </div>
     )
@@ -121,38 +121,27 @@ export default async function OrganizerAnalyticsPage() {
   }
 
   const kpis = [
-    { label: 'Total Events', value: totalEvents, icon: Flag, color: 'text-primary', suffix: '' },
-    { label: 'Total Runners', value: totalRegistrations, icon: Users, color: 'text-primary', suffix: '' },
-    { label: 'Gross Revenue', value: `RM ${totalRevenue.toLocaleString('en-MY', { maximumFractionDigits: 0 })}`, icon: Banknote, color: 'text-success', suffix: '' },
-    { label: 'Check-in Rate', value: checkInRate, icon: ClipboardCheck, color: 'text-primary', suffix: '%' },
+    { label: 'Events', value: totalEvents, suffix: '' },
+    { label: 'Runners', value: totalRegistrations, suffix: '' },
+    { label: 'Gross revenue', value: `RM ${totalRevenue.toLocaleString('en-MY', { maximumFractionDigits: 0 })}`, suffix: '' },
+    { label: 'Check-in rate', value: checkInRate, suffix: '%' },
   ]
 
   return (
-    <div className="relative w-full min-h-full px-6 py-8 bg-background">
-      <div className="absolute -top-20 left-0 w-80 h-80 bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/2 right-0 w-[30rem] h-[30rem] bg-primary/5 rounded-full blur-[140px] pointer-events-none" />
-
-      <div className="relative z-10 flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] leading-[14px] tracking-[0.05em] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary uppercase w-fit">
-            Telemetry
-          </span>
-          <h1 className="text-[28px] leading-[36px] tracking-[-0.02em] font-bold text-foreground">Telemetry & Analytics</h1>
-          <p className="text-[14px] leading-[20px] text-muted-foreground">Track event performance, runner demographics, and revenue trends.</p>
+    <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-8">
+      <div className="flex flex-col gap-6">
+        <div>
+          <h1 className="text-[28px] leading-9 font-medium text-foreground">Analytics</h1>
+          <p className="mt-1 text-[14px] text-muted-foreground">Registrations, revenue and runner demographics across your events</p>
         </div>
 
-        {/* KPI tiles */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {kpis.map(k => (
-            <div key={k.label} className="bg-card rounded-xl p-5 border border-muted">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[12px] leading-[16px] tracking-[0.02em] text-muted-foreground uppercase font-medium">{k.label}</span>
-                <span className={`size-[20px] ${k.color}`}><k.icon className="size-[20px]" /></span>
-              </div>
-              <div className="text-[24px] leading-[28px] tracking-[-0.01em] font-semibold text-foreground">
+            <div key={k.label} className="rounded-xl border border-border bg-card p-5">
+              <p className="text-[13px] text-muted-foreground">{k.label}</p>
+              <p className="mt-2 text-[28px] leading-none font-medium tabular-nums text-foreground">
                 {typeof k.value === 'number' ? k.value.toLocaleString() : k.value}{k.suffix}
-              </div>
+              </p>
             </div>
           ))}
         </div>
@@ -160,8 +149,8 @@ export default async function OrganizerAnalyticsPage() {
         {/* Charts */}
         <Suspense
           fallback={
-            <div className="bg-card rounded-xl border border-muted p-12 flex items-center justify-center">
-              <LoaderCircle className="size-[32px] text-primary animate-spin" />
+            <div className="bg-card rounded-xl border border-border p-12 flex items-center justify-center">
+              <LoaderCircle className="size-6 text-muted-foreground animate-spin" />
             </div>
           }
         >

@@ -69,7 +69,7 @@ export function PhotoReviewActions({
           className={
             latestState.status === 'error'
               ? 'text-xs text-destructive'
-              : 'text-xs text-green-500'
+              : 'text-xs text-success'
           }
         >
           {latestState.message}

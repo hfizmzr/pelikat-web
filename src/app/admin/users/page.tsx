@@ -122,16 +122,12 @@ export default function AdminUsersPage() {
       {/* ── Page Header ─────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="size-[16px] text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary font-inter">Access Control</span>
-          </div>
-          <h1 className="font-jakarta font-bold text-[28px] text-foreground tracking-tight">Admin Users</h1>
+          <h1 className="text-[28px] leading-9 font-medium text-foreground">Admin users</h1>
           <p className="text-[13px] text-muted-foreground">Grant platform administrator access, invite new admins, and revoke roles</p>
         </div>
         <button
           onClick={() => fetchUsers()}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-all border border-border/30"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-foreground text-[13px] font-medium hover:bg-accent hover:text-primary transition-[color,background-color,border-color,opacity] border border-border/30"
         >
           <RefreshCw className="size-[16px]" />
           <span>Refresh</span>
@@ -143,14 +139,14 @@ export default function AdminUsersPage() {
         <div className="p-5 border-b border-border/30 flex items-center gap-2">
           <UserPlus className="text-primary size-[20px]" />
           <div>
-            <h2 className="font-jakarta font-semibold text-[16px] text-foreground">Grant Admin Access</h2>
+            <h2 className="font-jakarta font-medium text-[16px] text-foreground">Grant admin access</h2>
             <p className="text-[11px] text-muted-foreground font-inter">Promote an existing runner/organizer, or invite a brand-new admin by email</p>
           </div>
         </div>
         <div className="p-5 grid gap-4 md:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor="promote-email">
-              Promote Existing User
+            <label className="text-[12px] font-medium text-muted-foreground font-inter" htmlFor="promote-email">
+              Promote existing user
             </label>
             <div className="flex gap-2">
               <Input
@@ -174,8 +170,8 @@ export default function AdminUsersPage() {
             <p className="text-[11px] text-muted-foreground font-inter">Sets app_metadata.role = admin on an existing account.</p>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold text-muted-foreground font-inter" htmlFor="invite-email">
-              Invite New Admin
+            <label className="text-[12px] font-medium text-muted-foreground font-inter" htmlFor="invite-email">
+              Invite new admin
             </label>
             <div className="flex gap-2">
               <Input
@@ -203,11 +199,11 @@ export default function AdminUsersPage() {
       </div>
 
       {/* ── Admin List ─────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-card border border-border/30 overflow-hidden shadow-lg">
+      <div className="rounded-xl bg-card border border-border/30 overflow-hidden">
         <div className="p-5 border-b border-border/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="text-primary size-[20px]" />
-            <h2 className="font-jakarta font-semibold text-[18px] text-foreground">Current Admins</h2>
+            <h2 className="font-jakarta font-medium text-[18px] text-foreground">Current admins</h2>
           </div>
           <span className="text-[11px] text-muted-foreground font-mono">{users.length} admins</span>
         </div>
@@ -215,8 +211,8 @@ export default function AdminUsersPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border/30">
-                {['Email', 'Created', 'Last Sign In', ''].map((h) => (
-                  <th key={h || 'actions'} className="py-3 px-5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{h}</th>
+                {['Email', 'Created', 'Last sign in', ''].map((h) => (
+                  <th key={h || 'actions'} className="py-3 px-5 text-[11px] font-medium text-muted-foreground">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -238,9 +234,9 @@ export default function AdminUsersPage() {
                   return (
                     <tr key={user.id} className="hover:bg-card/50 transition-colors">
                       <td className="py-3.5 px-5">
-                        <span className="font-semibold text-foreground font-jakarta">{user.email}</span>
+                        <span className="font-medium text-foreground font-jakarta">{user.email}</span>
                         {isSelf && (
-                          <span className="ml-2 px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-bold border border-primary/20 font-inter">
+                          <span className="ml-2 px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[11px] font-medium border border-primary/20 font-inter">
                             You
                           </span>
                         )}
@@ -249,7 +245,7 @@ export default function AdminUsersPage() {
                       <td className="py-3.5 px-5 font-mono text-[12px] text-muted-foreground">{fmtDate(user.last_sign_in_at)}</td>
                       <td className="py-3.5 px-5 text-right">
                         <button
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-800/10 hover:bg-red-800/30 text-red-500 dark:text-red-300 text-[12px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-300/20 disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/10 hover:bg-destructive/25 text-destructive text-[12px] font-medium font-inter transition-colors border border-destructive/30 dark:border-destructive/20 disabled:opacity-40 disabled:cursor-not-allowed"
                           disabled={isSelf || revoking}
                           title={isSelf ? 'You cannot remove your own admin role.' : undefined}
                           onClick={() => {
@@ -275,11 +271,11 @@ export default function AdminUsersPage() {
 
       {/* ── Revoke Confirmation Dialog ────────────────────────────── */}
       <Dialog open={revokeOpen} onOpenChange={setRevokeOpen}>
-        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl shadow-2xl">
+        <DialogContent className="bg-card border border-border/40 text-foreground rounded-xl">
           <DialogHeader>
             <DialogTitle className="font-jakarta text-[18px] text-foreground flex items-center gap-2">
-              <Trash2 className="size-[20px] text-red-500 dark:text-red-300" />
-              Revoke Admin Role
+              <Trash2 className="size-[20px] text-destructive" />
+              Revoke admin role
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-inter text-[13px]">
               Remove admin access for <strong className="text-foreground">{revokeTarget?.email}</strong>? The account stays intact and keeps any
@@ -294,13 +290,13 @@ export default function AdminUsersPage() {
               Cancel
             </button>
             <button
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-800/20 hover:bg-red-800/40 text-red-500 dark:text-red-300 text-[13px] font-semibold font-inter transition-colors border border-red-500/30 dark:border-red-300/20 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-destructive/15 hover:bg-destructive/35 text-destructive text-[13px] font-medium font-inter transition-colors border border-destructive/30 dark:border-destructive/20 disabled:opacity-50"
               disabled={revoking}
               onClick={revoke}
             >
               {revoking && <Loader2 className="h-4 w-4 animate-spin" />}
               <Trash2 className="size-[18px]" />
-              Revoke Admin Role
+              Revoke admin role
             </button>
           </div>
         </DialogContent>

@@ -86,7 +86,7 @@ describe('post-renewal Go-to-Dashboard session refresh', () => {
   it('refreshes the session BEFORE pushing /organizer (stale expired role is re-stamped first)', async () => {
     render(<OrganizerPaymentPage />)
 
-    fireEvent.click(await screen.findByRole('button', { name: /Go to Dashboard/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /Go to dashboard/i }))
 
     await waitFor(() => {
       expect(push).toHaveBeenCalledWith('/organizer')
@@ -99,7 +99,7 @@ describe('post-renewal Go-to-Dashboard session refresh', () => {
   it('double-clicks during the refresh do not double-push', async () => {
     render(<OrganizerPaymentPage />)
 
-    const button = await screen.findByRole('button', { name: /Go to Dashboard/i })
+    const button = await screen.findByRole('button', { name: /Go to dashboard/i })
     fireEvent.click(button)
     // the button switches to its guarded "Starting…" state while the
     // first navigation is still resolving
@@ -114,12 +114,12 @@ describe('post-renewal Go-to-Dashboard session refresh', () => {
     refreshSession.mockResolvedValueOnce({ data: {}, error: { message: 'Refresh Token Not Found' } })
     render(<OrganizerPaymentPage />)
 
-    fireEvent.click(await screen.findByRole('button', { name: /Go to Dashboard/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /Go to dashboard/i }))
 
     await screen.findByText('Refresh Token Not Found')
     expect(push).not.toHaveBeenCalled()
     expect(h.refresh).not.toHaveBeenCalled()
     // the guard clears so the user can retry the navigation
-    await screen.findByRole('button', { name: /Go to Dashboard/i })
+    await screen.findByRole('button', { name: /Go to dashboard/i })
   })
 })

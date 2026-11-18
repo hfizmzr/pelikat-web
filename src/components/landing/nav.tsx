@@ -13,7 +13,7 @@ export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2.5 rounded-lg" aria-label="Pelikat Batik home">
       <span className={styles.logoMark} aria-hidden="true">P</span>
-      <span className="text-[16px] font-semibold tracking-tight">Pelikat Batik</span>
+      <span className="text-[16px] font-medium">Pelikat Batik</span>
     </Link>
   )
 }

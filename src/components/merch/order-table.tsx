@@ -1,5 +1,6 @@
 'use client'
 
+import { StatusTag, type StatusTone } from '@/components/ui/status-tag'
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCheck, Loader2, MoreHorizontal, PackageCheck, Search } from 'lucide-react'
@@ -67,11 +68,14 @@ type Filter = 'all' | MerchOrderStatus
 
 function StatusBadge({ status }: { status: MerchOrderStatus }) {
   const meta = MERCH_ORDER_STATUS_META[status]
-  return (
-    <span className={`text-[11px] px-2 py-0.5 rounded-full border font-semibold whitespace-nowrap ${meta.className}`}>
-      {meta.label}
-    </span>
-  )
+  const tone: Record<MerchOrderStatus, StatusTone> = {
+    pending: 'neutral',
+    confirmed: 'primary',
+    ready: 'warning',
+    collected: 'success',
+    cancelled: 'destructive',
+  }
+  return <StatusTag tone={tone[status]}>{meta.label}</StatusTag>
 }
 
 function formatDate(value: string) {
@@ -202,14 +206,14 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
               role="tab"
               aria-selected={filter === key}
               onClick={() => setFilter(key)}
-              className={`h-9 px-3 rounded-full text-[12px] font-medium border transition-colors ${
+              className={`h-9 px-3 rounded-lg text-[13px] border transition-colors ${
                 filter === key
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-card text-muted-foreground border-border hover:border-border'
+                  ? 'bg-accent text-foreground border-border'
+                  : 'bg-card text-muted-foreground border-border hover:text-foreground'
               }`}
             >
               {key === 'all' ? 'All' : MERCH_ORDER_STATUS_META[key].label}
-              <span className="ml-1.5 opacity-70">{counts[key]}</span>
+              <span className="ml-1.5 font-mono text-[12px] tabular-nums text-muted-foreground">{counts[key]}</span>
             </button>
           ))}
         </div>
@@ -253,13 +257,13 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
       )}
 
       {visible.length === 0 ? (
-        <div className="rounded-xl border border-muted py-12 text-center text-[13px] text-muted-foreground">
+        <div className="rounded-xl border border-border py-12 text-center text-[13px] text-muted-foreground">
           {orders.length === 0 ? 'No orders yet for this event.' : 'No orders match this filter.'}
         </div>
       ) : (
         <>
           {/* Desktop table */}
-          <div className="hidden md:block rounded-xl border border-muted overflow-x-auto">
+          <div className="hidden md:block rounded-xl border border-border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -349,7 +353,7 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
                       <span className="font-mono text-[13px] text-foreground">{order.orderNumber}</span>
                       <StatusBadge status={order.status} />
                     </div>
-                    <div className="text-[13px] font-semibold text-foreground mt-1 truncate">
+                    <div className="text-[13px] font-medium text-foreground mt-1 truncate">
                       {order.runnerName}
                       {order.bibNumber && <span className="font-normal text-muted-foreground"> · BIB {order.bibNumber}</span>}
                     </div>
@@ -357,7 +361,7 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
                       {order.items.map((item) => `${item.quantity}× ${item.label}`).join(', ')}
                     </div>
                     <div className="flex items-center justify-between mt-3">
-                      <span className="text-[13px] font-semibold text-foreground">{formatRM(order.total)}</span>
+                      <span className="text-[13px] font-medium text-foreground">{formatRM(order.total)}</span>
                       {renderRowActions(order)}
                     </div>
                   </div>
@@ -385,7 +389,7 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
                 if (cancelTarget) applyStatus(cancelTarget, 'cancelled')
               }}
               disabled={isPending}
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="bg-destructive text-white dark:text-background hover:bg-destructive/90"
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Cancel order
