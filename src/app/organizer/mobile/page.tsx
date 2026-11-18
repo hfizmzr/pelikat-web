@@ -55,6 +55,7 @@ async function getOrganizerDashboardData() {
   const nextEvent = upcomingEvents[0]
   const nextEventCats = (nextEvent?.race_categories || []) as Array<{id: string, name: string, max_slots: number}>
   const nextEventRegs = (nextEvent?.registrations || []) as Array<{payment_status: string, checked_in: boolean}>
+  const nextEventCheckedIn = nextEventRegs.filter((r) => r.checked_in).length
 
   return {
     orgName: org?.name || 'My org',
@@ -71,7 +72,8 @@ async function getOrganizerDashboardData() {
           status: nextEvent.status,
           totalSlots: nextEventCats.reduce((a, c) => a + (c.max_slots || 0), 0),
           registered: nextEventRegs.length,
-          checkedIn: nextEventRegs.filter((r) => r.checked_in).length,
+          checkedIn: nextEventCheckedIn,
+          checkInRate: nextEventRegs.length > 0 ? Math.round((nextEventCheckedIn / nextEventRegs.length) * 100) : 0,
         }
       : null,
     upcomingCount: upcomingEvents.length,
@@ -140,11 +142,13 @@ export default async function OrganizerMobileHome() {
                 <span className="tabular-nums">{data.nextEvent.registered} registered</span>
               </p>
               <div className="mt-4">
+                {/* This card is one event: use its own check-ins, not the
+                org-wide figures shown under Race-day status. */}
                 <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-primary" style={{ width: `${checkInPercent}%` }} />
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${data.nextEvent.checkInRate}%` }} />
                 </div>
                 <p className="mt-1.5 text-[12px] tabular-nums text-muted-foreground">
-                  {data.checkedIn} of {data.nextEvent.registered} checked in · {checkInPercent}%
+                  {data.nextEvent.checkedIn} of {data.nextEvent.registered} checked in · {data.nextEvent.checkInRate}%
                 </p>
               </div>
               <Link
