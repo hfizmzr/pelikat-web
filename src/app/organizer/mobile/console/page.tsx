@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr'
 import { isConfirmedStatus } from '@/lib/registration-status'
 import Link from 'next/link'
 import { StatusTag } from '@/components/ui/status-tag'
+import { RACE_CONSOLE_STATUSES, isRaceDay, malaysiaToday } from '@/lib/event-dates'
 
 async function getActiveEventOpsData() {
   const cookieStore = await cookies()
@@ -22,7 +23,9 @@ async function getActiveEventOpsData() {
   const organizerId = user?.app_metadata?.organizer_id
   if (!organizerId) return null
 
-  // Get active event first, fallback to nearest upcoming
+  // The nearest race that is today or still ahead (Malaysian date). Without
+  // the date bound this picked the oldest published event, past or not.
+  const today = malaysiaToday()
   const { data: activeEvent } = await supabase
     .from('events')
     .select(`
@@ -31,8 +34,10 @@ async function getActiveEventOpsData() {
       registrations(id, payment_status, checked_in, created_at, category_id)
     `)
     .eq('organizer_id', organizerId)
-    .in('status', ['active', 'published'])
+    .in('status', [...RACE_CONSOLE_STATUSES])
+    .gte('event_date', today)
     .order('event_date', { ascending: true })
+    .order('id', { ascending: true }) // tie-breaker shared with home and scanner
     .limit(1)
     .maybeSingle()
 
@@ -83,6 +88,7 @@ async function getActiveEventOpsData() {
       status: activeEvent.status,
       date: activeEvent.event_date,
       location: activeEvent.location,
+      raceDay: isRaceDay(activeEvent.event_date, today),
     },
     totalRegs,
     checkedIn,
@@ -106,7 +112,7 @@ export default async function OrganizerMobileConsolePage() {
           </div>
         </header>
         <div className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
-          <p className="text-[15px] text-foreground">No active event</p>
+          <p className="text-[15px] text-foreground">No upcoming event</p>
           <p className="mt-1 text-[13px] text-muted-foreground">Publish an event to see it here on race day</p>
           <Link
             href="/organizer/mobile/events"
@@ -120,7 +126,7 @@ export default async function OrganizerMobileConsolePage() {
   }
 
   const { event, totalRegs, checkedIn, paid, pending, checkInRate, catBreakdown } = data
-  const isLive = event.status === 'active'
+  const isLive = event.raceDay
 
   return (
     <div className="flex flex-col w-full bg-background min-h-dvh">
@@ -134,7 +140,7 @@ export default async function OrganizerMobileConsolePage() {
             <p className="truncate text-[12px] text-muted-foreground">{event.name}</p>
           </div>
           <Link
-            href="/organizer/mobile/scanner"
+            href={`/organizer/mobile/scanner?event=${event.id}`}
             className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-transform active:scale-[0.98]"
           >
             <QrCode className="size-4" strokeWidth={1.75} />
@@ -145,7 +151,7 @@ export default async function OrganizerMobileConsolePage() {
 
       <div className="flex flex-col gap-8 px-5 py-5">
         <div className="rounded-xl border border-border/60 bg-card p-4">
-          <p className="text-[13px] text-muted-foreground">{isLive ? 'Race in progress' : 'Upcoming event'}</p>
+          <p className="text-[13px] text-muted-foreground">{isLive ? 'Race day' : 'Upcoming event'}</p>
           <h1 className="mt-0.5 text-[20px] leading-7 font-medium text-foreground">{event.name}</h1>
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
             <span className="flex items-center gap-1.5">

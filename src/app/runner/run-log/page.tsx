@@ -8,6 +8,7 @@ import { evaluateBadges } from '@/lib/badges'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { formatTotalTime } from '@/lib/format-duration'
 
 const RouteMap = dynamic(
   () => import('@/components/gamification/route-map'),
@@ -225,15 +226,29 @@ export default function RunnerRunLogPage() {
 
       <div className="flex flex-col px-5 py-6 gap-6 max-w-sm w-full mx-auto pb-24">
         
-        <div className="grid grid-cols-3 gap-3">
+        {/* Below 360px (e.g. 320px phones) three cards leave ~55px for the
+            value; tighten padding/gap and step the number down so "573.2 km"
+            and "48h 36m" fit instead of truncating. */}
+        <div className="grid grid-cols-3 gap-3 max-[359px]:gap-2">
           {[
             { label: 'Distance', value: totalDistance.toFixed(1), unit: 'km' },
-            { label: 'Time', value: formatTime(totalTime), unit: '' },
+            {
+              label: 'Time',
+              // "48h 36m": h/m styled like Distance's "km" (small, muted) so the
+              // total fits a third of a 320px-wide row. Exact time on hover.
+              value: formatTotalTime(totalTime).split(/(\d+)/).filter(Boolean).map((part, i) =>
+                /^\d+$/.test(part)
+                  ? part
+                  : <span key={i} className="text-[13px] font-normal text-muted-foreground">{part}</span>
+              ),
+              unit: '',
+              title: formatTime(totalTime),
+            },
             { label: 'Runs', value: runLogs.length.toLocaleString(), unit: '' },
           ].map((s) => (
-            <div key={s.label} className="rounded-xl border border-border/60 bg-card p-3.5">
+            <div key={s.label} className="rounded-xl border border-border/60 bg-card p-3.5 max-[359px]:p-3">
               <p className="text-[12px] text-muted-foreground">{s.label}</p>
-              <p className="mt-1.5 truncate text-[17px] leading-6 font-medium tabular-nums text-foreground">
+              <p title={s.title} className="mt-1.5 truncate text-[17px] max-[359px]:text-[15px] leading-6 font-medium tabular-nums text-foreground">
                 {s.value}{s.unit && <span className="ml-0.5 text-[13px] font-normal text-muted-foreground">{s.unit}</span>}
               </p>
             </div>

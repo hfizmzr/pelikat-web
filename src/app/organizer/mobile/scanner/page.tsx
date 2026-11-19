@@ -1,10 +1,14 @@
 'use client'
 
 import { CircleCheck, CircleStop, Flashlight, FlashlightOff, History, Info, QrCode, Search, X } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { use, useCallback, useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { checkInRegistrationByBib } from '@/components/events/actions'
+import type { MerchHandover, RepcCheckInResult } from '@/lib/repc'
+import { MerchHandoverNote } from '@/components/repc/merch-handover-note'
+import { RACE_CONSOLE_STATUSES, malaysiaToday } from '@/lib/event-dates'
 
 type ScanResult = {
   success: boolean
@@ -16,6 +20,8 @@ type ScanResult = {
     shirtSize?: string | null
   }
   message: string
+  // Orders to hand over now: the check-in already marked them collected.
+  merch?: MerchHandover | null
 }
 
 type RecentScan = {
@@ -24,7 +30,56 @@ type RecentScan = {
   time: Date
   success: boolean
   alreadyCheckedIn?: boolean
+  // Order numbers handed over at this scan, so the record outlives the card.
+  merchOrders?: string[]
 }
+
+/** Merch the check-in already marked collected, waiting for staff to confirm
+ * they handed it over. Kept apart from the result card, which the next scan
+ * replaces. */
+type PendingHandover = {
+  key: number
+  name: string
+  bib: string
+  merch: MerchHandover
+}
+
+/** /api/repc/check-in response (snake_case), same contract the desktop
+ * check-in page uses. */
+type CheckInApiResponse = {
+  success?: boolean
+  message?: string
+  already_checked_in?: boolean
+  runner?: { name?: string; bib?: string; shirt_size?: string | null } | null
+  merch?: MerchHandover | null
+}
+
+function resultFromApi(data: CheckInApiResponse): ScanResult {
+  return {
+    success: !!data.success,
+    message: data.message || (data.success ? 'Checked in' : 'Invalid QR code'),
+    alreadyCheckedIn: !!data.already_checked_in,
+    runner: data.success && data.runner?.bib
+      ? { name: data.runner.name || 'Unknown', bib: data.runner.bib, shirtSize: data.runner.shirt_size ?? null }
+      : undefined,
+    merch: data.merch ?? null,
+  }
+}
+
+function resultFromRpc(result: RepcCheckInResult): ScanResult {
+  return {
+    success: result.success,
+    message: result.message,
+    alreadyCheckedIn: result.alreadyCheckedIn,
+    runner: result.success && result.bibNumber
+      ? { name: result.runnerName || 'Unknown', bib: result.bibNumber, shirtSize: result.shirtSize }
+      : undefined,
+    merch: result.merch ?? null,
+  }
+}
+
+/** Same pass seen again within this window is ignored (it is still in view). */
+const QR_REPEAT_COOLDOWN_MS = 4000
 
 function vibrate(pattern: number | number[]) {
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
@@ -32,93 +87,153 @@ function vibrate(pattern: number | number[]) {
   }
 }
 
-export default function OrganizerMobileScannerPage() {
+export default function OrganizerMobileScannerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  // ?event=<id> from the console, home and events list: scan into exactly
+  // the race the organizer was looking at.
+  const requestedEvent = use(searchParams).event
+  const requestedEventId = typeof requestedEvent === 'string' ? requestedEvent : null
   const [scanning, setScanning] = useState(false)
   const [manualInput, setManualInput] = useState('')
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
   const [recentScans, setRecentScans] = useState<RecentScan[]>([])
   const [torchOn, setTorchOn] = useState(false)
   const [processingBib, setProcessingBib] = useState<string | null>(null)
-  const [eventId, setEventId] = useState<string | null>(null)
-  const [eventName, setEventName] = useState<string>('')
+  // The event is stored with the request it was loaded for. Until the lookup
+  // for the *current* ?event= resolves, there is no event to check in to, so
+  // a scan can never land in the race the scanner showed a moment ago.
+  const [loadedEvent, setLoadedEvent] = useState<{
+    request: string | null
+    status: 'ok' | 'none' | 'error'
+    id: string | null
+    name: string
+  } | null>(null)
+  const currentEvent = loadedEvent && loadedEvent.request === requestedEventId ? loadedEvent : null
+  const eventId = currentEvent?.status === 'ok' ? currentEvent.id : null
+  const eventName = currentEvent?.name ?? ''
+  const eventStatus = currentEvent?.status ?? 'loading'
   const [scanCount, setScanCount] = useState(0)
+  const [pendingHandovers, setPendingHandovers] = useState<PendingHandover[]>([])
 
   const qrRef = useRef<Html5Qrcode | null>(null)
+  const busyRef = useRef(false)
+  const lastQrRef = useRef<{ text: string; at: number } | null>(null)
+  // Read by the camera callback, so a ref (set together with the state).
+  const handoverPendingRef = useRef(false)
+  // Hand-over keys: a counter, so two check-ins in the same millisecond
+  // cannot share a key (confirming one would drop both).
+  const handoverKeyRef = useRef(0)
   const scannerContainerId = 'pwa-qr-reader'
   const supabase = createClient()
 
-  // Load the latest active event for context
+  // Which race to check runners into: the one the link asked for (if it is
+  // this organizer's), else the same "next race" rule as the race console.
+  // The old lookup filtered on an 'active' status the schema does not have,
+  // so it always fell back to the organizer's furthest-future event.
   useEffect(() => {
+    let cancelled = false
     async function loadEvent() {
+      const settle = (status: 'ok' | 'none' | 'error', event?: { id: string; name: string } | null) => {
+        if (cancelled) return
+        setLoadedEvent({ request: requestedEventId, status, id: event?.id ?? null, name: event?.name ?? '' })
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       const orgId = user?.app_metadata?.organizer_id
-      if (!orgId) return
+      if (!orgId) return settle('none')
 
-      const { data } = await supabase
-        .from('events')
-        .select('id, name')
-        .eq('organizer_id', orgId)
-        .eq('status', 'active')
-        .order('event_date', { ascending: true })
-        .limit(1)
-        .maybeSingle()
-
-      if (data) {
-        setEventId(data.id)
-        setEventName(data.name)
-      } else {
-        // Fallback: get most recent event
-        const { data: recent } = await supabase
+      if (requestedEventId) {
+        const { data, error } = await supabase
           .from('events')
           .select('id, name')
           .eq('organizer_id', orgId)
-          .order('event_date', { ascending: false })
-          .limit(1)
+          .eq('id', requestedEventId)
           .maybeSingle()
-        if (recent) {
-          setEventId(recent.id)
-          setEventName(recent.name)
-        }
+        // A failed lookup must not quietly switch to another race: stop and
+        // say so. Only "no such event for this organizer" falls back below.
+        if (error) return settle('error')
+        if (data) return settle('ok', data)
       }
+
+      const { data, error } = await supabase
+        .from('events')
+        .select('id, name')
+        .eq('organizer_id', orgId)
+        .in('status', [...RACE_CONSOLE_STATUSES])
+        .gte('event_date', malaysiaToday())
+        .order('event_date', { ascending: true })
+        .order('id', { ascending: true }) // same tie-breaker as console and home
+        .limit(1)
+        .maybeSingle()
+      if (error) return settle('error')
+      settle(data ? 'ok' : 'none', data)
     }
     loadEvent()
-  }, [supabase])
+    return () => {
+      cancelled = true
+    }
+  }, [supabase, requestedEventId])
 
+  // Camera scans carry the runner's signed QR payload: verified server-side
+  // through /api/repc/check-in (never uppercased, it is a token). Typed input
+  // is a bib number: checked in by bib, exactly like the desktop page.
   const processCheckIn = useCallback(
-    async (bibOrNric: string) => {
-      const cleaned = bibOrNric.trim().toUpperCase()
-      if (!cleaned || processingBib === cleaned) return
+    async (input: string, source: 'qr' | 'bib') => {
+      const cleaned = input.trim()
+      // A ref, not state: the camera fires for every decoded frame and a
+      // state check would read a stale value, letting duplicates through.
+      if (!cleaned || busyRef.current) return
       if (!eventId) {
-        toast.error('No active event found')
+        toast.error(
+          eventStatus === 'loading'
+            ? 'Still loading the event. Try again in a moment.'
+            : eventStatus === 'error'
+            ? "Couldn't load the event. Check the connection and reopen the scanner."
+            : 'No upcoming event to check in to'
+        )
         return
       }
 
+      busyRef.current = true
       setProcessingBib(cleaned)
       setScanResult(null)
 
       try {
-        const res = await fetch('/api/repc/check-in', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ bibNumber: cleaned, eventId }),
-        })
-        const result = await res.json()
-
-        const scanRes: ScanResult = {
-          success: result.success,
-          alreadyCheckedIn: result.alreadyCheckedIn,
-          message: result.message,
-          runner: result.bibNumber
-            ? {
-                name: result.runnerName || 'Unknown',
-                bib: result.bibNumber,
-                category: result.category,
-                shirtSize: result.shirtSize,
-              }
-            : undefined,
+        let scanRes: ScanResult
+        if (source === 'qr') {
+          const res = await fetch('/api/repc/check-in', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ qr_payload: cleaned, event_id: eventId }),
+          })
+          scanRes = resultFromApi(await res.json())
+        } else {
+          scanRes = resultFromRpc(await checkInRegistrationByBib(eventId, cleaned))
         }
 
         setScanResult(scanRes)
+
+        // Orders this check-in marked collected: hold them on screen until
+        // staff confirm the hand-over. The repeat scan of a pass still in view
+        // returns no merch (already collected), so it must not wipe them.
+        const collected = scanRes.success && scanRes.merch ? scanRes.merch.collected : []
+        if (collected.length > 0 && scanRes.merch) {
+          handoverPendingRef.current = true
+          const merch = scanRes.merch
+          const key = ++handoverKeyRef.current
+          setPendingHandovers((prev) => [
+            {
+              key,
+              name: scanRes.runner?.name || 'Runner',
+              bib: scanRes.runner?.bib || '',
+              merch: { collected: merch.collected, notPacked: [] },
+            },
+            ...prev,
+          ])
+        }
 
         if (scanRes.success && !scanRes.alreadyCheckedIn) {
           vibrate([100, 50, 100])
@@ -129,13 +244,16 @@ export default function OrganizerMobileScannerPage() {
           vibrate([500])
         }
 
+        // A QR payload is a long token: show the runner's bib, never the
+        // token. A failed scan shows why it failed instead of a name.
         setRecentScans((prev) => [
           {
-            bib: cleaned,
-            name: scanRes.runner?.name || cleaned,
+            bib: scanRes.runner?.bib || (source === 'bib' ? cleaned.toUpperCase() : '—'),
+            name: scanRes.runner?.name || scanRes.message,
             time: new Date(),
             success: scanRes.success,
             alreadyCheckedIn: scanRes.alreadyCheckedIn,
+            merchOrders: collected.map((o) => o.orderNumber),
           },
           ...prev.slice(0, 9),
         ])
@@ -143,11 +261,45 @@ export default function OrganizerMobileScannerPage() {
         setScanResult({ success: false, message: 'Network error. Please try again.' })
         vibrate([500])
       } finally {
+        busyRef.current = false
         setProcessingBib(null)
       }
     },
-    [eventId, processingBib]
+    [eventId, eventStatus]
   )
+
+  // The camera callback is registered once, when the camera starts: route it
+  // through a ref so it always uses the latest handler (and the event that
+  // finished loading after Start was tapped).
+  const processRef = useRef(processCheckIn)
+  useEffect(() => {
+    processRef.current = processCheckIn
+  }, [processCheckIn])
+
+  // A pass held up to the camera decodes on every frame: handle it once, then
+  // ignore the same QR for a few seconds so it is not checked in repeatedly.
+  const onQrDecoded = useCallback(async (decodedText: string) => {
+    const last = lastQrRef.current
+    // Camera paused while a merch hand-over awaits confirmation; typed bibs
+    // (deliberate) still go through.
+    if (busyRef.current || handoverPendingRef.current) return
+    if (last && last.text === decodedText && Date.now() - last.at < QR_REPEAT_COOLDOWN_MS) return
+    lastQrRef.current = { text: decodedText, at: Date.now() }
+    await processRef.current(decodedText, 'qr')
+    lastQrRef.current = { text: decodedText, at: Date.now() }
+  }, [])
+
+  // Filter the latest queued state, not this render's snapshot: a check-in
+  // that queued another hand-over before this render committed must survive,
+  // and must keep the camera paused.
+  const confirmHandover = (key: number) => {
+    setPendingHandovers((prev) => {
+      const next = prev.filter((h) => h.key !== key)
+      handoverPendingRef.current = next.length > 0
+      return next
+    })
+  }
+  const handoverPending = pendingHandovers.length > 0
 
   const startScanning = useCallback(async () => {
     if (scanning) return
@@ -158,11 +310,18 @@ export default function OrganizerMobileScannerPage() {
       qrRef.current = new Html5Qrcode(scannerContainerId)
       await qrRef.current.start(
         { facingMode: 'environment' },
-        { fps: 15, qrbox: { width: 220, height: 120 } },
-        async (decodedText) => {
-          await processCheckIn(decodedText)
-          // Brief pause before allowing next scan
-          await new Promise((r) => setTimeout(r, 2000))
+        // Runner passes are square QR codes: a square scan box sized to the
+        // viewfinder. The old 220x120 strip (a 1D-barcode shape) cut the QR
+        // off top and bottom, so it only decoded with the pass held far away.
+        {
+          fps: 15,
+          qrbox: (w: number, h: number) => {
+            const size = Math.max(120, Math.floor(Math.min(w, h) * 0.75))
+            return { width: size, height: size }
+          },
+        },
+        (decodedText) => {
+          void onQrDecoded(decodedText)
         },
         () => {}
       )
@@ -170,7 +329,7 @@ export default function OrganizerMobileScannerPage() {
       setScanning(false)
       toast.error('Camera access denied. Please allow camera permissions.')
     }
-  }, [scanning, processCheckIn])
+  }, [scanning, onQrDecoded])
 
   const stopScanning = useCallback(async () => {
     if (qrRef.current && scanning) {
@@ -221,7 +380,11 @@ export default function OrganizerMobileScannerPage() {
             <div className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               <span className="text-[11px] text-muted-foreground truncate max-w-[180px]">
-                {eventName || 'No active event'}
+                {eventStatus === 'loading'
+                  ? 'Loading event…'
+                  : eventStatus === 'error'
+                  ? "Couldn't load the event"
+                  : eventName || 'No upcoming event'}
               </span>
             </div>
           </div>
@@ -287,7 +450,9 @@ export default function OrganizerMobileScannerPage() {
               <div className="absolute bottom-2 inset-x-0 flex justify-center">
                 <div className="bg-card/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2 shadow-sm">
                   <span className="w-2 h-2 rounded-full bg-primary" />
-                  <span className="text-[11px] font-medium text-foreground">SCANNING</span>
+                  <span className="text-[11px] font-medium text-foreground">
+                    {handoverPending ? 'PAUSED: confirm merch below' : 'SCANNING'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -299,7 +464,7 @@ export default function OrganizerMobileScannerPage() {
           onClick={scanning ? stopScanning : startScanning}
           className={`w-full py-3.5 rounded-xl font-medium text-[14px] flex items-center justify-center gap-2 transition-[color,background-color,border-color,opacity,transform] active:scale-[0.98] shadow-md ${
             scanning
-              ? 'bg-destructive/80 text-destructive border border-destructive/30'
+              ? 'bg-destructive text-white dark:text-background'
               : 'bg-primary text-primary-foreground'
           }`}
         >
@@ -317,12 +482,13 @@ export default function OrganizerMobileScannerPage() {
             <Search className="size-[16px] text-muted-foreground" />
             <input
               className="w-full bg-transparent text-foreground text-[13px] outline-none placeholder:text-muted-foreground"
-              placeholder="NRIC, BIB or order # …"
+              placeholder="Bib number"
+              aria-label="Bib number"
               value={manualInput}
               onChange={(e) => setManualInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
-                  processCheckIn(manualInput)
+                  processCheckIn(manualInput, 'bib')
                   setManualInput('')
                 }
               }}
@@ -330,7 +496,7 @@ export default function OrganizerMobileScannerPage() {
           </div>
           <button
             onClick={() => {
-              processCheckIn(manualInput)
+              processCheckIn(manualInput, 'bib')
               setManualInput('')
             }}
             disabled={!manualInput.trim() || !!processingBib}
@@ -339,6 +505,34 @@ export default function OrganizerMobileScannerPage() {
             {processingBib ? '...' : 'Check in'}
           </button>
         </div>
+
+        {/* Merch hand-overs waiting for confirmation (camera paused) */}
+        {pendingHandovers.map((h) => (
+          <section
+            key={h.key}
+            aria-label={`Merch to hand over to ${h.name}`}
+            className="rounded-xl border border-primary/40 bg-primary/5 p-4"
+          >
+            <p className="text-[13px] font-medium text-foreground">
+              Hand over merch to {h.name}
+              {h.bib && <span className="ml-2 inline-block whitespace-nowrap rounded bg-accent px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">{h.bib}</span>}
+            </p>
+            <MerchHandoverNote
+              merch={h.merch}
+              className="mt-2 flex items-start gap-2 text-[13px] text-foreground"
+            />
+            <button
+              type="button"
+              onClick={() => confirmHandover(h.key)}
+              className="mt-3 flex min-h-11 w-full items-center justify-center rounded-lg bg-primary text-[14px] font-medium text-primary-foreground transition-transform active:scale-[0.98]"
+            >
+              Merch handed over
+            </button>
+            <p className="mt-2 text-center text-[12px] text-muted-foreground">
+              The camera is paused until you confirm. Typed bib numbers still work.
+            </p>
+          </section>
+        ))}
 
         {/* Result card */}
         {scanResult && (
@@ -375,7 +569,7 @@ export default function OrganizerMobileScannerPage() {
                     ? 'Checked in'
                     : scanResult.alreadyCheckedIn
                     ? 'Already checked in'
-                    : '✗ Not Found'}
+                    : 'Not checked in'}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">{scanResult.message}</p>
               </div>
@@ -400,6 +594,15 @@ export default function OrganizerMobileScannerPage() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Paid orders not packed yet (nothing to hand over now). Orders
+                this check-in collected are held in the panel above. */}
+            {scanResult.merch && scanResult.merch.notPacked.length > 0 && (
+              <MerchHandoverNote
+                merch={{ collected: [], notPacked: scanResult.merch.notPacked }}
+                className="mt-3 flex items-start gap-2 rounded-lg border border-border/60 bg-background/60 p-3 text-[13px] text-foreground"
+              />
             )}
           </div>
         )}
@@ -429,6 +632,9 @@ export default function OrganizerMobileScannerPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-[12px] font-medium text-foreground truncate">{scan.name}</p>
                     <p className="text-[11px] text-muted-foreground font-mono">{scan.bib}</p>
+                    {scan.merchOrders && scan.merchOrders.length > 0 && (
+                      <p className="text-[11px] text-muted-foreground truncate">Merch: {scan.merchOrders.join(', ')}</p>
+                    )}
                   </div>
                   <span className="text-[11px] text-muted-foreground shrink-0">
                     {scan.time.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}

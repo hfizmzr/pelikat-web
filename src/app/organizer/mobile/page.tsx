@@ -8,6 +8,7 @@ import { NotificationBell } from '@/components/notifications/notification-bell'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { MobileLogoutButton } from '@/components/organizer/mobile-logout-button'
 import { BrandLink } from '@/components/brand-mark'
+import { isRaceDay, isUpcomingRace, malaysiaToday } from '@/lib/event-dates'
 
 async function getOrganizerDashboardData() {
   const cookieStore = await cookies()
@@ -38,13 +39,15 @@ async function getOrganizerDashboardData() {
       `)
       .eq('organizer_id', organizerId)
       .order('event_date', { ascending: true })
-      .limit(5),
+      .order('id', { ascending: true }), // tie-breaker shared with console and scanner
   ])
 
-  const now = new Date()
-  const upcomingEvents = (events || []).filter(
-    (e) => new Date(e.event_date) >= now || e.status === 'active'
-  )
+  // Same rule as the race console, so both screens show the same event. The
+  // old filter (`new Date(event_date) >= now` over the 5 *oldest* events)
+  // dropped a race at 08:00 on race morning, showed drafts, and missed every
+  // upcoming event once an organizer had more than 5.
+  const today = malaysiaToday()
+  const upcomingEvents = (events || []).filter((e) => isUpcomingRace(e, today))
 
   const allRegs = (events || []).flatMap((e) => e.registrations || [])
   const totalRunners = allRegs.length
@@ -70,6 +73,7 @@ async function getOrganizerDashboardData() {
           date: nextEvent.event_date,
           location: nextEvent.location,
           status: nextEvent.status,
+          raceDay: isRaceDay(nextEvent.event_date, today),
           totalSlots: nextEventCats.reduce((a, c) => a + (c.max_slots || 0), 0),
           registered: nextEventRegs.length,
           checkedIn: nextEventCheckedIn,
@@ -102,7 +106,7 @@ export default async function OrganizerMobileHome() {
   }
 
   const checkInPercent = data.checkInRate
-  const isLive = data.nextEvent?.status === 'active'
+  const isLive = data.nextEvent?.raceDay ?? false
 
   return (
     <div className="flex flex-col w-full min-h-dvh bg-background">
@@ -127,7 +131,7 @@ export default async function OrganizerMobileHome() {
         {data.nextEvent && (
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-[13px] text-muted-foreground">{isLive ? 'Race in progress' : 'Next event'}</h2>
+              <h2 className="text-[13px] text-muted-foreground">{isLive ? 'Race day' : 'Next event'}</h2>
               {isLive && <StatusTag tone="success">Live</StatusTag>}
             </div>
             <div className="rounded-xl border border-border/60 bg-card p-4">
@@ -152,7 +156,7 @@ export default async function OrganizerMobileHome() {
                 </p>
               </div>
               <Link
-                href="/organizer/mobile/scanner"
+                href={`/organizer/mobile/scanner?event=${data.nextEvent.id}`}
                 className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-primary text-[14px] font-medium text-primary-foreground transition-transform active:scale-[0.98]"
               >
                 <QrCode className="size-4" strokeWidth={1.75} />
@@ -164,7 +168,11 @@ export default async function OrganizerMobileHome() {
 
         <nav aria-label="Shortcuts" className="overflow-hidden rounded-xl border border-border/60 bg-card">
           {[
-            { href: '/organizer/mobile/scanner', icon: QrCode, label: 'Bib scanner' },
+            {
+              href: data.nextEvent ? `/organizer/mobile/scanner?event=${data.nextEvent.id}` : '/organizer/mobile/scanner',
+              icon: QrCode,
+              label: 'Bib scanner',
+            },
             { href: '/organizer/mobile/events', icon: Calendar, label: 'My events' },
             { href: '/organizer/mobile/console', icon: Gauge, label: 'Race console' },
             { href: '/organizer/mobile/merch', icon: ShoppingBag, label: 'Kit inventory' },
