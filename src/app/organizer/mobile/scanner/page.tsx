@@ -123,6 +123,9 @@ export default function OrganizerMobileScannerPage({
   const lastQrRef = useRef<{ text: string; at: number } | null>(null)
   // Read by the camera callback, so a ref (set together with the state).
   const handoverPendingRef = useRef(false)
+  // Hand-over keys: a counter, so two check-ins in the same millisecond
+  // cannot share a key (confirming one would drop both).
+  const handoverKeyRef = useRef(0)
   const scannerContainerId = 'pwa-qr-reader'
   const supabase = createClient()
 
@@ -220,9 +223,10 @@ export default function OrganizerMobileScannerPage({
         if (collected.length > 0 && scanRes.merch) {
           handoverPendingRef.current = true
           const merch = scanRes.merch
+          const key = ++handoverKeyRef.current
           setPendingHandovers((prev) => [
             {
-              key: Date.now(),
+              key,
               name: scanRes.runner?.name || 'Runner',
               bib: scanRes.runner?.bib || '',
               merch: { collected: merch.collected, notPacked: [] },
@@ -285,10 +289,15 @@ export default function OrganizerMobileScannerPage({
     lastQrRef.current = { text: decodedText, at: Date.now() }
   }, [])
 
+  // Filter the latest queued state, not this render's snapshot: a check-in
+  // that queued another hand-over before this render committed must survive,
+  // and must keep the camera paused.
   const confirmHandover = (key: number) => {
-    const next = pendingHandovers.filter((h) => h.key !== key)
-    handoverPendingRef.current = next.length > 0
-    setPendingHandovers(next)
+    setPendingHandovers((prev) => {
+      const next = prev.filter((h) => h.key !== key)
+      handoverPendingRef.current = next.length > 0
+      return next
+    })
   }
   const handoverPending = pendingHandovers.length > 0
 
